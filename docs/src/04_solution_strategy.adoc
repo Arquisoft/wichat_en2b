@@ -3,6 +3,57 @@ ifndef::imagesdir[:imagesdir: ../images]
 [[section-solution-strategy]]
 == Solution Strategy
 
+=== 4.1 Technology decisions
+
+[options="header", cols="1,2,2"]
+|===
+| Technology | Context | Why?   
+| **JavaScript** | Main language used in the project | Due to our familiarity with developing web projects using JavaScript and also its easy learning curve. Besides, it is nowadays highly popular in web development.
+| **Node.js**    | Environment for the project development | Allows the execution of JavaScript at runtime and is multiplatform. It is highly compatible with our main development language: JavaScript. It is open source, in line with our application development.
+| **React** | Frontend development of our web application. | It is highly used in the current web app sector of the industry. The development team agrees that it could ease the view development of the web using different techniques of this technology. Moreover, its learning curve is relatively easy for web development beginners.
+| **Express** | Backend or core of our web application. It should manage the control of the application following the interaction received from client requests. | Express is easy to understand, and its behavior is similar to some technologies that the development team considers familiar: functional programming, delegate functions, and an HTTP controller structure based on request/response.
+| **Groq API** | Service using the LLM of Meta (LLaMA). It will provide the chatbot experience for the client. | The development team considered that the demo project using this API was easy to understand and put into production, behaving properly and with efficient responses and valid latency. Moreover, this Meta service allows 1,000 API calls daily, which we consider appropriate for the project's needs.
+| **WikiData API** | Service that provides the information needed for the questions asked to the client during the game interaction. | Due to its easy-to-use service API and also its specific query language, SPARQL, that could allow the development team to solve different requests appropriately. Besides, it is a constraint in the project development. 
+| **Docker** | Service that automates the deployment of the project in different software containers managed by Docker itself. | The development team decided that, regarding the proposed services that perform the same operations, Docker is the most popular nowadays in the deployment services sector, having good performance.  
+| **Microsoft Azure** | Service that hosts the application in the production stage of the project. | As Microsoft provides student licenses that will cover the cost of deploying our product application in a hosted virtual machine running on a permanently active server.
+|===
+
+=== 4.2 Architectural design decisions
+
+=== 4.2 Desing patterns applyed
+
+=== 4.3 Decisions trade-offs
+
+[options="header",cols="1,1,2"]
+|===
+| Decision | Alternatives |  Features rejected in the decision
+| **JavaScript** | |
+| **Node.js** | |
+| **React** | |
+| **Express** |  |
+| **Groq API** |  |
+| **WikiData API** |  |
+| **Docker** |  |
+| **Microsoft Azure** |  |
+|===
+
+=== 4.4 Decisions on how to achieve the key quality goals 
+
+[options="header",cols="1,2"]
+|===
+| Quality Goal | Strategy 
+| **Scalability** | 
+| **Reliability** | 
+| **Usability** | 
+| **Performance** | 
+| **Security** |  
+|===
+
+=== 4.5 Organizational decisions 
+
+==== 4.5.1 Deployment Process
+
+==== 4.5.2 Third Parties Services
 
 ifdef::arc42help[]
 [role="arc42help"]
