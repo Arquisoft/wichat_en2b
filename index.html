@@ -587,32 +587,42 @@ These include</p>
 </div>
 <div class="sect2">
 <h3 id="_requirements_overview">1.1. Requirements Overview</h3>
-<div class="sidebarblock arc42help">
-<div class="content">
 <div class="paragraph">
-<div class="title">Contents</div>
-<p>Short description of the functional requirements, driving forces, extract (or abstract)
-of requirements. Link to (hopefully existing) requirements documents
-(with version number and information where to find it).</p>
+<p>The goal of this project is to enhance the online "Saber y Ganar" quiz show application, developed last year by HappySw, with new features that incorporate large language models (LLMs) and Wikidata for a more interactive and engaging experience.</p>
 </div>
 <div class="paragraph">
-<div class="title">Motivation</div>
-<p>From the point of view of the end users a system is created or modified to
-improve support of a business activity and/or improve the quality.</p>
+<p>The key functional requirements of the system are:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>A Web frontend that presents pictures with questions for the users to answer.</p>
+</li>
+<li>
+<p>Users must be able to register, login, and view historical data related to their game performance (e.g., number of games, correct answers, time taken).</p>
+</li>
+<li>
+<p>The system should automatically generate questions and answers using Wikidata.</p>
+</li>
+<li>
+<p>Hints for the questions can be obtained through interaction with an external LLM via an API.</p>
+</li>
+<li>
+<p>The LLM should mitigate the generation of incorrect answers or hallucinations when providing hints.</p>
+</li>
+<li>
+<p>Each question will have a correct answer and multiple distractors, all generated automatically.</p>
+</li>
+<li>
+<p>The application must be deployable on the web and allow users to access their information via a documented API.</p>
+</li>
+<li>
+<p>There is a possibility for users to interact with the application in different game modes, such as “Each wise man with his subject,” “Travel with us,” or “The hot question.”</p>
+</li>
+</ul>
 </div>
 <div class="paragraph">
-<div class="title">Form</div>
-<p>Short textual description, probably in tabular use-case format.
-If requirements documents exist this overview should refer to these documents.</p>
-</div>
-<div class="paragraph">
-<p>Keep these excerpts as short as possible. Balance readability of this document with potential redundancy w.r.t to requirements documents.</p>
-</div>
-<div class="paragraph">
-<div class="title">Further Information</div>
-<p>See <a href="https://docs.arc42.org/section-1/">Introduction and Goals</a> in the arc42 documentation.</p>
-</div>
-</div>
+<p>Optional features include internationalization, mobile version, users' ranking, multiplayer capabilities, and personalized game settings like adjusting time limits and the scope of questions.</p>
 </div>
 </div>
 <div class="sect2">
@@ -644,6 +654,46 @@ If you as an architect do not know how the quality of your work will be judged&#
 <p>A table with quality goals and concrete scenarios, ordered by priorities</p>
 </div>
 </div>
+</div>
+<div class="paragraph">
+<p>The quality goals for the architecture are as follows:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 66.6667%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Quality Goal</th>
+<th class="tableblock halign-left valign-top">Scenario</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Scalability</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The system must be able to handle a large number of simultaneous users without a noticeable decrease in performance.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Reliability</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The system must be robust enough to handle failures in the hint generation API and ensure the user experience is minimally impacted.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Usability</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The application must be intuitive and easy to use, allowing users to quickly understand how to play, answer questions, and interact with hints.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Performance</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The system should provide fast responses, particularly in generating questions and hints, without delays that impact the user experience.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Security</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The system must ensure that user data is securely stored and accessible only to authorized users.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>These quality goals will drive architectural decisions, particularly concerning how data is processed, stored, and presented to the user, as well as how external integrations (e.g., LLM API and Wikidata) are handled.</p>
 </div>
 </div>
 <div class="sect2">
@@ -700,14 +750,24 @@ These stakeholders determine the extent and the level of detail of your work and
 </thead>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>&lt;Role-1&gt;</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>&lt;Contact-1&gt;</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>&lt;Expectation-1&gt;</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>End Users</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Users of the game</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Enjoyable and engaging experience, with an easy-to-use interface and fun, dynamic gameplay.</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>&lt;Role-2&gt;</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>&lt;Contact-2&gt;</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>&lt;Expectation-2&gt;</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>RTVE</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">RTVE management</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">High-quality user experience, with an emphasis on scalability, performance, and security.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Development Team</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ChattySw team</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">A robust, well-documented, and maintainable system. Clear requirements for integration with LLM and Wikidata, as well as a user-friendly interface.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>HappySw (Previous Developers)</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">HappySw team</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Smooth transition from last year&#8217;s implementation, with the new LLM-based hint system integrating seamlessly with the existing structure.</p></td>
 </tr>
 </tbody>
 </table>
@@ -1920,7 +1980,7 @@ more precisely down to a level of scenarios that can be discussed and evaluated.
 <div id="footer">
 <div id="footer-text">
 Version 8.2 EN<br>
-Last updated 2025-02-04 11:27:03 +0100
+Last updated 2025-02-09 23:33:11 +0100
 </div>
 </div>
 </body>
