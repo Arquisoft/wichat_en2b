@@ -50,6 +50,24 @@ The system interacts with several external entities:
 | **Node.js** | User authentication information | Sucessful/unsuccessful login
 |===
 
+**Business Context Diagram**
+[plantuml]
+----
+@startuml
+' Define external entities
+actor User
+rectangle "System" as System
+cloud "Wikidata" as Wikidata
+cloud "Groq (LLM API)" as Groq
+database "Database" as Database
+
+' Define relationships
+User --> System : Uses Web Interface
+System --> Wikidata : Fetches quiz data
+System --> Groq : Requests quiz hints
+System --> Database : Stores & retrieves user data
+@enduml
+----
 === Technical Context
 The system is linked to several technical interfaces:
 
@@ -72,22 +90,48 @@ The system is linked to several technical interfaces:
 [plantuml]
 ----
 @startuml
+!theme plain
+skinparam BackgroundColor transparent
+skinparam sequenceMessageAlign center
+
+' Custom styles
+skinparam sequence {
+    ArrowColor #2C3E50
+    LifeLineBorderColor #95A5A6
+    LifeLineBackgroundColor #ECF0F1
+    
+    ParticipantBorderColor #3498DB
+    ParticipantBackgroundColor #E8F6FF
+    ParticipantFontColor #2C3E50
+    ParticipantFontSize 14
+    
+    ActorBorderColor #2ECC71
+    ActorBackgroundColor #E8F8F5
+    ActorFontColor #2C3E50
+    ActorFontSize 14
+    
+    DatabaseBorderColor #9B59B6
+    DatabaseBackgroundColor #F4ECF7
+}
+
 actor User
-entity Frontend
-entity Backend
-entity "Database" as DB
-entity "WikiData API" as WikiData
-entity "Groq AI" as AI
+participant "Frontend" as Frontend
+participant "Backend" as Backend
+database "Database" as DB
+participant "WikiData API" as WikiData
+participant "Groq AI" as AI
 
 User -> Frontend : Login, Answers, Hint Requests
 Frontend -> Backend : REST API Calls (JSON)
-Backend -> DB : Store/Retrieve User Data (SQL/JSON)
-Backend -> WikiData : Fetch Quiz Data (HTTP GET, JSON)
-Backend -> AI : Request Hints (HTTP POST, JSON)
-AI -> Backend : AI-generated Hint (JSON)
-WikiData -> Backend : Quiz Data (JSON)
-Backend -> Frontend : Send Quiz, Hints, Scores (JSON)
-Frontend -> User : Display Questions, Feedback, Leaderboard
+
+Backend -> DB : Store/Retrieve User Data\n(SQL/JSON)
+Backend -> WikiData : Fetch Quiz Data\n(HTTP GET, JSON)
+Backend -> AI : Request Hints\n(HTTP POST, JSON)
+
+AI --> Backend : AI-generated Hint (JSON)
+WikiData --> Backend : Quiz Data (JSON)
+Backend --> Frontend : Send Quiz, Hints,\nScores (JSON)
+Frontend --> User : Display Questions,\nFeedback, Leaderboard
 @enduml
 ----
 ifdef::arc42help[]
