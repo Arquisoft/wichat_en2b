@@ -14,11 +14,37 @@ ifndef::imagesdir[:imagesdir: ../images]
 | **Express** | Backend or core of our web application. It should manage the control of the application following the interaction received from client requests. | Express is easy to understand, and its behavior is similar to some technologies that the development team considers familiar: functional programming, delegate functions, and an HTTP controller structure based on request/response.
 | **Groq API** | Service using the LLM of Meta (LLaMA). It will provide the chatbot experience for the client. | The development team considered that the demo project using this API was easy to understand and put into production, behaving properly and with efficient responses and valid latency. Moreover, this Meta service allows 1,000 API calls daily, which we consider appropriate for the project's needs.
 | **WikiData API** | Service that provides the information needed for the questions asked to the client during the game interaction. | Due to its easy-to-use service API and also its specific query language, SPARQL, that could allow the development team to solve different requests appropriately. Besides, it is a constraint in the project development. 
+| **Bcrypt** | Module to encrypt the sensitive information of the application | Due to its capabilities in hash encryption and its feature to be flexible with computational hardware improvements, simply by increasing the salt property of the encryption algorithm, making it more secure. Besides, this module covers our needs in the user-related services with an appropriate methods interface. 
+| **Pino** | Module to provide a logging system | The development team decided to use Pino instead of other modules (Winston, Log4j-node, etc.) as Pino provides a fast and easy approach to log events in our application without being very complex to understand.
 | **Docker** | Service that automates the deployment of the project in different software containers managed by Docker itself. | The development team decided that, regarding the proposed services that perform the same operations, Docker is the most popular nowadays in the deployment services sector, having good performance.  
 | **Microsoft Azure** | Service that hosts the application in the production stage of the project. | As Microsoft provides student licenses that will cover the cost of deploying our product application in a hosted virtual machine running on a permanently active server.
 |===
 
 === 4.2 Architectural design decisions
+The project arquitecture is divided in diferent modules and their functionalities are delimited following a Layered pattern. Therefore, taking that in mind we can classify the project as follows.
+
+. View 
+    - **Webapp** 
+    Module that manages the pages shown to the client and communicates with the Gateway module via requests.
+
+. Controller 
+    - **Gateway**
+    Endpoint of the web application that communicates the frontend with the business logic
+
+. Services
+    - **UserAuthentication**
+    Module that manages the login operation and verifies the client connection
+    - **UserManager**
+    Module that carries the CRUD operations with users with the DB. Moreover, it also manages group of users and retrieve all user related information.
+    - **GameService**
+    Module that carries the game logic of the application quizzes, interacts with the LLMService and with WikiData interface.
+    - **LLMService**
+    Module that acts as an interface to communicate with the LLM provider API in a decoupled way. Allowing the application to consider future changes in the API provider with the same functionality.
+
+. Persistence
+    - **Mongoose (MongoDB)**
+    Module of persistence that storages the users information in JSON format.
+
 
 === 4.2 Desing patterns applyed
 
@@ -42,11 +68,11 @@ ifndef::imagesdir[:imagesdir: ../images]
 [options="header",cols="1,2"]
 |===
 | Quality Goal | Strategy 
-| **Scalability** | 
-| **Reliability** | 
-| **Usability** | 
-| **Performance** | 
-| **Security** |  
+| **Scalability** | Using Gherkin with tools to test the performance and behaviour of the application in users load scenarios. The tool used to test the user load is yet to decide, perhaps K6 or a Python script. 
+| **Reliability** | The development team will apply a TDD (Test-Driven Development) to ensure that the business model behaves correctly. Besides, with an automatized Continous Deployment strategy, the development team can deploy the project often and explore the application behaviour, considering that the logger system implemented will catch each bug occurred during the execution.  
+| **Usability** | Our development will follow good desing practices such as implementing i18n technology to allow internacionalization, respecting the W3C standarts in web design where possible and  
+| **Performance** | Using different modules specialized in monitoring the application, as Prometeus and Grafana. Besides, to identify possible bottlenecks in our application we are using Node profiling tools as `node --prof`.
+| **Security** |  Our application is using encrypting modules in the registry of new users and their authentification. Moreover, we have centralized the access to the application backend in a gateway service, hidding the endpoints of the application to the ones we decided.
 |===
 
 === 4.5 Organizational decisions 
