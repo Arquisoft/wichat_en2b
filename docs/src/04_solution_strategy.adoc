@@ -3,6 +3,8 @@ ifndef::imagesdir[:imagesdir: ../images]
 [[section-solution-strategy]]
 == Solution Strategy
 
+In this section of the documentation we are covering the fundamental decisions and solution strategies of our architecture.
+
 === 4.1 Technology decisions
 
 [options="header", cols="1,2,2"]
@@ -97,15 +99,16 @@ Additionally, **issues could be handled by multiple team members**, using the Gi
 
 * **Project Management and Workflow**
     
-We use **GitHub** as our **primary version control tool**, and also using its **integrated Kanban board** to **track progress** (Projects section). Issues are categorized and can transition through the following states:
-
+We use **GitHub** as our **primary version control tool**, and also using its **integrated Kanban board** to **track progress** (Projects section in GitHub). Issues are categorized and can transition through the following states:
+--
     . No Status
     . TODO
     . In Progress
     . Testing
     . Done
+--
 
-* **Continuous Deployment** and **Stability Checks**
+* **Continuous Deployment and Stability Checks**
 
 Once the application reaches a deployment stable functionality, we will **implement a Continuous Deployment methodology**. This involves **deploying** the application **at least once per week, to verify stability in a production-like environment**. This proactive approach helps **detect** and resolve **deployment-specific bugs early**, preventing major issues from being discovered too late in the process.
 
