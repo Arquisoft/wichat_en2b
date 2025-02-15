@@ -47,7 +47,6 @@ The system interacts with several external entities:
 | **WikiData API** | Query for quiz questions | Response with data and images 
 | **Groq API (LLM)** | User questions | AI-generated hints 
 | **Database** | Game data | Persistent data (authentication, leaderboards...) 
-| **Node.js** | User authentication information | Sucessful/unsuccessful login
 |===
 
 **Business Context Diagram**
@@ -72,18 +71,21 @@ System --> Database : Stores & retrieves user data
 The system is linked to several technical interfaces:
 
 * **Frontend-Backend Communication**: The client uses React.js to communicate with the Node.js backend through RESTful API calls.
-* **Backend-Database Communication**: The backend of the system interacts with a database through SQL (?).
-* **External APIs**: Some external APIs are used for taking advantage of services such as question generation (WikiData) and hint generation (Groq AI).
+* **Backend-Database Communication**: The backend of the system interacts with a database through MongoDB using Mongoose ODM.
+* **External APIs**: Some external APIs are used for taking advantage of services such as data retrieval (WikiData) and hint generation (Groq AI).
+* **Security Considerations**: User passwords are hashed using Bcrypt, and authentication is managed through a Gateway service.
 
 **Quiz Game System - Technical Context Table**
 [cols="1,2,3,4", options="header"]
 |===
 | Component | Technology | Communication Method | Format 
 | **Frontend** | React.js | REST API | JSON 
-| **Backend** | Node.js + Express.js | REST API | JSON 
-| **Database** | MongoDB | Queries | SQL (?) 
-| **WikiData** | External API | REST API, SPARQL queries | JSON 
-| **Groq AI** | External API | REST API | JSON 
+| **Backend** | Node.js + Express | REST API | JSON 
+| **Database** | Mongoose (MongoDB) | Queries | JSON
+| **WikiData (via GameService)** | External API | REST API, SPARQL queries | JSON/XML
+| **Groq AI (via LLMService)** | External API | REST API | JSON
+| **Gateway** | Express.js | REST API | JSON
+| **Security (Bcrypt)** | Password Hashing | Internal Authentication | N/A
 |===
 **Mapping I/O to Channels**
 
@@ -118,13 +120,15 @@ actor User
 participant "Frontend" as Frontend
 participant "Backend" as Backend
 database "Database" as DB
-participant "WikiData API" as WikiData
-participant "Groq AI" as AI
+participant "WikiData API (GameService)" as WikiData
+participant "Groq AI (LLMService)" as AI
+participant "Gateway" as Gateway
 
 User -> Frontend : Login, Answers, Hint Requests
-Frontend -> Backend : REST API Calls (JSON)
+Frontend -> Gateway : REST API Calls (JSON)
 
-Backend -> DB : Store/Retrieve User Data\n(SQL/JSON)
+Gateway -> Backend : Authenticated Requests (JSON)
+Backend -> DB : Store/Retrieve User Data\n(MongoDB JSON)
 Backend -> WikiData : Fetch Quiz Data\n(HTTP GET, JSON)
 Backend -> AI : Request Hints\n(HTTP POST, JSON)
 
