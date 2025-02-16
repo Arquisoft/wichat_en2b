@@ -69,6 +69,8 @@ endif::arc42help[]
 
 _**<Overview Diagram>**_
 
+image::05_overall_system.png[Overview Diagram]
+
 Motivation::
 
 _<text explanation>_
