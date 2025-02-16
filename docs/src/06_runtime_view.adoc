@@ -2,7 +2,7 @@ ifndef::imagesdir[:imagesdir: ../images]
 
 [[section-runtime-view]]
 == Runtime View
-
+This section focuses on describing the behaviour and interactions of the system's building blocks in form of scenarios.
 
 ifdef::arc42help[]
 [role="arc42help"]
@@ -39,25 +39,33 @@ See https://docs.arc42.org/section-6/[Runtime View] in the arc42 documentation.
 ****
 endif::arc42help[]
 
-=== <Runtime Scenario 1>
+=== User authentication
 
 
-* _<insert runtime diagram or textual description of the scenario>_
-* _<insert description of the notable aspects of the interactions between the
-building block instances depicted in this diagram.>_
-
-It is possible to use a sequence diagram:
+Users must have an account to use the application. The following sequence diagram shows how the application behaves when logging in.
 
 [plantuml,"Sequence diagram",png]
 ----
-actor Alice
-actor Bob
-database Pod as "Bob's Pod"
-Alice -> Bob: Authentication Request
-Bob --> Alice: Authentication Response
-Alice  --> Pod: Store route
-Alice -> Bob: Another authentication Request
-Alice <-- Bob: another authentication Response
+actor User
+entity WA as "Web Application"
+entity GS as "Gateway Service"
+entity UG as "User Gateway"
+entity UAS as "User Authentication Service"
+database DB as "MongoDB"
+User -> WA : Send credentials
+WA -> GS : Forward credentials
+GS -> UG : Handles user logic
+UG -> UAS : Sends authentication request
+UAS -> DB : Verify credentials
+
+//// UAS <-- DB : Returns user
+UG <-- UAS : Returns token
+GS <-- UG : Forwards token
+WA <-- GS : Returns token to client
+User <-- WA : Shows login result ////
+
+UAS <-- DB : Returns user
+User <-- UAS : Sends token
 ----
 
 === <Runtime Scenario 2>
