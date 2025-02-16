@@ -36,7 +36,7 @@ The system interacts with several external entities:
 
 * **User**: interacts with the system through a web interface.
 * **Wikidata**: supplies data for dynamically generated quiz questions.
-* **Groq**: an LLM API from LLaMA used for providing hints related to quiz questions.
+* **LLM Service**: external LLM API used for providing hints related to quiz questions.
 * **Database**: the system interacts with a database storing user-related data.
 
 **Quiz Game System - Business Context Table**
@@ -45,8 +45,8 @@ The system interacts with several external entities:
 | Communication Partner | Inputs to System | Outputs from System
 | **Player (User)** | Login credentials, answer selection and hint requests |Questions, feedback, hints, scores 
 | **WikiData API** | Query for quiz questions | Response with data and images 
-| **Groq API (LLM)** | User questions | AI-generated hints 
-| **Database** | Game data | Persistent data (authentication, leaderboards...) 
+| **LLM Service** | User questions | AI-generated hints 
+| **Database** | Game data | Persistent data (user info, game states, scores...) 
 |===
 
 **Business Context Diagram**
@@ -74,19 +74,24 @@ The system is linked to several technical interfaces:
 * **Backend-Database Communication**: The backend of the system interacts with a database through MongoDB using Mongoose ODM.
 * **External APIs**: Some external APIs are used for taking advantage of services such as data retrieval (WikiData) and hint generation (Groq AI).
 * **Security Considerations**: User passwords are hashed using Bcrypt, and authentication is managed through a Gateway service.
+* **User Gateway**: Handles user-related API requests, routing authentication and CRUD operations to their respective services.
+* **Game Service**: Manages game logic and caches question batches to reduce WikiData API overhead.
 
-**Quiz Game System - Technical Context Table**
-[cols="1,2,3,4", options="header"]
+Quiz Game System - Technical Context Table
+[cols="1,2,3,4,5", options="header"]
 |===
-| Component | Technology | Communication Method | Format 
-| **Frontend** | React.js | REST API | JSON 
-| **Backend** | Node.js + Express | REST API | JSON 
-| **Database** | Mongoose (MongoDB) | Queries | JSON
-| **WikiData (via GameService)** | External API | REST API, SPARQL queries | JSON/XML
-| **Groq AI (via LLMService)** | External API | REST API | JSON
-| **Gateway** | Express.js | REST API | JSON
-| **Security (Bcrypt)** | Password Hashing | Internal Authentication | N/A
+| Component | Technology | Communication Method | Protocol | Format
+| Frontend | React.js | REST API Calls | HTTPS | JSON
+| Backend | Node.js + Express | REST API Calls | HTTPS | JSON
+| Database | Mongoose (MongoDB) | Queries | TCP/IP | JSON
+| WikiData (via GameService) | External API | REST API, SPARQL queries | HTTPS | JSON/XML
+| Groq AI (via LLMService) | External API | REST API Calls | HTTPS | JSON
+| User Gateway | Express.js | REST API Calls | HTTPS | JSON
+| User CRUD Service | Express.js | REST API Calls | HTTPS | JSON
+| User Authentication Service | Express.js + Bcrypt | REST API Calls | HTTPS (OAuth2) | JSON
+| Security (Bcrypt) | Password Hashing | Internal Authentication | N/A | N/A
 |===
+
 **Mapping I/O to Channels**
 
 [plantuml]
