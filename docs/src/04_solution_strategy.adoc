@@ -19,33 +19,43 @@ In this section of the documentation we are covering the fundamental decisions a
 | **Bcrypt** | Module to encrypt the sensitive information of the application | Due to its capabilities in hash encryption and its feature to be flexible with computational hardware improvements, simply by increasing the salt property of the encryption algorithm, making it more secure. Besides, this module covers our needs in the user-related services with an appropriate methods interface. 
 | **Pino** | Module to provide a logging system | The development team decided to use Pino instead of other modules (Winston, Log4j-node, etc.) as Pino provides a fast and easy approach to log events in our application without being very complex to understand. Moreover, Pino supports JSON format by default that makes easier the logger readability and parsing.
 | **Docker** | Service that automates the deployment of the project in different software containers managed by Docker itself. | The development team decided that, regarding the proposed services that perform the same operations, Docker is the most popular nowadays in the deployment services sector, having good performance.  
-| **Microsoft Azure** | Service that hosts the application in the production stage of the project. | As Microsoft provides student licenses that will cover the cost of deploying our product application in a hosted virtual machine running on a permanently active server.
+| **Oracle Cloud Infrastructure (OCI)** | Service that hosts the application in the production stage of the project. | Oracle Cloud Infrastructure was selected due to our team managed to obtain a free server computer in their infrastructure with sufficient power to host our web application.
 |===
 
 === 4.2 Architectural design decisions
 The project architecture is divided in different modules and their functionalities are delimited following a Layered pattern. Therefore, taking that in mind we can classify the project as follows.
 
 . View 
-    - **Webapp** 
-    Module that manages the pages shown to the client and communicates with the Gateway module via requests.
 
-. Controller 
-    - **Gateway**
-    Endpoint of the web application that communicates the frontend with the business logic
+- **Webapp** +  
+  Module that manages the pages shown to the client and communicates with the Gateway module via requests.
+
+. Gateways
+
+- **GatewayService** +  
+  Endpoint of the web application that communicates the frontend with the business logic.
+
+- **UserGateway** +  
+  Endpoint of user information related requests. This endpoint is used to isolate the access control to user's information.
 
 . Services
-    - **UserAuthentication**
-    Module that manages the login operation and verifies the client connection
-    - **UserManager**
-    Module that carries the CRUD operations with users with the DB. Moreover, it also manages group of users and retrieve all user related information.
-    - **GameService**
-    Module that carries the game logic of the application quizzes, interacts with the LLMService and with WikiData interface.
-    - **LLMService**
-    Module that acts as an interface to communicate with the LLM provider API in a decoupled way. Allowing the application to consider future changes in the API provider with the same functionality.
+
+- **UserAuthenticationService** +  
+  Module that manages the login operation and verifies the client connection.
+
+- **UserCRUDService** +  
+  Module that carries the CRUD operations with users with the DB. Moreover, it also manages groups of users and retrieves all user-related information.
+
+- **GameService** +  
+  Module that carries the game logic of the application quizzes, interacts with the LLMService and with the WikiData interface.
+
+- **LLMService** +  
+  Module that acts as an interface to communicate with the LLM provider API in a decoupled way. Allowing the application to consider future changes in the API provider with the same functionality.
 
 . Persistence
-    - **Mongoose (MongoDB)**
-    Module of persistence that stores the users information in JSON format.
+
+- **Mongoose (MongoDB)** +  
+  Module of persistence that stores the users' information in JSON format.
 
 
 === 4.3 Design patterns applied
@@ -72,7 +82,7 @@ In our solution we are applying some design patterns to be aware of future chang
 | **Bcrypt** | Crypto (Built-in Node.js) | The built-in Node.js Crypto module reduces external dependencies. However, it provides a more generic and basic interface, which may simplify implementation.
 | **Pino** | Winston | By rejecting Winston, we lose its flexibility in supporting multiple log formats and advanced configuration options.
 | **Docker** | Podman and Kubernetes | By using Docker instead of Podman, we reject Podman's decentralized daemon architecture, which enhances deployment security. Additionally, Podman consumes fewer resources by running each container as an independent process. Furthermore, by choosing Docker, we dismiss Kubernetes' superior performance in deploying high-availability and scalable applications.
-| **Microsoft Azure** | Amazon Web Services (AWS), Oracle Cloud Infrastructure | By using Azure as our deployment platform, we opt against AWS, which offers better scalability and more flexible pricing. Additionally, by not choosing Oracle Cloud Infrastructure, we lose the opportunity for lower costs on high-spec VMs and better performance when using Oracle database services.
+| **Oracle Cloud Infrastructure** | Microsoft Azure, Amazon Web Services (AWS) | By choosing Oracle Cloud Infrastructure as our deployment platform, we opt against Azure, which provides student licenses but may have higher costs for long-term use. Additionally, we reject AWS, which offers better scalability and a more flexible pricing.
 |===
 
 === 4.5 Decisions on how to achieve the key quality goals 
