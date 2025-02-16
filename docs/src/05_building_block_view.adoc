@@ -44,43 +44,31 @@ endif::arc42help[]
 
 === Whitebox Overall System
 
-ifdef::arc42help[]
-[role="arc42help"]
-****
-Here you describe the decomposition of the overall system using the following white box template. It contains
-
- * an overview diagram
- * a motivation for the decomposition
- * black box descriptions of the contained building blocks. For these we offer you alternatives:
-
-   ** use _one_ table for a short and pragmatic overview of all contained building blocks and their interfaces
-   ** use a list of black box descriptions of the building blocks according to the black box template (see below).
-   Depending on your choice of tool this list could be sub-chapters (in text files), sub-pages (in a Wiki) or nested elements (in a modeling tool).
-
-
- * (optional:) important interfaces, that are not explained in the black box templates of a building block, but are very important for understanding the white box.
-Since there are so many ways to specify interfaces why do not provide a specific template for them.
- In the worst case you have to specify and describe syntax, semantics, protocols, error handling,
- restrictions, versions, qualities, necessary compatibilities and many things more.
-In the best case you will get away with examples or simple signatures.
-
-****
-endif::arc42help[]
-
-_**<Overview Diagram>**_
-
 image::05_overall_system.png[Overview Diagram]
 
 Motivation::
 
-_<text explanation>_
-
+The Wichat EN2B system is designed to provide users with an interactive quiz platform where they can register, log in, answer questions generated dynamically from WikiData, 
+request hints from an LLM in a conversational manner, and track their statistics over time. The architecture is modular to ensure scalability, maintainability, and separation of concerns.
 
 Contained Building Blocks::
-_<Description of contained building block (black boxes)>_
+
+[cols="1,2" options="header"]
+|===
+| Name | Responsibility
+| Web Application | Provides the front-end interface for users to interact with the system.
+| Gateway Service | Acts as an API gateway that routes requests to appropriate backend services.
+| Game Service | Manages quiz generation, pulling questions from WikiData.
+| LLM Service | Handles interactions with the LLM to provide hints for users.
+| User Gateway | Facilitates communication between the Gateway Service and user-related services.
+| User CRUD Service | Manages user information in the database (registration, profile management, etc.).
+| User Authentication Service | Handles authentication and session management.
+| MongoDB Database | Stores user information and quiz-related data.
+| Documentation System | Manages internal documentation.
+|===
 
 Important Interfaces::
-_<Description of important interfaces>_
+
 
 ifdef::arc42help[]
 [role="arc42help"]
