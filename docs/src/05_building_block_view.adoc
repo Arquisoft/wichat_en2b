@@ -67,9 +67,6 @@ Contained Building Blocks::
 | Documentation System | Manages internal documentation.
 |===
 
-Important Interfaces::
-
-
 ifdef::arc42help[]
 [role="arc42help"]
 ****
@@ -85,54 +82,93 @@ responsibility according to the following schema:
 | _<black box 2>_ | _<Text>_
 |===
 
-
-
 If you use a list of black box descriptions then you fill in a separate black box template for every important building block .
 Its headline is the name of the black box.
 ****
 endif::arc42help[]
 
-==== <Name black box 1>
+==== Web Application
 
-ifdef::arc42help[]
-[role="arc42help"]
-****
-Here you describe <black box 1>
-according the the following black box template:
+Purpose/Responsibility::
 
-* Purpose/Responsibility
-* Interface(s), when they are not extracted as separate paragraphs. This interfaces may include qualities and performance characteristics.
-* (Optional) Quality-/Performance characteristics of the black box, e.g.availability, run time behavior, ....
-* (Optional) directory/file location
-* (Optional) Fulfilled requirements (if you need traceability to requirements).
-* (Optional) Open issues/problems/risks
+The Web Application provides the user interface for the quiz platform, enabling users to register, log in, take quizzes, request hints and view their historical statistics.
 
-****
-endif::arc42help[]
+Interfaces::
 
-_<Purpose/Responsibility>_
+1. Calls the Gateway Service to fetch quiz questions and send user responses
+2. Requests authentication
+3. Displays user statistics
+4. Update logged in user's data
+5. Provides a conversational hint system
 
-_<Interface(s)>_
+Endpoints::
 
-_<(Optional) Quality/Performance Characteristics>_
+`GET /signup` - Shows the signup screen to the user
 
-_<(Optional) Directory/File Location>_
+`POST /signup` - Sends the sign up information to the gateway service
 
-_<(Optional) Fulfilled Requirements>_
+`GET /login` - Shows the signup screen to the user
 
-_<(optional) Open Issues/Problems/Risks>_
+`POST /login` - Sends the sign up information to the gateway service
 
+`GET /quiz` - Shows the user a question from a quiz whose theme is specified as parameter
 
+`POST /quiz` - Submits the answer to the gateway service
 
+`GET /edit`- Shows the user a form in order to edit their data
 
-==== <Name black box 2>
+`POST /edit` - Sends the updated information to the gateway service
 
-_<black box template>_
+`GET /stats` - Shows the user their game stats
 
-==== <Name black box n>
+==== Gateway Service
 
-_<black box template>_
+Purpose/Responsibility::
+Acts as the main entry point for API requests, routing them to the appropriate backend services. It serves as a security layer and load balancer
 
+Interfaces::
+
+1. Routes quiz-related requests to the Game Service
+2. Routes user crud-related requests to the Users Service
+3. Routes login requests to the Users Authentication Service
+4. Routes hint requests to the LLM Service
+
+Endpoints::
+
+`GET /health` - Shows health status of the system
+
+`GET /quiz` - Retrieves quiz questions
+
+`POST /quiz` - Submits user answers
+
+`POST /login` - Authenticates user requests
+
+`POST /adduser` - Registers new users
+
+`POST /edituser` - Edits user information
+
+`GET /stats` - Requests a user historical playing data
+
+`POST /askllm` - Sends a question to the LLM Service
+
+==== Game Service
+
+Purpose/Responsibility::
+Manages the quiz logic, fetching questions from WikiData and providing them to users
+
+Interfaces::
+
+1. Fetches question batches from WikiData
+
+2. Serves quiz questions to the Gateway Service
+
+3. Stores statistics in MongoDB
+
+Endpoints::
+
+GET /quiz - Retrieves a batch of quiz questions from WikiData
+
+POST /quiz - Validates a user's answer
 
 ==== <Name interface 1>
 
