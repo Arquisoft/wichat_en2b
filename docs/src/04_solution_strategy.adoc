@@ -5,7 +5,7 @@ ifndef::imagesdir[:imagesdir: ../images]
 
 In this section of the documentation we are covering the fundamental decisions and solution strategies of our project architecture.  These decisions were made with a strong focus on addressing the constraints defined in xref:02_architecture_constraints.adoc[Section 2: Architecture Constraints].
 
-=== 4.1 Technology decisions
+=== Technology decisions
 
 [options="header", cols="1,2,2"]
 |===
@@ -22,7 +22,7 @@ In this section of the documentation we are covering the fundamental decisions a
 | **Oracle Cloud Infrastructure (OCI)** | Service that hosts the application in the production stage of the project. | Oracle Cloud Infrastructure was selected due to our team managed to obtain a free server computer in their infrastructure with sufficient power to host our web application.
 |===
 
-=== 4.2 Architectural design decisions
+=== Architectural design decisions
 The project architecture is divided in different modules and their functionalities are delimited following a Layered pattern. Therefore, taking that in mind we can classify the project as follows.
 
 . Frontend 
@@ -55,11 +55,11 @@ The project architecture is divided in different modules and their functionaliti
 . Persistence
 
 - **MongoDB** +  
-  Module of persistence that stores the users' information in JSON format.
+  Module of persistence that stores the user's information in JSON format.
 
 image::04_architectural_design.png[Architecture design]
 
-=== 4.3 Design patterns applied
+=== Design patterns applied
 
 In our solution we are applying some design patterns to be aware of future changes of features in the code. Therefore, we can highlight the following patterns:
 
@@ -69,7 +69,7 @@ In our solution we are applying some design patterns to be aware of future chang
 * **Strategy** +
     We have considered an optional requirement that include game different modes. Therefore, a game could delegate the logic of an specific mode to an interface, a GameMode interface that is linked once the game is created.  
 
-=== 4.4 Decisions trade-offs
+=== Decisions trade-offs
 
 [options="header",cols="1,1,2"]
 |===
@@ -86,7 +86,7 @@ In our solution we are applying some design patterns to be aware of future chang
 | **Oracle Cloud Infrastructure** | Microsoft Azure, Amazon Web Services (AWS) | By choosing Oracle Cloud Infrastructure as our deployment platform, we opt against Azure, which provides student licenses but may have higher costs for long-term use. Additionally, we reject AWS, which offers better scalability and a more flexible pricing.
 |===
 
-=== 4.5 Decisions on how to achieve the key quality goals 
+=== Decisions on how to achieve the key quality goals 
 
 [options="header",cols="1,2"]
 |===
@@ -98,7 +98,7 @@ In our solution we are applying some design patterns to be aware of future chang
 | **Security** |  Our application is using encrypting modules in the registry of new users and their authentification. Moreover, we have centralized the access to the application backend in a gateway service, hiding the endpoints of the application to the ones we decided.
 |===
 
-=== 4.6 Organizational decisions 
+=== Organizational decisions 
 
 To ensure an efficient and structured development process, we have established the following organizational strategies:
 
