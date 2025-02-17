@@ -25,17 +25,17 @@ In this section of the documentation we are covering the fundamental decisions a
 === 4.2 Architectural design decisions
 The project architecture is divided in different modules and their functionalities are delimited following a Layered pattern. Therefore, taking that in mind we can classify the project as follows.
 
-. View 
+. Frontend 
 
 - **Webapp** +  
   Module that manages the pages shown to the client and communicates with the Gateway module via requests.
 
-. Gateways
+. Controller
 
 - **GatewayService** +  
   Endpoint of the web application that communicates the frontend with the business logic.
 
-. Services
+. Service
 
 - **UserGateway** +  
   Endpoint of user information related requests. This endpoint is used to isolate the access control to user's information.
@@ -63,10 +63,10 @@ image::04_architectural_design.png[Architecture design]
 
 In our solution we are applying some design patterns to be aware of future changes of features in the code. Therefore, we can highlight the following patterns:
 
-* **Facade** (Unifier Interface)
+* **Facade** (Unifier Interface) +
     As our project will use a LLM module, we have consider the possibility that perhaps we have to change API provider suddenly for a performance or other reason. Therefore, an interface that hide the specific interface of a provider will reduce the coupling in its API.
 
-* **Strategy**
+* **Strategy** +
     We have considered an optional requirement that include game different modes. Therefore, a game could delegate the logic of an specific mode to an interface, a GameMode interface that is linked once the game is created.  
 
 === 4.4 Decisions trade-offs
