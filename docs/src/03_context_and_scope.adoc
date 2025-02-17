@@ -1,4 +1,4 @@
-ifndef::imagesdir[:imagesdir: ../images]
+:imagesdir: ./images
 
 [[section-context-and-scope]]
 == Context and Scope
@@ -50,29 +50,15 @@ The system interacts with several external entities:
 |===
 
 **Business Context Diagram**
-[plantuml]
-----
-@startuml
-' Define external entities
-actor User
-rectangle "System" as System
-cloud "Wikidata" as Wikidata
-cloud "Groq (LLM API)" as Groq
-database "Database" as Database
 
-' Define relationships
-User --> System : Uses Web Interface
-System --> Wikidata : Fetches quiz data
-System --> Groq : Requests quiz hints
-System --> Database : Stores & retrieves user data
-@enduml
-----
+image:05_system_context_diagram.png[Business context diagram]
+
 === Technical Context
 The system is linked to several technical interfaces:
 
 * **Frontend-Backend Communication**: The client uses React.js to communicate with the Node.js backend through RESTful API calls.
 * **Backend-Database Communication**: The backend of the system interacts with a database through MongoDB using Mongoose ODM.
-* **External APIs**: Some external APIs are used for taking advantage of services such as data retrieval (WikiData) and hint generation (Groq AI).
+* **External APIs**: Some external APIs are used for taking advantage of services such as data retrieval (WikiData) and hint generation (LLM).
 * **Security Considerations**: User passwords are hashed using Bcrypt, and authentication is managed through a Gateway service.
 * **User Gateway**: Handles user-related API requests, routing authentication and CRUD operations to their respective services.
 * **Game Service**: Manages game logic and caches question batches to reduce WikiData API overhead.
@@ -80,16 +66,16 @@ The system is linked to several technical interfaces:
 Quiz Game System - Technical Context Table
 [cols="1,2,3,4,5", options="header"]
 |===
-| Component | Technology | Communication Method | Protocol | Format
-| Frontend | React.js | REST API Calls | HTTPS | JSON
-| Backend | Node.js + Express | REST API Calls | HTTPS | JSON
-| Database | Mongoose (MongoDB) | Queries | TCP/IP | JSON
-| WikiData (via GameService) | External API | REST API, SPARQL queries | HTTPS | JSON/XML
-| Groq AI (via LLMService) | External API | REST API Calls | HTTPS | JSON
-| User Gateway | Express.js | REST API Calls | HTTPS | JSON
-| User CRUD Service | Express.js | REST API Calls | HTTPS | JSON
-| User Authentication Service | Express.js + Bcrypt | REST API Calls | HTTPS (OAuth2) | JSON
-| Security (Bcrypt) | Password Hashing | Internal Authentication | N/A | N/A
+| **Component** | Technology | Communication Method | Protocol | Format
+| **Frontend** | React.js | REST API Calls | HTTPS | JSON
+| **Backend** | Node.js + Express | REST API Calls | HTTPS | JSON
+| **Database** | Mongoose (MongoDB) | Queries | TCP/IP | JSON
+| **WikiData** (via GameService) | External API | REST API, SPARQL queries | HTTPS | JSON/XML
+| **AI (via LLMService)** | External API | REST API Calls | HTTPS | JSON
+| **User Gateway** | Express.js | REST API Calls | HTTPS | JSON
+| **User CRUD Service** | Express.js | REST API Calls | HTTPS | JSON
+| **User Authentication Service** | Express.js + Bcrypt | REST API Calls | HTTPS (OAuth2) | JSON
+| **Security (Bcrypt)** | Password Hashing | Internal Authentication | N/A | N/A
 |===
 
 **Mapping I/O to Channels**
@@ -101,19 +87,18 @@ Quiz Game System - Technical Context Table
 skinparam BackgroundColor transparent
 skinparam sequenceMessageAlign center
 
-' Custom styles
 skinparam sequence {
     ArrowColor #2C3E50
     LifeLineBorderColor #95A5A6
     LifeLineBackgroundColor #ECF0F1
     
-    ParticipantBorderColor #3498DB
+    ParticipantBorderColor #0d3375
     ParticipantBackgroundColor #E8F6FF
     ParticipantFontColor #2C3E50
     ParticipantFontSize 14
     
-    ActorBorderColor #2ECC71
-    ActorBackgroundColor #E8F8F5
+    ActorBorderColor #0d3375
+    ActorBackgroundColor #E8F6FF
     ActorFontColor #2C3E50
     ActorFontSize 14
     
@@ -126,7 +111,7 @@ participant "Frontend" as Frontend
 participant "Backend" as Backend
 database "Database" as DB
 participant "WikiData API (GameService)" as WikiData
-participant "Groq AI (LLMService)" as AI
+participant "LLMService" as AI
 participant "Gateway" as Gateway
 
 User -> Frontend : Login, Answers, Hint Requests
