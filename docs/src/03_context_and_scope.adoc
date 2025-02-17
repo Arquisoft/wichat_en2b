@@ -1,4 +1,4 @@
-ifndef::imagesdir[:imagesdir: ../images]
+:imagesdir: ./images
 
 [[section-context-and-scope]]
 == Context and Scope
@@ -12,6 +12,7 @@ Context and scope - as the name suggests - delimits your system (i.e. your scope
 (neighboring systems and users, i.e. the context of your system). It thereby specifies the external interfaces.
 
 If necessary, differentiate the business context (domain specific inputs and outputs) from the technical context (channels, protocols, hardware).
+
 
 .Motivation
 The domain interfaces and technical interfaces to communication partners are among your system's most critical aspects. Make sure that you completely understand them.
@@ -31,7 +32,102 @@ See https://docs.arc42.org/section-3/[Context and Scope] in the arc42 documentat
 endif::arc42help[]
 
 === Business Context
+The system interacts with several external entities:
 
+* **User**: interacts with the system through a web interface.
+* **Wikidata**: supplies data for dynamically generated quiz questions.
+* **LLM Service**: external LLM API used for providing hints related to quiz questions.
+* **Database**: the system interacts with a database storing user-related data.
+
+**Quiz Game System - Business Context Table**
+[cols="1,2,3", options="header"]
+|===
+| Communication Partner | Inputs to System | Outputs from System
+| **Player (User)** | Login credentials, answer selection and hint requests |Questions, feedback, hints, scores 
+| **WikiData API** | Query for quiz questions | Response with data and images 
+| **LLM Service** | User questions | AI-generated hints 
+| **Database** | Game data | Persistent data (user info, game states, scores...) 
+|===
+
+**Business Context Diagram**
+
+image:05_system_context_diagram.png[Business context diagram]
+
+=== Technical Context
+The system is linked to several technical interfaces:
+
+* **Frontend-Backend Communication**: The client uses React.js to communicate with the Node.js backend through RESTful API calls.
+* **Backend-Database Communication**: The backend of the system interacts with a database through MongoDB using Mongoose ODM.
+* **External APIs**: Some external APIs are used for taking advantage of services such as data retrieval (WikiData) and hint generation (LLM).
+* **Security Considerations**: User passwords are hashed using Bcrypt, and authentication is managed through a Gateway service.
+* **User Gateway**: Handles user-related API requests, routing authentication and CRUD operations to their respective services.
+* **Game Service**: Manages game logic and caches question batches to reduce WikiData API overhead.
+
+Quiz Game System - Technical Context Table
+[cols="1,2,3,4,5", options="header"]
+|===
+| **Component** | Technology | Communication Method | Protocol | Format
+| **Frontend** | React.js | REST API Calls | HTTPS | JSON
+| **Backend** | Node.js + Express | REST API Calls | HTTPS | JSON
+| **Database** | Mongoose (MongoDB) | Queries | TCP/IP | JSON
+| **WikiData** (via GameService) | External API | REST API, SPARQL queries | HTTPS | JSON/XML
+| **AI (via LLMService)** | External API | REST API Calls | HTTPS | JSON
+| **User Gateway** | Express.js | REST API Calls | HTTPS | JSON
+| **User CRUD Service** | Express.js | REST API Calls | HTTPS | JSON
+| **User Authentication Service** | Express.js + Bcrypt | REST API Calls | HTTPS (OAuth2) | JSON
+| **Security (Bcrypt)** | Password Hashing | Internal Authentication | N/A | N/A
+|===
+
+**Mapping I/O to Channels**
+
+[plantuml]
+----
+@startuml
+!theme plain
+skinparam BackgroundColor transparent
+skinparam sequenceMessageAlign center
+
+skinparam sequence {
+    ArrowColor #2C3E50
+    LifeLineBorderColor #95A5A6
+    LifeLineBackgroundColor #ECF0F1
+    
+    ParticipantBorderColor #0d3375
+    ParticipantBackgroundColor #E8F6FF
+    ParticipantFontColor #2C3E50
+    ParticipantFontSize 14
+    
+    ActorBorderColor #0d3375
+    ActorBackgroundColor #E8F6FF
+    ActorFontColor #2C3E50
+    ActorFontSize 14
+    
+    DatabaseBorderColor #9B59B6
+    DatabaseBackgroundColor #F4ECF7
+}
+
+actor User
+participant "Frontend" as Frontend
+participant "Backend" as Backend
+database "Database" as DB
+participant "WikiData API" as WikiData
+participant "LLM API" as AI
+participant "Gateway" as Gateway
+
+User -> Frontend : Login, Answers, Hint Requests
+Frontend -> Gateway : REST API Calls (JSON)
+
+Gateway -> Backend : Authenticated Requests (JSON)
+Backend -> DB : Store/Retrieve User Data\n(MongoDB JSON)
+Backend -> WikiData : Fetch Quiz Data\n(HTTP GET, JSON)
+Backend -> AI : Request Hints\n(HTTP POST, JSON)
+
+AI --> Backend : AI-generated Hint (JSON)
+WikiData --> Backend : Quiz Data (JSON)
+Backend --> Frontend : Send Quiz, Hints,\nScores (JSON)
+Frontend --> User : Display Questions,\nFeedback, Leaderboard
+@enduml
+----
 ifdef::arc42help[]
 [role="arc42help"]
 ****
@@ -51,12 +147,6 @@ The title of the table is the name of your system, the three columns contain the
 ****
 endif::arc42help[]
 
-**<Diagram or Table>**
-
-**<optionally: Explanation of external domain interfaces>**
-
-=== Technical Context
-
 ifdef::arc42help[]
 [role="arc42help"]
 ****
@@ -72,9 +162,3 @@ together with a mapping table showing the relationships between channels and inp
 
 ****
 endif::arc42help[]
-
-**<Diagram or Table>**
-
-**<optionally: Explanation of technical interfaces>**
-
-**<Mapping Input/Output to Channels>**

@@ -3,6 +3,127 @@ ifndef::imagesdir[:imagesdir: ../images]
 [[section-solution-strategy]]
 == Solution Strategy
 
+In this section of the documentation we are covering the fundamental decisions and solution strategies of our project architecture.  These decisions were made with a strong focus on addressing the constraints defined in xref:02_architecture_constraints.adoc[Section 2: Architecture Constraints].
+
+=== 4.1 Technology decisions
+
+[options="header", cols="1,2,2"]
+|===
+| Technology | Context | Why?   
+| **JavaScript** | Main language used in the project | Due to our familiarity with developing web projects using JavaScript and also its easy learning curve. Besides, it is nowadays highly popular in web development.
+| **Node.js**    | Environment for the project development | Allows the execution of JavaScript at runtime and is multiplatform. It is highly compatible with our main development language: JavaScript. It is open source, in line with our application development.
+| **React** | Frontend development of our web application. | It is highly used in the current web app sector of the industry. The development team agrees that it could ease the view development of the web using different techniques of this technology. Moreover, its learning curve is relatively easy for web development beginners.
+| **Express** | Backend or core of our web application. It should manage the control of the application following the interaction received from client requests. | Express is easy to understand, and its behavior is similar to some technologies that the development team considers familiar: functional programming, delegate functions, and an HTTP controller structure based on request/response.
+| **Groq API** | Service using the LLM of Meta (LLaMA). It will provide the chatbot experience for the client. | The development team considered that the demo project using this API was easy to understand and put into production, behaving properly and with efficient responses and valid latency. Moreover, this Meta service allows 1,000 API calls daily, which we consider appropriate for the project's needs.
+| **WikiData API** | Service that provides the information needed for the questions asked to the client during the game interaction. | Due to its easy-to-use service API and also its specific query language, SPARQL, that could allow the development team to solve different requests appropriately. Besides, it is a constraint in the project development. 
+| **Bcrypt** | Module to encrypt the sensitive information of the application | Due to its capabilities in hash encryption and its feature to be flexible with computational hardware improvements, simply by increasing the salt property of the encryption algorithm, making it more secure. Besides, this module covers our needs in the user-related services with an appropriate methods interface. 
+| **Pino** | Module to provide a logging system | The development team decided to use Pino instead of other modules (Winston, Log4j-node, etc.) as Pino provides a fast and easy approach to log events in our application without being very complex to understand. Moreover, Pino supports JSON format by default that makes easier the logger readability and parsing.
+| **Docker** | Service that automates the deployment of the project in different software containers managed by Docker itself. | The development team decided that, regarding the proposed services that perform the same operations, Docker is the most popular nowadays in the deployment services sector, having good performance.  
+| **Oracle Cloud Infrastructure (OCI)** | Service that hosts the application in the production stage of the project. | Oracle Cloud Infrastructure was selected due to our team managed to obtain a free server computer in their infrastructure with sufficient power to host our web application.
+|===
+
+=== 4.2 Architectural design decisions
+The project architecture is divided in different modules and their functionalities are delimited following a Layered pattern. Therefore, taking that in mind we can classify the project as follows.
+
+. Frontend 
+
+- **Webapp** +  
+  Module that manages the pages shown to the client and communicates with the Gateway module via requests.
+
+. Controller
+
+- **GatewayService** +  
+  Endpoint of the web application that communicates the frontend with the business logic.
+
+. Service
+
+- **UserGateway** +  
+  Endpoint of user information related requests. This endpoint is used to isolate the access control to user's information.
+
+- **UserAuthenticationService** +  
+  Module that manages the login operation and verifies the client connection.
+
+- **UserCRUDService** +  
+  Module that carries the CRUD operations with users with the DB. Moreover, it also manages groups of users and retrieves all user-related information.
+
+- **GameService** +  
+  Module that carries the game logic of the application quizzes, interacts with the LLMService and with the WikiData interface.
+
+- **LLMService** +  
+  Module that acts as an interface to communicate with the LLM provider API in a decoupled way. Allowing the application to consider future changes in the API provider with the same functionality.
+
+. Persistence
+
+- **MongoDB** +  
+  Module of persistence that stores the users' information in JSON format.
+
+image::04_architectural_design.png[Architecture design]
+
+=== 4.3 Design patterns applied
+
+In our solution we are applying some design patterns to be aware of future changes of features in the code. Therefore, we can highlight the following patterns:
+
+* **Facade** (Unifier Interface) +
+    As our project will use a LLM module, we have consider the possibility that perhaps we have to change API provider suddenly for a performance or other reason. Therefore, an interface that hide the specific interface of a provider will reduce the coupling in its API.
+
+* **Strategy** +
+    We have considered an optional requirement that include game different modes. Therefore, a game could delegate the logic of an specific mode to an interface, a GameMode interface that is linked once the game is created.  
+
+=== 4.4 Decisions trade-offs
+
+[options="header",cols="1,1,2"]
+|===
+| Decision | Alternatives |  Features rejected in the decision
+| **JavaScript** | Java and C# | By using JavaScript as the main language, we reject features such as pure OOP, which Java and C# provide. The development team is well-versed in these paradigms and feels more confident using them. Moreover, using a dynamically typed language instead of a statically typed one increases the risk of runtime errors and validation issues.
+| **Node.js** | Spring Boot and .NET | As a consequence of choosing JavaScript as the main language, we also dismiss Spring Boot as a web development framework, despite having some experience with it. Additionally, we opt against .NET technologies, which are widely used in the industry and have comprehensive, unified documentation provided by Microsoft.
+| **React** | Thymeleaf and JSP | By using React, we reject HTML template engines such as Thymeleaf and JSP (which are more common in Java environments), despite having some familiarity with them.
+| **Express** | Spring Boot or JEE | By choosing Express, we dismiss the use of Spring Boot or JEE libraries for implementing web event controllers, along with their annotation-based approach, which simplifies application logic and functionality distribution.
+| **Groq API** | Empathy LLM, Gemini LLM, and Deepseek LLM | By using only the Meta API, we miss the opportunity to participate in the Empathy challenge. Additionally, rejecting Google's Gemini LLM and Deepseek LLM may reduce chatbot performance, as these models are evolving faster than Meta's.
+| **WikiData API** | None | This was a project constraint.
+| **Bcrypt** | Crypto (Built-in Node.js) | The built-in Node.js Crypto module reduces external dependencies. However, it provides a more generic and basic interface, which may simplify implementation.
+| **Pino** | Winston | By rejecting Winston, we lose its flexibility in supporting multiple log formats and advanced configuration options.
+| **Docker** | Podman and Kubernetes | By using Docker instead of Podman, we reject Podman's decentralized daemon architecture, which enhances deployment security. Additionally, Podman consumes fewer resources by running each container as an independent process. Furthermore, by choosing Docker, we dismiss Kubernetes' superior performance in deploying high-availability and scalable applications.
+| **Oracle Cloud Infrastructure** | Microsoft Azure, Amazon Web Services (AWS) | By choosing Oracle Cloud Infrastructure as our deployment platform, we opt against Azure, which provides student licenses but may have higher costs for long-term use. Additionally, we reject AWS, which offers better scalability and a more flexible pricing.
+|===
+
+=== 4.5 Decisions on how to achieve the key quality goals 
+
+[options="header",cols="1,2"]
+|===
+| Quality Goal | Strategy 
+| **Scalability** | Using Gherkin with tools to test the performance and behaviour of the application in users load scenarios. The tool used to test the user load is yet to decide, perhaps K6 or a Python script. 
+| **Reliability** | The development team will apply a TDD (Test-Driven Development) to ensure that the business model behaves correctly. Besides, with an automatized Continuous Deployment strategy, the development team can deploy the project often and explore the application behaviour, considering that the logger system implemented will catch each bug occurred during the execution.  
+| **Usability** | Our development will follow good desing practices such as implementing i18n technology to allow internationalization, respecting the W3C standards in web design where possible and  
+| **Performance** | Using different modules specialized in monitoring the application, as Prometheus and Grafana. Besides, to identify possible bottlenecks in our application we are using Node profiling tools as `node --prof`.
+| **Security** |  Our application is using encrypting modules in the registry of new users and their authentification. Moreover, we have centralized the access to the application backend in a gateway service, hiding the endpoints of the application to the ones we decided.
+|===
+
+=== 4.6 Organizational decisions 
+
+To ensure an efficient and structured development process, we have established the following organizational strategies:
+
+* **Version Control and Collaboration**
+
+We have adopted a **Trunk-Based Development** approach using **Git**, where **each branch** is dedicated to completing a **specific issue**. Merging changes into the main (trunk) branch **requires a pull request** that must be reviewed and approved by at least one other team member. This ensures code quality, reduces integration issues, and reinforces team collaboration, preventing over-specialization.
+
+Additionally, **issues could be handled by multiple team members**, using the GitHub **Discussions** section, promoting team problem-solving and reducing bottlenecks. Moreover, during *team meetings* we must **review each developer issues progress** to **identify potential difficulties** and provide support, whether by offering new perspectives, detecting bugs, or adding new unit tests cases.
+
+* **Project Management and Workflow**
+    
+We use **GitHub** as our **primary version control tool**, and also using its **integrated Kanban board** to **track progress** (Projects section in GitHub). Issues are categorized and can transition through the following states:
+--
+    . No Status
+    . TODO
+    . In Progress
+    . Testing
+    . Done
+--
+
+* **Continuous Deployment and Stability Checks**
+
+Once the application reaches a deployment stable functionality, we will **implement a Continuous Deployment methodology**. This involves **deploying** the application **at least once per week, to verify stability in a production-like environment**. This proactive approach helps **detect** and resolve **deployment-specific bugs early**, preventing major issues from being discovered too late in the process.
+
+
 
 ifdef::arc42help[]
 [role="arc42help"]

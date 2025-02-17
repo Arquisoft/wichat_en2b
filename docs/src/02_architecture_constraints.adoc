@@ -3,27 +3,55 @@ ifndef::imagesdir[:imagesdir: ../images]
 [[section-architecture-constraints]]
 == Architecture Constraints
 
-
 ifdef::arc42help[]
 [role="arc42help"]
 ****
 .Contents
-Any requirement that constraints software architects in their freedom of design and implementation decisions or decision about the development process. These constraints sometimes go beyond individual systems and are valid for whole organizations and companies.
+Any requirement that constrains software architects in their freedom of design and implementation decisions or decisions about the development process. These constraints sometimes go beyond individual systems and are valid for whole organizations and companies.
 
 .Motivation
-Architects should know exactly where they are free in their design decisions and where they must adhere to constraints.
-Constraints must always be dealt with; they may be negotiable, though.
+Architects should know exactly where they are free in their design decisions and where they must adhere to constraints. Constraints must always be dealt with; they may be negotiable, though.
 
 .Form
-Simple tables of constraints with explanations.
-If needed you can subdivide them into
-technical constraints, organizational and political constraints and
-conventions (e.g. programming or versioning guidelines, documentation or naming conventions)
-
+Simple tables of constraints with explanations. If needed you can subdivide them into:
+- Technical constraints
+- Organizational and political constraints
+- Conventions (e.g., programming or versioning guidelines, documentation or naming conventions)
 
 .Further Information
-
 See https://docs.arc42.org/section-2/[Architecture Constraints] in the arc42 documentation.
-
 ****
 endif::arc42help[]
+
+=== Technical Constraints
+[cols="1,2", options="header"]
+|===
+| Constraint | Justification
+| **Web-Based System** | The system must be a web application, accessible via a browser, ensuring broad accessibility and ease of deployment.
+| **Frontend Technologies** | The frontend must be developed using **React** to ensure a modern, responsive, and maintainable user experience.
+| **Backend Framework** | The backend should be built using **Node.js with Express** to support efficient API interactions and robust user management.
+| **Database** | The system must use **MongoDB** to store user data, game progress, and question history efficiently.
+| **Cloud Deployment** | The application must be deployed on a cloud-based infrastructure (e.g., AWS, Azure, or Google Cloud) to ensure availability and scalability.
+| **External API Integration** | The system must integrate with Wikidata and an LLM API for question and hint generation. API rate limits and response times should be considered.
+| **Performance Constraints** | The application must provide real-time interaction with the LLM for hints and ensure fast response times (<1s for hints, <3s for question generation).
+|===
+
+=== Organizational & Political Constraints
+[cols="1,2", options="header"]
+|===
+| Constraint | Justification
+| **Company Policies** | ChattySw must adhere to company-wide software development standards, including CI/CD pipelines and agile methodologies.
+| **Collaboration with RTVE** | The project must meet RTVE’s requirements and branding guidelines, ensuring consistency with existing products.
+| **Incremental Development** | The team of seven developers must follow an iterative development approach with regular deliverables.
+| **Security and Privacy Compliance** | The system must comply with GDPR regulations, ensuring user data protection and privacy.
+|===
+
+=== Conventions & Guidelines
+[cols="1,2", options="header"]
+|===
+| Constraint | Justification
+| **Version Control** | Git and a well-defined branching strategy (e.g., GitFlow) must be used for source code management.
+| **Coding Standards** | The team must adhere to best coding practices, including style guides (e.g., PEP 8 for Python, Airbnb Style Guide for JavaScript).
+| **Testing Requirements** | The project must include unit tests, integration tests, and end-to-end tests to ensure software reliability.
+| **Documentation Standards** | All architecture decisions and API endpoints must be documented using tools like OpenAPI and Markdown.
+|===

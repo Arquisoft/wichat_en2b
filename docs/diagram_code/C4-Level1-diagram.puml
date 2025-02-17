@@ -1,0 +1,49 @@
+@startuml
+set separator none
+title Wichat EN2B - System Context
+
+left to right direction
+
+skinparam {
+  arrowFontSize 10
+  defaultTextAlignment center
+  wrapWidth 200
+  maxMessageSize 100
+}
+
+hide stereotype
+
+skinparam rectangle<<LLM>> {
+  BackgroundColor #2d882d
+  FontColor #ffffff
+  BorderColor #1f5f1f
+  shadowing false
+}
+skinparam person<<User>> {
+  BackgroundColor #116611
+  FontColor #ffffff
+  BorderColor #0b470b
+  shadowing false
+}
+skinparam rectangle<<WichatEN2B>> {
+  BackgroundColor #2d882d
+  FontColor #ffffff
+  BorderColor #1f5f1f
+  shadowing false
+}
+skinparam rectangle<<WikiData>> {
+  BackgroundColor #2d882d
+  FontColor #ffffff
+  BorderColor #1f5f1f
+  shadowing false
+}
+
+person "==User\n<size:10>[Person]</size>" <<User>> as User
+rectangle "==WikiData\n<size:10>[Software System]</size>" <<WikiData>> as WikiData
+rectangle "==LLM\n<size:10>[Software System]</size>" <<LLM>> as LLM
+rectangle "==Wichat EN2B\n<size:10>[Software System]</size>" <<WichatEN2B>> as WichatEN2B
+
+User .[#707070,thickness=2].> WichatEN2B : "<color:#707070>Uses"
+WichatEN2B .[#707070,thickness=2].> WikiData : "<color:#707070>Gets information for questions"
+WichatEN2B .[#707070,thickness=2].> LLM : "<color:#707070>Asks for hints"
+@enduml

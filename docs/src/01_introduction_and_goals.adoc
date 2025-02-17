@@ -19,31 +19,21 @@ endif::arc42help[]
 
 === Requirements Overview
 
-ifdef::arc42help[]
-[role="arc42help"]
-****
-.Contents
-Short description of the functional requirements, driving forces, extract (or abstract)
-of requirements. Link to (hopefully existing) requirements documents
-(with version number and information where to find it).
+The goal of this project is to enhance the online "Saber y Ganar" quiz show application, developed last year by ChattySw, with new features that incorporate large language models (LLMs) and Wikidata for a more interactive and engaging experience. In our case
+the game with its enhancements will be made ultimately from scratch, utilizing/taking a look at some code from last year's app for guidance/help. 
 
-.Motivation
-From the point of view of the end users a system is created or modified to
-improve support of a business activity and/or improve the quality.
+The key functional requirements of the system are:
 
-.Form
-Short textual description, probably in tabular use-case format.
-If requirements documents exist this overview should refer to these documents.
+* A Web frontend that presents pictures with questions for the users to answer.
+* Users must be able to register, login, and view historical data related to their game performance (e.g., number of games, correct answers, time taken).
+* The system should automatically generate questions and answers using Wikidata.
+* Hints for the questions can be obtained through interaction with an external LLM via an API.
+* The LLM should mitigate the generation of incorrect answers or hallucinations when providing hints.
+* Each question will have a correct answer and multiple distractors, all generated automatically.
+* Creation of two well documented APIs for accessing user data and the question creation tool.
+* There is a possibility for users to interact with the application in different game modes, such as “Each wise man with his subject,” “Travel with us,” or “The hot question.”
 
-Keep these excerpts as short as possible. Balance readability of this document with potential redundancy w.r.t to requirements documents.
-
-
-.Further Information
-
-See https://docs.arc42.org/section-1/[Introduction and Goals] in the arc42 documentation.
-
-****
-endif::arc42help[]
+Optional features include internationalization, mobile version, users' ranking, multiplayer capabilities, and personalized game settings like adjusting time limits and the scope of questions.
 
 === Quality Goals
 
@@ -69,8 +59,19 @@ A table with quality goals and concrete scenarios, ordered by priorities
 ****
 endif::arc42help[]
 
-=== Stakeholders
+The quality goals for the architecture are as follows:
+[options="header",cols="1,2"]
+|===
+| Quality Goal | Scenario 
+| **Scalability** | The system must be able to handle a large number of simultaneous users without a noticeable decrease in performance. 
+| **Reliability** | The system must be robust enough to handle failures in the hint generation API and ensure the user experience is minimally impacted. 
+| **Usability** | The application must be intuitive and easy to use, allowing users to quickly understand how to play, answer questions, and interact with hints. 
+| **Performance** | The system should provide fast responses, particularly in generating questions and hints, without delays that impact the user experience. 
+| **Security** | The system must ensure that user data is securely stored and accessible only to authorized users. 
+|===
+These quality goals will drive architectural decisions, particularly concerning how data is processed, stored, and presented to the user, as well as how external integrations (e.g., LLM API and Wikidata) are handled.
 
+=== Stakeholders
 ifdef::arc42help[]
 [role="arc42help"]
 ****
@@ -92,10 +93,11 @@ These stakeholders determine the extent and the level of detail of your work and
 Table with role names, person names, and their expectations with respect to the architecture and its documentation.
 ****
 endif::arc42help[]
-
 [options="header",cols="1,2,2"]
 |===
-|Role/Name|Contact|Expectations
-| _<Role-1>_ | _<Contact-1>_ | _<Expectation-1>_
-| _<Role-2>_ | _<Contact-2>_ | _<Expectation-2>_
+| Role/Name           | Contact         | Expectations 
+
+| **End Users**       | Users of the game | Enjoyable and engaging experience, with an easy-to-use interface and fun, dynamic gameplay. 
+| **RTVE / Teachers**            | RTVE management / Teachers | High-quality user experience, with an emphasis on scalability, performance, and security. 
+| **Development Team**| ChattySw | A robust, well-documented, and maintainable system. Clear requirements for integration with LLM and Wikidata, as well as a user-friendly interface. 
 |===
