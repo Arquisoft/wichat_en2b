@@ -16,12 +16,14 @@ image::05_system_context_diagram.png[Overall view of the business context]
 
 The **Whitebox Overall System** diagram provides a high-level representation of the primary components and their interactions within the application, alongside the external systems it integrates with. This diagram is crucial for understanding the foundational architecture of the platform, showcasing the flow of data, system responsibilities, and external dependencies. It emphasizes the relationships between the various building blocks, such as the interaction between the user and the system, and how dynamic content is sourced via external APIs.
 
+This diagram is pivotal in illustrating system interaction patterns, including user engagement with the platform and the external API interfaces used for content generation.
+
 ==== Contained Building Blocks
 
 The key building blocks forming the overall system architecture include:
 
 * **User**: Represents the end-user of the platform, who is required to authenticate in order to access the game functionality. Once authenticated, users can interact with the system and participate in gameplay.
-
+  
 * **Wichat EN2B Application**: The core application responsible for managing game mechanics, including the generation of questions and content. It encapsulates the application’s game logic and drives the user experience. Detailed breakdowns of its internal components are explored further in later sections.
 
 * **WikiData API**: A third-party API providing structured knowledge, essential for the dynamic generation of trivia questions and content. The system queries the WikiData API for real-time data, which is used to populate game questions.
@@ -67,6 +69,14 @@ The following containers represent the primary services within the Wichat EN2B a
 * **MongoDB Database**: The database responsible for storing persistent system data, including user profiles, game states, and scores. MongoDB is used for its flexibility in handling semi-structured data and its scalability.
 
 * **User Gateway**: A container dedicated to managing user-specific API requests. It handles user authentication, session management, and retrieval of user-related data, ensuring secure and personalized experiences.
+
+* **User Authentication Service**: Manages user authentication processes, validating user credentials and ensuring secure access to the platform. It integrates with third-party authentication mechanisms when required.
+
+* **User CRUD Service**: Manages the **Create, Read, Update, Delete (CRUD)** operations for user data. It ensures that user profiles can be created, updated, or deleted, facilitating efficient user management.
+
+* **WikiData API**: A third-party external API that provides structured data for generating trivia questions and content. The Wichat EN2B application communicates with WikiData to fetch real-time data using SPARQL queries.
+
+* **LLM**: This container represents the external **Large Language Model** service that dynamically generates content such as hints and contextual information based on user interactions. It interacts with an advanced language model, such as GPT or similar technologies, to offer real-time, personalized content.
 
 ==== External Communication
 
