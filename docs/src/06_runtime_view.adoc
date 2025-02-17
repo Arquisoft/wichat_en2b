@@ -56,8 +56,8 @@ GS -> US : 3. Sends user addition request
 US -> US : 4. Verify credentials
 
 alt Correct credentials
-    US -> BD : 5. Ask DB for existing user
-    US <-- BD : 6. Returns user
+    US -> DB : 5. Ask DB for existing user
+    US <-- DB : 6. Returns user
 
     alt Returned user exists
         GS <-- US : Sends error
@@ -96,7 +96,7 @@ The errorless behaviour will be:
 
 . And sent back as the response.
 
-=== User authentication
+=== User login
 
 
 Users must have an account to use the application. The following sequence diagram shows how the application behaves when logging in.
@@ -165,16 +165,18 @@ This is the behaviour of the flawless execution of the login:
 
 Here is the sequence diagram when playing the game.
 
-[plantuml,"Login diagram",png]
+[plantuml,"Game diagram",png]
 ----
-actor User #red
+actor User
 entity WA as "Web Application"
 entity GS as "Gateway Service"
 entity game as "Game Service"
+entity US as "User Service"
+entity CRUD as "User CRUD Service"
 entity LS as "LLM Service"
 database DB as "MongoDB"
-collection WD as "Wikidata"
-collection LLM 
+collections WD as "Wikidata"
+collections LLM 
 
 WA -> GS : requests questions
 GS -> game : forwards petition
@@ -184,7 +186,7 @@ GS <-- game : forwards questions
 WA <-- GS : forwards questions
 User <-- WA : shows questions
 
-while more questions
+loop question in questions
     
     alt user asks for hint
         User -> WA : types question
@@ -206,7 +208,11 @@ end
 
 WA -> GS : sends saving petition
 GS -> game : forwards petition
-game -> BD : saves game
+game -> game : parses game
+game --> GS : sends back 
+GS -> US : forwards parsed game
+US -> CRUD : requests adding game to DB
+CRUD -> DB : adds game
 ----
 
 . The application requests the questions to show the user. 
@@ -225,7 +231,11 @@ game -> BD : saves game
 
 . This request is answered and then forwarded by the Gateway Service and then, Game Service.
 
-. Finally, the game data is saved into the database.
+. Game Service parses the game information to a valid format so it can be saved to de database.
+
+. Then this version of the game is sent back to the Game Service to be forwarded to the User Service. This is to reduce workload of the Game Service.
+
+. The User Service asks the User CRUD Service to save the game.
 
 *In the case user asks for hints:*
 
@@ -244,3 +254,22 @@ game -> BD : saves game
 . The Game Service recieves it and forwards it to the Gateway Service and then to the Application, which shows the generated answer to the user.
 
 === Exceptions and Errors Scenarios
+
+Possible errors regarding:
+
+* Registering:
+    - Invalid credentials (empty / blank).
+    - Using credentials from an already existing user: usernames must be different.
+    - Database exception: connection lost, data loss.
+
+* Login:
+    - Empty or blank credentials.
+    - Username does not exist.
+    - Wrong password.
+    - Database exception: connection lost, data loss.
+
+* Game:
+    - Wikidata error.
+    - Database exception: connection lost, data loss.
+    - LLM not answering to the user's prompt.
+    
