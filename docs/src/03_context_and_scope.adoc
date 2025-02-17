@@ -110,8 +110,8 @@ actor User
 participant "Frontend" as Frontend
 participant "Backend" as Backend
 database "Database" as DB
-participant "WikiData API (GameService)" as WikiData
-participant "LLMService" as AI
+participant "WikiData API" as WikiData
+participant "LLM API" as AI
 participant "Gateway" as Gateway
 
 User -> Frontend : Login, Answers, Hint Requests
