@@ -39,12 +39,53 @@ See https://docs.arc42.org/section-6/[Runtime View] in the arc42 documentation.
 ****
 endif::arc42help[]
 
+=== User registration
+Users must create an account if they do not have one. The behaviour of the application is:
+
+[plantuml,"Register diagram",png]
+----
+actor User
+entity WA as "Web Application"
+entity GS as "Gateway Service"
+entity US as "User Service"
+database DB as "MongoDB"
+
+User -> WA : 1. Sends data
+WA -> GS : 2. Forwards data
+GS -> US : 3. Sends user addition request
+US -> US : 4. Verify credentials
+
+alt Correct credentials
+    US -> US : 5. Encrypt password and save.
+    US -> DB : 6. Adds the user to the database
+    US --> GS : Responds with the new user
+    GS --> WA : Forwards data
+    WA --> User : Shows confirmation
+
+else Incorrect credentials
+    US --> GS : Sends error
+    GS --> WA : Forwards error
+    WA --> User : Shows error
+end
+
+----
+
+The errorless behaviour will be:
+
+. The new user types the required information to create an account.
+
+. Them, AddUser.js (from package webapp) collects this information and sends it via post to the "/addUser" url.
+
+. The Gateway Service will answer to this petition by forwarding the petition to the User Service and saving the user data to the response (if any error happened, it would be saved here).
+
+. The User Service then verifies that all the necessary credentials are stored in the request
+
 === User authentication
 
 
 Users must have an account to use the application. The following sequence diagram shows how the application behaves when logging in.
 
-[plantuml,"Sequence diagram",png]
+[plantuml,"Login diagram",png]
 ----
 actor User
 entity WA as "Web Application"
@@ -54,12 +95,40 @@ database DB as "MongoDB"
 
 User -> WA : 1. Send credentials
 WA -> GS : 2. Forward credentials
-GS -> UAS : 3. Sends authentication request
-UAS -> DB : 4. Verify credentials
 
-UAS <-- DB : 5. Returns user
-User <-- UAS : 6. Sends token
+alt Success
+    GS -> UAS : 3. Sends authentication request
+    UAS -> UAS : 4. Verify credentials
+
+    alt Verified
+        UAS -> DB : Check user
+        UAS <-- DB : 5. Returns user
+
+        alt Passwords match
+            GS <-- UAS : 6. Sends token
+            WA <-- GS : Forwards token
+            User <-- WA : 7. User logs in
+        
+        else Passwords do not match
+            GS <-- UAS : Responds error
+            WA <-- GS : Forwards error
+            User <-- WA : Shows error
+        end
+
+    else Incorrect credentials
+        GS <-- UAS : Responds error
+        WA <-- GS : Forwards error
+        User <-- WA : Shows error
+    end
+else Failure
+    WA <-- GS : Forwards error
+    User <-- WA : Shows error
+
+end
 ----
+
+
+This is the behaviour of the flawless execution of the login:
 
 . The user types an username and a password.
 
@@ -71,7 +140,9 @@ User <-- UAS : 6. Sends token
 
 . The database returns the user.
 
-. Finishing, the User Authentication Service verifies that the encrypted password given by the user and the encrypted password stored in the database match. If this happens, a JWT Token is generated and saved to the response.
+. The User Authentication Service verifies that the encrypted password given by the user and the encrypted password stored in the database match. If this happens, a JWT Token is generated and saved to the response.
+
+. Shows visual confirmation of the login.
 
 
 === <Runtime Scenario 2>
