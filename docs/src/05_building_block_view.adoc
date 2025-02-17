@@ -2,250 +2,52 @@ ifndef::imagesdir[:imagesdir: ../images]
 
 [[section-building-block-view]]
 
-
 == Building Block View
 
-ifdef::arc42help[]
-[role="arc42help"]
-****
-.Content
-The building block view shows the static decomposition of the system into building blocks (modules, components, subsystems, classes, interfaces, packages, libraries, frameworks, layers, partitions, tiers, functions, macros, operations, data structures, ...) as well as their dependencies (relationships, associations, ...)
+=== Whitebox Overall System (C4 Level 1)
 
-This view is mandatory for every architecture documentation.
-In analogy to a house this is the _floor plan_.
+==== Overview Diagram
 
-.Motivation
-Maintain an overview of your source code by making its structure understandable through
-abstraction.
+Business context diagram
 
-This allows you to communicate with your stakeholder on an abstract level without disclosing implementation details.
+image::05_system_context_diagram.png[Overall view of the business context]
 
-.Form
-The building block view is a hierarchical collection of black boxes and white boxes
-(see figure below) and their descriptions.
+==== Motivation
 
-image::05_building_blocks-EN.png["Hierarchy of building blocks"]
+The **Whitebox Overall System** diagram provides a high-level representation of the primary components and their interactions within the application, alongside the external systems it integrates with. This diagram is crucial for understanding the foundational architecture of the platform, showcasing the flow of data, system responsibilities, and external dependencies. It emphasizes the relationships between the various building blocks, such as the interaction between the user and the system, and how dynamic content is sourced via external APIs.
 
-*Level 1* is the white box description of the overall system together with black
-box descriptions of all contained building blocks.
+==== Contained Building Blocks
 
-*Level 2* zooms into some building blocks of level 1.
-Thus it contains the white box description of selected building blocks of level 1, together with black box descriptions of their internal building blocks.
+The key building blocks forming the overall system architecture include:
 
-*Level 3* zooms into selected building blocks of level 2, and so on.
+* **User**: Represents the end-user of the platform, who is required to authenticate in order to access the game functionality. Once authenticated, users can interact with the system and participate in gameplay.
 
+* **Wichat EN2B Application**: The core application responsible for managing game mechanics, including the generation of questions and content. It encapsulates the application’s game logic and drives the user experience. Detailed breakdowns of its internal components are explored further in later sections.
 
-.Further Information
+* **WikiData API**: A third-party API providing structured knowledge, essential for the dynamic generation of trivia questions and content. The system queries the WikiData API for real-time data, which is used to populate game questions.
 
-See https://docs.arc42.org/section-5/[Building Block View] in the arc42 documentation.
+* **LLM API**: Another third-party API used for providing hints in response to user queries. It leverages large language models (such as GPT-based systems) to dynamically generate contextual content for enhancing user interactions. **Communication with the LLM occurs in a conversational manner**, where each request includes the entire conversation history (i.e., a list of all previous messages) to ensure context and continuity across interactions.
 
-****
-endif::arc42help[]
+==== Important Interfaces
 
-=== Whitebox Overall System
+The **Important Interfaces** section defines the key interactions between system components and explains the methods through which the business requirements are met.
 
-image::05_overall_system.png[Overview Diagram]
+* **User to System Interaction**: Users engage with the system via a **web client** interface, which provides a rich UI experience with interactive elements such as forms, buttons, and dynamic feedback mechanisms. This client ensures a seamless user experience throughout the gameplay.
 
-Motivation::
+* **System to WikiData API Interaction**: The Wichat EN2B application interfaces with the **WikiData API** using a **question generator module**. This module sends HTTP requests containing **SPARQL queries** to retrieve structured knowledge from WikiData, which is subsequently processed and used to generate game questions.
 
-The Wichat EN2B system is designed to provide users with an interactive quiz platform where they can register, log in, answer questions generated dynamically from WikiData, 
-request hints from an LLM in a conversational manner, and track their statistics over time. The architecture is modular to ensure scalability, maintainability, and separation of concerns.
+* **System to LLM API Interaction**: The Wichat EN2B application communicates with the **LLM API** by passing the entire chat history of the logged-in user in each request. This ensures that the language model has full context of the ongoing conversation, enabling the generation of hints and responses that are contextually relevant and consistent with previous exchanges.
 
-Contained Building Blocks::
+* **Internal Services Communication**: Internal services within the Wichat EN2B application communicate over **RESTful APIs**. For example, the **Gateway Service** routes incoming requests to the appropriate internal services, while the **Game Service** ensures game state management and flow control.
 
-[cols="1,2" options="header"]
-|===
-| Name | Responsibility
-| Web Application | Provides the front-end interface for users to interact with the system.
-| Gateway Service | Acts as an API gateway that routes requests to appropriate backend services.
-| Game Service | Manages quiz generation, pulling questions from WikiData.
-| LLM Service | Handles interactions with the LLM to provide hints for users.
-| User Gateway | Facilitates communication between the Gateway Service and user-related services.
-| User CRUD Service | Manages user information in the database (registration, profile management, etc.).
-| User Authentication Service | Handles authentication and session management.
-| MongoDB Database | Stores user information and quiz-related data.
-| Documentation System | Manages internal documentation.
-|===
+=== Container Diagram (C4 Level 2)
 
-ifdef::arc42help[]
-[role="arc42help"]
-****
-Insert your explanations of black boxes from level 1:
+==== Container Diagram
 
-If you use tabular form you will only describe your black boxes with name and
-responsibility according to the following schema:
+image::05_container_diagram.png[Overall view of the business context]
 
-[cols="1,2" options="header"]
-|===
-| **Name** | **Responsibility**
-| _<black box 1>_ | _<Text>_
-| _<black box 2>_ | _<Text>_
-|===
+==== Motivation
 
-If you use a list of black box descriptions then you fill in a separate black box template for every important building block .
-Its headline is the name of the black box.
-****
-endif::arc42help[]
+The **Container Diagram** offers a more granular view of the Wichat EN2B application’s architecture, illustrating how the application is organized into discrete containers (services) and the relationships between them. This diagram is instrumental in detailing the internal structure of the system and clarifying how the platform's various components work together to deliver its functionality.
 
-==== Web Application
-
-Purpose/Responsibility::
-
-The Web Application provides the user interface for the quiz platform, enabling users to register, log in, take quizzes, request hints and view their historical statistics.
-
-Interfaces::
-
-1. Calls the Gateway Service to fetch quiz questions and send user responses
-2. Requests authentication
-3. Displays user statistics
-4. Update logged in user's data
-5. Provides a conversational hint system
-
-Endpoints::
-
-`GET /signup` - Shows the signup screen to the user
-
-`POST /signup` - Sends the sign up information to the gateway service
-
-`GET /login` - Shows the signup screen to the user
-
-`POST /login` - Sends the sign up information to the gateway service
-
-`GET /quiz` - Shows the user a question from a quiz whose theme is specified as parameter
-
-`POST /quiz` - Submits the answer to the gateway service
-
-`GET /edit`- Shows the user a form in order to edit their data
-
-`POST /edit` - Sends the updated information to the gateway service
-
-`GET /stats` - Shows the user their game stats
-
-==== Gateway Service
-
-Purpose/Responsibility::
-Acts as the main entry point for API requests, routing them to the appropriate backend services. It serves as a security layer and load balancer
-
-Interfaces::
-
-1. Routes quiz-related requests to the Game Service
-2. Routes user crud-related requests to the Users Service
-3. Routes login requests to the Users Authentication Service
-4. Routes hint requests to the LLM Service
-
-Endpoints::
-
-`GET /health` - Shows health status of the system
-
-`GET /quiz` - Retrieves quiz questions
-
-`POST /quiz` - Submits user answers
-
-`POST /login` - Authenticates user requests
-
-`POST /adduser` - Registers new users
-
-`POST /edituser` - Edits user information
-
-`GET /stats` - Requests a user historical playing data
-
-`POST /askllm` - Sends a question to the LLM Service
-
-==== Game Service
-
-Purpose/Responsibility::
-Manages the quiz logic, fetching questions from WikiData and providing them to users
-
-Interfaces::
-
-1. Fetches question batches from WikiData
-
-2. Serves quiz questions to the Gateway Service
-
-3. Stores statistics in MongoDB
-
-Endpoints::
-
-GET /quiz - Retrieves a batch of quiz questions from WikiData
-
-POST /quiz - Validates a user's answer
-
-==== <Name interface 1>
-
-...
-
-==== <Name interface m>
-
-
-
-=== Level 2
-
-ifdef::arc42help[]
-[role="arc42help"]
-****
-Here you can specify the inner structure of (some) building blocks from level 1 as white boxes.
-
-You have to decide which building blocks of your system are important enough to justify such a detailed description.
-Please prefer relevance over completeness. Specify important, surprising, risky, complex or volatile building blocks.
-Leave out normal, simple, boring or standardized parts of your system
-****
-endif::arc42help[]
-
-==== White Box _<building block 1>_
-
-ifdef::arc42help[]
-[role="arc42help"]
-****
-...describes the internal structure of _building block 1_.
-****
-endif::arc42help[]
-
-_<white box template>_
-
-==== White Box _<building block 2>_
-
-
-_<white box template>_
-
-...
-
-==== White Box _<building block m>_
-
-
-_<white box template>_
-
-
-
-=== Level 3
-
-ifdef::arc42help[]
-[role="arc42help"]
-****
-Here you can specify the inner structure of (some) building blocks from level 2 as white boxes.
-
-When you need more detailed levels of your architecture please copy this
-part of arc42 for additional levels.
-****
-endif::arc42help[]
-
-==== White Box <_building block x.1_>
-
-ifdef::arc42help[]
-[role="arc42help"]
-****
-Specifies the internal structure of _building block x.1_.
-****
-endif::arc42help[]
-
-_<white box template>_
-
-
-==== White Box <_building block x.2_>
-
-_<white box template>_
-
-
-
-==== White Box <_building block y.1_>
-
-_<white box template>_
+It serves as an essential tool for understanding how user interactions are processed, how game logic is managed, and how both external and internal data sources are leveraged for seamless gameplay.
