@@ -56,11 +56,21 @@ GS -> US : 3. Sends user addition request
 US -> US : 4. Verify credentials
 
 alt Correct credentials
-    US -> US : 5. Encrypt password and save.
-    US -> DB : 6. Adds the user to the database
-    US --> GS : Responds with the new user
-    GS --> WA : Forwards data
-    WA --> User : Shows confirmation
+    US -> BD : 5. Ask DB for existing user
+    US <-- BD : 6. Returns user
+
+    alt Returned user exists
+        GS <-- US : Sends error
+        WA <-- GS : Forwars error
+        User <--- WA : Notifies repeated user
+
+    else User can be added
+        US -> US : 5. Encrypt password and save.
+        US -> DB : 6. Adds the user to the database
+        US --> GS : 7. Responds with the new user
+        GS --> WA : Forwards data
+        WA --> User : Shows confirmation
+    end
 
 else Incorrect credentials
     US --> GS : Sends error
@@ -78,7 +88,13 @@ The errorless behaviour will be:
 
 . The Gateway Service will answer to this petition by forwarding the petition to the User Service and saving the user data to the response (if any error happened, it would be saved here).
 
-. The User Service then verifies that all the necessary credentials are stored in the request
+. The User Service then verifies that all the necessary credentials are stored in the request.
+
+. It encrypts the password and creates a new User object with the username and the encrypted password.
+
+. This new user is then saved into the database.
+
+. And sent back as the response.
 
 === User authentication
 
@@ -145,8 +161,86 @@ This is the behaviour of the flawless execution of the login:
 . Shows visual confirmation of the login.
 
 
-=== <Runtime Scenario 2>
+=== Game example
 
-=== ...
+Here is the sequence diagram when playing the game.
 
-=== Exception and Errors Scenario
+[plantuml,"Login diagram",png]
+----
+actor User #red
+entity WA as "Web Application"
+entity GS as "Gateway Service"
+entity game as "Game Service"
+entity LS as "LLM Service"
+database DB as "MongoDB"
+collection WD as "Wikidata"
+collection LLM 
+
+WA -> GS : requests questions
+GS -> game : forwards petition
+game -> WD : asks wikidata
+game <-- WD : returns questions
+GS <-- game : forwards questions
+WA <-- GS : forwards questions
+User <-- WA : shows questions
+
+while more questions
+    
+    alt user asks for hint
+        User -> WA : types question
+        WA -> GS : forwards question
+        GS -> LS : forwards question
+        LS -> LS : Validates fields
+        LS -> LLM : asks the LLM
+
+        LS <-- LLM : returns answer
+        LS -> LS : Parse answer to json
+        GS <-- LS : sends answer
+        WA <-- GS : forwards answer
+        User <-- WA : shows answer
+    end
+
+    User -> WA : gives an answer
+    User <-- WA : shows correct answer
+end
+
+WA -> GS : sends saving petition
+GS -> game : forwards petition
+game -> BD : saves game
+----
+
+. The application requests the questions to show the user. 
+
+. Gateway Service answers this request and forwards the petition to the Game Service.
+
+. Game Service then asks the WikiData API for questions.
+
+. The API returns the list of questions with answers in a .json file.
+
+. Game Service recieves these questions and forwards the data to the Gateway Service.
+
+. Then, the Gateway Service forwards them to the application which shows them to the user one by one.
+
+. When the game finishes, the app then requests to save the game results.
+
+. This request is answered and then forwarded by the Gateway Service and then, Game Service.
+
+. Finally, the game data is saved into the database.
+
+*In the case user asks for hints:*
+
+. The player types a question for the LLM.
+
+. The application collects the prompt and forwards it to Gateway Service.
+
+. The aforementioned service then forwards it to the Game Service which then sends it to the LLM Service.
+
+. This service then validates the fields making sure the needed information needed is passed in the request and then sends the question to the LLM.
+
+. The LLM makes the answer and returns it to the LLM Service.
+
+. After that, the LLM Service parses the answer to json and sends it as the response of the petition.
+
+. The Game Service recieves it and forwards it to the Gateway Service and then to the Application, which shows the generated answer to the user.
+
+=== Exceptions and Errors Scenarios
