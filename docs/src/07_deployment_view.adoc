@@ -113,14 +113,14 @@ rectangle "Oracle Server\n<size:10>[Wichat EN2B]</size>"  {
   rectangle "==User Authentication Service\n<size:10>[Container]</size>" as UserAuthenticationService
 }
 
-WebApplication --> GatewayService : "Makes API calls"
-GatewayService --> LLMService : "LLM ask API call"
-GatewayService --> UserGateway : "User related API calls"
-GatewayService --> GameService : "Question API calls"
-UserGateway --> UserCRUDService : "CRUD API calls"
-UserGateway --> UserAuthenticationService : "Authentication API calls"
-UserCRUDService --> MongoDBDatabase : "User CRUD operations"
-UserAuthenticationService --> MongoDBDatabase : "User authentication operations"
+WebApplication --> GatewayService 
+GatewayService --> LLMService
+GatewayService --> UserGateway 
+GatewayService --> GameService 
+UserGateway --> UserCRUDService 
+UserGateway --> UserAuthenticationService
+UserCRUDService --> MongoDBDatabase 
+UserAuthenticationService --> MongoDBDatabase 
 ----
 
 **Quality and/or Performance Features**
