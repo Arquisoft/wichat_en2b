@@ -67,3 +67,19 @@ The following containers represent the primary services within the Wichat EN2B a
 * **MongoDB Database**: The database responsible for storing persistent system data, including user profiles, game states, and scores. MongoDB is used for its flexibility in handling semi-structured data and its scalability.
 
 * **User Gateway**: A container dedicated to managing user-specific API requests. It handles user authentication, session management, and retrieval of user-related data, ensuring secure and personalized experiences.
+
+==== External Communication
+
+* **External API Integration**: The **WikiData API** is a critical external system that provides the data needed to generate game questions. The Wichat EN2B application sends HTTP requests to this API, utilizing SPARQL queries to retrieve relevant content based on predefined game rules.
+
+* **LLM Communication**: The **LLM Service** facilitates interaction with external language models. It generates contextual hints, descriptions, and other textual content dynamically, based on the user’s queries or the state of the game, to guide users through the experience. Communication with the LLM is conversational, where the system passes the entire list of prior messages for each new request to maintain consistency and relevance in responses.
+
+==== Data Flow
+
+Data flows between containers in a manner that ensures efficient communication and process execution. For example:
+
+* When a user logs in via the Web Application, the system authenticates the request using the **User Authentication Service**.
+* After successful authentication, the user interacts with the Game Service, which may request data from the WikiData API to generate a question.
+* The **LLM Service** is called when the user requests a hint, and the entire conversation history is sent to the LLM API in each request to provide context-sensitive guidance and responses.
+  
+This modular design enhances scalability, maintainability, and fault isolation, ensuring that each component is specialized in its task while working seamlessly as part of the larger system.
