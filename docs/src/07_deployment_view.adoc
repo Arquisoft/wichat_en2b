@@ -34,7 +34,7 @@ zoom into this black box using additional deployment diagrams:
 
 * UML offers deployment diagrams to express that view. Use it, probably with nested diagrams,
 when your infrastructure is more complex.
-* When your (hardware) stakeholders prefer other kinds of diagrams rather than a deployment diagram, let them use any kind that is able to show nodes and channels of the infrastructure.
+* When your (hardware) stakeholders prefer other kinds of diagrams rather than azz deployment diagram, let them use any kind that is able to show nodes and channels of the infrastructure.
 
 
 .Further Information
@@ -60,19 +60,30 @@ For multiple environments or alternative deployments please copy and adapt this 
 ****
 endif::arc42help[]
 
-_**<Overview Diagram>**_
+The application will be deployed on an oracle server, using docker to run the different modules of the application. The application will use the wikidata API to get the different questions and answers of the game and an LLM API to do calls to the llm so that the user can interact with it and, for example ask for hints.
 
-Motivation::
+All of this will be deployed in an oracle server running ubuntu with the help of docker.
+[plantuml,"UML diagram 1",png]
+----
+rectangle "User"  as User
+rectangle "WikiData"  as WikiData
+rectangle "LLM" as LLM
 
-_<explanation in text form>_
+node "Oracle Server"{
+rectangle "WichatEN2B" as WichatEN2B
+}
+User --> WichatEN2B : "Uses"
+WichatEN2B --> WikiData : "Gets information for questions and answers"
+WichatEN2B --> LLM : "Asks for hints"
+----
 
-Quality and/or Performance Features::
+**Motivation**
 
-_<explanation in text form>_
+The motivation behind the design of this application is to create a scalable, flexible, and secure system that can efficiently integrate with external APIs (such as Wikidata), while providing seamless user interactions through a web application. The core of the system revolves around managing various API calls, handling data storage, and ensuring a robust system that can keep up with the user demands.
 
-Mapping of Building Blocks to Infrastructure::
-_<description of the mapping>_
+To achieve this, we utilize a containerized microservices architecture, where each service (such as the Game Service, User Management, and API Gateway) is isolated in its own container. This separation allows for efficient scaling, improved fault tolerance, and the ability to update individual services independently. Additionally, the use of MongoDB ensures flexible, high-performance storage, while the API Gateway acts as a single entry point for all external and internal communication, providing load balancing, routing, and security functionalities.
 
+The overall design enables the application to handle varying levels of demand, from individual user interactions to large-scale data processing, all while maintaining a high degree of security and performance. This approach not only supports future growth but also ensures that the system is easy to maintain and evolve over time.
 
 === Infrastructure Level 2
 
@@ -85,16 +96,63 @@ Please copy the structure from level 1 for each selected element.
 ****
 endif::arc42help[]
 
-==== _<Infrastructure Element 1>_
+==== Oracle ServerApplication
 
-_<diagram + explanation>_
+[plantuml,"UML diagram 2",png]
+----
+left to right direction
 
-==== _<Infrastructure Element 2>_
+rectangle "==WikiData" as WikiData
+rectangle "==LLM" as LLM
 
-_<diagram + explanation>_
+rectangle "Oracle Server\n<size:10>[Wichat EN2B]</size>"  {
+  rectangle "==Game Service\n<size:10>[Container]</size>" as GameService
+  database "==MongoDB Database\n<size:10>[Container]</size>" as MongoDBDatabase
+  rectangle "==Web Application\n<size:10>[Container]</size>"  as WebApplication
+  rectangle "==Gateway Service\n<size:10>[Container]</size>"  as GatewayService
+  rectangle "==LLM Service\n<size:10>[Container]</size>"  as LLMService
+  rectangle "==User Gateway\n<size:10>[Container]</size>"  as UserGateway
+  rectangle "==User CRUD Service\n<size:10>[Container]</size>" as UserCRUDService
+  rectangle "==User Authentication Service\n<size:10>[Container]</size>" as UserAuthenticationService
+}
 
-...
+LLMService --> LLM : "LLM ask API call"
+WebApplication --> GatewayService : "Makes API calls"
+GatewayService --> LLMService : "LLM ask API call"
+GatewayService --> UserGateway : "User related API calls"
+GatewayService --> GameService : "Question API calls"
+GameService --> WikiData : "Question batches API calls"
+UserGateway --> UserCRUDService : "CRUD API calls"
+UserGateway --> UserAuthenticationService : "Authentication API calls"
+UserCRUDService --> MongoDBDatabase : "User CRUD operations"
+UserAuthenticationService --> MongoDBDatabase : "User authentication operations"
+----
 
-==== _<Infrastructure Element n>_
+**Quality and/or Performance Features**
 
-_<diagram + explanation>_
+Our system consists of several key containers that work together to ensure a smooth and scalable user experience. Below are the core features and quality attributes that define the system's architecture:
+
+*Key Features*
+
+* **Web Application**: The web app serves as the user interface where users interact with the system. It connects to the Gateway Service to make API calls and process user actions.
+* **Gateway Service**: The central point for routing all incoming requests. It ensures security, authentication, and routing to the appropriate service, whether it's the LLM Service, User-related services, or the Game Service.
+* **LLM Service**: A container dedicated to handling calls to the LLM API for processing user queries.
+* **User Gateway**: Manages user-related API calls, including user authentication and CRUD operations.
+* **User CRUD Service**: Handles the CRUD operations for user data, interacting with the MongoDB database for persistent storage.
+* **User Authentication Service**: Responsible for managing user authentication, ensuring that secure access to the application is maintained.
+* **Game Service**: Manages the game-related API calls, processing user inputs and interacting with external services like the Wikidata API to answer game-related questions.
+* **MongoDB Database**: Stores user data, including authentication and CRUD-related data, and ensures data integrity and persistence.
+* **WikiData**: The system which will recieve the api calls our application makes and return the relevant informantion.
+* **LLM**: we will use an api to handle the interactions with the llm that will provide hints to the user when asked.
+
+*Performance Features*
+
+* **Scalability**: The modular containerized approach allows individual services to scale independently based on demand. For example, the Game Service and LLM Service can scale based on user interaction, ensuring high availability and performance under load.
+* **Security**: The API Gateway enforces security across all services, including user authentication via the User Authentication Service and secure interactions with external systems (e.g., the WikiData API).
+* **Reliability**: The system architecture is designed for high availability, using a well-defined communication model between containers. This ensures that even if one service experiences issues, others can continue functioning without disruption.
+* **Performance**: The containerized services communicate efficiently through well-defined APIs, reducing bottlenecks. The Gateway Service ensures that API calls are routed to the correct service in an optimized manner.
+* **Maintainability**: The use of dedicated services (e.g., User Authentication, User CRUD, and Gateway) ensures that components can be updated or replaced independently without affecting the overall system. Logs and monitoring tools are in place for easy tracking of issues.
+* **Testability**: The modular design makes it easy to test each container independently, from the Web Application to the Game Service and the database interactions.
+* **Extensibility**: The system is designed to allow for easy integration of additional services or APIs. For instance, more external APIs can be added to the Game Service or other components without impacting the rest of the system.
+
+By organizing the system into these clear, well-defined containers, we ensure that each component can evolve independently, maintain security, and scale as required while providing a robust user experience.
