@@ -3,7 +3,7 @@ ifndef::imagesdir[:imagesdir: ../images]
 [[section-solution-strategy]]
 == Solution Strategy
 
-In this section of the documentation we are covering the fundamental decisions and solution strategies of our architecture.
+In this section of the documentation we are covering the fundamental decisions and solution strategies of our project architecture.  These decisions were made with a strong focus on addressing the constraints defined in xref:src/02_architecture_constraints.adoc[Section 2: Architecture Constraints].
 
 === 4.1 Technology decisions
 
@@ -35,10 +35,10 @@ The project architecture is divided in different modules and their functionaliti
 - **GatewayService** +  
   Endpoint of the web application that communicates the frontend with the business logic.
 
+. Services
+
 - **UserGateway** +  
   Endpoint of user information related requests. This endpoint is used to isolate the access control to user's information.
-
-. Services
 
 - **UserAuthenticationService** +  
   Module that manages the login operation and verifies the client connection.
@@ -54,9 +54,10 @@ The project architecture is divided in different modules and their functionaliti
 
 . Persistence
 
-- **Mongoose (MongoDB)** +  
+- **MongoDB** +  
   Module of persistence that stores the users' information in JSON format.
 
+image::04_architectural_design.png[Architecture design]
 
 === 4.3 Design patterns applied
 
