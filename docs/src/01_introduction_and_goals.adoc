@@ -19,7 +19,8 @@ endif::arc42help[]
 
 === Requirements Overview
 
-The goal of this project is to enhance the online "Saber y Ganar" quiz show application, developed last year by HappySw, with new features that incorporate large language models (LLMs) and Wikidata for a more interactive and engaging experience.
+The goal of this project is to enhance the online "Saber y Ganar" quiz show application, developed last year by ChattySw, with new features that incorporate large language models (LLMs) and Wikidata for a more interactive and engaging experience. In our case
+the game with its enhancements will be made ultimately from scratch, utilizing/taking a look at some code from last year's app for guidance/help. 
 
 The key functional requirements of the system are:
 
@@ -97,7 +98,6 @@ endif::arc42help[]
 | Role/Name           | Contact         | Expectations 
 
 | **End Users**       | Users of the game | Enjoyable and engaging experience, with an easy-to-use interface and fun, dynamic gameplay. 
-| **RTVE**            | RTVE management | High-quality user experience, with an emphasis on scalability, performance, and security. 
-| **Development Team**| ChattySw team   | A robust, well-documented, and maintainable system. Clear requirements for integration with LLM and Wikidata, as well as a user-friendly interface. 
-| **HappySw (Previous Developers)** | HappySw team   | Smooth transition from last year's implementation, with the new LLM-based hint system integrating seamlessly with the existing structure. 
+| **RTVE / Teachers**            | RTVE management / Teachers | High-quality user experience, with an emphasis on scalability, performance, and security. 
+| **Development Team**| ChattySw | A robust, well-documented, and maintainable system. Clear requirements for integration with LLM and Wikidata, as well as a user-friendly interface. 
 |===
