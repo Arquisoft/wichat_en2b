@@ -102,9 +102,6 @@ endif::arc42help[]
 ----
 left to right direction
 
-rectangle "==WikiData" as WikiData
-rectangle "==LLM" as LLM
-
 rectangle "Oracle Server\n<size:10>[Wichat EN2B]</size>"  {
   rectangle "==Game Service\n<size:10>[Container]</size>" as GameService
   database "==MongoDB Database\n<size:10>[Container]</size>" as MongoDBDatabase
@@ -116,12 +113,10 @@ rectangle "Oracle Server\n<size:10>[Wichat EN2B]</size>"  {
   rectangle "==User Authentication Service\n<size:10>[Container]</size>" as UserAuthenticationService
 }
 
-LLMService --> LLM : "LLM ask API call"
 WebApplication --> GatewayService : "Makes API calls"
 GatewayService --> LLMService : "LLM ask API call"
 GatewayService --> UserGateway : "User related API calls"
 GatewayService --> GameService : "Question API calls"
-GameService --> WikiData : "Question batches API calls"
 UserGateway --> UserCRUDService : "CRUD API calls"
 UserGateway --> UserAuthenticationService : "Authentication API calls"
 UserCRUDService --> MongoDBDatabase : "User CRUD operations"
@@ -142,17 +137,5 @@ Our system consists of several key containers that work together to ensure a smo
 * **User Authentication Service**: Responsible for managing user authentication, ensuring that secure access to the application is maintained.
 * **Game Service**: Manages the game-related API calls, processing user inputs and interacting with external services like the Wikidata API to answer game-related questions.
 * **MongoDB Database**: Stores user data, including authentication and CRUD-related data, and ensures data integrity and persistence.
-* **WikiData**: The system which will recieve the api calls our application makes and return the relevant informantion.
-* **LLM**: we will use an api to handle the interactions with the llm that will provide hints to the user when asked.
-
-*Performance Features*
-
-* **Scalability**: The modular containerized approach allows individual services to scale independently based on demand. For example, the Game Service and LLM Service can scale based on user interaction, ensuring high availability and performance under load.
-* **Security**: The API Gateway enforces security across all services, including user authentication via the User Authentication Service and secure interactions with external systems (e.g., the WikiData API).
-* **Reliability**: The system architecture is designed for high availability, using a well-defined communication model between containers. This ensures that even if one service experiences issues, others can continue functioning without disruption.
-* **Performance**: The containerized services communicate efficiently through well-defined APIs, reducing bottlenecks. The Gateway Service ensures that API calls are routed to the correct service in an optimized manner.
-* **Maintainability**: The use of dedicated services (e.g., User Authentication, User CRUD, and Gateway) ensures that components can be updated or replaced independently without affecting the overall system. Logs and monitoring tools are in place for easy tracking of issues.
-* **Testability**: The modular design makes it easy to test each container independently, from the Web Application to the Game Service and the database interactions.
-* **Extensibility**: The system is designed to allow for easy integration of additional services or APIs. For instance, more external APIs can be added to the Game Service or other components without impacting the rest of the system.
 
 By organizing the system into these clear, well-defined containers, we ensure that each component can evolve independently, maintain security, and scale as required while providing a robust user experience.
