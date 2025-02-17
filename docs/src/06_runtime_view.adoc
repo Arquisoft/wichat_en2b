@@ -49,27 +49,33 @@ Users must have an account to use the application. The following sequence diagra
 actor User
 entity WA as "Web Application"
 entity GS as "Gateway Service"
-entity UG as "User Gateway"
 entity UAS as "User Authentication Service"
 database DB as "MongoDB"
-User -> WA : Send credentials
-WA -> GS : Forward credentials
-GS -> UG : Handles user logic
-UG -> UAS : Sends authentication request
-UAS -> DB : Verify credentials
 
-//// UAS <-- DB : Returns user
-UG <-- UAS : Returns token
-GS <-- UG : Forwards token
-WA <-- GS : Returns token to client
-User <-- WA : Shows login result ////
+User -> WA : 1. Send credentials
+WA -> GS : 2. Forward credentials
+GS -> UAS : 3. Sends authentication request
+UAS -> DB : 4. Verify credentials
 
-UAS <-- DB : Returns user
-User <-- UAS : Sends token
+UAS <-- DB : 5. Returns user
+User <-- UAS : 6. Sends token
 ----
+
+. The user types an username and a password.
+
+. Then the Login.js (from the webapp package) collects this data and sends it via post to the "/login". 
+
+. In the gateway service, a function answers to this request: forwards the petition to the User Authentication Service and saves the user data to the res, or when an error occurs, the error is saved to that variable.
+
+. After that, the User Authentication Service checks and validates the given data, and asks the database to find the user for the given username.
+
+. The database returns the user.
+
+. Finishing, the User Authentication Service verifies that the encrypted password given by the user and the encrypted password stored in the database match. If this happens, a JWT Token is generated and saved to the response.
+
 
 === <Runtime Scenario 2>
 
 === ...
 
-=== <Runtime Scenario n>
+=== Exception and Errors Scenario
