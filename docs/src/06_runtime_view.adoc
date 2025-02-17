@@ -2,7 +2,7 @@ ifndef::imagesdir[:imagesdir: ../images]
 
 [[section-runtime-view]]
 == Runtime View
-
+This section focuses on describing the behaviour and interactions of the system's building blocks in form of scenarios.
 
 ifdef::arc42help[]
 [role="arc42help"]
@@ -39,29 +39,237 @@ See https://docs.arc42.org/section-6/[Runtime View] in the arc42 documentation.
 ****
 endif::arc42help[]
 
-=== <Runtime Scenario 1>
+=== User registration
+Users must create an account if they do not have one. The behaviour of the application is:
 
-
-* _<insert runtime diagram or textual description of the scenario>_
-* _<insert description of the notable aspects of the interactions between the
-building block instances depicted in this diagram.>_
-
-It is possible to use a sequence diagram:
-
-[plantuml,"Sequence diagram",png]
+[plantuml,"Register diagram",png]
 ----
-actor Alice
-actor Bob
-database Pod as "Bob's Pod"
-Alice -> Bob: Authentication Request
-Bob --> Alice: Authentication Response
-Alice  --> Pod: Store route
-Alice -> Bob: Another authentication Request
-Alice <-- Bob: another authentication Response
+actor User
+entity WA as "Web Application"
+entity GS as "Gateway Service"
+entity US as "User Service"
+database DB as "MongoDB"
+
+User -> WA : 1. Sends data
+WA -> GS : 2. Forwards data
+GS -> US : 3. Sends user addition request
+US -> US : 4. Verify credentials
+
+alt Correct credentials
+    US -> DB : 5. Ask DB for existing user
+    US <-- DB : 6. Returns user
+
+    alt Returned user exists
+        GS <-- US : Sends error
+        WA <-- GS : Forwars error
+        User <--- WA : Notifies repeated user
+
+    else User can be added
+        US -> US : 5. Encrypt password and save.
+        US -> DB : 6. Adds the user to the database
+        US --> GS : 7. Responds with the new user
+        GS --> WA : Forwards data
+        WA --> User : Shows confirmation
+    end
+
+else Incorrect credentials
+    US --> GS : Sends error
+    GS --> WA : Forwards error
+    WA --> User : Shows error
+end
+
 ----
 
-=== <Runtime Scenario 2>
+The errorless behaviour will be:
 
-=== ...
+. The new user types the required information to create an account.
 
-=== <Runtime Scenario n>
+. Them, AddUser.js (from package webapp) collects this information and sends it via post to the "/addUser" url.
+
+. The Gateway Service will answer to this petition by forwarding the petition to the User Service and saving the user data to the response (if any error happened, it would be saved here).
+
+. The User Service then verifies that all the necessary credentials are stored in the request.
+
+. It encrypts the password and creates a new User object with the username and the encrypted password.
+
+. This new user is then saved into the database.
+
+. And sent back as the response.
+
+=== User login
+
+
+Users must have an account to use the application. The following sequence diagram shows how the application behaves when logging in.
+
+[plantuml,"Login diagram",png]
+----
+actor User
+entity WA as "Web Application"
+entity GS as "Gateway Service"
+entity UAS as "User Authentication Service"
+database DB as "MongoDB"
+
+User -> WA : 1. Send credentials
+WA -> GS : 2. Forward credentials
+
+alt Success
+    GS -> UAS : 3. Sends authentication request
+    UAS -> UAS : 4. Verify credentials
+
+    alt Verified
+        UAS -> DB : Check user
+        UAS <-- DB : 5. Returns user
+
+        alt Passwords match
+            GS <-- UAS : 6. Sends token
+            WA <-- GS : Forwards token
+            User <-- WA : 7. User logs in
+        
+        else Passwords do not match
+            GS <-- UAS : Responds error
+            WA <-- GS : Forwards error
+            User <-- WA : Shows error
+        end
+
+    else Incorrect credentials
+        GS <-- UAS : Responds error
+        WA <-- GS : Forwards error
+        User <-- WA : Shows error
+    end
+else Failure
+    WA <-- GS : Forwards error
+    User <-- WA : Shows error
+
+end
+----
+
+
+This is the behaviour of the flawless execution of the login:
+
+. The user types an username and a password.
+
+. Then the Login.js (from the webapp package) collects this data and sends it via post to the "/login". 
+
+. In the gateway service, a function answers to this request: forwards the petition to the User Authentication Service and saves the user data to the res, or when an error occurs, the error is saved to that variable.
+
+. After that, the User Authentication Service checks and validates the given data, and asks the database to find the user for the given username.
+
+. The database returns the user.
+
+. The User Authentication Service verifies that the encrypted password given by the user and the encrypted password stored in the database match. If this happens, a JWT Token is generated and saved to the response.
+
+. Shows visual confirmation of the login.
+
+
+=== Game example
+
+Here is the sequence diagram when playing the game.
+
+[plantuml,"Game diagram",png]
+----
+actor User
+entity WA as "Web Application"
+entity GS as "Gateway Service"
+entity game as "Game Service"
+entity US as "User Service"
+entity CRUD as "User CRUD Service"
+entity LS as "LLM Service"
+database DB as "MongoDB"
+collections WD as "Wikidata"
+collections LLM 
+
+WA -> GS : requests questions
+GS -> game : forwards petition
+game -> WD : asks wikidata
+game <-- WD : returns questions
+GS <-- game : forwards questions
+WA <-- GS : forwards questions
+User <-- WA : shows questions
+
+loop question in questions
+    
+    alt user asks for hint
+        User -> WA : types question
+        WA -> GS : forwards question
+        GS -> LS : forwards question
+        LS -> LS : Validates fields
+        LS -> LLM : asks the LLM
+
+        LS <-- LLM : returns answer
+        LS -> LS : Parse answer to json
+        GS <-- LS : sends answer
+        WA <-- GS : forwards answer
+        User <-- WA : shows answer
+    end
+
+    User -> WA : gives an answer
+    User <-- WA : shows correct answer
+end
+
+WA -> GS : sends saving petition
+GS -> game : forwards petition
+game -> game : parses game
+game --> GS : sends back 
+GS -> US : forwards parsed game
+US -> CRUD : requests adding game to DB
+CRUD -> DB : adds game
+----
+
+. The application requests the questions to show the user. 
+
+. Gateway Service answers this request and forwards the petition to the Game Service.
+
+. Game Service then asks the WikiData API for questions.
+
+. The API returns the list of questions with answers in a .json file.
+
+. Game Service recieves these questions and forwards the data to the Gateway Service.
+
+. Then, the Gateway Service forwards them to the application which shows them to the user one by one.
+
+. When the game finishes, the app then requests to save the game results.
+
+. This request is answered and then forwarded by the Gateway Service and then, Game Service.
+
+. Game Service parses the game information to a valid format so it can be saved to de database.
+
+. Then this version of the game is sent back to the Game Service to be forwarded to the User Service. This is to reduce workload of the Game Service.
+
+. The User Service asks the User CRUD Service to save the game.
+
+*In the case user asks for hints:*
+
+. The player types a question for the LLM.
+
+. The application collects the prompt and forwards it to Gateway Service.
+
+. The aforementioned service then forwards it to the Game Service which then sends it to the LLM Service.
+
+. This service then validates the fields making sure the needed information needed is passed in the request and then sends the question to the LLM.
+
+. The LLM makes the answer and returns it to the LLM Service.
+
+. After that, the LLM Service parses the answer to json and sends it as the response of the petition.
+
+. The Game Service recieves it and forwards it to the Gateway Service and then to the Application, which shows the generated answer to the user.
+
+=== Exceptions and Errors Scenarios
+
+Possible errors regarding:
+
+* Registering:
+    - Invalid credentials (empty / blank).
+    - Using credentials from an already existing user: usernames must be different.
+    - Database exception: connection lost, data loss.
+
+* Login:
+    - Empty or blank credentials.
+    - Username does not exist.
+    - Wrong password.
+    - Database exception: connection lost, data loss.
+
+* Game:
+    - Wikidata error.
+    - Database exception: connection lost, data loss.
+    - LLM not answering to the user's prompt.
+    
