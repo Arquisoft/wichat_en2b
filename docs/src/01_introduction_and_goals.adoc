@@ -97,7 +97,8 @@ endif::arc42help[]
 |===
 | Role/Name           | Contact         | Expectations 
 
-| **End Users**       | Users of the game | Enjoyable and engaging experience, with an easy-to-use interface and fun, dynamic gameplay. 
-| **RTVE / Teachers**            | RTVE management / Teachers | High-quality user experience, with an emphasis on scalability, performance, and security. 
-| **Development Team**| ChattySw | A robust, well-documented, and maintainable system. Clear requirements for integration with LLM and Wikidata, as well as a user-friendly interface. 
+| **Players**         | Game users      | Enjoyable and engaging experience, with an easy-to-use interface and fun, dynamic gameplay. 
+| **Administrators**  | Admin users     | Effective tools for managing game content, monitoring performance, and maintaining system integrity. 
+| **RTVE / Teachers** | RTVE management / Teachers | High-quality user experience, with an emphasis on scalability, performance, and security. 
+| **Development Team**| ChattySw         | A robust, well-documented, and maintainable system. Clear requirements for integration with LLM and Wikidata, as well as a user-friendly interface. 
 |===
