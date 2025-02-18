@@ -467,27 +467,26 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </li>
 <li><a href="#section-solution-strategy">4. Solution Strategy</a>
 <ul class="sectlevel2">
-<li><a href="#_4_1_technology_decisions">4.1. 4.1 Technology decisions</a></li>
-<li><a href="#_4_2_architectural_design_decisions">4.2. 4.2 Architectural design decisions</a></li>
-<li><a href="#_4_3_design_patterns_applied">4.3. 4.3 Design patterns applied</a></li>
-<li><a href="#_4_4_decisions_trade_offs">4.4. 4.4 Decisions trade-offs</a></li>
-<li><a href="#_4_5_decisions_on_how_to_achieve_the_key_quality_goals">4.5. 4.5 Decisions on how to achieve the key quality goals</a></li>
-<li><a href="#_4_6_organizational_decisions">4.6. 4.6 Organizational decisions</a></li>
+<li><a href="#_technology_decisions">4.1. Technology decisions</a></li>
+<li><a href="#_architectural_design_decisions">4.2. Architectural design decisions</a></li>
+<li><a href="#_design_patterns_applied">4.3. Design patterns applied</a></li>
+<li><a href="#_decisions_trade_offs">4.4. Decisions trade-offs</a></li>
+<li><a href="#_decisions_on_how_to_achieve_the_key_quality_goals">4.5. Decisions on how to achieve the key quality goals</a></li>
+<li><a href="#_organizational_decisions">4.6. Organizational decisions</a></li>
 </ul>
 </li>
 <li><a href="#section-building-block-view">5. Building Block View</a>
 <ul class="sectlevel2">
-<li><a href="#_whitebox_overall_system">5.1. Whitebox Overall System</a></li>
-<li><a href="#_level_2">5.2. Level 2</a></li>
-<li><a href="#_level_3">5.3. Level 3</a></li>
+<li><a href="#_whitebox_overall_system_c4_level_1">5.1. Whitebox Overall System (C4 Level 1)</a></li>
+<li><a href="#_container_diagram_c4_level_2">5.2. Container Diagram (C4 Level 2)</a></li>
 </ul>
 </li>
 <li><a href="#section-runtime-view">6. Runtime View</a>
 <ul class="sectlevel2">
-<li><a href="#_runtime_scenario_1">6.1. &lt;Runtime Scenario 1&gt;</a></li>
-<li><a href="#_runtime_scenario_2">6.2. &lt;Runtime Scenario 2&gt;</a></li>
-<li><a href="#">6.3. &#8230;&#8203;</a></li>
-<li><a href="#_runtime_scenario_n">6.4. &lt;Runtime Scenario n&gt;</a></li>
+<li><a href="#_user_registration">6.1. User registration</a></li>
+<li><a href="#_user_login">6.2. User login</a></li>
+<li><a href="#_game_example">6.3. Game example</a></li>
+<li><a href="#_exceptions_and_errors_scenarios">6.4. Exceptions and Errors Scenarios</a></li>
 </ul>
 </li>
 <li><a href="#section-deployment-view">7. Deployment View</a>
@@ -959,6 +958,192 @@ These stakeholders determine the extent and the level of detail of your work and
 </div>
 <div class="sect2">
 <h3 id="_business_context">3.1. Business Context</h3>
+<div class="paragraph">
+<p>The system interacts with several external entities:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>User</strong>: interacts with the system through a web interface.</p>
+</li>
+<li>
+<p><strong>Wikidata</strong>: supplies data for dynamically generated quiz questions.</p>
+</li>
+<li>
+<p><strong>LLM Service</strong>: external LLM API used for providing hints related to quiz questions.</p>
+</li>
+<li>
+<p><strong>Database</strong>: the system interacts with a database storing user-related data.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><strong>Quiz Game System - Business Context Table</strong></p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 16.6666%;">
+<col style="width: 33.3333%;">
+<col style="width: 50.0001%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Communication Partner</th>
+<th class="tableblock halign-left valign-top">Inputs to System</th>
+<th class="tableblock halign-left valign-top">Outputs from System</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Player (User)</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Login credentials, answer selection and hint requests</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Questions, feedback, hints, scores</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>WikiData API</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Query for quiz questions</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Response with data and images</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>LLM Service</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">User questions</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">AI-generated hints</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Database</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Game data</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Persistent data (user info, game states, scores&#8230;&#8203;)</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p><strong>Business Context Diagram</strong></p>
+</div>
+<div class="paragraph">
+<p><span class="image"><img src="./images/05_system_context_diagram.png" alt="Business context diagram"></span></p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_technical_context">3.2. Technical Context</h3>
+<div class="paragraph">
+<p>The system is linked to several technical interfaces:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Frontend-Backend Communication</strong>: The client uses React.js to communicate with the Node.js backend through RESTful API calls.</p>
+</li>
+<li>
+<p><strong>Backend-Database Communication</strong>: The backend of the system interacts with a database through MongoDB using Mongoose ODM.</p>
+</li>
+<li>
+<p><strong>External APIs</strong>: Some external APIs are used for taking advantage of services such as data retrieval (WikiData) and hint generation (LLM).</p>
+</li>
+<li>
+<p><strong>Security Considerations</strong>: User passwords are hashed using Bcrypt, and authentication is managed through a Gateway service.</p>
+</li>
+<li>
+<p><strong>User Gateway</strong>: Handles user-related API requests, routing authentication and CRUD operations to their respective services.</p>
+</li>
+<li>
+<p><strong>Game Service</strong>: Manages game logic and caches question batches to reduce WikiData API overhead.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Quiz Game System - Technical Context Table</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 6.6666%;">
+<col style="width: 13.3333%;">
+<col style="width: 20%;">
+<col style="width: 26.6666%;">
+<col style="width: 33.3335%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top"><strong>Component</strong></th>
+<th class="tableblock halign-left valign-top">Technology</th>
+<th class="tableblock halign-left valign-top">Communication Method</th>
+<th class="tableblock halign-left valign-top">Protocol</th>
+<th class="tableblock halign-left valign-top">Format</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Frontend</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">React.js</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">REST API Calls</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">HTTPS</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">JSON</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Backend</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Node.js + Express</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">REST API Calls</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">HTTPS</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">JSON</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Database</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Mongoose (MongoDB)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Queries</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">TCP/IP</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">JSON</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>WikiData</strong> (via GameService)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">External API</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">REST API, SPARQL queries</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">HTTPS</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">JSON/XML</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>AI (via LLMService)</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">External API</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">REST API Calls</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">HTTPS</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">JSON</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>User Gateway</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Express.js</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">REST API Calls</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">HTTPS</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">JSON</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>User CRUD Service</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Express.js</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">REST API Calls</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">HTTPS</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">JSON</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>User Authentication Service</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Express.js + Bcrypt</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">REST API Calls</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">HTTPS (OAuth2)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">JSON</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Security (Bcrypt)</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Password Hashing</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Internal Authentication</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">N/A</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">N/A</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p><strong>Mapping I/O to Channels</strong></p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="./images/diag-plantuml-md5-99ed14fd2557bd6fca73cf139b118e6c.png" alt="Diagram" width="950" height="561">
+</div>
+</div>
 <div class="sidebarblock arc42help">
 <div class="content">
 <div class="paragraph">
@@ -980,15 +1165,6 @@ The title of the table is the name of your system, the three columns contain the
 </div>
 </div>
 </div>
-<div class="paragraph">
-<p><strong>&lt;Diagram or Table&gt;</strong></p>
-</div>
-<div class="paragraph">
-<p><strong>&lt;optionally: Explanation of external domain interfaces&gt;</strong></p>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_technical_context">3.2. Technical Context</h3>
 <div class="sidebarblock arc42help">
 <div class="content">
 <div class="paragraph">
@@ -1006,15 +1182,6 @@ together with a mapping table showing the relationships between channels and inp
 </div>
 </div>
 </div>
-<div class="paragraph">
-<p><strong>&lt;Diagram or Table&gt;</strong></p>
-</div>
-<div class="paragraph">
-<p><strong>&lt;optionally: Explanation of technical interfaces&gt;</strong></p>
-</div>
-<div class="paragraph">
-<p><strong>&lt;Mapping Input/Output to Channels&gt;</strong></p>
-</div>
 <div style="page-break-after: always;"></div>
 </div>
 </div>
@@ -1026,7 +1193,7 @@ together with a mapping table showing the relationships between channels and inp
 <p>In this section of the documentation we are covering the fundamental decisions and solution strategies of our project architecture.  These decisions were made with a strong focus on addressing the constraints defined in <a href="02_architecture_constraints.html">Section 2: Architecture Constraints</a>.</p>
 </div>
 <div class="sect2">
-<h3 id="_4_1_technology_decisions">4.1. 4.1 Technology decisions</h3>
+<h3 id="_technology_decisions">4.1. Technology decisions</h3>
 <table class="tableblock frame-all grid-all stretch">
 <colgroup>
 <col style="width: 20%;">
@@ -1095,7 +1262,7 @@ together with a mapping table showing the relationships between channels and inp
 </table>
 </div>
 <div class="sect2">
-<h3 id="_4_2_architectural_design_decisions">4.2. 4.2 Architectural design decisions</h3>
+<h3 id="_architectural_design_decisions">4.2. Architectural design decisions</h3>
 <div class="paragraph">
 <p>The project architecture is divided in different modules and their functionalities are delimited following a Layered pattern. Therefore, taking that in mind we can classify the project as follows.</p>
 </div>
@@ -1156,7 +1323,7 @@ Module that acts as an interface to communicate with the LLM provider API in a d
 <ul>
 <li>
 <p><strong>MongoDB</strong><br>
-Module of persistence that stores the users' information in JSON format.</p>
+Module of persistence that stores the user&#8217;s information in JSON format.</p>
 </li>
 </ul>
 </div>
@@ -1170,7 +1337,7 @@ Module of persistence that stores the users' information in JSON format.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_4_3_design_patterns_applied">4.3. 4.3 Design patterns applied</h3>
+<h3 id="_design_patterns_applied">4.3. Design patterns applied</h3>
 <div class="paragraph">
 <p>In our solution we are applying some design patterns to be aware of future changes of features in the code. Therefore, we can highlight the following patterns:</p>
 </div>
@@ -1188,7 +1355,7 @@ We have considered an optional requirement that include game different modes. Th
 </div>
 </div>
 <div class="sect2">
-<h3 id="_4_4_decisions_trade_offs">4.4. 4.4 Decisions trade-offs</h3>
+<h3 id="_decisions_trade_offs">4.4. Decisions trade-offs</h3>
 <table class="tableblock frame-all grid-all stretch">
 <colgroup>
 <col style="width: 25%;">
@@ -1257,7 +1424,7 @@ We have considered an optional requirement that include game different modes. Th
 </table>
 </div>
 <div class="sect2">
-<h3 id="_4_5_decisions_on_how_to_achieve_the_key_quality_goals">4.5. 4.5 Decisions on how to achieve the key quality goals</h3>
+<h3 id="_decisions_on_how_to_achieve_the_key_quality_goals">4.5. Decisions on how to achieve the key quality goals</h3>
 <table class="tableblock frame-all grid-all stretch">
 <colgroup>
 <col style="width: 33.3333%;">
@@ -1294,7 +1461,7 @@ We have considered an optional requirement that include game different modes. Th
 </table>
 </div>
 <div class="sect2">
-<h3 id="_4_6_organizational_decisions">4.6. 4.6 Organizational decisions</h3>
+<h3 id="_organizational_decisions">4.6. Organizational decisions</h3>
 <div class="paragraph">
 <p>To ensure an efficient and structured development process, we have established the following organizational strategies:</p>
 </div>
@@ -1402,300 +1569,165 @@ Refer to details in the following sections.</p>
 <div class="sect1">
 <h2 id="section-building-block-view">5. Building Block View</h2>
 <div class="sectionbody">
-<div class="sidebarblock arc42help">
-<div class="content">
+<div class="sect2">
+<h3 id="_whitebox_overall_system_c4_level_1">5.1. Whitebox Overall System (C4 Level 1)</h3>
+<div class="sect3">
+<h4 id="_overview_diagram">5.1.1. Overview Diagram</h4>
 <div class="paragraph">
-<div class="title">Content</div>
-<p>The building block view shows the static decomposition of the system into building blocks (modules, components, subsystems, classes, interfaces, packages, libraries, frameworks, layers, partitions, tiers, functions, macros, operations, data structures, &#8230;&#8203;) as well as their dependencies (relationships, associations, &#8230;&#8203;)</p>
-</div>
-<div class="paragraph">
-<p>This view is mandatory for every architecture documentation.
-In analogy to a house this is the <em>floor plan</em>.</p>
-</div>
-<div class="paragraph">
-<div class="title">Motivation</div>
-<p>Maintain an overview of your source code by making its structure understandable through
-abstraction.</p>
-</div>
-<div class="paragraph">
-<p>This allows you to communicate with your stakeholder on an abstract level without disclosing implementation details.</p>
-</div>
-<div class="paragraph">
-<div class="title">Form</div>
-<p>The building block view is a hierarchical collection of black boxes and white boxes
-(see figure below) and their descriptions.</p>
+<p>Business context diagram</p>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="./images/05_building_blocks-EN.png" alt="Hierarchy of building blocks">
-</div>
-</div>
-<div class="paragraph">
-<p><strong>Level 1</strong> is the white box description of the overall system together with black
-box descriptions of all contained building blocks.</p>
-</div>
-<div class="paragraph">
-<p><strong>Level 2</strong> zooms into some building blocks of level 1.
-Thus it contains the white box description of selected building blocks of level 1, together with black box descriptions of their internal building blocks.</p>
-</div>
-<div class="paragraph">
-<p><strong>Level 3</strong> zooms into selected building blocks of level 2, and so on.</p>
-</div>
-<div class="paragraph">
-<div class="title">Further Information</div>
-<p>See <a href="https://docs.arc42.org/section-5/">Building Block View</a> in the arc42 documentation.</p>
-</div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_whitebox_overall_system">5.1. Whitebox Overall System</h3>
-<div class="sidebarblock arc42help">
-<div class="content">
-<div class="paragraph">
-<p>Here you describe the decomposition of the overall system using the following white box template. It contains</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>an overview diagram</p>
-</li>
-<li>
-<p>a motivation for the decomposition</p>
-</li>
-<li>
-<p>black box descriptions of the contained building blocks. For these we offer you alternatives:</p>
-<div class="ulist">
-<ul>
-<li>
-<p>use <em>one</em> table for a short and pragmatic overview of all contained building blocks and their interfaces</p>
-</li>
-<li>
-<p>use a list of black box descriptions of the building blocks according to the black box template (see below).
-Depending on your choice of tool this list could be sub-chapters (in text files), sub-pages (in a Wiki) or nested elements (in a modeling tool).</p>
-</li>
-</ul>
-</div>
-</li>
-<li>
-<p>(optional:) important interfaces, that are not explained in the black box templates of a building block, but are very important for understanding the white box.
-Since there are so many ways to specify interfaces why do not provide a specific template for them.
- In the worst case you have to specify and describe syntax, semantics, protocols, error handling,
- restrictions, versions, qualities, necessary compatibilities and many things more.
-In the best case you will get away with examples or simple signatures.</p>
-</li>
-</ul>
-</div>
-</div>
-</div>
-<div class="paragraph">
-<p><em><strong>&lt;Overview Diagram&gt;</strong></em></p>
-</div>
-<div class="dlist">
-<dl>
-<dt class="hdlist1">Motivation</dt>
-<dd>
-<p><em>&lt;text explanation&gt;</em></p>
-</dd>
-<dt class="hdlist1">Contained Building Blocks</dt>
-<dd>
-<p><em>&lt;Description of contained building block (black boxes)&gt;</em></p>
-</dd>
-<dt class="hdlist1">Important Interfaces</dt>
-<dd>
-<p><em>&lt;Description of important interfaces&gt;</em></p>
-</dd>
-</dl>
-</div>
-<div class="sidebarblock arc42help">
-<div class="content">
-<div class="paragraph">
-<p>Insert your explanations of black boxes from level 1:</p>
-</div>
-<div class="paragraph">
-<p>If you use tabular form you will only describe your black boxes with name and
-responsibility according to the following schema:</p>
-</div>
-<table class="tableblock frame-all grid-all stretch">
-<colgroup>
-<col style="width: 33.3333%;">
-<col style="width: 66.6667%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top"><strong>Name</strong></th>
-<th class="tableblock halign-left valign-top"><strong>Responsibility</strong></th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>&lt;black box 1&gt;</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"> <em>&lt;Text&gt;</em></p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>&lt;black box 2&gt;</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"> <em>&lt;Text&gt;</em></p></td>
-</tr>
-</tbody>
-</table>
-<div class="paragraph">
-<p>If you use a list of black box descriptions then you fill in a separate black box template for every important building block .
-Its headline is the name of the black box.</p>
+<img src="./images/diag-plantuml-md5-9ea75ac55f307c962435cf2901f524aa.png" alt="Diagram" width="1004" height="638">
 </div>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_name_black_box_1">5.1.1. &lt;Name black box 1&gt;</h4>
-<div class="sidebarblock arc42help">
-<div class="content">
+<h4 id="_motivation">5.1.2. Motivation</h4>
 <div class="paragraph">
-<p>Here you describe &lt;black box 1&gt;
-according the the following black box template:</p>
+<p>The <strong>Whitebox Overall System</strong> diagram provides a high-level representation of the primary components and their interactions within the application, alongside the external systems it integrates with. This diagram is crucial for understanding the foundational architecture of the platform, showcasing the flow of data, system responsibilities, and external dependencies. It emphasizes the relationships between the various building blocks, such as the interaction between the user and the system, and how dynamic content is sourced via external APIs.</p>
+</div>
+<div class="paragraph">
+<p>This diagram is pivotal in illustrating system interaction patterns, including user engagement with the platform and the external API interfaces used for content generation.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_contained_building_blocks">5.1.3. Contained Building Blocks</h4>
+<div class="paragraph">
+<p>The key building blocks forming the overall system architecture include:</p>
 </div>
 <div class="ulist">
 <ul>
 <li>
-<p>Purpose/Responsibility</p>
+<p><strong>User</strong>: Represents the end-user of the platform, who is required to authenticate in order to access the game functionality. Once authenticated, users can interact with the system and participate in gameplay.</p>
 </li>
 <li>
-<p>Interface(s), when they are not extracted as separate paragraphs. This interfaces may include qualities and performance characteristics.</p>
+<p><strong>Wichat EN2B Application</strong>: The core application responsible for managing game mechanics, including the generation of questions and content. It encapsulates the application’s game logic and drives the user experience. Detailed breakdowns of its internal components are explored further in later sections.</p>
 </li>
 <li>
-<p>(Optional) Quality-/Performance characteristics of the black box, e.g.availability, run time behavior, &#8230;&#8203;.</p>
+<p><strong>WikiData API</strong>: A third-party API providing structured knowledge, essential for the dynamic generation of trivia questions and content. The system queries the WikiData API for real-time data, which is used to populate game questions.</p>
 </li>
 <li>
-<p>(Optional) directory/file location</p>
+<p><strong>LLM API</strong>: Another third-party API used for providing hints in response to user queries. It leverages large language models (such as GPT-based systems) to dynamically generate contextual content for enhancing user interactions. <strong>Communication with the LLM occurs in a conversational manner</strong>, where each request includes the entire conversation history (i.e., a list of all previous messages) to ensure context and continuity across interactions.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_important_interfaces">5.1.4. Important Interfaces</h4>
+<div class="paragraph">
+<p>The <strong>Important Interfaces</strong> section defines the key interactions between system components and explains the methods through which the business requirements are met.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>User to System Interaction</strong>: Users engage with the system via a <strong>web client</strong> interface, which provides a rich UI experience with interactive elements such as forms, buttons, and dynamic feedback mechanisms. This client ensures a seamless user experience throughout the gameplay.</p>
 </li>
 <li>
-<p>(Optional) Fulfilled requirements (if you need traceability to requirements).</p>
+<p><strong>System to WikiData API Interaction</strong>: The Wichat EN2B application interfaces with the <strong>WikiData API</strong> using a <strong>question generator module</strong>. This module sends HTTP requests containing <strong>SPARQL queries</strong> to retrieve structured knowledge from WikiData, which is subsequently processed and used to generate game questions.</p>
 </li>
 <li>
-<p>(Optional) Open issues/problems/risks</p>
+<p><strong>System to LLM API Interaction</strong>: The Wichat EN2B application communicates with the <strong>LLM API</strong> by passing the entire chat history of the logged-in user in each request. This ensures that the language model has full context of the ongoing conversation, enabling the generation of hints and responses that are contextually relevant and consistent with previous exchanges.</p>
+</li>
+<li>
+<p><strong>Internal Services Communication</strong>: Internal services within the Wichat EN2B application communicate over <strong>RESTful APIs</strong>. For example, the <strong>Gateway Service</strong> routes incoming requests to the appropriate internal services, while the <strong>Game Service</strong> ensures game state management and flow control.</p>
 </li>
 </ul>
 </div>
 </div>
 </div>
-<div class="paragraph">
-<p><em>&lt;Purpose/Responsibility&gt;</em></p>
-</div>
-<div class="paragraph">
-<p><em>&lt;Interface(s)&gt;</em></p>
-</div>
-<div class="paragraph">
-<p><em>&lt;(Optional) Quality/Performance Characteristics&gt;</em></p>
-</div>
-<div class="paragraph">
-<p><em>&lt;(Optional) Directory/File Location&gt;</em></p>
-</div>
-<div class="paragraph">
-<p><em>&lt;(Optional) Fulfilled Requirements&gt;</em></p>
-</div>
-<div class="paragraph">
-<p><em>&lt;(optional) Open Issues/Problems/Risks&gt;</em></p>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_name_black_box_2">5.1.2. &lt;Name black box 2&gt;</h4>
-<div class="paragraph">
-<p><em>&lt;black box template&gt;</em></p>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_name_black_box_n">5.1.3. &lt;Name black box n&gt;</h4>
-<div class="paragraph">
-<p><em>&lt;black box template&gt;</em></p>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_name_interface_1">5.1.4. &lt;Name interface 1&gt;</h4>
-<div class="paragraph">
-<p>&#8230;&#8203;</p>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_name_interface_m">5.1.5. &lt;Name interface m&gt;</h4>
-
-</div>
-</div>
 <div class="sect2">
-<h3 id="_level_2">5.2. Level 2</h3>
-<div class="sidebarblock arc42help">
+<h3 id="_container_diagram_c4_level_2">5.2. Container Diagram (C4 Level 2)</h3>
+<div class="sect3">
+<h4 id="_container_diagram">5.2.1. Container Diagram</h4>
+<div class="imageblock">
 <div class="content">
-<div class="paragraph">
-<p>Here you can specify the inner structure of (some) building blocks from level 1 as white boxes.</p>
-</div>
-<div class="paragraph">
-<p>You have to decide which building blocks of your system are important enough to justify such a detailed description.
-Please prefer relevance over completeness. Specify important, surprising, risky, complex or volatile building blocks.
-Leave out normal, simple, boring or standardized parts of your system</p>
+<img src="./images/diag-plantuml-md5-a0419155f4f0b172791e6452a369862d.png" alt="Diagram" width="1025" height="638">
 </div>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_white_box_building_block_1">5.2.1. White Box <em>&lt;building block 1&gt;</em></h4>
-<div class="sidebarblock arc42help">
-<div class="content">
+<h4 id="_motivation_2">5.2.2. Motivation</h4>
 <div class="paragraph">
-<p>&#8230;&#8203;describes the internal structure of <em>building block 1</em>.</p>
-</div>
-</div>
+<p>The <strong>Container Diagram</strong> offers a more granular view of the Wichat EN2B application’s architecture, illustrating how the application is organized into discrete containers (services) and the relationships between them. This diagram is instrumental in detailing the internal structure of the system and clarifying how the platform&#8217;s various components work together to deliver its functionality.</p>
 </div>
 <div class="paragraph">
-<p><em>&lt;white box template&gt;</em></p>
+<p>It serves as an essential tool for understanding how user interactions are processed, how game logic is managed, and how both external and internal data sources are leveraged for seamless gameplay.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_white_box_building_block_2">5.2.2. White Box <em>&lt;building block 2&gt;</em></h4>
+<h4 id="_contained_building_blocks_2">5.2.3. Contained Building Blocks</h4>
 <div class="paragraph">
-<p><em>&lt;white box template&gt;</em></p>
+<p>The following containers represent the primary services within the Wichat EN2B application, each with distinct responsibilities:</p>
 </div>
-<div class="paragraph">
-<p>&#8230;&#8203;</p>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Web Application</strong>: The front-end interface between the user and the system. This container is responsible for rendering the user interface (UI) and handling user interactions. Developed using <strong>React</strong>, the Web Application ensures a responsive and dynamic experience. It communicates with internal services via API calls.</p>
+</li>
+<li>
+<p><strong>Gateway Service</strong>: Serves as the entry point for external API requests. This container is responsible for routing incoming requests to the correct internal services, ensuring that requests are handled efficiently and securely.</p>
+</li>
+<li>
+<p><strong>Game Service</strong>: This service manages the core game logic, including the flow of the game, the presentation of questions, tracking of user progress, and determining the game&#8217;s end. It also handles the game state, such as the user&#8217;s score and question set.</p>
+</li>
+<li>
+<p><strong>LLM Service</strong>: This container interfaces with a <strong>Large Language Model (LLM)</strong> to provide hints, explanations, and additional content to assist the user during the game. It ensures that users receive context-sensitive content, enhancing the overall gaming experience by offering real-time dynamic information. Communication with the LLM API is conducted conversationally by passing the entire message history in each request to maintain context and coherence.</p>
+</li>
+<li>
+<p><strong>MongoDB Database</strong>: The database responsible for storing persistent system data, including user profiles, game states, and scores. MongoDB is used for its flexibility in handling semi-structured data and its scalability.</p>
+</li>
+<li>
+<p><strong>User Gateway</strong>: A container dedicated to managing user-specific API requests. It handles user authentication, session management, and retrieval of user-related data, ensuring secure and personalized experiences.</p>
+</li>
+<li>
+<p><strong>User Authentication Service</strong>: Manages user authentication processes, validating user credentials and ensuring secure access to the platform. It integrates with third-party authentication mechanisms when required.</p>
+</li>
+<li>
+<p><strong>User CRUD Service</strong>: Manages the <strong>Create, Read, Update, Delete (CRUD)</strong> operations for user data. It ensures that user profiles can be created, updated, or deleted, facilitating efficient user management.</p>
+</li>
+<li>
+<p><strong>WikiData API</strong>: A third-party external API that provides structured data for generating trivia questions and content. The Wichat EN2B application communicates with WikiData to fetch real-time data using SPARQL queries.</p>
+</li>
+<li>
+<p><strong>LLM</strong>: This container represents the external <strong>Large Language Model</strong> service that dynamically generates content such as hints and contextual information based on user interactions. It interacts with an advanced language model, such as GPT or similar technologies, to offer real-time, personalized content.</p>
+</li>
+</ul>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_white_box_building_block_m">5.2.3. White Box <em>&lt;building block m&gt;</em></h4>
-<div class="paragraph">
-<p><em>&lt;white box template&gt;</em></p>
-</div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_level_3">5.3. Level 3</h3>
-<div class="sidebarblock arc42help">
-<div class="content">
-<div class="paragraph">
-<p>Here you can specify the inner structure of (some) building blocks from level 2 as white boxes.</p>
-</div>
-<div class="paragraph">
-<p>When you need more detailed levels of your architecture please copy this
-part of arc42 for additional levels.</p>
-</div>
+<h4 id="_external_communication">5.2.4. External Communication</h4>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>External API Integration</strong>: The <strong>WikiData API</strong> is a critical external system that provides the data needed to generate game questions. The Wichat EN2B application sends HTTP requests to this API, utilizing SPARQL queries to retrieve relevant content based on predefined game rules.</p>
+</li>
+<li>
+<p><strong>LLM Communication</strong>: The <strong>LLM Service</strong> facilitates interaction with external language models. It generates contextual hints, descriptions, and other textual content dynamically, based on the user’s queries or the state of the game, to guide users through the experience. Communication with the LLM is conversational, where the system passes the entire list of prior messages for each new request to maintain consistency and relevance in responses.</p>
+</li>
+</ul>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_white_box_building_block_x_1">5.3.1. White Box &lt;_building block x.1_&gt;</h4>
-<div class="sidebarblock arc42help">
-<div class="content">
+<h4 id="_data_flow">5.2.5. Data Flow</h4>
 <div class="paragraph">
-<p>Specifies the internal structure of <em>building block x.1</em>.</p>
+<p>Data flows between containers in a manner that ensures efficient communication and process execution. For example:</p>
 </div>
-</div>
+<div class="ulist">
+<ul>
+<li>
+<p>When a user logs in via the Web Application, the system authenticates the request using the <strong>User Authentication Service</strong>.</p>
+</li>
+<li>
+<p>After successful authentication, the user interacts with the Game Service, which may request data from the WikiData API to generate a question.</p>
+</li>
+<li>
+<p>The <strong>LLM Service</strong> is called when the user requests a hint, and the entire conversation history is sent to the LLM API in each request to provide context-sensitive guidance and responses.</p>
+</li>
+</ul>
 </div>
 <div class="paragraph">
-<p><em>&lt;white box template&gt;</em></p>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_white_box_building_block_x_2">5.3.2. White Box &lt;_building block x.2_&gt;</h4>
-<div class="paragraph">
-<p><em>&lt;white box template&gt;</em></p>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_white_box_building_block_y_1">5.3.3. White Box &lt;_building block y.1_&gt;</h4>
-<div class="paragraph">
-<p><em>&lt;white box template&gt;</em></p>
+<p>This modular design enhances scalability, maintainability, and fault isolation, ensuring that each component is specialized in its task while working seamlessly as part of the larger system.</p>
 </div>
 <div style="page-break-after: always;"></div>
 </div>
@@ -1705,6 +1737,9 @@ part of arc42 for additional levels.</p>
 <div class="sect1">
 <h2 id="section-runtime-view">6. Runtime View</h2>
 <div class="sectionbody">
+<div class="paragraph">
+<p>This section focuses on describing the behaviour and interactions of the system&#8217;s building blocks in form of scenarios.</p>
+</div>
 <div class="sidebarblock arc42help">
 <div class="content">
 <div class="paragraph">
@@ -1768,37 +1803,219 @@ You will mainly capture scenarios in your documentation to communicate your arch
 </div>
 </div>
 <div class="sect2">
-<h3 id="_runtime_scenario_1">6.1. &lt;Runtime Scenario 1&gt;</h3>
-<div class="ulist">
-<ul>
-<li>
-<p><em>&lt;insert runtime diagram or textual description of the scenario&gt;</em></p>
-</li>
-<li>
-<p><em>&lt;insert description of the notable aspects of the interactions between the
-building block instances depicted in this diagram.&gt;</em></p>
-</li>
-</ul>
-</div>
+<h3 id="_user_registration">6.1. User registration</h3>
 <div class="paragraph">
-<p>It is possible to use a sequence diagram:</p>
+<p>Users must create an account if they do not have one. The behaviour of the application is:</p>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="./images/Sequence%20diagram.png" alt="Sequence diagram" width="332" height="335">
+<img src="./images/Register%20diagram.png" alt="Register diagram" width="794" height="822">
 </div>
+</div>
+<div class="paragraph">
+<p>The errorless behaviour will be:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>The new user types the required information to create an account.</p>
+</li>
+<li>
+<p>Them, AddUser.js (from package webapp) collects this information and sends it via post to the "/addUser" url.</p>
+</li>
+<li>
+<p>The Gateway Service will answer to this petition by forwarding the petition to the User Service and saving the user data to the response (if any error happened, it would be saved here).</p>
+</li>
+<li>
+<p>The User Service then verifies that all the necessary credentials are stored in the request.</p>
+</li>
+<li>
+<p>It encrypts the password and creates a new User object with the username and the encrypted password.</p>
+</li>
+<li>
+<p>This new user is then saved into the database.</p>
+</li>
+<li>
+<p>And sent back as the response.</p>
+</li>
+</ol>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_runtime_scenario_2">6.2. &lt;Runtime Scenario 2&gt;</h3>
-
+<h3 id="_user_login">6.2. User login</h3>
+<div class="paragraph">
+<p>Users must have an account to use the application. The following sequence diagram shows how the application behaves when logging in.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="./images/Login%20diagram.png" alt="Login diagram" width="746" height="857">
+</div>
+</div>
+<div class="paragraph">
+<p>This is the behaviour of the flawless execution of the login:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>The user types an username and a password.</p>
+</li>
+<li>
+<p>Then the Login.js (from the webapp package) collects this data and sends it via post to the "/login".</p>
+</li>
+<li>
+<p>In the gateway service, a function answers to this request: forwards the petition to the User Authentication Service and saves the user data to the res, or when an error occurs, the error is saved to that variable.</p>
+</li>
+<li>
+<p>After that, the User Authentication Service checks and validates the given data, and asks the database to find the user for the given username.</p>
+</li>
+<li>
+<p>The database returns the user.</p>
+</li>
+<li>
+<p>The User Authentication Service verifies that the encrypted password given by the user and the encrypted password stored in the database match. If this happens, a JWT Token is generated and saved to the response.</p>
+</li>
+<li>
+<p>Shows visual confirmation of the login.</p>
+</li>
+</ol>
+</div>
 </div>
 <div class="sect2">
-<h3 id="">6.3. &#8230;&#8203;</h3>
-
+<h3 id="_game_example">6.3. Game example</h3>
+<div class="paragraph">
+<p>Here is the sequence diagram when playing the game.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="./images/Game%20diagram.png" alt="Game diagram" width="1213" height="1076">
+</div>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>The application requests the questions to show the user.</p>
+</li>
+<li>
+<p>Gateway Service answers this request and forwards the petition to the Game Service.</p>
+</li>
+<li>
+<p>Game Service then asks the WikiData API for questions.</p>
+</li>
+<li>
+<p>The API returns the list of questions with answers in a .json file.</p>
+</li>
+<li>
+<p>Game Service recieves these questions and forwards the data to the Gateway Service.</p>
+</li>
+<li>
+<p>Then, the Gateway Service forwards them to the application which shows them to the user one by one.</p>
+</li>
+<li>
+<p>When the game finishes, the app then requests to save the game results.</p>
+</li>
+<li>
+<p>This request is answered and then forwarded by the Gateway Service and then, Game Service.</p>
+</li>
+<li>
+<p>Game Service parses the game information to a valid format so it can be saved to de database.</p>
+</li>
+<li>
+<p>Then this version of the game is sent back to the Game Service to be forwarded to the User Service. This is to reduce workload of the Game Service.</p>
+</li>
+<li>
+<p>The User Service asks the User CRUD Service to save the game.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p><strong>In the case user asks for hints:</strong></p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>The player types a question for the LLM.</p>
+</li>
+<li>
+<p>The application collects the prompt and forwards it to Gateway Service.</p>
+</li>
+<li>
+<p>The aforementioned service then forwards it to the Game Service which then sends it to the LLM Service.</p>
+</li>
+<li>
+<p>This service then validates the fields making sure the needed information needed is passed in the request and then sends the question to the LLM.</p>
+</li>
+<li>
+<p>The LLM makes the answer and returns it to the LLM Service.</p>
+</li>
+<li>
+<p>After that, the LLM Service parses the answer to json and sends it as the response of the petition.</p>
+</li>
+<li>
+<p>The Game Service recieves it and forwards it to the Gateway Service and then to the Application, which shows the generated answer to the user.</p>
+</li>
+</ol>
+</div>
 </div>
 <div class="sect2">
-<h3 id="_runtime_scenario_n">6.4. &lt;Runtime Scenario n&gt;</h3>
+<h3 id="_exceptions_and_errors_scenarios">6.4. Exceptions and Errors Scenarios</h3>
+<div class="paragraph">
+<p>Possible errors regarding:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Registering:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Invalid credentials (empty / blank).</p>
+</li>
+<li>
+<p>Using credentials from an already existing user: usernames must be different.</p>
+</li>
+<li>
+<p>Database exception: connection lost, data loss.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Login:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Empty or blank credentials.</p>
+</li>
+<li>
+<p>Username does not exist.</p>
+</li>
+<li>
+<p>Wrong password.</p>
+</li>
+<li>
+<p>Database exception: connection lost, data loss.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Game:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Wikidata error.</p>
+</li>
+<li>
+<p>Database exception: connection lost, data loss.</p>
+</li>
+<li>
+<p>LLM not answering to the user&#8217;s prompt.</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
 <div style="page-break-after: always;"></div>
 </div>
 </div>
@@ -1850,7 +2067,7 @@ zoom into this black box using additional deployment diagrams:</p>
 when your infrastructure is more complex.</p>
 </li>
 <li>
-<p>When your (hardware) stakeholders prefer other kinds of diagrams rather than a deployment diagram, let them use any kind that is able to show nodes and channels of the infrastructure.</p>
+<p>When your (hardware) stakeholders prefer other kinds of diagrams rather than azz deployment diagram, let them use any kind that is able to show nodes and channels of the infrastructure.</p>
 </li>
 </ul>
 </div>
@@ -1889,23 +2106,27 @@ when your infrastructure is more complex.</p>
 </div>
 </div>
 <div class="paragraph">
-<p><em><strong>&lt;Overview Diagram&gt;</strong></em></p>
+<p>The application will be deployed on an oracle server, using docker to run the different modules of the application. The application will use the wikidata API to get the different questions and answers of the game and an LLM API to do calls to the llm so that the user can interact with it and, for example ask for hints.</p>
 </div>
-<div class="dlist">
-<dl>
-<dt class="hdlist1">Motivation</dt>
-<dd>
-<p><em>&lt;explanation in text form&gt;</em></p>
-</dd>
-<dt class="hdlist1">Quality and/or Performance Features</dt>
-<dd>
-<p><em>&lt;explanation in text form&gt;</em></p>
-</dd>
-<dt class="hdlist1">Mapping of Building Blocks to Infrastructure</dt>
-<dd>
-<p><em>&lt;description of the mapping&gt;</em></p>
-</dd>
-</dl>
+<div class="paragraph">
+<p>All of this will be deployed in an oracle server running ubuntu with the help of docker.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="./images/UML%20diagram%201.png" alt="UML diagram 1" width="1001" height="638">
+</div>
+</div>
+<div class="paragraph">
+<p><strong>Motivation</strong></p>
+</div>
+<div class="paragraph">
+<p>The motivation behind the design of this application is to create a scalable, flexible, and secure system that can efficiently integrate with external APIs (such as Wikidata), while providing seamless user interactions through a web application. The core of the system revolves around managing various API calls, handling data storage, and ensuring a robust system that can keep up with the user demands.</p>
+</div>
+<div class="paragraph">
+<p>To achieve this, we utilize a containerized microservices architecture, where each service (such as the Game Service, User Management, and API Gateway) is isolated in its own container. This separation allows for efficient scaling, improved fault tolerance, and the ability to update individual services independently. Additionally, the use of MongoDB ensures flexible, high-performance storage, while the API Gateway acts as a single entry point for all external and internal communication, providing load balancing, routing, and security functionalities.</p>
+</div>
+<div class="paragraph">
+<p>The overall design enables the application to handle varying levels of demand, from individual user interactions to large-scale data processing, all while maintaining a high degree of security and performance. This approach not only supports future growth but also ensures that the system is easy to maintain and evolve over time.</p>
 </div>
 </div>
 <div class="sect2">
@@ -1921,24 +2142,196 @@ when your infrastructure is more complex.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_infrastructure_element_1">7.2.1. <em>&lt;Infrastructure Element 1&gt;</em></h4>
-<div class="paragraph">
-<p><em>&lt;diagram + explanation&gt;</em></p>
+<h4 id="_oracle_serverapplication">7.2.1. Oracle ServerApplication</h4>
+<div class="imageblock">
+<div class="content">
+<img src="./images/UML%20diagram%202.png" alt="UML diagram 2" width="1011" height="638">
 </div>
-</div>
-<div class="sect3">
-<h4 id="_infrastructure_element_2">7.2.2. <em>&lt;Infrastructure Element 2&gt;</em></h4>
-<div class="paragraph">
-<p><em>&lt;diagram + explanation&gt;</em></p>
 </div>
 <div class="paragraph">
-<p>&#8230;&#8203;</p>
+<p><strong>Quality and/or Performance Features</strong></p>
 </div>
-</div>
-<div class="sect3">
-<h4 id="_infrastructure_element_n">7.2.3. <em>&lt;Infrastructure Element n&gt;</em></h4>
 <div class="paragraph">
-<p><em>&lt;diagram + explanation&gt;</em></p>
+<p>Our system consists of several key containers that work together to ensure a smooth and scalable user experience. Below are the core features and quality attributes that define the system&#8217;s architecture:</p>
+</div>
+<div class="paragraph">
+<p><strong>Key Features</strong></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Web Application</strong>: The web app serves as the user interface where users interact with the system. It connects to the Gateway Service to make API calls and process user actions.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Endpoints</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>`GET /signup` - Shows the signup screen to the user</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>`POST /signup` - Sends the sign up information to the gateway service</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>`GET /login` - Shows the signup screen to the user</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>`POST /login` - Sends the sign up information to the gateway service</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>`GET /quiz` - Shows the user a question from a quiz whose theme is specified as parameter</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>`POST /quiz` - Submits the answer to the gateway service</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>`GET /edit`- Shows the user a form in order to edit their data</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>`POST /edit` - Sends the updated information to the gateway service</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>`GET /stats` - Shows the user their game stats</pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Gateway Service</strong>: The central point for routing all incoming requests. It ensures security, authentication, and routing to the appropriate service, whether it&#8217;s the LLM Service, User-related services, or the Game Service.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Endpoints</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>`GET /health` - Shows health status of the system</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>`GET /quiz` - Retrieves quiz questions</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>`POST /quiz` - Submits user answers</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>`POST /login` - Authenticates user requests</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>`POST /adduser` - Registers new users</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>`POST /edituser` - Edits user information</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>`GET /stats` - Requests a user historical playing data</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>`POST /askllm` - Sends a question to the LLM Service</pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>LLM Service</strong>: A container dedicated to handling calls to the LLM API for processing user queries.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Endpoints</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>`POST /hint` - Provides a hint to the player</pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>User Gateway</strong>: Manages user-related API calls, including user authentication and CRUD operations.</p>
+</li>
+<li>
+<p><strong>User CRUD Service</strong>: Handles the CRUD operations for user data, interacting with the MongoDB database for persistent storage.</p>
+</li>
+<li>
+<p><strong>User Authentication Service</strong>: Responsible for managing user authentication, ensuring that secure access to the application is maintained.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Endpoints</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>`GET /users` - Retrieves a list of all users (admin use)</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>`POST /users/search` - Searches for users based on filters (e.g., username, email)</pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Game Service</strong>: Manages the game-related API calls, processing user inputs and interacting with external services like the Wikidata API to answer game-related questions.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Endpoints</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>`GET /quiz` - Retrieves a batch of quiz questions from WikiData</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>`POST /quiz` - Validates a user's answer</pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>MongoDB Database</strong>: Stores user data, including authentication and CRUD-related data, and ensures data integrity and persistence.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>By organizing the system into these clear, well-defined containers, we ensure that each component can evolve independently, maintain security, and scale as required while providing a robust user experience.</p>
 </div>
 <div style="page-break-after: always;"></div>
 </div>
@@ -2318,7 +2711,7 @@ more precisely down to a level of scenarios that can be discussed and evaluated.
 <div id="footer">
 <div id="footer-text">
 Version 8.2 EN<br>
-Last updated 2025-02-09 23:33:11 +0100
+Last updated 2025-02-04 11:27:03 +0100
 </div>
 </div>
 </body>
