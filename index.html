@@ -759,9 +759,14 @@ These stakeholders determine the extent and the level of detail of your work and
 </thead>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>End Users</strong></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Users of the game</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Players</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Game users</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Enjoyable and engaging experience, with an easy-to-use interface and fun, dynamic gameplay.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Administrators</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Admin users</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Effective tools for managing game content, monitoring performance, and maintaining system integrity.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><strong>RTVE / Teachers</strong></p></td>
@@ -825,15 +830,15 @@ These stakeholders determine the extent and the level of detail of your work and
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Frontend Technologies</strong></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The frontend must be developed using <strong>React</strong> to ensure a modern, responsive, and maintainable user experience.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">A Web frontend must be developed to ensure a modern, responsive, and maintainable user experience.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Backend Framework</strong></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The backend should be built using <strong>Node.js with Express</strong> to support efficient API interactions and robust user management.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The system should include a backend aiming to support efficient API interactions and robust user management.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Database</strong></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The system must use <strong>MongoDB</strong> to store user data, game progress, and question history efficiently.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The system must use a database to store user data, game progress, and question history efficiently.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Cloud Deployment</strong></p></td>
@@ -1141,7 +1146,7 @@ These stakeholders determine the extent and the level of detail of your work and
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="./images/diag-plantuml-md5-99ed14fd2557bd6fca73cf139b118e6c.png" alt="Diagram" width="895" height="593">
+<img src="./images/diag-plantuml-md5-99ed14fd2557bd6fca73cf139b118e6c.png" alt="Diagram" width="950" height="561">
 </div>
 </div>
 <div class="sidebarblock arc42help">
@@ -1209,54 +1214,54 @@ together with a mapping table showing the relationships between channels and inp
 </thead>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>JavaScript</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript">JavaScript</a></strong></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Main language used in the project</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Due to our familiarity with developing web projects using JavaScript and also its easy learning curve. Besides, it is nowadays highly popular in web development.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Due to our familiarity with developing web projects using JavaScript and its easy learning curve. Moreover, it is one of the most popular languages in web development today.</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Node.js</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong><a href="https://nodejs.org">Node.js</a></strong></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Environment for the project development</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Allows the execution of JavaScript at runtime and is multiplatform. It is highly compatible with our main development language: JavaScript. It is open source, in line with our application development.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Allows the execution of JavaScript at runtime and is multiplatform. It is highly compatible with our main development language and is open source.</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>React</strong></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Frontend development of our web application.</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">It is highly used in the current web app sector of the industry. The development team agrees that it could ease the view development of the web using different techniques of this technology. Moreover, its learning curve is relatively easy for web development beginners.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong><a href="https://reactjs.org">React</a></strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Frontend development of our web application</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Widely used in the web app industry, React facilitates efficient view development with techniques familiar to our team. Its learning curve is also relatively gentle for beginners.</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Express</strong></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Backend or core of our web application. It should manage the control of the application following the interaction received from client requests.</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Express is easy to understand, and its behavior is similar to some technologies that the development team considers familiar: functional programming, delegate functions, and an HTTP controller structure based on request/response.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong><a href="https://expressjs.com">Express</a></strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Backend/core of our web application, managing client requests</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Express is straightforward to understand and leverages familiar concepts like functional programming, delegate functions, and a request/response HTTP controller structure.</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Groq API</strong></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Service using the LLM of Meta (LLaMA). It will provide the chatbot experience for the client.</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The development team considered that the demo project using this API was easy to understand and put into production, behaving properly and with efficient responses and valid latency. Moreover, this Meta service allows 1,000 API calls daily, which we consider appropriate for the project&#8217;s needs.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong><a href="https://www.groq.com">Groq API (Not yet decided)</a></strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">LLM service to provide the chatbot experience. Currently under evaluation with consideration for alternatives (e.g., Empathy).</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Groq API is a flexible service that uses interchangeable LLM models. It allows for the underlying model to be swapped by simply changing the API URL and key. The demo project showcased efficient response times and appropriate latency, with support for up to 1,000 API calls daily.</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>WikiData API</strong></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Service that provides the information needed for the questions asked to the client during the game interaction.</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Due to its easy-to-use service API and also its specific query language, SPARQL, that could allow the development team to solve different requests appropriately. Besides, it is a constraint in the project development.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong><a href="https://www.wikidata.org">WikiData API</a></strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Provides information required for answering client questions during game interactions</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Its easy-to-use API and the SPARQL query language enable the development team to handle diverse information requests efficiently. Additionally, its use is a project constraint.</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Bcrypt</strong></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Module to encrypt the sensitive information of the application</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Due to its capabilities in hash encryption and its feature to be flexible with computational hardware improvements, simply by increasing the salt property of the encryption algorithm, making it more secure. Besides, this module covers our needs in the user-related services with an appropriate methods interface.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong><a href="https://www.npmjs.com/package/bcrypt">Bcrypt</a></strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Module for encrypting sensitive application data</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Offers robust hash encryption with the ability to increase the salt parameter for improved security. Its interface meets our requirements for user-related services.</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Pino</strong></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Module to provide a logging system</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The development team decided to use Pino instead of other modules (Winston, Log4j-node, etc.) as Pino provides a fast and easy approach to log events in our application without being very complex to understand. Moreover, Pino supports JSON format by default that makes easier the logger readability and parsing.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong><a href="https://getpino.io">Pino</a></strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Module for providing a logging system</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Chosen over alternatives (Winston, Log4j-node, etc.) for its fast, straightforward logging and native JSON support, which simplifies readability and parsing.</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Docker</strong></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Service that automates the deployment of the project in different software containers managed by Docker itself.</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The development team decided that, regarding the proposed services that perform the same operations, Docker is the most popular nowadays in the deployment services sector, having good performance.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong><a href="https://www.docker.com">Docker</a></strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Automates deployment using containerized services</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Docker is currently the industry standard for containerized deployments, offering excellent performance and ease of management.</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Oracle Cloud Infrastructure (OCI)</strong></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Service that hosts the application in the production stage of the project.</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Oracle Cloud Infrastructure was selected due to our team managed to obtain a free server computer in their infrastructure with sufficient power to host our web application.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong><a href="https://www.oracle.com/cloud/">Oracle Cloud Infrastructure (OCI)</a></strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Hosts the application in the production stage</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Selected due to our ability to obtain a free, sufficiently powerful server instance from Oracle’s infrastructure.</p></td>
 </tr>
 </tbody>
 </table>
@@ -1578,7 +1583,7 @@ Refer to details in the following sections.</p>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="./images/diag-plantuml-md5-9ea75ac55f307c962435cf2901f524aa.png" alt="Diagram" width="538" height="197">
+<img src="./images/diag-plantuml-md5-9ea75ac55f307c962435cf2901f524aa.png" alt="Diagram" width="1010" height="638">
 </div>
 </div>
 </div>
@@ -1642,7 +1647,7 @@ Refer to details in the following sections.</p>
 <h4 id="_container_diagram">5.2.1. Container Diagram</h4>
 <div class="imageblock">
 <div class="content">
-<img src="./images/diag-plantuml-md5-a0419155f4f0b172791e6452a369862d.png" alt="Diagram" width="1619" height="516">
+<img src="./images/diag-plantuml-md5-a0419155f4f0b172791e6452a369862d.png" alt="Diagram" width="991" height="638">
 </div>
 </div>
 </div>
@@ -1809,7 +1814,7 @@ You will mainly capture scenarios in your documentation to communicate your arch
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="./images/Register%20diagram.png" alt="Register diagram" width="828" height="853">
+<img src="./images/Register%20diagram.png" alt="Register diagram" width="794" height="822">
 </div>
 </div>
 <div class="paragraph">
@@ -1848,7 +1853,7 @@ You will mainly capture scenarios in your documentation to communicate your arch
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="./images/Login%20diagram.png" alt="Login diagram" width="777" height="890">
+<img src="./images/Login%20diagram.png" alt="Login diagram" width="746" height="857">
 </div>
 </div>
 <div class="paragraph">
@@ -1887,7 +1892,7 @@ You will mainly capture scenarios in your documentation to communicate your arch
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="./images/Game%20diagram.png" alt="Game diagram" width="1258" height="1117">
+<img src="./images/Game%20diagram.png" alt="Game diagram" width="1213" height="1076">
 </div>
 </div>
 <div class="olist arabic">
@@ -2113,7 +2118,7 @@ when your infrastructure is more complex.</p>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="./images/UML%20diagram%201.png" alt="UML diagram 1" width="423" height="318">
+<img src="./images/UML%20diagram%201.png" alt="UML diagram 1" width="1025" height="638">
 </div>
 </div>
 <div class="paragraph">
@@ -2145,7 +2150,7 @@ when your infrastructure is more complex.</p>
 <h4 id="_oracle_serverapplication">7.2.1. Oracle ServerApplication</h4>
 <div class="imageblock">
 <div class="content">
-<img src="./images/UML%20diagram%202.png" alt="UML diagram 2" width="1137" height="315">
+<img src="./images/UML%20diagram%202.png" alt="UML diagram 2" width="990" height="638">
 </div>
 </div>
 <div class="paragraph">
@@ -2711,7 +2716,7 @@ more precisely down to a level of scenarios that can be discussed and evaluated.
 <div id="footer">
 <div id="footer-text">
 Version 8.2 EN<br>
-Last updated 2025-02-11 18:44:23 +0100
+Last updated 2025-02-04 11:27:03 +0100
 </div>
 </div>
 </body>
