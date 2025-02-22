@@ -27,3 +27,25 @@ The quality tree organizes the relevant quality attributes of the system startin
 |===
 
 This structure can be visualized with a mind map or hierarchical diagram. For example, the following PlantUML diagram illustrates an example quality tree:
+
+[plantuml]
+----
+@startmindmap
+skinparam mindmapStyle strict
+skinparam NodeFontSize 14
+skinparam NodeColor #E0E0E0
+skinparam NodeBorderColor #000000
+
+* Quality / Usefulness
+** Scalability (Priority: High)
+*** Supports large numbers of concurrent users
+** Reliability (Priority: High)
+*** Resilient to API and system failures
+** Usability (Priority: High)
+*** Intuitive and easy-to-use interface
+** Performance (Priority: Medium)
+*** Fast response times in critical operations
+** Security (Priority: High)
+*** Robust data protection and access control
+@endmindmap
+----
