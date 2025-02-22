@@ -7,6 +7,7 @@ This section documents all quality requirements for the system by using a qualit
 
 The information provided here aligns with stakeholder expectations and allows for a measurable assessment of whether the system meets the defined quality criteria.
 
+
 === Quality Tree
 
 The quality tree organizes the relevant quality attributes of the system starting from the root node "Quality/Usefulness" and is divided into the following primary categories:
@@ -49,3 +50,27 @@ skinparam NodeBorderColor #000000
 *** Robust data protection and access control
 @endmindmap
 ----
+
+
+=== Quality Scenarios
+
+For each quality attribute in the tree, specific scenarios have been defined to articulate the expected system behavior under certain conditions. These scenarios include both usage scenarios (demonstrating normal operational performance) and change scenarios (illustrating the system’s response to modifications or unexpected events).
+
+[cols="1,3,1", options="header"] 
+|=== 
+| Quality Attribute | Scenario | Priority
+
+| Scalability | Load Scenario: When 10,000 users are concurrently active, the system must maintain a response time below 2 seconds for critical operations such as login and loading the game interface. | High
+
+| Reliability | API Failure Scenario: If the external hints generation API fails, the system must activate a backup mechanism (e.g., preloaded hints or informative messages) and log the incident, ensuring the game continues uninterrupted. | High
+
+| Usability | User Onboarding Scenario: A new user should be able to register, comprehend the application’s functionalities, and begin playing within 3 minutes, requiring fewer than 3 interactions (clicks) to access the main features. | High
+
+| Performance | Response Time Scenario: Upon requesting a hint or answering a question, the system must process and deliver the information within 1 second, ensuring a seamless user experience. | Medium
+
+| Security | Unauthorized Access Scenario: In the event of an unauthorized access attempt, the system must deny access, log the incident, and ensure that all user data remains protected through encryption and robust authentication. | High 
+|===
+
+Additionally, change scenarios—such as incorporating new functionalities or adapting to fluctuations in user demand—are considered. These scenarios will help evaluate the system’s capacity to evolve without compromising its key quality attributes.
+
+The review and validation of these scenarios with stakeholders ensure that the quality requirements are aligned with the overall project objectives and provide clear guidance for architectural decisions throughout the system’s lifecycle.
