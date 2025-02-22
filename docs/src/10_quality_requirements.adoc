@@ -7,3 +7,23 @@ This section documents all quality requirements for the system by using a qualit
 
 The information provided here aligns with stakeholder expectations and allows for a measurable assessment of whether the system meets the defined quality criteria.
 
+=== Quality Tree
+
+The quality tree organizes the relevant quality attributes of the system starting from the root node "Quality/Usefulness" and is divided into the following primary categories:
+
+[cols="2,3", options="header"]
+|===
+| Quality Attribute | Description
+
+| Scalability (Priority: High) | The system must handle a large number of concurrent users without noticeable performance degradation.
+
+| Reliability (Priority: High) | The system must be resilient to failures—particularly in communication with the hints generation API—to ensure an uninterrupted user experience.
+
+| Usability (Priority: High) | The application should have an intuitive, user-friendly interface, enabling users to register, understand, and engage with the system quickly.
+
+| Performance (Priority: Medium) | The system must deliver rapid responses—especially when generating questions and hints—to maintain a smooth and efficient user experience.
+
+| Security (Priority: High) | The system must safeguard user data through robust encryption and strict access control measures.
+|===
+
+This structure can be visualized with a mind map or hierarchical diagram. For example, the following PlantUML diagram illustrates an example quality tree:
