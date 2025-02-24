@@ -21,7 +21,7 @@ router.get('/generate/:type/:amount', async (req, res) => {
         const url = wikiDataUri + encodeURIComponent(query);
         const response = await fetch(wikiDataUri + encodeURIComponent(query), {
             headers: {
-              'User-Agent': 'wichat_en2b/1.0 (UO295454@uniovi.es)'
+              'User-Agent': 'wichat_en2b/1.0'
             }
         });
           
