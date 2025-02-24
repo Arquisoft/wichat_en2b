@@ -9,39 +9,32 @@ Users must create an account if they do not have one. The behaviour of the appli
 
 [plantuml,"Register diagram",png]
 ----
-actor User
-entity WA as "Web Application"
-entity GS as "Gateway Service"
-entity US as "User Service"
-database DB as "MongoDB"
+:User sends data;
+:Send data to Web Application;
+:Forward data to Gateway;
+:Send user addition request to User Service;
+:Verify credentials;
 
-User -> WA : 1. Sends data
-WA -> GS : 2. Forwards data
-GS -> US : 3. Sends user addition request
-US -> US : 4. Verify credentials
+if (Credentials correct?) then (Yes)
+    :Ask DB for existing user;
+    :Return user;
 
-alt Correct credentials
-    US -> DB : 5. Ask DB for existing user
-    US <-- DB : 6. Returns user
+    if (User exists?) then (Yes)
+        :Respond with error;
+        :Show error to User;
+    else (No)
+        :Encrypt password and save;
+        :Add user to the database;
+        :Respond with new user;
+        :Forward data to Web App;
+        :Show confirmation to User;
+    endif
+else (No)
+    :Respond with error;
+    :Show error to User;
+endif
 
-    alt Returned user exists
-        GS <-- US : Sends error
-        WA <-- GS : Forwars error
-        User <--- WA : Notifies repeated user
-
-    else User can be added
-        US -> US : 5. Encrypt password and save.
-        US -> DB : 6. Adds the user to the database
-        US --> GS : 7. Responds with the new user
-        GS --> WA : Forwards data
-        WA --> User : Shows confirmation
-    end
-
-else Incorrect credentials
-    US --> GS : Sends error
-    GS --> WA : Forwards error
-    WA --> User : Shows error
-end
+stop
 
 ----
 
