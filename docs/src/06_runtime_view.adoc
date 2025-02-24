@@ -68,44 +68,34 @@ Users must have an account to use the application. The following sequence diagra
 
 [plantuml,"Login diagram",png]
 ----
-actor User
-entity WA as "Web Application"
-entity GS as "Gateway Service"
-entity UAS as "User Authentication Service"
-database DB as "MongoDB"
+:User enters credentials;
+:Send credentials to Web Application;
 
-User -> WA : 1. Send credentials
-WA -> GS : 2. Forward credentials
+if (Forward credentials to Gateway?) then (Success)
+    :Send authentication request to UAS;
+    :Verify credentials;
 
-alt Success
-    GS -> UAS : 3. Sends authentication request
-    UAS -> UAS : 4. Verify credentials
+    if (Credentials verified?) then (Yes)
+        :Check user in Database;
+        :Return user;
 
-    alt Verified
-        UAS -> DB : Check user
-        UAS <-- DB : 5. Returns user
+        if (Passwords match?) then (Yes)
+            :Send token to Gateway;
+            :Forward token to Web App;
+            :User logs in;
+        else (No)
+            :Respond with error;
+            :Show error to User;
+        endif
+    else (No)
+        :Respond with error;
+        :Show error to User;
+    endif
+else (Failure)
+    :Show error to User;
+endif
 
-        alt Passwords match
-            GS <-- UAS : 6. Sends token
-            WA <-- GS : Forwards token
-            User <-- WA : 7. User logs in
-        
-        else Passwords do not match
-            GS <-- UAS : Responds error
-            WA <-- GS : Forwards error
-            User <-- WA : Shows error
-        end
-
-    else Incorrect credentials
-        GS <-- UAS : Responds error
-        WA <-- GS : Forwards error
-        User <-- WA : Shows error
-    end
-else Failure
-    WA <-- GS : Forwards error
-    User <-- WA : Shows error
-
-end
+stop
 ----
 
 
