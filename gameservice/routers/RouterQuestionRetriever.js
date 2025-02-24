@@ -1,5 +1,5 @@
 const express = require('express');
-const Question = require('./question-model');
+const Question = require('../question-model');
 const router = express.Router();
 
 // Route to get a random question

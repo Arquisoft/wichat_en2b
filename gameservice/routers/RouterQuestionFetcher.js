@@ -1,20 +1,16 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const Question = require('./question-model');
+const Question = require('../question-model');
 const fetch = require('node-fetch');
 const fs = require('fs');
-
-const port = 8004;
-
-const app = express();
+const router = express.Router();
 
 // Establis connection to MongoDB game database
 const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/game';
 mongoose.connect(mongoUri);
-
 const wikiDataUri = "https://query.wikidata.org/sparql?format=json&query=";
 
-app.get('/generate/:type/:amount', async (req, res) => {
+router.get('/generate/:type/:amount', async (req, res) => {
     var itemType = req.params['type'];
     var amount = req.params['amount'];
     const query = `
@@ -73,6 +69,4 @@ async function saveQuestionstoDB(items, code) {
     }
 }
 
-app.listen(port, () => {
-    console.log(`Server started on port ${port}`);
-})
+module.exports = router;
