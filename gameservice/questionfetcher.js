@@ -14,55 +14,59 @@ mongoose.connect(mongoUri);
 
 const wikiDataUri = "https://query.wikidata.org/sparql?format=json&query=";
 
-app.get('/generate', async (req, res) => {
+app.get('/generate/:type/:amount', async (req, res) => {
+    var itemType = req.params['type'];
+    var amount = req.params['amount'];
     const query = `
-        SELECT ?city ?cityLabel ?image WHERE {
-            ?city wdt:P31 wd:Q515.  # Cities
-            ?city wdt:P18 ?image.  # City image (compulsory)
-            SERVICE wikibase:label { bd:serviceParam wikibase:language "es". }
+        SELECT ?item ?itemLabel ?image WHERE {
+            ?item wdt:P31/wdt:P279* wd:${itemType}.  # Item type or subclass of item type
+            ?item wdt:P18 ?image.  # Item image (compulsory)
+            SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
         }
-        LIMIT 2
+        LIMIT ${amount}
     `;
 
     try {
         const response = await fetch(wikiDataUri + encodeURIComponent(query));
         const data = await response.json();
-        
-        const cities = data.results.bindings.filter(item => item.cityLabel.value != null && item.image.value != null).map(item => ({
-            name: item.cityLabel.value,
-            image: item.image.value
-        }));
 
-        saveQuestionstoDB(cities);
+        const items = data.results.bindings.filter(item => item.itemLabel.value != null && item.image.value != null 
+            && item.item.value.split('/')[item.item.value.split('/').size - 1] != item.itemLabel.value)
+            .map(item => ({
+                name: item.itemLabel.value,
+                image: item.image.value
+            }));
+
+        saveQuestionstoDB(items, itemType);
     } catch (error) {
         console.error('Error fetching data:', error);
         res.status(500).json({ error: 'Failed to retrieve data' });
     }
+
+    res.status(200).json({ message: 'Data fetched successfully' });
 });
 
-async function saveQuestionstoDB(cities) {
+async function saveQuestionstoDB(items, code) {
     try {
-        for (const city of cities) {
-            var question = await Question.findOne({ subject: "city", answer: city.name });
+        for (const item of items) {
+            var question = await Question.findOne({ subject: code, answer: item.name });
 
             if (!question) {
                 question = new Question({
-                    subject: "city",
-                    answer: city.name
+                    subject: code,
+                    answer: item.name
                 });
             } else {
-                question.subject = "city";
-                question.answer = city.name;
+                question.subject = code;
+                question.answer = item.name;
                 question.__v = question.__v + 1;
             }
 
             await question.save();
 
-            const imageResponse = await fetch(city.image);
+            const imageResponse = await fetch(item.image);
             const imageBuffer = await imageResponse.buffer();
-            fs.writeFile(`./public/images/${question._id.toString()}.jpg`, imageBuffer, () => {
-                console.log(`Image for ${city.name} saved`);
-            });
+            fs.writeFile(`./public/images/${question._id.toString()}.jpg`, imageBuffer, () => {});
         }
     } catch (error) {
         console.error('Error saving data:', error);
