@@ -1,13 +1,8 @@
 const express = require('express');
-const mongoose = require('mongoose');
 const Question = require('../question-model');
-const fetch = require('node-fetch');
 const fs = require('fs');
 const router = express.Router();
 
-// Establis connection to MongoDB game database
-const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/game';
-mongoose.connect(mongoUri);
 const wikiDataUri = "https://query.wikidata.org/sparql?format=json&query=";
 
 router.get('/generate/:type/:amount', async (req, res) => {
@@ -23,7 +18,13 @@ router.get('/generate/:type/:amount', async (req, res) => {
     `;
 
     try {
-        const response = await fetch(wikiDataUri + encodeURIComponent(query));
+        const url = wikiDataUri + encodeURIComponent(query);
+        const response = await fetch(wikiDataUri + encodeURIComponent(query), {
+            headers: {
+              'User-Agent': 'wichat_en2b/1.0 (UO295454@uniovi.es)'
+            }
+        });
+          
         const data = await response.json();
 
         const items = data.results.bindings.filter(item => item.itemLabel.value != null && item.image.value != null 
@@ -33,13 +34,13 @@ router.get('/generate/:type/:amount', async (req, res) => {
                 image: item.image.value
             }));
 
-        saveQuestionstoDB(items, itemType);
-    } catch (error) {
-        console.error('Error fetching data:', error);
-        res.status(500).json({ error: 'Failed to retrieve data' });
-    }
+        await saveQuestionstoDB(items, itemType);
+        return res.status(200).json({ message: '✅ Data fetched successfully' }); 
 
-    res.status(200).json({ message: 'Data fetched successfully' });
+    } catch (error) {
+        console.error('❌ Error fetching data:', error);
+        return res.status(500).json({ error: '❌ Failed to retrieve data' });
+    }
 });
 
 async function saveQuestionstoDB(items, code) {
@@ -61,7 +62,8 @@ async function saveQuestionstoDB(items, code) {
             await question.save();
 
             const imageResponse = await fetch(item.image);
-            const imageBuffer = await imageResponse.buffer();
+            const arrayBuffer = await imageResponse.arrayBuffer();
+            const imageBuffer = Buffer.from(arrayBuffer);
             fs.writeFile(`./public/images/${question._id.toString()}.jpg`, imageBuffer, () => {});
         }
     } catch (error) {
