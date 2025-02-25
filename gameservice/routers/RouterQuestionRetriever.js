@@ -3,7 +3,7 @@ const Question = require('../question-model');
 const router = express.Router();
 
 // Route to get a random question
-router.get('/game/:numQuestions/:numOptions', async (req, res) => {
+router.get('/game/:numQuestions?/:numOptions?', async (req, res) => {
     try {
         const numQuestions = parseInt(req.params.numQuestions, 10) || 3;
         const numOptions = parseInt(req.params.numOptions, 10) || 3;
