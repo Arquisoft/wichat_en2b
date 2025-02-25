@@ -31,9 +31,11 @@ router.get('/generate/:type/:amount', async (req, res) => {
         const data = await response.json();
 
         // Filter out items with missing data
-        const items = data.results.bindings.filter(item => item.itemLabel.value != null && item.image.value != null 
-            && item.item.value.split('/')[item.item.value.split('/').size - 1] != item.itemLabel.value)
-            .map(item => ({
+        const items = data.results.bindings.filter(item => {
+            const itemId = item.item.value.split('/').pop();
+            return item.itemLabel.value != null && item.image.value != null 
+            && !/^Q\d+$/.test(item.itemLabel.value) && itemId != item.itemLabel.value;
+        }).map(item => ({
                 name: item.itemLabel.value,
                 image: item.image.value
             }));
