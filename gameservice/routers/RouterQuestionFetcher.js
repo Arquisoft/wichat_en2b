@@ -11,7 +11,7 @@ router.get('/generate/:type/:amount', async (req, res) => {
     var amount = req.params['amount'];
     const query = `
         SELECT ?item ?itemLabel ?image WHERE {
-            ?item wdt:P31/wdt:P279* wd:${itemType}.  # Item type or subclass of item type
+            ?item wdt:P31 wd:${itemType}.  # Item type or subclass of item type
             ?item wdt:P18 ?image.  # Item image (compulsory)
             SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
         }
