@@ -8,18 +8,17 @@ router.get('/game/:numQuestions?/:numOptions?', async (req, res) => {
         const numQuestions = parseInt(req.params.numQuestions, 10) || 3;
         const numOptions = parseInt(req.params.numOptions, 10) || 3;
 
-        // Retrieve all questions from the database
-        const allQuestions = await Question.find();
-
-        if (allQuestions.length < 3) {
+        // Retrieve random questions from the database limited by the number of questions requested
+        const questionsFromDb = await Question.aggregate([{ $sample: { size: numQuestions } }]);
+        if (questionsFromDb.length < 3) {
             return res.status(400).json({ error: 'No hay suficientes preguntas en la base de datos' });
         }
 
-        const selectedQuestions = allQuestions.sort(() => 0.5 - Math.random()).slice(0, numQuestions);
+        const selectedQuestions = questionsFromDb.sort(() => 0.5 - Math.random()).slice(0, numQuestions);
         
         const formattedQuestions = selectedQuestions.map(q => {
             // Obtain random fake answers
-            let fakeAnswers = allQuestions
+            let fakeAnswers = questionsFromDb
                 .filter(item => item.answer !== q.answer)
                 .map(item => item.answer);
 
