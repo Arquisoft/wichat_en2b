@@ -3,23 +3,28 @@ const Question = require('../question-model');
 const router = express.Router();
 
 // Route to get a random question
-router.get('/game', async (req, res) => {
+router.get('/game/:numQuestions?/:numOptions?', async (req, res) => {
     try {
+        const numQuestions = parseInt(req.params.numQuestions, 10) || 3;
+        const numOptions = parseInt(req.params.numOptions, 10) || 3;
+
         // Retrieve all questions from the database
         const allQuestions = await Question.find();
 
         if (allQuestions.length < 3) {
             return res.status(400).json({ error: 'No hay suficientes preguntas en la base de datos' });
         }
+
+        const selectedQuestions = allQuestions.sort(() => 0.5 - Math.random()).slice(0, numQuestions);
         
-        const formattedQuestions = allQuestions.map(q => {
+        const formattedQuestions = selectedQuestions.map(q => {
             // Obtain random fake answers
             let fakeAnswers = allQuestions
                 .filter(item => item.answer !== q.answer)
                 .map(item => item.answer);
 
-            // Select two random incorrect answers and mix them with the correct answer
-            fakeAnswers = fakeAnswers.sort(() => 0.5 - Math.random()).slice(0, 2);
+            // Select random incorrect answers and mix them with the correct answer
+            fakeAnswers = fakeAnswers.sort(() => 0.5 - Math.random()).slice(0, numOptions - 1);
             const answers = [q.answer, ...fakeAnswers].sort(() => 0.5 - Math.random());
 
             return {
