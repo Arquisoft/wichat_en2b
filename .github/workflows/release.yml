@@ -1,4 +1,4 @@
-name: CI for wichat_0
+name: CI for wichat_en2b
 
 on:
   release:
