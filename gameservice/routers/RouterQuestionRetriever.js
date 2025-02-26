@@ -10,7 +10,6 @@ router.get('/game/:numQuestions?/:numOptions?', async (req, res) => {
 
         // Query: get random questions from the database to be used in the game
         const gameQuestions = await Question.aggregate([
-            { $match: { answer: { $not: { $regex: /^Q\d+$/ } } } },
             { $sample: { size: numQuestions } }
         ]);
 
@@ -30,7 +29,7 @@ router.get('/game/:numQuestions?/:numOptions?', async (req, res) => {
             }
 
             // Create a pool of fake answers and select a random subset of them to be used as options
-            const fakeAnswers  = fakeAnswersDocs.sort(() => 0.5 - Math.random()).slice(0, numOptions - 1);
+            const fakeAnswers  = fakeAnswersDocs.sort(() => 0.5 - Math.random()).slice(0, numOptions - 1).map(q => q.answer);
 
             // Shuffle the correct answer with the fake answers
             const answers = [q.answer, ...fakeAnswers].sort(() => 0.5 - Math.random());
@@ -38,7 +37,7 @@ router.get('/game/:numQuestions?/:numOptions?', async (req, res) => {
             return {
                 image_name: `/images/${q._id}.jpg`,
                 answers,
-                right_answer: q
+                right_answer: q.answer
             };
         }));
 
