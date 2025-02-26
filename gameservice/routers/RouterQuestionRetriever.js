@@ -8,30 +8,39 @@ router.get('/game/:numQuestions?/:numOptions?', async (req, res) => {
         const numQuestions = parseInt(req.params.numQuestions, 10) || 3;
         const numOptions = parseInt(req.params.numOptions, 10) || 3;
 
-        // Retrieve random questions from the database limited by the number of questions requested
-        const questionsFromDb = await Question.aggregate([{ $sample: { size: numQuestions } }]);
-        if (questionsFromDb.length < 3) {
-            return res.status(400).json({ error: 'No hay suficientes preguntas en la base de datos' });
+        // Query: get random questions from the database to be used in the game
+        const gameQuestions = await Question.aggregate([
+            { $match: { answer: { $not: { $regex: /^Q\d+$/ } } } },
+            { $sample: { size: numQuestions } }
+        ]);
+
+        if (gameQuestions.length < numQuestions) {
+            return res.status(400).json({ error: 'Not enough questions in DB.' });
         }
-
-        const selectedQuestions = questionsFromDb.sort(() => 0.5 - Math.random()).slice(0, numQuestions);
         
-        const formattedQuestions = selectedQuestions.map(q => {
-            // Obtain random fake answers
-            let fakeAnswers = questionsFromDb
-                .filter(item => item.answer !== q.answer)
-                .map(item => item.answer);
+        const formattedQuestions = await Promise.all(gameQuestions.map(async q => {
+            // Obtain random fake answers from the database excluding the correct answer
+            const fakeAnswersDocs = await Question.aggregate([
+                { $match: { answer: { $ne: q.answer } } },
+                { $sample: { size: numOptions - 1 } }
+            ]);
 
-            // Select random incorrect answers and mix them with the correct answer
-            fakeAnswers = fakeAnswers.sort(() => 0.5 - Math.random()).slice(0, numOptions - 1);
+            if (fakeAnswersDocs.length < numOptions - 1) {
+                throw new Error('Not enough questions to generate responses.');
+            }
+
+            // Create a pool of fake answers and select a random subset of them to be used as options
+            const fakeAnswers  = fakeAnswersDocs.sort(() => 0.5 - Math.random()).slice(0, numOptions - 1);
+
+            // Shuffle the correct answer with the fake answers
             const answers = [q.answer, ...fakeAnswers].sort(() => 0.5 - Math.random());
 
             return {
                 image_name: `/images/${q._id}.jpg`,
                 answers,
-                right_answer: q.answer
+                right_answer: q
             };
-        });
+        }));
 
         res.status(200).json(formattedQuestions);
 
