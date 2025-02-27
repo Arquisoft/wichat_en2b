@@ -51,6 +51,11 @@ router.get('/generate/:type/:amount', async (req, res) => {
 });
 
 async function saveQuestionsToDB(items, code) {
+    // Ensure the images directory exists
+    const imagesDir = './public/images/';
+    if (!fs.existsSync(imagesDir)) {
+        fs.mkdirSync(imagesDir, { recursive: true });
+    }
     try {
         for (const item of items) {
             var question = await Question.findOne({ subject: code, answer: item.name });
