@@ -1,0 +1,102 @@
+openapi: 3.0.0
+info:
+  title: Wichat Game Service API
+  version: 1.0.0
+  description: API documentation for the Wichat Game Service
+servers:
+  - url: http://localhost:8004
+paths:
+  /game:
+    get:
+      summary: Retrieve random questions for the game
+      tags:
+        - Questions
+      responses:
+        '200':
+          description: A list of formatted questions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    image_name:
+                      type: string
+                      description: The image path for the question
+                    answers:
+                      type: array
+                      items:
+                        type: string
+                      description: List of possible answers
+                    right_answer:
+                      type: string
+                      description: The correct answer
+        '400':
+          description: Not enough questions in the database
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: No hay suficientes preguntas en la base de datos
+        '500':
+          description: Error retrieving questions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Error retrieving questions
+  /generate/{type}/{amount}:
+    get:
+      summary: Generate questions from Wikidata
+      tags:
+        - Questions
+      parameters:
+        - in: path
+          name: type
+          schema:
+            type: string
+          required: true
+          description: The type of items to fetch from Wikidata
+        - in: path
+          name: amount
+          schema:
+            type: integer
+          required: true
+          description: The number of items to fetch
+      responses:
+        '200':
+          description: Data fetched successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: ✅ Data fetched successfully
+        '500':
+          description: Failed to retrieve data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: ❌ Failed to retrieve data
+components:
+  schemas:
+    Question:
+      type: object
+      properties:
+        subject:
+          type: string
+        answer:
+          type: string
