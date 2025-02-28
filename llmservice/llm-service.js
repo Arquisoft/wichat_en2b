@@ -68,7 +68,7 @@ async function sendQuestionToLLM(question, apiKey, model = 'gemini') {
   }
 }
 
-app.post('/ask', async (req, res) => {
+app.post('/askllm', async (req, res) => {
   try {
     // Check if required fields are present in the request body
     validateRequiredFields(req, ['question', 'model', 'apiKey']);
