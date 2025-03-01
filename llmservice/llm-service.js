@@ -18,10 +18,11 @@ const llmConfigs = {
   },
   empathy: {
     url: () => 'https://empathyai.prod.empathy.co/v1/chat/completions',
-    transformRequest: (question) => ({
+    transformRequest: (question, answer) => ({
       model: "mistralai/Mistral-7B-Instruct-v0.3",
       messages: [
-        { role: "system", content: "You are a helpful assistant." },
+        { role: "system", content: "You are an assistant designed to help players during a quiz game. When a player asks for a hint, you will provide a helpful clue related to the question, but not the full answer."+
+         "The possible answers are:" + answer.answers.join(",") + ". The right answer is: " + answer.right_answer + ". You will never give the correct answer."},
         { role: "user", content: question }
       ]
     }),
@@ -43,7 +44,7 @@ function validateRequiredFields(req, requiredFields) {
 }
 
 // Generic function to send questions to LLM
-async function sendQuestionToLLM(question, apiKey, model = 'gemini') {
+async function sendQuestionToLLM(question, apiKey, model = 'empathy', answer) {
   try {
     const config = llmConfigs[model];
     if (!config) {
@@ -51,7 +52,8 @@ async function sendQuestionToLLM(question, apiKey, model = 'gemini') {
     }
 
     const url = config.url(apiKey);
-    const requestData = config.transformRequest(question);
+
+    const requestData = config.transformRequest(question, answer);
 
     const headers = {
       'Content-Type': 'application/json',
@@ -72,10 +74,9 @@ app.post('/askllm', async (req, res) => {
   try {
     // Check if required fields are present in the request body
     validateRequiredFields(req, ['question', 'model', 'apiKey']);
-
-    const { question, model, apiKey } = req.body;
-    const answer = await sendQuestionToLLM(question, apiKey, model);
-    res.json({ answer });
+    const { question, model, apiKey, answer } = req.body;
+    const llmAnswer = await sendQuestionToLLM(question, apiKey, model, answer);
+    res.json({ llmAnswer });
 
   } catch (error) {
     res.status(400).json({ error: error.message });
