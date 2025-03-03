@@ -78,10 +78,26 @@ async function sendQuestionToLLM(userId, question, apiKey, model = 'empathy', an
 
     // Make the request to the LLM API
     const url = config.url(apiKey);
-    const response = await axios.post(url, requestData, { headers });
-    
-    // Get the assistant's response and update the conversation history
-    const llmAnswer = config.transformResponse(response);
+     // List of words to filter out from the response
+     const filterWords = answer.answers;  
+
+     let response;
+     let llmAnswer;
+     let retryCount = 0;
+     const maxRetries = 3;
+     // Loop to filter out responses that contain any filtered word
+     do {
+      if(retryCount>3){
+        break;
+      }
+       response = await axios.post(url, requestData, { headers });
+       llmAnswer = config.transformResponse(response);
+       retryCount++;
+       
+     } while (filterWords.some(word => llmAnswer.toLowerCase().includes(word.toLowerCase())));
+     if (retryCount >= maxRetries) {
+      return "Exceeded retry limit due to filtered responses.";
+    }
     conversations[userId].push({ role: "assistant", content: llmAnswer });
 
     return llmAnswer;
