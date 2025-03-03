@@ -124,8 +124,7 @@ start
 :User requests questions;
 :Send request to Web Application;
 :Forward petition to Gateway;
-:Ask Wikidata for questions; 
-:Return questions;
+:QuestionRetriever retrieves questions from database;
 :Forward questions to Game Service;
 :Forward questions to Web Application;
 :Show questions to User;
@@ -143,7 +142,7 @@ repeat :For each question;
         :Send answer to Gateway;
         :Forward answer to Web Application;
         :Show LLM answer to User;
-    else
+    else (No)
         :User gives an answer;
         :Show correct answer to User;
     endif
@@ -164,9 +163,11 @@ stop
 
 . Gateway Service answers this request and forwards the petition to the Game Service.
 
-. Game Service then asks the WikiData API for questions.
+. Game Service then uses RouterQuestionRetriever.
 
-. The API returns the list of questions with answers in a .json file.
+. This class retrieves the number of questions desired from the database.
+
+. RouterQuestionRetriever returns the list of questions with answers in a .json file.
 
 . Game Service recieves these questions and forwards the data to the Gateway Service.
 
