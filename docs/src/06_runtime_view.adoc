@@ -7,41 +7,36 @@ This section focuses on describing the behaviour and interactions of the system'
 === User registration
 Users must create an account if they do not have one. The behaviour of the application is:
 
+[.text-center]
 [plantuml,"Register diagram",png]
 ----
-actor User
-entity WA as "Web Application"
-entity GS as "Gateway Service"
-entity US as "User Service"
-database DB as "MongoDB"
+:User sends data;
+:Send data to Web Application;
+:Forward data to Gateway;
+:Send user addition request to User Service;
+:Verify credentials;
 
-User -> WA : 1. Sends data
-WA -> GS : 2. Forwards data
-GS -> US : 3. Sends user addition request
-US -> US : 4. Verify credentials
+if (Credentials correct?) then (Yes)
+    :Ask DB for existing user;
+    :Return user;
 
-alt Correct credentials
-    US -> DB : 5. Ask DB for existing user
-    US <-- DB : 6. Returns user
-
-    alt Returned user exists
-        GS <-- US : Sends error
-        WA <-- GS : Forwars error
-        User <--- WA : Notifies repeated user
-
-    else User can be added
-        US -> US : 5. Encrypt password and save.
-        US -> DB : 6. Adds the user to the database
-        US --> GS : 7. Responds with the new user
-        GS --> WA : Forwards data
-        WA --> User : Shows confirmation
-    end
-
-else Incorrect credentials
-    US --> GS : Sends error
-    GS --> WA : Forwards error
-    WA --> User : Shows error
-end
+    if (User exists?) then (Yes)
+        :Respond with error;
+        :Show error to User;
+        stop
+    else (No)
+        :Encrypt password and save;
+        :Add user to the database;
+        :Respond with new user;
+        :Forward data to Web App;
+        :Show confirmation to User;
+        stop
+    endif
+else (No)
+    :Respond with error;
+    :Show error to User;
+    stop
+endif
 
 ----
 
@@ -66,46 +61,37 @@ The errorless behaviour will be:
 
 Users must have an account to use the application. The following sequence diagram shows how the application behaves when logging in.
 
+[.text-center]
 [plantuml,"Login diagram",png]
 ----
-actor User
-entity WA as "Web Application"
-entity GS as "Gateway Service"
-entity UAS as "User Authentication Service"
-database DB as "MongoDB"
+:User enters credentials;
+:Send credentials to Web Application;
+:Send authentication request to UAS;
+:Verify credentials;
 
-User -> WA : 1. Send credentials
-WA -> GS : 2. Forward credentials
+if (Credentials verified?) then (Yes)
+    :Check user in Database;
+    :Return user;
 
-alt Success
-    GS -> UAS : 3. Sends authentication request
-    UAS -> UAS : 4. Verify credentials
+    if (Passwords match?) then (Yes)
+        :Send token to Gateway;
+        :Forward token to Web App;
+        :User logs in;
+        stop
+    else (No)
+        :Respond with error;
+        :Show error to User;
+        stop
+    endif
+else (No)
+    :Respond with error;
+    :Show error to User;
+    stop
+endif
 
-    alt Verified
-        UAS -> DB : Check user
-        UAS <-- DB : 5. Returns user
-
-        alt Passwords match
-            GS <-- UAS : 6. Sends token
-            WA <-- GS : Forwards token
-            User <-- WA : 7. User logs in
-        
-        else Passwords do not match
-            GS <-- UAS : Responds error
-            WA <-- GS : Forwards error
-            User <-- WA : Shows error
-        end
-
-    else Incorrect credentials
-        GS <-- UAS : Responds error
-        WA <-- GS : Forwards error
-        User <-- WA : Shows error
-    end
-else Failure
-    WA <-- GS : Forwards error
-    User <-- WA : Shows error
-
-end
+legend
+UAS = User Authentication Service
+end legend
 ----
 
 
@@ -130,63 +116,58 @@ This is the behaviour of the flawless execution of the login:
 
 Here is the sequence diagram when playing the game.
 
+[.text-center]
 [plantuml,"Game diagram",png]
 ----
-actor User
-entity WA as "Web Application"
-entity GS as "Gateway Service"
-entity game as "Game Service"
-entity US as "User Service"
-entity CRUD as "User CRUD Service"
-entity LS as "LLM Service"
-database DB as "MongoDB"
-collections WD as "Wikidata"
-collections LLM 
+start
 
-WA -> GS : requests questions
-GS -> game : forwards petition
-game -> WD : asks wikidata
-game <-- WD : returns questions
-GS <-- game : forwards questions
-WA <-- GS : forwards questions
-User <-- WA : shows questions
+:User requests questions;
+:Send request to Web Application;
+:Forward petition to Gateway;
+:QuestionRetriever retrieves questions from database;
+:Forward questions to Game Service;
+:Forward questions to Web Application;
+:Show questions to User;
 
-loop question in questions
+repeat :For each question;
     
-    alt user asks for hint
-        User -> WA : types question
-        WA -> GS : forwards question
-        GS -> LS : forwards question
-        LS -> LS : Validates fields
-        LS -> LLM : asks the LLM
+    if (User asks for hint?) then (Yes)
+        :User types question;
+        :Forward question to Gateway;
+        :Forward question to LLM Service;
+        :Validate fields;
+        :Ask LLM for hint;
+        :Return answer;
+        :Parse answer to JSON;
+        :Send answer to Gateway;
+        :Forward answer to Web Application;
+        :Show LLM answer to User;
+    else (No)
+        :User gives an answer;
+        :Show correct answer to User;
+    endif
+repeat while (more questions?)
 
-        LS <-- LLM : returns answer
-        LS -> LS : Parse answer to json
-        GS <-- LS : sends answer
-        WA <-- GS : forwards answer
-        User <-- WA : shows answer
-    end
+:Send saving petition;
+:Forward petition to Gateway;
+:Parse game data;
+:Send parsed game back;
+:Forward parsed game to User Service;
+:Request adding game to DB;
+:Add game to MongoDB;
 
-    User -> WA : gives an answer
-    User <-- WA : shows correct answer
-end
-
-WA -> GS : sends saving petition
-GS -> game : forwards petition
-game -> game : parses game
-game --> GS : sends back 
-GS -> US : forwards parsed game
-US -> CRUD : requests adding game to DB
-CRUD -> DB : adds game
+stop
 ----
 
 . The application requests the questions to show the user. 
 
 . Gateway Service answers this request and forwards the petition to the Game Service.
 
-. Game Service then asks the WikiData API for questions.
+. Game Service then uses RouterQuestionRetriever.
 
-. The API returns the list of questions with answers in a .json file.
+. This class retrieves the number of questions desired from the database.
+
+. RouterQuestionRetriever returns the list of questions with answers in a .json file.
 
 . Game Service recieves these questions and forwards the data to the Gateway Service.
 
@@ -237,4 +218,5 @@ Possible errors regarding:
     - Wikidata error.
     - Database exception: connection lost, data loss.
     - LLM not answering to the user's prompt.
+    - LLM hallucinations
     
