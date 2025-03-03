@@ -31,7 +31,6 @@ const Login = () => {
       else{
         
         const message = await axios.post(`${apiEndpoint}/askllm`, { question, model, apiKey, answer })
-        console.log(message.data.llmAnswer);
         setMessage(message.data.llmAnswer);
       }
       // Extract data from the response
