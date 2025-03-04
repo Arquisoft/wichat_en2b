@@ -14,7 +14,7 @@ const Login = () => {
   const [openSnackbar, setOpenSnackbar] = useState(false);
 
   const apiEndpoint = process.env.REACT_APP_API_ENDPOINT || 'http://localhost:8000';
-  const apiKey = process.env.REACT_APP_LLM_API_KEY || 'None';
+
 
   const answer = {"answers":["San José","Lima","Perugia","Panama City"],"right_answer":"Panama City"};
 
@@ -25,14 +25,11 @@ const Login = () => {
       const question = "Hello, can you give me a hint for the question?";
       const model = "empathy"
 
-      if (apiKey==='None'){
-        setMessage("LLM API key is not set. Cannot contact the LLM.");
-      }
-      else{
+      
         
-        const message = await axios.post(`${apiEndpoint}/askllm`, {userID, question, model, apiKey, answer })
-        setMessage(message.data.llmAnswer);
-      }
+      const message = await axios.post(`${apiEndpoint}/askllm`, {userID, question, model, answer })
+      setMessage(message.data.llmAnswer);
+      
       // Extract data from the response
       const { createdAt: userCreatedAt } = response.data;
 
