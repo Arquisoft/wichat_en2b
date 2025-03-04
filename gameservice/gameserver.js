@@ -1,5 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const path = require('path');
 const questionRouter = require('./routers/RouterQuestionRetriever');
 const generateRouter = require('./routers/RouterQuestionFetcher');
 
@@ -13,7 +14,7 @@ mongoose.connect(mongoUri)
     .catch(err => console.error('❌ Error when connecting to MongoDB:', err));
 
 // Middleware to serve static files
-app.use(express.static('public'));
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Routers
 app.use(questionRouter); 
