@@ -25,10 +25,16 @@ const Login = () => {
       const question = "Hello, can you give me a hint for the question?";
       const model = "empathy"
 
-      
+      let conversation = [
+        { 
+          role: "user", 
+          content: "Hello, can you give me a hint for the question?"
+        }];
         
-      const message = await axios.post(`${apiEndpoint}/askllm`, {userID, question, model, answer })
-      setMessage(message.data.llmAnswer);
+      const message = await axios.post(`${apiEndpoint}/askllm`, {conversation, model, answer })
+      conversation.push(message.data);
+      console.log(conversation);
+      setMessage(message.data.content);
       
       // Extract data from the response
       const { createdAt: userCreatedAt } = response.data;

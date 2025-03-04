@@ -55,19 +55,15 @@ function validateRequiredFields(req, requiredFields) {
 }
 
 // Function to send questions to LLM
-async function sendQuestionToLLM(userID = 0, question, apiKey, model = 'empathy', answer) {
+async function sendQuestionToLLM(conversation, apiKey, model = 'empathy', answer) {
   try {
     const config = llmConfigs[model];
     if (!config) {
       throw new Error(`Model "${model}" is not supported.`);
     }
-    if (!conversations[userID]) {
-      conversations[userID] = []; 
-    }
+    
 
-    conversations[userID].push({ role: "user", content: question });
-
-    const requestData = config.transformRequest(conversations[userID], answer);
+    const requestData = config.transformRequest(conversation, answer);
     
     const headers = {
       'Content-Type': 'application/json',
@@ -95,7 +91,6 @@ async function sendQuestionToLLM(userID = 0, question, apiKey, model = 'empathy'
      if (retryCount >= maxRetries) {
       return "There was an error while returning your answer, please try again.";
     }
-    conversations[userID].push({ role: "assistant", content: llmAnswer });
 
     return llmAnswer;
 
@@ -108,16 +103,15 @@ async function sendQuestionToLLM(userID = 0, question, apiKey, model = 'empathy'
 app.post('/askllm', async (req, res) => {
   try {
     // Check if required fields are present in the request body
-    validateRequiredFields(req, ['question', 'model']);
-    const {userID, question, model, answer} = req.body;
+    validateRequiredFields(req, ['conversation', 'model']);
+    const {conversation,model, answer} = req.body;
     const apiKey=process.env.LLM_API_KEY;
-    const llmAnswer = await sendQuestionToLLM(userID,question, apiKey, model, answer);
+    const llmAnswer = await sendQuestionToLLM(conversation, apiKey, model, answer);
     if (llmAnswer) {
-      res.json({ llmAnswer });
+      res.json( { role: "assistant", content: llmAnswer });
     } else {
       res.status(500).json({ error: 'Failed to get a valid response from LLM' });
     }
-
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
