@@ -103,10 +103,10 @@ async function sendQuestionToLLM(conversation, apiKey, model = 'empathy', answer
 app.post('/askllm', async (req, res) => {
   try {
     // Check if required fields are present in the request body
-    validateRequiredFields(req, ['conversation', 'model']);
-    const {conversation,model, answer} = req.body;
+    validateRequiredFields(req, ['conversation', 'model', 'possibleAnswers']);
+    const {conversation, model, possibleAnswers} = req.body;
     const apiKey=process.env.LLM_API_KEY;
-    const llmAnswer = await sendQuestionToLLM(conversation, apiKey, model, answer);
+    const llmAnswer = await sendQuestionToLLM(conversation, apiKey, model, possibleAnswers);
     if (llmAnswer) {
       res.json( { role: "assistant", content: llmAnswer });
     } else {

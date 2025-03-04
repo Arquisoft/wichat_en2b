@@ -16,13 +16,11 @@ const Login = () => {
   const apiEndpoint = process.env.REACT_APP_API_ENDPOINT || 'http://localhost:8000';
 
 
-  const answer = {"answers":["San José","Lima","Perugia","Panama City"],"right_answer":"Panama City"};
+  const possibleAnswers = {"answers":["San José","Lima","Perugia","Panama City"],"right_answer":"Panama City"};
 
   const loginUser = async () => {
     try {
       const response = await axios.post(`${apiEndpoint}/login`, { username, password });
-      const userID = 0;
-      const question = "Hello, can you give me a hint for the question?";
       const model = "empathy"
 
       let conversation = [
@@ -31,9 +29,8 @@ const Login = () => {
           content: "Hello, can you give me a hint for the question?"
         }];
         
-      const message = await axios.post(`${apiEndpoint}/askllm`, {conversation, model, answer })
+      const message = await axios.post(`${apiEndpoint}/askllm`, {conversation, model, possibleAnswers })
       conversation.push(message.data);
-      console.log(conversation);
       setMessage(message.data.content);
       
       // Extract data from the response
