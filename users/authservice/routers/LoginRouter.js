@@ -76,3 +76,42 @@ async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
+
+// Endpoint to register a new user
+router.post('/register', [
+  check('username').isLength({ min: 3 }).trim().escape(),
+  check('password').isLength({ min: 6 }).trim().escape(),
+  check('role').isIn(['admin', 'user']).trim().escape()
+],
+async (req, res) => {
+  try {      
+    validateRequiredFields(req, ['username', 'password', 'role']);
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+        logger.error('Error on /register endpoint', errors.array());
+        return res.status(400).json({ error: errors.array().toString() });
+    }
+    
+    const { username, password, role } = req.body;
+    const existingUser = await userService.getUserByUsername(username);
+
+    if (existingUser) {
+      logger.error(`The user ${username} already exists and cannot be registered again`);
+      return res.status(409).json({ error: 'El usuario ya existe' });
+    }
+    
+    // Create a new user using CRUD service
+    const newUser = await userService.createUser({ username, password, role });
+    
+    res.status(201).json(
+      { message: 'User successfully registered: ', username: newUser.username });
+    
+  } catch (error) {
+      logger.error('Error en el endpoint /register', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+
+module.exports = router;
