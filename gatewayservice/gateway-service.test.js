@@ -15,7 +15,7 @@ describe('Gateway Service', () => {
       return Promise.resolve({ data: { token: 'mockedToken' } });
     } else if (url.endsWith('/adduser')) {
       return Promise.resolve({ data: { userId: 'mockedUserId' } });
-    } else if (url.endsWith('/ask')) {
+    } else if (url.endsWith('/askllm')) {
       return Promise.resolve({ data: { answer: 'llmanswer' } });
     }
   });
