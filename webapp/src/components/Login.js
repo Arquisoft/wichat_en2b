@@ -16,12 +16,12 @@ const Login = () => {
   const apiEndpoint = process.env.REACT_APP_API_ENDPOINT || 'http://localhost:8000';
   const apiKey = process.env.REACT_APP_LLM_API_KEY || 'None';
 
-  const answer = {"image_name":"/images/67bda1de3a99a2e3b77d1463.jpg","answers":["San José","Lima","Perugia","Panama City"],"right_answer":"Panama City"};
+  const answer = {"answers":["San José","Lima","Perugia","Panama City"],"right_answer":"Panama City"};
 
   const loginUser = async () => {
     try {
       const response = await axios.post(`${apiEndpoint}/login`, { username, password });
-
+      const userID = 0;
       const question = "Hello, can you give me a hint for the question?";
       const model = "empathy"
 
@@ -30,7 +30,7 @@ const Login = () => {
       }
       else{
         
-        const message = await axios.post(`${apiEndpoint}/askllm`, { question, model, apiKey, answer })
+        const message = await axios.post(`${apiEndpoint}/askllm`, {userID, question, model, apiKey, answer })
         setMessage(message.data.llmAnswer);
       }
       // Extract data from the response

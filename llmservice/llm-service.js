@@ -52,40 +52,35 @@ function validateRequiredFields(req, requiredFields) {
   }
 }
 
-// Generic function to send questions to LLM
-async function sendQuestionToLLM(userId, question, apiKey, model = 'empathy', answer) {
+// Function to send questions to LLM
+async function sendQuestionToLLM(userID = 0, question, apiKey, model = 'empathy', answer) {
   try {
     const config = llmConfigs[model];
     if (!config) {
       throw new Error(`Model "${model}" is not supported.`);
     }
-
-    // Ensure each user has their own conversation history
-    if (!conversations[userId]) {
-      conversations[userId] = []; // Initialize conversation history for the user
+    if (!conversations[userID]) {
+      conversations[userID] = []; 
     }
 
-    // Push the new user message to the conversation history
-    conversations[userId].push({ role: "user", content: question });
+    conversations[userID].push({ role: "user", content: question });
 
-    // Prepare the request data with the user's conversation history
-    const requestData = config.transformRequest(conversations[userId], answer);
+    const requestData = config.transformRequest(conversations[userID], answer);
     
     const headers = {
       'Content-Type': 'application/json',
       ...(config.headers ? config.headers(apiKey) : {})
     };
 
-    // Make the request to the LLM API
     const url = config.url(apiKey);
-     // List of words to filter out from the response
+
      const filterWords = answer.answers;  
 
      let response;
      let llmAnswer;
      let retryCount = 0;
      const maxRetries = 3;
-     // Loop to filter out responses that contain any filtered word
+
      do {
       if(retryCount>3){
         break;
@@ -96,9 +91,9 @@ async function sendQuestionToLLM(userId, question, apiKey, model = 'empathy', an
        
      } while (filterWords.some(word => llmAnswer.toLowerCase().includes(word.toLowerCase())));
      if (retryCount >= maxRetries) {
-      return "Exceeded retry limit due to filtered responses.";
+      return "There was an error while returning your answer, please try again.";
     }
-    conversations[userId].push({ role: "assistant", content: llmAnswer });
+    conversations[userID].push({ role: "assistant", content: llmAnswer });
 
     return llmAnswer;
 
@@ -112,9 +107,8 @@ app.post('/askllm', async (req, res) => {
   try {
     // Check if required fields are present in the request body
     validateRequiredFields(req, ['question', 'model', 'apiKey']);
-    const { question, model, apiKey, answer} = req.body;
-    userId=0;
-    const llmAnswer = await sendQuestionToLLM(userId, question, apiKey, model, answer);
+    const {userID, question, model, apiKey, answer} = req.body;
+    const llmAnswer = await sendQuestionToLLM(userID,question, apiKey, model, answer);
     if (llmAnswer) {
       res.json({ llmAnswer });
     } else {
