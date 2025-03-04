@@ -1,16 +1,18 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const loginRouter = require('./routers/LoginRouter');
+require('dotenv').config();
 
 const app = express();
-const port = 8002; 
+const port = process.env.PORT; 
 
 // Middleware to parse JSON in request body
 app.use(express.json());
 
 // Connect to MongoDB
-const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/userdb';
-mongoose.connect(mongoUri);
+mongoose.connect(process.env.MONGODB_URI)
+    .then(() => logger.info('Conectado a MongoDB'))
+    .catch((err) => logger.error('Error al conectar a MongoDB', err));
 
 // Routers
 app.use(loginRouter); 
