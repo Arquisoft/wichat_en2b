@@ -19,3 +19,10 @@ function verifyInternalRequest(req, res, next) {
 
 router.use(verifyInternalRequest);
 
+function validateRequiredFields(req, fields) {
+  const missingFields = fields.filter(field => !req.body[field]);
+
+  if (missingFields.length > 0) {
+    throw new Error(`Missing required field(s): ${missingFields.join(', ')}`);
+  }
+}
