@@ -17,7 +17,7 @@ const llmConfigs = {
   gemini: {
     url: (apiKey) => `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
     transformRequest: (question) => ({
-      contents: [{ parts: [{ text: question }] }]
+      contents: [{ parts: question.content }]
     }),
     transformResponse: (response) => response.data.candidates[0]?.content?.parts[0]?.text
   },

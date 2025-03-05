@@ -30,11 +30,12 @@ describe('LLM Service', () => {
           role: "user", 
           content: "Hello, can you give me a hint for the question?"
         }],
-        model: 'empathy',
+        model: 'gemini',
         possibleAnswers: {"answers":["San José","Lima","Perugia","Panama City"],"right_answer":"Panama City"} });
 
     expect(response.statusCode).toBe(200);
-    expect(response.body.answer).toBe('content');
+    console.log(response.body);
+    expect(response.body.content).toBe('llmanswer');
   });
 
 });
