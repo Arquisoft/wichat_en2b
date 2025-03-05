@@ -10,7 +10,7 @@ const prettyStream = pretty({
 });
 
 // Configuración del stream para el archivo de log
-const logFileStream = fs.createWriteStream('./combined.log', { flags: 'a' });
+const logFileStream = fs.createWriteStream('./logger.log', { flags: 'a' });
 
 // Logger que escribe tanto en la consola como en el archivo de log
 const logger = pino({

@@ -1,114 +1,108 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const axios = require('axios');
-const { check, _, validationResult } = require('express-validator');
+const bcrypt = require('bcrypt'); // Added bcrypt import
+const { check, validationResult } = require('express-validator');
 const logger = require('../logger'); 
-require('dotenv').config();
+require('dotenv').config({ path: '../../../.env' }); 
 const router = express.Router();
 
-// Middleware to restrict access to internal endpoints
-/*function verifyInternalRequest(req, res, next) {
-  const headerSecret = req.headers['x-internal-auth'];
-  
-  if (!headerSecret) {
-    logger.warn('Missing internal auth secret');
-    return res.status(403).json({ error: 'Not authorized access' });
-  }
-  next();
-}
-
-router.use(verifyInternalRequest);*/
-
-function validateRequiredFields(req, fields) {
-  const missingFields = fields.filter(field => !req.body[field]);
-
-  if (missingFields.length > 0) {
-    throw new Error(`Missing required field(s): ${missingFields.join(', ')}`);
-  }
-}
-
 // Endpoint to login a user and return a JWT token
-router.post('/login',  [
-    check('userId').isLength({ min: 3 }).trim().escape(),
-    check('username').isLength({ min: 3 }).trim().escape(),
-    check('password').isLength({ min: 3 }).trim().escape(),
-    check('role').isIn(['admin', 'user']).trim().escape()
+router.post('/login', [
+  check('user').notEmpty().withMessage('Missing required field: user'),
+  check('user.username').isLength({ min: 3 }).trim().escape().withMessage('Invalid value'),
+  check('user.password').isLength({ min: 3 }).trim().escape().withMessage('Invalid value'),
+  check('user.role').notEmpty().withMessage('Missing required field: role'),
   ],
   async (req, res) => {
     try {
-        validateRequiredFields(req, ['username', 'password', 'role']);
-        
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-          return res.status(400).json({ error: errors.array().toString()});
+          return res.status(400).json({ error: errors.array().map(err => err.msg).join(', ') });
         }
 
-        let userId = req.body.userId.toString();
-        let username = req.body.username.toString();
-        let password = req.body.password.toString();
-        let role = req.body.role.toString();
+        const { user } = req.body; 
+        const userResponse = await axios.get(`http://localhost:8001/users?id=${user.username}`);
+        const userFromDB = userResponse.data;
 
-        const userResponse = await axios.get(`http://localhost:8001/users?id=${userId}`);
-        const user = userResponse.data;
-
-        if (!user) {
-          logger.error(`Failure in login: user ${username} not found`);
+        if (!userFromDB || userFromDB.length === 0) {
+          logger.error(`Failure in login: user ${user.username} not found`);
           return res.status(401).json({ error: 'Not a valid user' });
         }
-        
-        const passwordMatch = await bcrypt.compare(password, user.password);
+
+        const passwordMatch = await bcrypt.compare(user.password, userFromDB.password);
         if (!passwordMatch) {
-          logger.error(`Failure in login: invalid password for user ${username}`);
+          logger.error(`Failure in login: invalid password for user ${user.username}`);
           return res.status(401).json({ error: 'Not a valid password' });
         }
 
-        if (user.role !== role) {
-          logger.error(`Failure in login: user ${username} does not have the role ${role}`);
+        if (userFromDB.role !== user.role) {
+          logger.error(`Failure in login: user ${user.username} does not have the role ${user.role}`);
           return res.status(401).json({ error: 'Not a valid role' });
         }
 
         const token = jwt.sign(
-            { userId: user._id, role: user.role }, 
-            process.env.JWT_SECRET, // Use the secret key from environment variable
+            { id: userFromDB._id, role: userFromDB.role }, 
+            process.env.JWT_SECRET, 
             { expiresIn: '1h' }
         );
 
-        res.json({ token: token, username: username, createdAt: user.createdAt });
+        res.json({ token: token, username: user.username });
 
     } catch (error) {
+      logger.error('Error in /login endpoint', error);
       res.status(500).json({ error: 'Internal Server Error' });
     }
 });
 
+
 // Endpoint to register a new user
 router.post('/register', [
-    check('username').isLength({ min: 3 }).trim().escape(),
-    check('password').isLength({ min: 6 }).trim().escape(),
-    check('role').isIn(['admin', 'user']).trim().escape()
+    check('username').isLength({ min: 3 }).withMessage('Username must be at least 3 characters').trim().escape(),
+    check('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters').trim().escape(),
+    check('role').isIn(['user']).withMessage('Role must be one of the following: user').trim().escape()
   ],
   async (req, res) => {
     try {      
-      validateRequiredFields(req, ['username', 'password', 'role']);
       const errors = validationResult(req);
-
       if (!errors.isEmpty()) {
-          logger.error('Error on /register endpoint', errors.array());
-          return res.status(400).json({ error: errors.array().toString() });
+          return res.status(400).json({ error: errors.array().map(err => err.msg).join(', ') });
       }
       
       const { username, password, role } = req.body;  
-      const newUserResponse = await axios.post( 'http://localhost:8001/users', { username, password, role } );
-      const newUser = newUserResponse.data;
-      
-      res.status(201).json(
-        { message: 'User successfully registered: ', username: newUser.username });
-      
-    } catch (error) {
-        console.log(error);
-        logger.error('Error en el endpoint /register', error);
-        res.status(500).json({ error: 'Internal Server Error' });
-    }
-});
 
+      try {
+        // Creating a new user by sending a POST request to the user service
+        const newUserResponse = await axios.post('http://localhost:8001/users', { username, password, role });
+        const newUser = newUserResponse.data;
+
+        // Hashing the password before sending it back
+        const token = jwt.sign(
+            { username: newUser.username, role: newUser.role }, 
+            process.env.JWT_SECRET, 
+            { expiresIn: '1h' }
+        );
+
+        // Responding with the full user data, including the token
+        res.status(201).json({
+          token,
+          user: {
+            username: newUser.username,
+            role: newUser.role
+          }
+        });
+      } catch (error) {
+        if (error.response && error.response.status === 400) {
+          return res.status(400).json({ error: error.response.data.error });
+        }
+        throw error;
+      }
+
+    } catch (error) {
+      logger.error('Error in /register endpoint', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  }
+);
 
 module.exports = router;

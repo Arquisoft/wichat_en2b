@@ -2,14 +2,14 @@ openapi: 3.0.0
 info:
   title: Auth Service API
   version: 1.0.0
-  description: API documentation for the Auth Service
+  description: API documentation for the Auth Service.
 servers:
   - url: http://localhost:8002
-    description: Local server
+    description: Local server for development.
 paths:
-  /login:
+  /auth/login:
     post:
-      summary: Login a user and return a JWT token
+      summary: Authenticate a user and return a JWT token.
       tags:
         - Auth
       requestBody:
@@ -19,13 +19,10 @@ paths:
             schema:
               type: object
               properties:
-                userId:
-                  type: string
-                  example: "12345"
                 username:
                   type: string
                   example: "testuser"
-                hashed password:
+                password:
                   type: string
                   example: "aoeushjfiejsdniofehajdsiovjasiomoim"
                 role:
@@ -34,7 +31,7 @@ paths:
                   example: "user"
       responses:
         '200':
-          description: Successful login
+          description: Successful authentication.
           content:
             application/json:
               schema:
@@ -46,12 +43,8 @@ paths:
                   username:
                     type: string
                     example: "testuser"
-                  createdAt:
-                    type: string
-                    format: date-time
-                    example: "2025-03-05T12:00:00Z"
         '400':
-          description: Bad request
+          description: Bad request. Some required fields are missing or invalid.
           content:
             application/json:
               schema:
@@ -59,9 +52,9 @@ paths:
                 properties:
                   error:
                     type: string
-                    example: "Validation error"
+                    example: "Missing required field(s): username, password"
         '401':
-          description: Unauthorized
+          description: Unauthorized. Invalid user or password.
           content:
             application/json:
               schema:
@@ -69,9 +62,9 @@ paths:
                 properties:
                   error:
                     type: string
-                    example: "Not a valid user"
+                    example: "Invalid user or password"
         '500':
-          description: Internal server error
+          description: Internal server error.
           content:
             application/json:
               schema:
@@ -80,13 +73,12 @@ paths:
                   error:
                     type: string
                     example: "Internal Server Error"
-  /register:
+
+  /auth/register:
     post:
       summary: Register a new user
-      tags:
-        - Auth
+      description: Register a new user and return the user details along with a JWT token for authentication.
       requestBody:
-        required: true
         content:
           application/json:
             schema:
@@ -95,13 +87,15 @@ paths:
                 username:
                   type: string
                   example: "newuser"
-                hashed password:
+                password:
                   type: string
-                  example: "jkvhdkjfvhaksdfhjakjdafhakjhfskja"
+                  example: "newpassword"
                 role:
                   type: string
-                  enum: [admin, user]
-                  example: "admin"
+                  enum:
+                    - admin
+                    - user
+                  example: "user"
       responses:
         '201':
           description: User successfully registered
@@ -110,14 +104,20 @@ paths:
               schema:
                 type: object
                 properties:
-                  message:
+                  token:
                     type: string
-                    example: "User successfully registered"
-                  username:
-                    type: string
-                    example: "newuser"
+                    example: "JWT_TOKEN"
+                  user:
+                    type: object
+                    properties:
+                      username:
+                        type: string
+                        example: "newuser"
+                      role:
+                        type: string
+                        example: "user"
         '400':
-          description: Bad request
+          description: Missing required field(s) or validation error
           content:
             application/json:
               schema:
@@ -125,7 +125,7 @@ paths:
                 properties:
                   error:
                     type: string
-                    example: "Validation error"
+                    example: "Missing required field(s): username, password"
         '500':
           description: Internal server error
           content:
