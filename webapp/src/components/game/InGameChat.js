@@ -28,7 +28,7 @@ export default function InGameChat({
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (input.trim() === "") return;
     
     const newMessage = {
@@ -47,19 +47,29 @@ export default function InGameChat({
     }
 
     try {
-      const response = '?'; // here will be the connection to the LLM through our gateway
-                            // POST
-                            // JSON.stringify??
-      // const data = await response.json();
-
+      const response = await fetch("http://localhost:8000/askllm", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          conversation: [{ role: "user", content: input }], 
+          model: "empathy", 
+          possibleAnswers: { "answers": ["San José", "Lima", "Perugia", "Panama City"], "right_answer": "Panama City" }
+        })
+      });
+      const data = await response.json();
+      console.log(data.content);
+      if (data.content) {
       const llmMessage = {
         id: Date.now().toString() + "_llm",
-        content: 'Once the LLM Service is finished, there will be a response here!', 
+        content: data.content, // LLM response text
         isUser: false,
         type: "response"
       };
 
       setMessages((prevMessages) => [...prevMessages, llmMessage]);
+    } else {
+      console.error("Invalid LLM response", data);
+    }
     } catch (error) {
       console.error("Error fetching LLM response:", error);
   };
@@ -72,18 +82,17 @@ export default function InGameChat({
   };
 
   return (
-    <Paper 
-      elevation={3}
+    <Box 
       sx={{ 
-        display: 'flex', 
+        display: 'flex',
         flexDirection: 'column',
-        width: '100%', 
         height: '100%',
-        maxWidth: "100%",
-        maxHeight: "100%",
-        overflow: 'hidden',
-        border: '1px solid #e0e0e0',
-        borderRadius: 1
+        width: '100%',
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
       }}
     >
       {/* Chat Header */}
@@ -94,7 +103,8 @@ export default function InGameChat({
           p: 1.5, 
           display: 'flex', 
           alignItems: 'center',
-          flexShrink: 0
+          flexShrink: 0,
+          zIndex: 1,
         }}
       >
         <Typography variant="subtitle1" fontWeight="medium">
@@ -158,7 +168,7 @@ export default function InGameChat({
                 }}
               >
                 <Typography variant="body2">
-                  {message.content}  {/* Display the actual message content */}
+                  {message.content}
                 </Typography>
               </Paper>
             </Box>
@@ -172,7 +182,9 @@ export default function InGameChat({
         sx={{ 
           p: 1.5, 
           borderTop: '1px solid #e0e0e0',
-          flexShrink: 0
+          bgcolor: 'background.paper',
+          flexShrink: 0,
+          zIndex: 1,
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -192,7 +204,6 @@ export default function InGameChat({
             onClick={handleSendMessage}
             sx={{ minWidth: '36px', px: 2 }}
           >
-            {/* Inline SVG for send icon */}
             <svg 
               xmlns="http://www.w3.org/2000/svg" 
               width="18" 
@@ -210,6 +221,6 @@ export default function InGameChat({
           </Button>
         </Box>
       </Box>
-    </Paper>
+    </Box>
   );
 }
