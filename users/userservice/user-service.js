@@ -59,6 +59,12 @@ app.get('/users/:id', async (req, res) => {
 // Update a user by ID
 app.patch('/users/:id', async (req, res) => {
     try {
+        try {
+            // Invalid id, cast error
+            await User.findById(req.params.id);
+        } catch (error) {
+            return res.status(400).send();
+        }
         const user = await User.findByIdAndUpdate(req.params.id, { ...req.body, $inc: { __v: 1 } }, { new: true, runValidators: true });
         if (!user) {
             return res.status(404).send();
@@ -72,6 +78,12 @@ app.patch('/users/:id', async (req, res) => {
 // Delete a user by ID
 app.delete('/users/:id', async (req, res) => {
     try {
+        try {
+            // Invalid id, cast error
+            await User.findById(req.params.id);
+        } catch (error) {
+            return res.status(400).send();
+        }
         const user = await User.findByIdAndDelete(req.params.id);
         if (!user) {
             return res.status(404).send();

@@ -90,4 +90,35 @@ describe('User Service', () => {
     const userInDb = await User.findById(newUser._id);
     expect(userInDb).toBeNull();
   });
+
+  // NEGATIVE TEST CASES
+  
+  it('should not add a user with missing fields on POST /users', async () => {
+    const newUser = {
+      username: 'testuser'
+      // Missing password and role
+    };
+
+    const response = await request(app).post('/users').send(newUser);
+    expect(response.status).toBe(400);
+  });
+
+  it('should return 404 for non-existent user on GET /users/:id', async () => {
+    const nonExistentId = '507f1f77bcf86cd799439011';
+    const response = await request(app).get(`/users/${nonExistentId}`);
+    expect(response.status).toBe(404);
+  });
+
+  it('should not update a user with invalid ID on PATCH /users/:id', async () => {
+    const invalidId = 'invalidId';
+    const response = await request(app).patch(`/users/${invalidId}`).send({ username: 'updateduser' });
+    expect(response.status).toBe(400);
+  });
+
+  it('should not delete a user with invalid ID on DELETE /users/:id', async () => {
+    const invalidId = 'invalidId';
+    const response = await request(app).delete(`/users/${invalidId}`);
+    expect(response.status).toBe(400);
+  });
+  
 });
