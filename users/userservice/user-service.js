@@ -6,6 +6,7 @@ const bodyParser = require('body-parser');
 app.use(bodyParser.json());
 
 const User = require('./user-model');
+const bcrypt = require('bcrypt');
 const router = express.Router();
 
 const port = 8001;
@@ -19,7 +20,12 @@ mongoose.connect(mongoUri)
 // Create a new user
 app.post('/users', async (req, res) => {
     try {
-        const user = new User(req.body);
+        const saltRounds = 10;
+        const hashedPassword = bcrypt.hashSync(req.body.password, saltRounds);
+        const user = new User({
+            ...req.body,
+            password: hashedPassword
+        });
         await user.save();
         res.status(201).send(user);
     } catch (error) {
@@ -76,8 +82,13 @@ app.delete('/users/:id', async (req, res) => {
     }
 });
 
-module.exports = app;
-
-app.listen(port, () => {
+const server = app.listen(port, () => {
     console.log(`🚀 User service running on: http://localhost:${port}`);
 });
+
+server.on('close', () => {
+    // Close the Mongoose connection
+    mongoose.connection.close();
+  });
+
+module.exports = server;
