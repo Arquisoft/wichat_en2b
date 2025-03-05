@@ -1,12 +1,13 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
+const axios = require('axios');
 const { check, _, validationResult } = require('express-validator');
-const logger = require('../../logger'); 
+const logger = require('../logger'); 
 require('dotenv').config();
 const router = express.Router();
 
 // Middleware to restrict access to internal endpoints
-function verifyInternalRequest(req, res, next) {
+/*function verifyInternalRequest(req, res, next) {
   const headerSecret = req.headers['x-internal-auth'];
   
   if (!headerSecret) {
@@ -16,7 +17,7 @@ function verifyInternalRequest(req, res, next) {
   next();
 }
 
-router.use(verifyInternalRequest);
+router.use(verifyInternalRequest);*/
 
 function validateRequiredFields(req, fields) {
   const missingFields = fields.filter(field => !req.body[field]);
@@ -103,6 +104,7 @@ router.post('/register', [
         { message: 'User successfully registered: ', username: newUser.username });
       
     } catch (error) {
+        console.log(error);
         logger.error('Error en el endpoint /register', error);
         res.status(500).json({ error: 'Internal Server Error' });
     }

@@ -1,0 +1,146 @@
+openapi: 3.0.0
+info:
+  title: Auth Service API
+  version: 1.0.0
+  description: API documentation for the Auth Service
+servers:
+  - url: http://localhost:8002
+    description: Local server
+paths:
+  /login:
+    post:
+      summary: Login a user and return a JWT token
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: string
+                  example: "12345"
+                username:
+                  type: string
+                  example: "testuser"
+                hashed password:
+                  type: string
+                  example: "aoeushjfiejsdniofehajdsiovjasiomoim"
+                role:
+                  type: string
+                  enum: [admin, user]
+                  example: "user"
+      responses:
+        '200':
+          description: Successful login
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                  username:
+                    type: string
+                    example: "testuser"
+                  createdAt:
+                    type: string
+                    format: date-time
+                    example: "2025-03-05T12:00:00Z"
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Validation error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Not a valid user"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Internal Server Error"
+  /register:
+    post:
+      summary: Register a new user
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  example: "newuser"
+                hashed password:
+                  type: string
+                  example: "jkvhdkjfvhaksdfhjakjdafhakjhfskja"
+                role:
+                  type: string
+                  enum: [admin, user]
+                  example: "admin"
+      responses:
+        '201':
+          description: User successfully registered
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "User successfully registered"
+                  username:
+                    type: string
+                    example: "newuser"
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Validation error"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Internal Server Error"
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+security:
+  - bearerAuth: []
