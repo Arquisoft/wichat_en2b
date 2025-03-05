@@ -20,11 +20,13 @@ afterAll(async () => {
 });
 
 describe('User Service', () => {
+
+
   it('should add a new user on POST /users', async () => {
     const newUser = {
       username: 'testuser',
       password: 'testpassword',
-      role: 'user'
+      role: 'USER'
     };
 
     const response = await request(app).post('/users').send(newUser);
@@ -43,53 +45,82 @@ describe('User Service', () => {
     expect(isPasswordValid).toBe(true);
   });
 
+
+
+  it('should get a user by username on GET /users/:username', async () => {
+    const newUser = new User({
+      username: 'testuser2',
+      password: 'testpassword2',
+      role: 'USER'
+    });
+    await newUser.save();
+
+    const response = await request(app).get(`/users/${newUser.username}`);
+    expect(response.status).toBe(200);
+    expect(response.body).toHaveProperty('username', 'testuser2');
+    expect(response.body).toHaveProperty('role', 'USER');
+    // No value can be checked for the password
+    expect(response.body).toHaveProperty('password');
+    expect(response.body).toHaveProperty('createdAt');
+  });
+
+  
+  
   it('should get all users on GET /users', async () => {
     const response = await request(app).get('/users');
     expect(response.status).toBe(200);
     expect(Array.isArray(response.body)).toBe(true);
+
+    // First user
+    expect(response.body[0]).toHaveProperty('username', 'testuser');
+    expect(response.body[0]).toHaveProperty('role', 'USER');
+    // No value can be checked for the password
+    expect(response.body[0]).toHaveProperty('password');
+    expect(response.body[0]).toHaveProperty('createdAt');
+
+    // Second user
+    expect(response.body[1]).toHaveProperty('username', 'testuser2');
+    expect(response.body[1]).toHaveProperty('role', 'USER');
+    // No value can be checked for the password
+    expect(response.body[1]).toHaveProperty('password');
+    expect(response.body[1]).toHaveProperty('createdAt');
   });
 
-  it('should get a user by ID on GET /users/:id', async () => {
-    const newUser = new User({
-      username: 'testuser2',
-      password: 'testpassword2',
-      role: 'user'
-    });
-    await newUser.save();
 
-    const response = await request(app).get(`/users/${newUser._id}`);
-    expect(response.status).toBe(200);
-    expect(response.body).toHaveProperty('username', 'testuser2');
-  });
 
-  it('should update a user by ID on PATCH /users/:id', async () => {
+  it('should update a user by username on PATCH /users/:username', async () => {
     const newUser = new User({
       username: 'testuser3',
       password: 'testpassword3',
-      role: 'user'
+      role: 'USER'
     });
     await newUser.save();
 
-    const response = await request(app).patch(`/users/${newUser._id}`).send({ username: 'updateduser' });
+    const response = await request(app).patch(`/users/${newUser.username}`).send({ username: 'updateduser' });
     expect(response.status).toBe(200);
     expect(response.body).toHaveProperty('username', 'updateduser');
+    expect(response.body).toHaveProperty('__v', 1);
   });
 
-  it('should delete a user by ID on DELETE /users/:id', async () => {
+
+
+  it('should delete a user by ID on DELETE /users/:username', async () => {
     const newUser = new User({
       username: 'testuser4',
       password: 'testpassword4',
-      role: 'user'
+      role: 'USER'
     });
     await newUser.save();
 
-    const response = await request(app).delete(`/users/${newUser._id}`);
+    const response = await request(app).delete(`/users/${newUser.username}`);
     expect(response.status).toBe(200);
 
     // Check if the user is deleted from the database
     const userInDb = await User.findById(newUser._id);
     expect(userInDb).toBeNull();
   });
+
+
 
   // NEGATIVE TEST CASES
   
@@ -103,22 +134,10 @@ describe('User Service', () => {
     expect(response.status).toBe(400);
   });
 
-  it('should return 404 for non-existent user on GET /users/:id', async () => {
-    const nonExistentId = '507f1f77bcf86cd799439011';
-    const response = await request(app).get(`/users/${nonExistentId}`);
+  it('should return 404 for non-existent user on GET /users/:username', async () => {
+    const noneExistentUsername = 'inventeduser';
+    const response = await request(app).get(`/users/${noneExistentUsername}`);
     expect(response.status).toBe(404);
-  });
-
-  it('should not update a user with invalid ID on PATCH /users/:id', async () => {
-    const invalidId = 'invalidId';
-    const response = await request(app).patch(`/users/${invalidId}`).send({ username: 'updateduser' });
-    expect(response.status).toBe(400);
-  });
-
-  it('should not delete a user with invalid ID on DELETE /users/:id', async () => {
-    const invalidId = 'invalidId';
-    const response = await request(app).delete(`/users/${invalidId}`);
-    expect(response.status).toBe(400);
   });
   
 });

@@ -43,10 +43,10 @@ app.get('/users', async (req, res) => {
     }
 });
 
-// Get a user by ID
-app.get('/users/:id', async (req, res) => {
+// Get a user by username
+app.get('/users/:username', async (req, res) => {
     try {
-        const user = await User.findById(req.params.id);
+        const user = await User.findOne({ username: req.params.username });
         if (!user) {
             return res.status(404).send();
         }
@@ -56,16 +56,10 @@ app.get('/users/:id', async (req, res) => {
     }
 });
 
-// Update a user by ID
-app.patch('/users/:id', async (req, res) => {
+// Update a user by username
+app.patch('/users/:username', async (req, res) => {
     try {
-        try {
-            // Invalid id, cast error
-            await User.findById(req.params.id);
-        } catch (error) {
-            return res.status(400).send();
-        }
-        const user = await User.findByIdAndUpdate(req.params.id, { ...req.body, $inc: { __v: 1 } }, { new: true, runValidators: true });
+        const user = await User.findOneAndUpdate({ username: req.params.username }, { ...req.body, $inc: { __v: 1 } }, { new: true, runValidators: true });
         if (!user) {
             return res.status(404).send();
         }
@@ -75,16 +69,10 @@ app.patch('/users/:id', async (req, res) => {
     }
 });
 
-// Delete a user by ID
-app.delete('/users/:id', async (req, res) => {
+// Delete a user by username
+app.delete('/users/:username', async (req, res) => {
     try {
-        try {
-            // Invalid id, cast error
-            await User.findById(req.params.id);
-        } catch (error) {
-            return res.status(400).send();
-        }
-        const user = await User.findByIdAndDelete(req.params.id);
+        const user = await User.findOneAndDelete({username: req.params.username});
         if (!user) {
             return res.status(404).send();
         }
