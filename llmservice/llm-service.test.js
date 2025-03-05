@@ -25,10 +25,16 @@ describe('LLM Service', () => {
   it('the llm should reply', async () => {
     const response = await request(app)
       .post('/askllm')
-      .send({ question: 'a question', apiKey: 'apiKey', model: 'gemini' });
+      .send({ conversation: [
+        { 
+          role: "user", 
+          content: "Hello, can you give me a hint for the question?"
+        }],
+        model: 'empathy',
+        possibleAnswers: {"answers":["San José","Lima","Perugia","Panama City"],"right_answer":"Panama City"} });
 
     expect(response.statusCode).toBe(200);
-    expect(response.body.answer).toBe('llmanswer');
+    expect(response.body.answer).toBe('content');
   });
 
 });
