@@ -1,31 +1,21 @@
 openapi: 3.0.0
 info:
   title: User Service API
-  description: API for managing users.
+  description: API for managing users with CRUD operations.
   version: 1.0.0
 servers:
   - url: http://localhost:8001
-    description: Development server
+    description: Local development server
 paths:
   /users:
     post:
       summary: Create a new user
-      operationId: createUser
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                username:
-                  type: string
-                  description: User's username
-                  example: johndoe
-                password:
-                  type: string
-                  description: User's password
-                  example: password123
+              $ref: '#/components/schemas/User'
       responses:
         '201':
           description: User created successfully
@@ -37,7 +27,6 @@ paths:
           description: Bad request
     get:
       summary: Get all users
-      operationId: getUsers
       responses:
         '200':
           description: A list of users
@@ -48,20 +37,19 @@ paths:
                 items:
                   $ref: '#/components/schemas/User'
         '500':
-          description: Internal server error
-  /users/{id}:
+          description: Server error
+  /users/{username}:
     get:
-      summary: Get a user by ID
-      operationId: getUserById
+      summary: Get a user by username
       parameters:
-        - name: id
+        - name: username
           in: path
           required: true
           schema:
             type: string
       responses:
         '200':
-          description: User found
+          description: User details
           content:
             application/json:
               schema:
@@ -69,12 +57,11 @@ paths:
         '404':
           description: User not found
         '500':
-          description: Internal server error
+          description: Server error
     patch:
-      summary: Update a user by ID
-      operationId: updateUserById
+      summary: Update a user by username
       parameters:
-        - name: id
+        - name: username
           in: path
           required: true
           schema:
@@ -84,34 +71,22 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                username:
-                  type: string
-                  description: User's username
-                  example: johndoe
-                password:
-                  type: string
-                  description: User's password
-                  example: password123
+              $ref: '#/components/schemas/User'
       responses:
         '200':
-          description: User updated successfully
+          description: Updated user details
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/User'
-        '400':
-          description: Bad request
         '404':
           description: User not found
         '500':
-          description: Internal server error
+          description: Server error
     delete:
-      summary: Delete a user by ID
-      operationId: deleteUserById
+      summary: Delete a user by username
       parameters:
-        - name: id
+        - name: username
           in: path
           required: true
           schema:
@@ -119,34 +94,22 @@ paths:
       responses:
         '200':
           description: User deleted successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-        '400':
-          description: Bad request
         '404':
           description: User not found
         '500':
-          description: Internal server error
+          description: Server error
 components:
   schemas:
     User:
       type: object
       properties:
-        _id:
-          type: string
-          description: User ID
-          example: 60d0fe4f5311236168a109ca
         username:
           type: string
-          description: User's username
-          example: johndoe
         password:
           type: string
-          description: User's hashed password
-          example: $2b$10$ZKdNYLWFQxzt5Rei/YTc/OsZNi12YiWz30JeUFHNdAt7MyfmkTuvC
-        __v:
-          type: integer
-          description: Version key
-          example: 0
+        role:
+          type: string
+          enum: [USER, ADMIN]
+        createdAt:
+          type: string
+          format: date-time
