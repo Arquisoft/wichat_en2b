@@ -4,7 +4,6 @@ const { MongoMemoryServer } = require('mongodb-memory-server');
 
 const User = require('./user-model');
 
-
 let mongoServer;
 let app;
 

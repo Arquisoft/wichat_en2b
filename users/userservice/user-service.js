@@ -1,57 +1,83 @@
-// user-service.js
 const express = require('express');
 const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
-const User = require('./user-model')
-
 const app = express();
+
+const bodyParser = require('body-parser');
+app.use(bodyParser.json());
+
+const User = require('./user-model');
+const router = express.Router();
+
 const port = 8001;
 
-// Middleware to parse JSON in request body
-app.use(express.json());
-
-// Connect to MongoDB
+// Connection to MongoDB user database
 const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/userdb';
-mongoose.connect(mongoUri);
+mongoose.connect(mongoUri)
+    .then(() => console.log('✅ Connected to MongoDB'))
+    .catch(err => console.error('❌ Error when connecting to MongoDB:', err));
 
-
-
-// Function to validate required fields in the request body
-function validateRequiredFields(req, requiredFields) {
-    for (const field of requiredFields) {
-      if (!(field in req.body)) {
-        throw new Error(`Missing required field: ${field}`);
-      }
-    }
-}
-
-app.post('/adduser', async (req, res) => {
+// Create a new user
+app.post('/users', async (req, res) => {
     try {
-        // Check if required fields are present in the request body
-        validateRequiredFields(req, ['username', 'password']);
-
-        // Encrypt the password before saving it
-        const hashedPassword = await bcrypt.hash(req.body.password, 10);
-
-        const newUser = new User({
-            username: req.body.username,
-            password: hashedPassword,
-        });
-
-        await newUser.save();
-        res.json(newUser);
+        const user = new User(req.body);
+        await user.save();
+        res.status(201).send(user);
     } catch (error) {
-        res.status(400).json({ error: error.message }); 
-    }});
-
-const server = app.listen(port, () => {
-  console.log(`User Service listening at http://localhost:${port}`);
+        res.status(400).send(error);
+    }
 });
 
-// Listen for the 'close' event on the Express.js server
-server.on('close', () => {
-    // Close the Mongoose connection
-    mongoose.connection.close();
-  });
+// Get all users
+app.get('/users', async (req, res) => {
+    try {
+        const users = await User.find();
+        res.status(200).send(users);
+    } catch (error) {
+        res.status(500).send(error);
+    }
+});
 
-module.exports = server
+// Get a user by ID
+app.get('/users/:id', async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id);
+        if (!user) {
+            return res.status(404).send();
+        }
+        res.status(200).send(user);
+    } catch (error) {
+        res.status(500).send(error);
+    }
+});
+
+// Update a user by ID
+app.patch('/users/:id', async (req, res) => {
+    try {
+        const user = await User.findByIdAndUpdate(req.params.id, { ...req.body, $inc: { __v: 1 } }, { new: true, runValidators: true });
+        if (!user) {
+            return res.status(404).send();
+        }
+        res.status(200).send(user);
+    } catch (error) {
+        res.status(500).send(error);
+    }
+});
+
+// Delete a user by ID
+app.delete('/users/:id', async (req, res) => {
+    try {
+        const user = await User.findByIdAndDelete(req.params.id);
+        if (!user) {
+            return res.status(404).send();
+        }
+        res.status(200).send(user);
+    } catch (error) {
+        res.status(500).send(error);
+    }
+});
+
+module.exports = app;
+
+app.listen(port, () => {
+    console.log(`🚀 User service running on: http://localhost:${port}`);
+});
