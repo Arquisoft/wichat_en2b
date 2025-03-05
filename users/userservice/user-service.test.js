@@ -94,15 +94,32 @@ describe('User Service', () => {
       password: 'testpassword3',
       role: 'USER'
     });
+    
     await newUser.save();
 
     const response = await request(app).patch(`/users/${newUser.username}`).send({ username: 'updateduser' });
     expect(response.status).toBe(200);
-    expect(response.body).toHaveProperty('username', 'updateduser');
-    expect(response.body).toHaveProperty('__v', 1);
+    expect(await User.findOne({ username: "updateduser" })).toHaveProperty('username', 'updateduser');
+    expect(await User.findOne({ username: "updateduser" })).toHaveProperty('__v', 1);
   });
 
 
+  it('should update a user by password on PATCH /users/:username', async () => {
+    const newUser = new User({
+      username: 'testuser3',
+      password: 'testpassword3',
+      role: 'USER'
+    });
+
+    await newUser.save();
+
+    const response = await request(app).patch(`/users/${newUser.username}`).send({ password: 'updatedpassword' });
+    expect(response.status).toBe(200);
+    expect(await User.findOne({ username: "testuser3" })).toHaveProperty('__v', 1);
+    expect(await bcrypt.compare('updatedpassword', (await User.findOne({ username: "testuser3" })).password)).toBe(true);
+  });
+
+S
 
   it('should delete a user by username on DELETE /users/:username', async () => {
     const newUser = new User({
@@ -126,25 +143,27 @@ describe('User Service', () => {
   
   it('should not add a user with missing password on POST /users', async () => {
     const newUser = {
-      username: 'testuser',
+      username: 'testuser7',
       // Missing password
       role: 'USER'
     };
 
     const response = await request(app).post('/users').send(newUser);
     expect(response.status).toBe(400);
+    expect(await User.findOne({ username: 'testuser7' })).toBeNull();
   });
 
 
 
   it('should not add a user with missing role on POST /users', async () => {
     const newUser = {
-      username: 'testuser',
+      username: 'testuser8',
       password: 'testpassword'
     };
 
     const response = await request(app).post('/users').send(newUser);
     expect(response.status).toBe(400);
+    expect(await User.findOne({ username: 'testuser8' })).toBeNull();
   });
 
 
@@ -153,11 +172,94 @@ describe('User Service', () => {
     const newUser = {
       username: 'testuser',
       password: 'errepetio',
-      role: 'USER'
+      role: 'ADMIN'
     };
 
     const response = await request(app).post('/users').send(newUser);
     expect(response.status).toBe(400);
+    expect(await User.findOne({ username: 'testuser', role: 'ADMIN' })).toBeNull();
+  });
+
+
+
+  it('should not update a user\'s username with a repeated username on PATCH /users/:username', async () => {
+    const newUser = new User({
+      username: 'testuser5',
+      password: 'testpassword',
+      role: 'USER'
+    });
+
+    await newUser.save();
+
+    const response = await request(app).patch(`/users/${newUser.username}`).send({ username: 'testuser2' });
+    expect(response.status).toBe(400);
+    expect(await User.findOne({ username: 'testuser5' })).toBeDefined();
+  });
+
+
+
+  it('should not update a non-existent user on PATCH /users/:username', async () => {
+    const nonExistentUsername = 'inventeduser';
+    const response = await request(app).patch(`/users/${nonExistentUsername}`).send({ username: 'nonexistinguser' });
+    expect(response.status).toBe(404);
+    expect(await User.findOne({ username: 'inventeduser' })).toBeNull();
+    expect(await User.findOne({ username: 'nonexistinguser' })).toBeNull();
+  });
+
+
+
+  it('should not update a user with empty username on PATCH /users/:username', async () => {
+    const newUser = new User({
+      username: 'testuser6',
+      password: 'testpassword',
+      role: 'USER'
+    });
+
+    await newUser.save();
+
+    const response = await request(app).patch(`/users/${newUser.username}`).send({ username: '' });
+    expect(response.status).toBe(400);
+    expect(await User.findOne({ username: 'testuser6' })).toBeDefined();
+  });
+
+
+
+  it('should not update a user with empty password on PATCH /users/:username', async () => {
+    const newUser = new User({
+      username: 'testuser7',
+      password: 'testpassword',
+      role: 'USER'
+    });
+
+    await newUser.save();
+
+    const response = await request(app).patch(`/users/${newUser.username}`).send({ password: '' });
+    expect(response.status).toBe(400);
+    expect(await User.findOne({ username: 'testuser6' })).toBeDefined();
+  });
+
+
+
+  it('should not update a user with empty role on PATCH /users/:username', async () => {
+    const newUser = new User({
+      username: 'testuser8',
+      password: 'testpassword',
+      role: 'USER'
+    });
+
+    await newUser.save();
+
+    const response = await request(app).patch(`/users/${newUser.username}`).send({ role: '' });
+    expect(response.status).toBe(400);
+    expect(await User.findOne({ username: 'testuser6' })).toBeDefined();
+  });
+
+  
+
+  it('should return 404 for non-existent user on DELETE /users/:username', async () => {
+    const noneExistentUsername = 'inventeduser';
+    const response = await request(app).delete(`/users/${noneExistentUsername}`);
+    expect(response.status).toBe(404);
   });
 
 

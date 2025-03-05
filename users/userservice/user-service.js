@@ -11,11 +11,6 @@ const port = 8001;
 // Connection to MongoDB user database
 const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/userdb';
 mongoose.connect(mongoUri)
-    .then(() => {
-        console.log('Connected to MongoDB user database');})
-    .catch((error) => {
-        console.error('Error connecting to MongoDB user database', error);
-    });
 
 // Use the user routes
 app.use(userRoutes);
