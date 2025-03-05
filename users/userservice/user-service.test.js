@@ -7,19 +7,19 @@ const User = require('./user-model');
 let mongoServer;
 let app;
 
-beforeAll(async () => {
-  mongoServer = await MongoMemoryServer.create();
-  const mongoUri = mongoServer.getUri();
-  process.env.MONGODB_URI = mongoUri;
-  app = require('./user-service'); 
-});
-
-afterAll(async () => {
+describe('User Service', () => {
+  beforeAll(async () => {
+    mongoServer = await MongoMemoryServer.create();
+    const mongoUri = mongoServer.getUri();
+    process.env.MONGODB_URI = mongoUri;
+    app = require('./user-service');
+  });
+  
+  afterAll(async () => {
     app.close();
     await mongoServer.stop();
-});
+  });
 
-describe('User Service', () => {
 
 
   it('should add a new user on POST /users', async () => {
@@ -104,7 +104,7 @@ describe('User Service', () => {
 
 
 
-  it('should delete a user by ID on DELETE /users/:username', async () => {
+  it('should delete a user by username on DELETE /users/:username', async () => {
     const newUser = new User({
       username: 'testuser4',
       password: 'testpassword4',
@@ -124,20 +124,98 @@ describe('User Service', () => {
 
   // NEGATIVE TEST CASES
   
-  it('should not add a user with missing fields on POST /users', async () => {
+  it('should not add a user with missing password on POST /users', async () => {
     const newUser = {
-      username: 'testuser'
-      // Missing password and role
+      username: 'testuser',
+      // Missing password
+      role: 'USER'
     };
 
     const response = await request(app).post('/users').send(newUser);
     expect(response.status).toBe(400);
   });
 
+
+
+  it('should not add a user with missing role on POST /users', async () => {
+    const newUser = {
+      username: 'testuser',
+      password: 'testpassword'
+    };
+
+    const response = await request(app).post('/users').send(newUser);
+    expect(response.status).toBe(400);
+  });
+
+
+
+  it('should not add a user with repeated username on POST /users', async () => {
+    const newUser = {
+      username: 'testuser',
+      password: 'errepetio',
+      role: 'USER'
+    };
+
+    const response = await request(app).post('/users').send(newUser);
+    expect(response.status).toBe(400);
+  });
+
+
+
   it('should return 404 for non-existent user on GET /users/:username', async () => {
     const noneExistentUsername = 'inventeduser';
     const response = await request(app).get(`/users/${noneExistentUsername}`);
     expect(response.status).toBe(404);
   });
+
+});
+
+describe('User Service - Database unavailable', () => {
+  beforeAll(async () => {
+    app = require('./user-service');
+  });
   
+  afterAll(async () => {
+      app.close();
+  });
+
+  it('should return 500 when database is unavailable on POST /users', async () => {
+    const newUser = {
+      username: 'atestuserthatdoesnoteevenexist',
+      password: 'testpassword',
+      role: 'USER'
+    };
+
+    const response = await request(app).post('/users').send(newUser);
+    expect(response.status).toBe(500);
+  });
+
+
+
+  it('should return 500 when database is unavailable on GET /users/:username', async () => {
+    const response = await request(app).get('/users/testuser');
+    expect(response.status).toBe(500);
+  });
+
+
+
+  it('should return 500 when database is unavailable on GET /users', async () => {
+    const response = await request(app).get('/users');
+    expect(response.status).toBe(500);
+  });
+
+
+
+  it('should return 500 when database is unavailable on PATCH /users/:username', async () => {
+    const response = await request(app).patch('/users/testuser').send({ username: 'updateduser' });
+    expect(response.status).toBe(500);
+  });
+
+
+
+  it('should return 500 when database is unavailable on DELETE /users/:username', async () => {
+    const response = await request(app).delete('/users/testuser');
+    expect(response.status).toBe(500);
+  });
+
 });

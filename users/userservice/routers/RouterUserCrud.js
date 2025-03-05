@@ -6,16 +6,29 @@ const bcrypt = require('bcrypt');
 // Create a new user
 router.post('/users', async (req, res) => {
     try {
-        const saltRounds = 10;
-        const hashedPassword = bcrypt.hashSync(req.body.password, saltRounds);
+        const existingUser = await User.findOne({ username: req.body.username });
+
+        if (existingUser) {
+            return res.status(400).json({ error: 'Username already exists' });
+        }
+
         const user = new User({
-            ...req.body,
-            password: hashedPassword
+            ...req.body
         });
+
+        const errors = user.validateSync();
+
+        if (errors) {
+            return res.status(400).send(errors);
+        }
+
+        user.password = bcrypt.hashSync(req.body.password, 10);
+
         await user.save();
+
         res.status(201).send(user);
     } catch (error) {
-        res.status(400).send(error);
+        res.status(500).send(error);
     }
 });
 
