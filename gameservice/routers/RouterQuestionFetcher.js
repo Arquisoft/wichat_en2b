@@ -21,7 +21,7 @@ router.get('/generate/:type/:amount', async (req, res) => {
     try {
         // Fetch data from Wikidata
         const url = wikiDataUri + encodeURIComponent(query);
-        const response = await fetch(wikiDataUri + encodeURIComponent(query), {
+        const response = await fetch(url, {
             headers: {
               'User-Agent': 'wichat_en2b/1.0'
             }
