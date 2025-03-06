@@ -7,6 +7,99 @@ const User = require('./user-model');
 let mongoServer;
 let app;
 
+const testUser1 = {
+  username: 'testuser1',
+  password: 'testpassword1',
+  role: 'USER'
+};
+
+checkUserExistsInDb = async (testUser, bool) => {
+  // Get the user from the database
+  const userInDb = await User.findOne({ username: testUser.username });
+
+  // Assert user existance in the database
+  expect(userInDb != null).toBe(bool);
+  if (!bool) return;
+  expect(userInDb.username).toBe(testUser.username);
+  expect(userInDb.role).toBe(testUser.role);
+
+  // Assert that the password is encrypted in the database
+  const isPasswordValid = await bcrypt.compare(testUser.password, userInDb.password);
+  expect(isPasswordValid).toBe(true);
+};
+
+describe('User Service - POST /users', () => {
+  beforeAll(async () => {
+    mongoServer = await MongoMemoryServer.create();
+    const mongoUri = mongoServer.getUri();
+    process.env.MONGODB_URI = mongoUri;
+    app = require('./user-service');
+  });
+  
+  afterAll(async () => {
+    app.close();
+    await mongoServer.stop();
+  });
+
+  it('should add a new user on POST /users', async () => {
+    // Ask to add testUser1
+    const response = await request(app).post('/users').send(testUser1);
+    expect(response.status).toBe(201);
+
+    // Check if the response contains the user with the password encrypted
+    expect(response.body).toHaveProperty('username', testUser1.username);
+    expect(await bcrypt.compare(testUser1.password, response.body.password)).toBe(true);
+    expect(response.body).toHaveProperty('role', testUser1.role);
+    expect(response.body).toHaveProperty('createdAt');
+
+    // Check if the user is inserted into the database
+    await checkUserExistsInDb(testUser1, true);
+  });
+
+  it('should not add a user with missing password on POST /users', async () => {
+    const noPassUser = {
+      username: 'noPassUser',
+      // Missing password
+      role: 'USER'
+    };
+
+    const response = await request(app).post('/users').send(noPassUser);
+
+    expect(response.status).toBe(400);
+
+    await checkUserExistsInDb(noPassUser, false);
+  });
+
+  it('should not add a user with missing role on POST /users', async () => {
+    const noRoleUser = {
+      username: 'noRoleUser',
+      password: 'password'
+      // Missing role
+    };
+
+    const response = await request(app).post('/users').send(noRoleUser);
+
+    expect(response.status).toBe(400);
+
+    await checkUserExistsInDb(noRoleUser, false);
+  });
+
+  it('should not add a user with repeated username on POST /users', async () => {
+    const repeatedUser = {
+      username: 'testuser1',
+      password: 'repeatedTestPassword',
+      role: 'admin'
+    };
+
+    const response = await request(app).post('/users').send(repeatedUser);
+
+    expect(response.status).toBe(400);
+
+    // Check that the user in the database is still user 1
+    await checkUserExistsInDb(testUser1, true);
+  });
+});
+
 describe('User Service', () => {
   beforeAll(async () => {
     mongoServer = await MongoMemoryServer.create();
@@ -22,28 +115,7 @@ describe('User Service', () => {
 
 
 
-  it('should add a new user on POST /users', async () => {
-    const newUser = {
-      username: 'testuser',
-      password: 'testpassword',
-      role: 'USER'
-    };
-
-    const response = await request(app).post('/users').send(newUser);
-    expect(response.status).toBe(201);
-    expect(response.body).toHaveProperty('username', 'testuser');
-
-    // Check if the user is inserted into the database
-    const userInDb = await User.findOne({ username: 'testuser' });
-
-    // Assert that the user exists in the database
-    expect(userInDb).not.toBeNull();
-    expect(userInDb.username).toBe('testuser');
-
-    // Assert that the password is encrypted
-    const isPasswordValid = await bcrypt.compare('testpassword', userInDb.password);
-    expect(isPasswordValid).toBe(true);
-  });
+  
 
 
 
@@ -119,7 +191,6 @@ describe('User Service', () => {
     expect(await bcrypt.compare('updatedpassword', (await User.findOne({ username: "testuser3" })).password)).toBe(true);
   });
 
-S
 
   it('should delete a user by username on DELETE /users/:username', async () => {
     const newUser = new User({
@@ -140,46 +211,6 @@ S
 
 
   // NEGATIVE TEST CASES
-  
-  it('should not add a user with missing password on POST /users', async () => {
-    const newUser = {
-      username: 'testuser7',
-      // Missing password
-      role: 'USER'
-    };
-
-    const response = await request(app).post('/users').send(newUser);
-    expect(response.status).toBe(400);
-    expect(await User.findOne({ username: 'testuser7' })).toBeNull();
-  });
-
-
-
-  it('should not add a user with missing role on POST /users', async () => {
-    const newUser = {
-      username: 'testuser8',
-      password: 'testpassword'
-    };
-
-    const response = await request(app).post('/users').send(newUser);
-    expect(response.status).toBe(400);
-    expect(await User.findOne({ username: 'testuser8' })).toBeNull();
-  });
-
-
-
-  it('should not add a user with repeated username on POST /users', async () => {
-    const newUser = {
-      username: 'testuser',
-      password: 'errepetio',
-      role: 'ADMIN'
-    };
-
-    const response = await request(app).post('/users').send(newUser);
-    expect(response.status).toBe(400);
-    expect(await User.findOne({ username: 'testuser', role: 'ADMIN' })).toBeNull();
-  });
-
 
 
   it('should not update a user\'s username with a repeated username on PATCH /users/:username', async () => {
