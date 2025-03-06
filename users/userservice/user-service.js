@@ -1,6 +1,8 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const helmet = require('helmet');
 const app = express();
+app.use(helmet.hidePoweredBy());
 const bodyParser = require('body-parser');
 const userRoutes = require('./routers/RouterUserCrud');
 

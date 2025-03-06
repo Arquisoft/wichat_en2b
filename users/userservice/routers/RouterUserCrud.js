@@ -6,7 +6,7 @@ const bcrypt = require('bcrypt');
 // Create a new user
 router.post('/users', async (req, res) => {
     try {
-        const existingUser = await User.findOne({ username: req.body.username });
+        const existingUser = await User.findOne({ username: req.body.username.toString() });
 
         if (existingUser) {
             return res.status(400).json({ error: 'Username already exists' });
@@ -45,7 +45,7 @@ router.get('/users', async (req, res) => {
 // Get a user by username
 router.get('/users/:username', async (req, res) => {
     try {
-        const user = await User.findOne({ username: req.params.username });
+        const user = await User.findOne({ username: req.params.username.toString() });
         if (!user) {
             return res.status(404).send();
         }
@@ -58,18 +58,14 @@ router.get('/users/:username', async (req, res) => {
 // Update a user by username
 router.patch('/users/:username', async (req, res) => {
     try {
-        const paramQuery = { username: req.params.username.toString() };
-
-        const user = await User.findOne(paramQuery);
+        const user = await User.findOne({ username: req.params.username.toString() });
 
         if (!user) {
             return res.status(404).send();
         }
 
         if (req.body.username && req.body.username !== req.params.username) {
-            const bodyQuery = { username: req.body.username.toString() };
-
-            const existingUser = await User.findOne(bodyQuery);
+            const existingUser = await User.findOne({ username: req.body.username.toString() });
 
             if (existingUser) {
                 return res.status(400).json({ error: 'Username already exists' });
@@ -103,7 +99,7 @@ router.patch('/users/:username', async (req, res) => {
 // Delete a user by username
 router.delete('/users/:username', async (req, res) => {
     try {
-        const user = await User.findOneAndDelete({username: req.params.username});
+        const user = await User.findOneAndDelete({username: req.params.username.toString() });
         if (!user) {
             return res.status(404).send();
         }
