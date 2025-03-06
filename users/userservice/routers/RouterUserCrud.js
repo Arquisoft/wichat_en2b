@@ -58,16 +58,18 @@ router.get('/users/:username', async (req, res) => {
 // Update a user by username
 router.patch('/users/:username', async (req, res) => {
     try {
-        const existingUser = await User.findOne({ username: req.body.username });
-
-        if (existingUser && existingUser.username !== req.params.username) {
-            return res.status(400).json({ error: 'Username already exists' });
-        }
-
         const user = await User.findOne({ username: req.params.username });
 
         if (!user) {
             return res.status(404).send();
+        }
+
+        if (req.body.username && req.body.username !== req.params.username) {
+            const existingUser = await User.findOne({ username: req.body.username });
+
+            if (existingUser) {
+                return res.status(400).json({ error: 'Username already exists' });
+            }
         }
 
         if (req.body.password) {
