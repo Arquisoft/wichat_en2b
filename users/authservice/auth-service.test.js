@@ -12,7 +12,7 @@ jest.mock('./logger', () => ({
 
 const validUser = {
   username: 'testuser',
-  password: 'testpassword',
+  password: 'testpassword', // NOSONAR
   role: 'user'
 };
 
@@ -20,7 +20,7 @@ const hashedPassword = 'hashedpassword';
 
 const newUser = {
   username: 'newuser',
-  password: 'newpassword',
+  password: 'newpassword', // NOSONAR
   role: 'user'
 };
 
@@ -68,7 +68,7 @@ describe('Auth Service', () => {
     });
   
     it('Should not register a user with an invalid role', async () => {
-      const invalidRoleUser = { username: 'testuser', password: 'testpassword', role: 'invalidrole' };
+      const invalidRoleUser = { username: 'testuser', password: 'testpassword', role: 'invalidrole' }; // NOSONAR
       const response = await request(app).post('/register').send(invalidRoleUser);
   
       expect(response.status).toBe(400);
@@ -76,7 +76,7 @@ describe('Auth Service', () => {
     });
   
     it('Should not register a user if the password is too short', async () => {
-      const shortPasswordUser = { username: 'user', password: '123', role: 'user' };
+      const shortPasswordUser = { username: 'user', password: '123', role: 'user' }; // NOSONAR
       const response = await request(app).post('/register').send(shortPasswordUser);
   
       expect(response.status).toBe(400);

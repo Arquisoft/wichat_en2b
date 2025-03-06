@@ -8,6 +8,9 @@ const port = process.env.PORT;
 // Middleware to parse JSON in request body
 app.use(express.json());
 
+// Disable X-Powered-By header
+app.disable('x-powered-by');
+
 // Routers
 app.use(loginRouter); 
 
