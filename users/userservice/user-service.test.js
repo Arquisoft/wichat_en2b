@@ -1,17 +1,22 @@
 const request = require('supertest');
 const bcrypt = require('bcrypt');
 const { MongoMemoryServer } = require('mongodb-memory-server');
+const mongoose = require("mongoose");
 
 const User = require('./user-model');
-
-let mongoServer;
-let app;
 
 const testUser1 = {
   username: 'testuser1',
   password: 'testpassword1',
   role: 'USER'
 };
+
+async function clearDatabase() {
+  const collections = mongoose.connection.collections;
+  for (const key in collections) {
+    await collections[key].deleteMany({});
+  }
+}
 
 checkUserExistsInDb = async (testUser, bool) => {
   // Get the user from the database
@@ -28,17 +33,22 @@ checkUserExistsInDb = async (testUser, bool) => {
   expect(isPasswordValid).toBe(true);
 };
 
+validateResponse = async (response, expected) => {
+  expect(response).toHaveProperty('username', expected.username);
+  expect(response).toHaveProperty('role', expected.role);
+  expect(await bcrypt.compare(expected.password, response.password)).toBe(true);
+  expect(response).toHaveProperty('createdAt');
+}
+
+let mongoServer;
+let app;
+
 describe('User Service - POST /users', () => {
   beforeAll(async () => {
     mongoServer = await MongoMemoryServer.create();
     const mongoUri = mongoServer.getUri();
     process.env.MONGODB_URI = mongoUri;
     app = require('./user-service');
-  });
-  
-  afterAll(async () => {
-    app.close();
-    await mongoServer.stop();
   });
 
   it('should add a new user on POST /users', async () => {
@@ -100,12 +110,30 @@ describe('User Service - POST /users', () => {
   });
 });
 
+describe('User Service - GET /users/:username', () => {
+  beforeAll(async () => {
+    await clearDatabase();
+    await request(app).post('/users').send(testUser1);
+  });
+
+  it('should get a user by username on GET /users/:username', async () => {
+    const response = await request(app).get(`/users/${testUser1.username}`);
+    expect(response.status).toBe(200);
+
+    await validateResponse(response.body, testUser1);
+  });
+
+  it('should return 404 for non-existent user on GET /users/:username', async () => {
+    const nonExistentUsername = 'inventeduser';
+
+    const response = await request(app).get(`/users/${nonExistentUsername}`);
+
+    expect(response.status).toBe(404);
+  });
+});
+
 describe('User Service', () => {
   beforeAll(async () => {
-    mongoServer = await MongoMemoryServer.create();
-    const mongoUri = mongoServer.getUri();
-    process.env.MONGODB_URI = mongoUri;
-    app = require('./user-service');
   });
   
   afterAll(async () => {
@@ -118,23 +146,6 @@ describe('User Service', () => {
   
 
 
-
-  it('should get a user by username on GET /users/:username', async () => {
-    const newUser = new User({
-      username: 'testuser2',
-      password: 'testpassword2',
-      role: 'USER'
-    });
-    await newUser.save();
-
-    const response = await request(app).get(`/users/${newUser.username}`);
-    expect(response.status).toBe(200);
-    expect(response.body).toHaveProperty('username', 'testuser2');
-    expect(response.body).toHaveProperty('role', 'USER');
-    // No value can be checked for the password
-    expect(response.body).toHaveProperty('password');
-    expect(response.body).toHaveProperty('createdAt');
-  });
 
   
   
