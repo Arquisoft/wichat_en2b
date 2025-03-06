@@ -43,9 +43,6 @@ describe('Auth Service', () => {
   
       expect(response.status).toBe(201);
       expect(response.body).toHaveProperty('token');  // Expect the token to be returned
-      expect(response.body).toHaveProperty('user');
-      expect(response.body.user).toHaveProperty('username', newUser.username);
-      expect(response.body.user).toHaveProperty('role', newUser.role);
     });
   
     it('Should not register a user with an already existing username', async () => {
@@ -125,7 +122,6 @@ describe('Auth Service', () => {
 
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('token');
-      expect(response.body).toHaveProperty('username', validUser.username);
     });
 
     it('Should not log in if the user does not exist', async () => {

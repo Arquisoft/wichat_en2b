@@ -47,7 +47,7 @@ router.post('/login', [
             { expiresIn: '1h' }
         );
 
-        res.json({ token: token, username: user.username });
+        res.json({ token: token});
 
     } catch (error) {
       logger.error('Error in /login endpoint', error);
@@ -83,13 +83,9 @@ router.post('/register', [
             { expiresIn: '1h' }
         );
 
-        // Responding with the full user data, including the token
+        // Responding with the token
         res.status(201).json({
           token,
-          user: {
-            username: newUser.username,
-            role: newUser.role
-          }
         });
       } catch (error) {
         if (error.response && error.response.status === 400) {
