@@ -2,66 +2,221 @@ ifndef::imagesdir[:imagesdir: ../images]
 
 [[section-runtime-view]]
 == Runtime View
+This section focuses on describing the behaviour and interactions of the system's building blocks in form of scenarios.
 
+=== User registration
+Users must create an account if they do not have one. The behaviour of the application is:
 
-ifdef::arc42help[]
-[role="arc42help"]
-****
-.Contents
-The runtime view describes concrete behavior and interactions of the system’s building blocks in form of scenarios from the following areas:
-
-* important use cases or features: how do building blocks execute them?
-* interactions at critical external interfaces: how do building blocks cooperate with users and neighboring systems?
-* operation and administration: launch, start-up, stop
-* error and exception scenarios
-
-Remark: The main criterion for the choice of possible scenarios (sequences, workflows) is their *architectural relevance*. It is *not* important to describe a large number of scenarios. You should rather document a representative selection.
-
-.Motivation
-You should understand how (instances of) building blocks of your system perform their job and communicate at runtime.
-You will mainly capture scenarios in your documentation to communicate your architecture to stakeholders that are less willing or able to read and understand the static models (building block view, deployment view).
-
-.Form
-There are many notations for describing scenarios, e.g.
-
-* numbered list of steps (in natural language)
-* activity diagrams or flow charts
-* sequence diagrams
-* BPMN or EPCs (event process chains)
-* state machines
-* ...
-
-
-.Further Information
-
-See https://docs.arc42.org/section-6/[Runtime View] in the arc42 documentation.
-
-****
-endif::arc42help[]
-
-=== <Runtime Scenario 1>
-
-
-* _<insert runtime diagram or textual description of the scenario>_
-* _<insert description of the notable aspects of the interactions between the
-building block instances depicted in this diagram.>_
-
-It is possible to use a sequence diagram:
-
-[plantuml,"Sequence diagram",png]
+[.text-center]
+[plantuml,"Register diagram",png]
 ----
-actor Alice
-actor Bob
-database Pod as "Bob's Pod"
-Alice -> Bob: Authentication Request
-Bob --> Alice: Authentication Response
-Alice  --> Pod: Store route
-Alice -> Bob: Another authentication Request
-Alice <-- Bob: another authentication Response
+:User sends data;
+:Send data to Web Application;
+:Forward data to Gateway;
+:Send user addition request to User Service;
+:Verify credentials;
+
+if (Credentials correct?) then (Yes)
+    :Ask DB for existing user;
+    :Return user;
+
+    if (User exists?) then (Yes)
+        :Respond with error;
+        :Show error to User;
+        stop
+    else (No)
+        :Encrypt password and save;
+        :Add user to the database;
+        :Respond with new user;
+        :Forward data to Web App;
+        :Show confirmation to User;
+        stop
+    endif
+else (No)
+    :Respond with error;
+    :Show error to User;
+    stop
+endif
+
 ----
 
-=== <Runtime Scenario 2>
+The errorless behaviour will be:
 
-=== ...
+. The new user types the required information to create an account.
 
-=== <Runtime Scenario n>
+. Them, AddUser.js (from package webapp) collects this information and sends it via post to the "/addUser" url.
+
+. The Gateway Service will answer to this petition by forwarding the petition to the User Service and saving the user data to the response (if any error happened, it would be saved here).
+
+. The User Service then verifies that all the necessary credentials are stored in the request.
+
+. It encrypts the password and creates a new User object with the username and the encrypted password.
+
+. This new user is then saved into the database.
+
+. And sent back as the response.
+
+=== User login
+
+
+Users must have an account to use the application. The following sequence diagram shows how the application behaves when logging in.
+
+[.text-center]
+[plantuml,"Login diagram",png]
+----
+:User enters credentials;
+:Send credentials to Web Application;
+:Send authentication request to UAS;
+:Verify credentials;
+
+if (Credentials verified?) then (Yes)
+    :Check user in Database;
+    :Return user;
+
+    if (Passwords match?) then (Yes)
+        :Send token to Gateway;
+        :Forward token to Web App;
+        :User logs in;
+        stop
+    else (No)
+        :Respond with error;
+        :Show error to User;
+        stop
+    endif
+else (No)
+    :Respond with error;
+    :Show error to User;
+    stop
+endif
+
+legend
+UAS = User Authentication Service
+end legend
+----
+
+
+This is the behaviour of the flawless execution of the login:
+
+. The user types an username and a password.
+
+. Then the Login.js (from the webapp package) collects this data and sends it via post to the "/login". 
+
+. In the gateway service, a function answers to this request: forwards the petition to the User Authentication Service and saves the user data to the res, or when an error occurs, the error is saved to that variable.
+
+. After that, the User Authentication Service checks and validates the given data, and asks the database to find the user for the given username.
+
+. The database returns the user.
+
+. The User Authentication Service verifies that the encrypted password given by the user and the encrypted password stored in the database match. If this happens, a JWT Token is generated and saved to the response.
+
+. Shows visual confirmation of the login.
+
+
+=== Game example
+
+Here is the sequence diagram when playing the game.
+
+[.text-center]
+[plantuml,"Game diagram",png]
+----
+start
+
+:User requests questions;
+:Send request to Web Application;
+:Forward petition to Gateway;
+:QuestionRetriever retrieves questions from database;
+:Forward questions to Game Service;
+:Forward questions to Web Application;
+:Show questions to User;
+
+repeat :For each question;
+    
+    if (User asks for hint?) then (Yes)
+        :User types question;
+        :Forward question to Gateway;
+        :Forward question to LLM Service;
+        :Validate fields;
+        :Ask LLM for hint;
+        :Return answer;
+        :Parse answer to JSON;
+        :Send answer to Gateway;
+        :Forward answer to Web Application;
+        :Show LLM answer to User;
+    else (No)
+        :User gives an answer;
+        :Show correct answer to User;
+    endif
+repeat while (more questions?)
+
+:Send saving petition;
+:Forward petition to Gateway;
+:Parse game data;
+:Send parsed game back;
+:Forward parsed game to User Service;
+:Request adding game to DB;
+:Add game to MongoDB;
+
+stop
+----
+
+. The application requests the questions to show the user. 
+
+. Gateway Service answers this request and forwards the petition to the Game Service.
+
+. Game Service then uses RouterQuestionRetriever.
+
+. This class retrieves the number of questions desired from the database.
+
+. RouterQuestionRetriever returns the list of questions with answers in a .json file.
+
+. Game Service recieves these questions and forwards the data to the Gateway Service.
+
+. Then, the Gateway Service forwards them to the application which shows them to the user one by one.
+
+. When the game finishes, the app then requests to save the game results.
+
+. This request is answered and then forwarded by the Gateway Service and then, Game Service.
+
+. Game Service parses the game information to a valid format so it can be saved to de database.
+
+. Then this version of the game is sent back to the Game Service to be forwarded to the User Service. This is to reduce workload of the Game Service.
+
+. The User Service asks the User CRUD Service to save the game.
+
+*In the case user asks for hints:*
+
+. The player types a question for the LLM.
+
+. The application collects the prompt and forwards it to Gateway Service.
+
+. The aforementioned service then forwards it to the Game Service which then sends it to the LLM Service.
+
+. This service then validates the fields making sure the needed information needed is passed in the request and then sends the question to the LLM.
+
+. The LLM makes the answer and returns it to the LLM Service.
+
+. After that, the LLM Service parses the answer to json and sends it as the response of the petition.
+
+. The Game Service recieves it and forwards it to the Gateway Service and then to the Application, which shows the generated answer to the user.
+
+=== Exceptions and Errors Scenarios
+
+Possible errors regarding:
+
+* Registering:
+    - Invalid credentials (empty / blank).
+    - Using credentials from an already existing user: usernames must be different.
+    - Database exception: connection lost, data loss.
+
+* Login:
+    - Empty or blank credentials.
+    - Username does not exist.
+    - Wrong password.
+    - Database exception: connection lost, data loss.
+
+* Game:
+    - Wikidata error.
+    - Database exception: connection lost, data loss.
+    - LLM not answering to the user's prompt.
+    - LLM hallucinations
+    

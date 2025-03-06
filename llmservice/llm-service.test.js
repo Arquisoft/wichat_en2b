@@ -18,14 +18,21 @@ describe('LLM Service', () => {
     }
   });
 
-  // Test /ask endpoint
+  // Test /askllm endpoint
   it('the llm should reply', async () => {
     const response = await request(app)
-      .post('/ask')
-      .send({ question: 'a question', apiKey: 'apiKey', model: 'gemini' });
+      .post('/askllm')
+      .send({ conversation: [
+        { 
+          role: "user", 
+          content: "Hello, can you give me a hint for the question?"
+        }],
+        model: 'gemini',
+        possibleAnswers: {"answers":["San José","Lima","Perugia","Panama City"],"right_answer":"Panama City"} });
 
     expect(response.statusCode).toBe(200);
-    expect(response.body.answer).toBe('llmanswer');
+    console.log(response.body);
+    expect(response.body.content).toBe('llmanswer');
   });
 
 });

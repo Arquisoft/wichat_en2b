@@ -14,22 +14,25 @@ const Login = () => {
   const [openSnackbar, setOpenSnackbar] = useState(false);
 
   const apiEndpoint = process.env.REACT_APP_API_ENDPOINT || 'http://localhost:8000';
-  const apiKey = process.env.REACT_APP_LLM_API_KEY || 'None';
+
+
+  const possibleAnswers = {"answers":["San José","Lima","Perugia","Panama City"],"right_answer":"Panama City"};
 
   const loginUser = async () => {
     try {
       const response = await axios.post(`${apiEndpoint}/login`, { username, password });
-
-      const question = "Please, generate a greeting message for a student called " + username + " that is a student of the Software Architecture course in the University of Oviedo. Be nice and polite. Two to three sentences max.";
       const model = "empathy"
 
-      if (apiKey==='None'){
-        setMessage("LLM API key is not set. Cannot contact the LLM.");
-      }
-      else{
-        const message = await axios.post(`${apiEndpoint}/askllm`, { question, model, apiKey })
-        setMessage(message.data.answer);
-      }
+      let conversation = [
+        { 
+          role: "user", 
+          content: "Hello, can you give me a hint for the question?"
+        }];
+        
+      const message = await axios.post(`${apiEndpoint}/askllm`, {conversation, model, possibleAnswers })
+      conversation.push(message.data);
+      setMessage(message.data.content);
+      
       // Extract data from the response
       const { createdAt: userCreatedAt } = response.data;
 

@@ -8,15 +8,17 @@ const QuestionGame = () => {
     const [error, setError] = useState(null)
 
 
-    const totalQuestions = 10;    //TODO: unfix this parameters, delegate its assignation value to other layer
+    const totalQuestions = 4;    //TODO: unfix this parameters, delegate its assignation value to other layer
     const numberOptions = 4;
     
     const isLastQuestion = currentQuestion === totalQuestions - 1;
 
     function checkAnswer (questionSelected) {
-        const currentQuestion = questions[currentQuestion]
+        const currentQuestion = questions.find(q => q.id === currentQuestion)
         if (currentQuestion && currentQuestion.options[questionSelected] === currentQuestion.correctAnswer){
-            //TODO here will come the "score" logic evaluation
+            alert("Correct!")
+        } else {
+            alert("Incorrect!")
         }
     }
 
@@ -36,38 +38,38 @@ const QuestionGame = () => {
     };
 
     //TODO: Move this logic into a lower layer, it could be more than enough for Presentation
+    const fetchQuestions = async () => {
+        try {
+            const response = await fetch(`http://localhost:8000/game/${totalQuestions}/${numberOptions}`);
 
+            if (!response.ok){
+                //TODO: Change this, it is just for the prototye exception detection
+                console.error("Error when requesting the questions");
+                throw new Error("Response was not OK when requesting the questions");
+            }
+
+            //Parse into JSON
+            const questionsJSON = await response.json()
+
+            const formattedQuestions = questionsJSON.map((q,index) => ({
+                    id: index+1,
+                    questionText: "What is shown in the image?", //TODO: resolve this
+                    image: q.image_name,
+                    options: q.answers,
+                    correctAnswer: q.right_answer
+                }));
+
+            setQuestions(formattedQuestions);
+            setError(null);
+        } catch (err) {
+            console.error('Error fetching questions:', err);
+            setError("There was a problem when requesting the questions. Try again later.") 
+        }
+    }
     //We are calling the service of the questions response
     useEffect(() => {
-        const fetchQuestions = async () => {
-            try {
-                const response = await fetch(`/api/questions/game/${totalQuestions}/${numberOptions}`);
-
-                if (!response.ok){
-                    //TODO: Change this, it is just for the prototye exception detection
-                    console.error("Error when requesting the questions");
-                    throw new Error("Response was not OK when requesting the questions");
-                }
-
-                //Parse into JSON
-                const questionsJSON = await response.json()
-
-                const formattedQuestions = questionsJSON.map((q,index) => ({
-                        id: index+1,
-                        questionText: "What is shown in the image?", //TODO: resolve this
-                        image: q.image_name,
-                        options: q.answers,
-                        correctAnswer: q.right_answer
-                    }));
-
-                setQuestions(formattedQuestions);
-                setError(null);
-            } catch (exception) {
-                console.error('Error fetching questions:', err);
-                setError("There was a problem when requesting the questions. Try again later.") 
-            }
-        }
-    })
+        fetchQuestions();
+    }, []);
 
     if (error && questions.length === 0) {
         return (
@@ -103,7 +105,7 @@ const QuestionGame = () => {
                     {/* Image */}
                     <div className="image-container">
                         <img 
-                            src={currentQuestion.image}
+                            src={`http://localhost:8000/images/${currentQuestion.image}.jpg`}
                             alt="Question image" //TODO: change this? for a descriptive one? perhaps from wikidata description 
                             className="question-image"
                         />
@@ -127,7 +129,7 @@ const QuestionGame = () => {
                                     type="text"
                                     className="option-input"
                                     placeholder="Response..."
-                                    value={currentQuestion.questions[index].answer}
+                                    value={questions[currentQuestion]?.options?.[index] || ""}
                                     readOnly
                                 />
                             </div>
