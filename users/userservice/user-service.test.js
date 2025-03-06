@@ -24,7 +24,7 @@ async function clearDatabase() {
   }
 }
 
-checkUserExistsInDb = async (testUser, bool) => {
+const checkUserExistsInDb = async (testUser, bool) => {
   // Get the user from the database
   const userInDb = await User.findOne({ username: testUser.username });
 
@@ -39,7 +39,7 @@ checkUserExistsInDb = async (testUser, bool) => {
   expect(isPasswordValid).toBe(true);
 };
 
-validateResponse = async (response, expected) => {
+const validateResponse = async (response, expected) => {
   expect(response).toHaveProperty('username', expected.username);
   expect(response).toHaveProperty('role', expected.role);
   expect(await bcrypt.compare(expected.password, response.password)).toBe(true);
