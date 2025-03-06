@@ -2,7 +2,7 @@ const request = require('supertest');
 const axios = require('axios');
 const bcrypt = require('bcrypt');
 const logger = require('./logger'); 
-const { app, server } = require('./auth-server');
+const { app, server } = require('./auth-service');
 
 jest.mock('axios');
 jest.mock('bcrypt');
