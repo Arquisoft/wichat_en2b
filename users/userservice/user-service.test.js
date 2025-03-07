@@ -485,6 +485,56 @@ describe('User Service - PATCH /users/:username', () => {
 
     expect((await request(app).get(`/users/${testUser1.username}`)).body).toHaveProperty('__v', 4);
   });
+
+  it('should not update a user with blank username on PATCH /users/:username', async () => {
+    const response = await request(app).patch(`/users/${testUser1.username}`).send({ username: ' ' });
+
+    expect(response.status).toBe(400);
+    
+    await checkUserExistsInDb(testUser1, true);
+
+    expect((await request(app).get(`/users/${testUser1.username}`)).body).toHaveProperty('__v', 4);
+  });
+
+  it('should not update a user with blank password on PATCH /users/:username', async () => {
+    const response = await request(app).patch(`/users/${testUser1.username}`).send({ password: ' ' });
+
+    expect(response.status).toBe(400);
+    
+    await checkUserExistsInDb(testUser1, true);
+
+    expect((await request(app).get(`/users/${testUser1.username}`)).body).toHaveProperty('__v', 4);
+  });
+
+  it('should not update a user with blank role on PATCH /users/:username', async () => {
+    const response = await request(app).patch(`/users/${testUser1.username}`).send({ role: ' ' });
+
+    expect(response.status).toBe(400);
+    
+    await checkUserExistsInDb(testUser1, true);
+
+    expect((await request(app).get(`/users/${testUser1.username}`)).body).toHaveProperty('__v', 4);
+  });
+
+  it('should not update a user with blank fields on PATCH /users/:username', async () => {
+    const response = await request(app).patch(`/users/${testUser1.username}`).send({ password: ' ', role: 'ADMIN' });
+
+    expect(response.status).toBe(400);
+    
+    await checkUserExistsInDb(testUser1, true);
+
+    expect((await request(app).get(`/users/${testUser1.username}`)).body).toHaveProperty('__v', 4);
+  });
+
+  it('should not update a user with no update parameters on PATCH /users/:username', async () => {
+    const response = await request(app).patch(`/users/${testUser1.username}`).send({});
+
+    expect(response.status).toBe(400);
+    
+    await checkUserExistsInDb(testUser1, true);
+
+    expect((await request(app).get(`/users/${testUser1.username}`)).body).toHaveProperty('__v', 4);
+  });
 });
 
 describe('User Service - DELETE /users/:username', () => {

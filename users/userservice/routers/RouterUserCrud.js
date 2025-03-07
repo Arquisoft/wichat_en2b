@@ -58,10 +58,31 @@ router.get('/users/:username', async (req, res) => {
 // Update a user by username
 router.patch('/users/:username', async (req, res) => {
     try {
+        if (Object.keys(req.body).length === 0) {
+            return res.status(400).
+                json({ error: 'Request body is required' });
+        }
+
         const user = await User.findOne({ username: req.params.username.toString() });
 
         if (!user) {
             return res.status(404).send();
+        }
+
+        let somethingchanged = false;
+
+        for (const key in req.body) {
+            if (key === 'password') {
+                somethingchanged = !bcrypt.compareSync(req.body.password, user.password);
+            } else if (user[key] === undefined) {
+                return res.status(400).json({ error: `${key} is not a valid user property` });
+            } else if (req.body[key] != user[key]) {
+                somethingchanged = true;
+            }
+        }
+
+        if (!somethingchanged) {
+            return res.status(400).json({ error: 'No changes detected' });
         }
 
         if (req.body.username && req.body.username !== req.params.username) {
@@ -72,10 +93,6 @@ router.patch('/users/:username', async (req, res) => {
             }
         }
 
-        if (req.body.password) {
-            req.body.password = bcrypt.hashSync(req.body.password, 10);
-        }
-
         Object.assign(user, req.body);
 
         const errors = user.validateSync();
@@ -84,7 +101,9 @@ router.patch('/users/:username', async (req, res) => {
             return res.status(400).send(errors);
         }
 
-        await user.save();
+        if (req.body.password) {
+            user.password = bcrypt.hashSync(req.body.password, 10);
+        }
 
         user.__v += 1;
 
