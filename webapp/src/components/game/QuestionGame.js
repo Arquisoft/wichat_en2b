@@ -6,22 +6,14 @@ const QuestionGame = () => {
     const [questions, setQuestions] = useState([]);
     const [gameCompleted, setGameCompleted] = useState(false);
     const [error, setError] = useState(null)
+    const [questionShown, setQuestionShown] = useState(null)
     const [questionImg, setQuestionImg] = useState(null)
 
 
-    const totalQuestions = 4;    //TODO: unfix this parameters, delegate its assignation value to other layer
+    const totalQuestions = 4;                            //TODO: unfix this parameters, delegate its assignation value to other layer
     const numberOptions = 4;
     
     const isLastQuestion = currentQuestion === totalQuestions - 1;
-
-    //TODO: its testing propose, to avoid undefined
-    let questionShown = [{
-        id: 0,
-        questionText: "What is shown in the image?", 
-        image: "test",
-        options: ["test", "test", "test", "test"],
-        correctAnswer: "test"
-    }];
 
     function checkAnswer (questionSelected) {
         const q = questions.find(q => q.id === currentQuestion)
@@ -38,12 +30,11 @@ const QuestionGame = () => {
     
     const handleNext = () => {
         if (currentQuestion < totalQuestions - 1) {
-            checkAnswer(selectedOption);   //Logic of checking the question, move it to another layer, not Presentation
+            checkAnswer(selectedOption);                        //TODO: Logic of checking the question, move it to another layer, not Presentation
             setCurrentQuestion(currentQuestion + 1);
             setSelectedOption(null);
-            questionShown = questions.find(q => q.id === currentQuestion)
         } else {
-            // TODO: implement finish logic here, save game played,... It should not be done in Presentation Layer 
+                                                             // TODO: implement finish logic here, save game played,... It should not be done in Presentation Layer 
             alert("Quiz completed!");
         }
     };
@@ -62,7 +53,7 @@ const QuestionGame = () => {
 
             const formattedQuestions = questionsJSON.map((q,index) => ({
                     id: index,
-                    questionText: "What is shown in the image?", //TODO: resolve this fixed
+                    questionText: "What is shown in the image?",                    //TODO: resolve this, it cannot be fixed
                     image: q.image_name,
                     options: q.answers,
                     correctAnswer: q.right_answer
@@ -75,13 +66,14 @@ const QuestionGame = () => {
             setError("There was a problem when requesting the questions. Try again later.") 
         }
     }
-    //We are calling the service of the questions response
+    
     useEffect(() => {
         fetchQuestions();
     }, []);
 
     useEffect(() => {
-        questionShown = questions.find(q => q.id === currentQuestion)
+        const currentQ = questions.find(q => q.id === currentQuestion);
+        setQuestionShown(currentQ);
     }, [currentQuestion, questions]);
 
     useEffect(() => {
@@ -122,14 +114,14 @@ const QuestionGame = () => {
                 </div>
                 
                 {/* Question */}
-                <h2 className="question-text">{questionShown.questionText}</h2>
+                <h2 className="question-text">{questionShown?.questionText}</h2>
                 
                 <div className="flex-container">
                     {/* Image */}
                     <div className="image-container">
                         <img 
                             src={questionImg}
-                            alt="Question image" //TODO: change this? for a descriptive one? perhaps from wikidata description 
+                            alt="Question image"                            //TODO: change this? for a descriptive one? perhaps from wikidata description 
                             className="question-image"
                             id="q-img"
                         />
@@ -153,7 +145,7 @@ const QuestionGame = () => {
                                     type="text"
                                     className="option-input"
                                     placeholder="Response..."
-                                    value={questionShown.options?.[index] || ""}
+                                    value={questionShown?.options?.[index] || ""}
                                     readOnly
                                 />
                             </div>

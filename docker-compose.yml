@@ -3,8 +3,8 @@ services:
     container_name: mongodb-wichat_en2b
     image: mongo
     profiles: ["dev", "prod"]
-    #volumes:
-    # - mongodb_data:/data/db
+    volumes:
+     - mongodb_data:/data/db
     ports:
       - "27017:27017"
     networks:

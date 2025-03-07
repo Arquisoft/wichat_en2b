@@ -6,7 +6,7 @@ const promBundle = require('express-prom-bundle');
 const swaggerUi = require('swagger-ui-express'); 
 const fs = require("fs")
 const YAML = require('yaml')
-//lib for proxy
+//libraries for proxy
 const { createProxyMiddleware } = require('http-proxy-middleware');
 const path = require('path');
 
@@ -64,7 +64,6 @@ app.get('/game/:totalQuestions/:numberOptions', async (req, res) => {
   const { totalQuestions, numberOptions } = req.params;
 
   try {
-    // Realiza la solicitud al servidor backend de juegos (localhost:8004)
     const response = await fetch(`${gameServiceUrl}/game/${totalQuestions}/${numberOptions}`, {
       headers: {
         'Origin': 'http://localhost:8000'
@@ -74,7 +73,6 @@ app.get('/game/:totalQuestions/:numberOptions', async (req, res) => {
       throw new Error('Error al hacer la solicitud al backend');
     }
 
-    // Obtenemos los datos de la respuesta y los enviamos al frontend
     const data = await response.json();
     return res.status(200).json(data);
   } catch (err) {
@@ -84,11 +82,10 @@ app.get('/game/:totalQuestions/:numberOptions', async (req, res) => {
 });
 
 
-// Proxy para redirigir las solicitudes de imágenes al servidor de juegos
+// Proxy for images requests
 app.get('/images/:image', createProxyMiddleware({
   target: gameServiceUrl,
-  changeOrigin: true,
-  pathRewrite: (path, req) => { return path.replace('/images/', '/images/'+req.params.image) }
+  changeOrigin: true
 }));
 
 // Read the OpenAPI YAML file synchronously
