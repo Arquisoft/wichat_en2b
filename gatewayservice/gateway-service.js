@@ -88,9 +88,10 @@ app.get('/images/:imageName', async (req, res) => {
   const targetUrl = `${gameServiceUrl}/images/${req.params.imageName}`;
   
     http.get(targetUrl, (imageRes) => {
-      if (imageRes.statusCode !== 200) {
+      
+      /*if (imageRes.statusCode !== 200) {
           return res.status(imageRes.statusCode).send('Error retrieving image');
-      }
+      }*/
 
       res.setHeader('Content-Type', imageRes.headers['content-type']);
       imageRes.pipe(res); 
