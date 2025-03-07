@@ -182,6 +182,8 @@ describe('User Service - PATCH /users/:username', () => {
     await checkUserExistsInDb(updatedUser, true);
 
     await validateResponse(response.body, updatedUser);
+
+    expect(response.body.__v).toBe(1);
   });
 
   it('should update a user by password on PATCH /users/:username', async () => {
@@ -198,6 +200,8 @@ describe('User Service - PATCH /users/:username', () => {
     await checkUserExistsInDb(updatedUser, true);
 
     await validateResponse(response.body, updatedUser);
+
+    expect(response.body.__v).toBe(2);
   });
 
   it('should update a user by role on PATCH /users/:username', async () => {
@@ -214,6 +218,8 @@ describe('User Service - PATCH /users/:username', () => {
     await checkUserExistsInDb(updatedUser, true);
 
     await validateResponse(response.body, updatedUser);
+
+    expect(response.body.__v).toBe(3);
   });
 
   it('should update a user by all fields on PATCH /users/:username', async () => {
@@ -230,6 +236,8 @@ describe('User Service - PATCH /users/:username', () => {
     await checkUserExistsInDb(testUser1, true);
 
     await validateResponse(response.body, testUser1);
+
+    expect(response.body.__v).toBe(4);
   });
 
   it('should not update user\'s data with a repeated username on PATCH /users/:username', async () => {
@@ -246,6 +254,8 @@ describe('User Service - PATCH /users/:username', () => {
     await checkUserExistsInDb(testUser1, true);
 
     await checkUserExistsInDb(testUser2, true);
+
+    expect((await request(app).get(`/users/${testUser1.username}`)).body).toHaveProperty('__v', 4);
   });
 
   it('should return 404 when updating a non-existent user on PATCH /users/:username', async () => {
@@ -267,6 +277,8 @@ describe('User Service - PATCH /users/:username', () => {
     expect(response.status).toBe(400);
     
     await checkUserExistsInDb(testUser1, true);
+
+    expect((await request(app).get(`/users/${testUser1.username}`)).body).toHaveProperty('__v', 4);
   });
 
   it('should not update a user with empty password on PATCH /users/:username', async () => {
@@ -274,7 +286,9 @@ describe('User Service - PATCH /users/:username', () => {
 
     expect(response.status).toBe(400);
     
-    await checkUserExistsInDb(testUser1, true);  
+    await checkUserExistsInDb(testUser1, true);
+
+    expect((await request(app).get(`/users/${testUser1.username}`)).body).toHaveProperty('__v', 4);
   });
 
   it('should not update a user with empty role on PATCH /users/:username', async () => {
@@ -282,7 +296,9 @@ describe('User Service - PATCH /users/:username', () => {
 
     expect(response.status).toBe(400);
     
-    await checkUserExistsInDb(testUser1, true);  
+    await checkUserExistsInDb(testUser1, true);
+
+    expect((await request(app).get(`/users/${testUser1.username}`)).body).toHaveProperty('__v', 4);
   });
 
   it('should not update a user with empty fields on PATCH /users/:username', async () => {
@@ -292,6 +308,58 @@ describe('User Service - PATCH /users/:username', () => {
     
     // Assert that THE EMPTY FIELD has not been updated
     await checkUserExistsInDb(testUser1, true);
+
+    expect((await request(app).get(`/users/${testUser1.username}`)).body).toHaveProperty('__v', 4);
+  });
+
+  it('should not update a user with no update parameters on PATCH /users/:username', async () => {
+    const response = await request(app).patch(`/users/${testUser1.username}`).send({});
+
+    expect(response.status).toBe(400);
+    
+    await checkUserExistsInDb(testUser1, true);
+
+    expect((await request(app).get(`/users/${testUser1.username}`)).body).toHaveProperty('__v', 4);
+  });
+
+  it('should not update a user with same username on PATCH /users/:username', async () => {
+    const response = await request(app).patch(`/users/${testUser1.username}`).send({ username: testUser1.username });
+
+    expect(response.status).toBe(400);
+    
+    await checkUserExistsInDb(testUser1, true);
+
+    expect((await request(app).get(`/users/${testUser1.username}`)).body).toHaveProperty('__v', 4);
+  });
+
+  it('should not update a user with same password on PATCH /users/:username', async () => {
+    const response = await request(app).patch(`/users/${testUser1.username}`).send({ password: testUser1.password });
+
+    expect(response.status).toBe(400);
+    
+    await checkUserExistsInDb(testUser1, true);
+
+    expect((await request(app).get(`/users/${testUser1.username}`)).body).toHaveProperty('__v', 4);
+  });
+
+  it('should not update a user with same role on PATCH /users/:username', async () => {
+    const response = await request(app).patch(`/users/${testUser1.username}`).send({ role: testUser1.role });
+
+    expect(response.status).toBe(400);
+    
+    await checkUserExistsInDb(testUser1, true);
+
+    expect((await request(app).get(`/users/${testUser1.username}`)).body).toHaveProperty('__v', 4);
+  });
+
+  it('should not update a user with same data on PATCH /users/:username', async () => {
+    const response = await request(app).patch(`/users/${testUser1.username}`).send({ testUser1 });
+
+    expect(response.status).toBe(400);
+    
+    await checkUserExistsInDb(testUser1, true);
+
+    expect((await request(app).get(`/users/${testUser1.username}`)).body).toHaveProperty('__v', 4);
   });
 });
 
