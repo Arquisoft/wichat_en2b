@@ -83,13 +83,32 @@ export default function InGameChat({
     setIsMinimized(!isMinimized)
   }
 
+  const styles = { // I was having problem implementing the functionality maintaining
+                   // the same styles between the minimized and maximized buttons,
+                   // this is a bit dirty but it works.
+    chatButton: {
+      position: "fixed",
+      bottom: "20px",
+      right: "20px",
+      width: "60px",
+      height: "60px",
+      borderRadius: "50%",
+      backgroundColor: "#2196f3",
+      color: "white",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      border: "none",
+      boxShadow: "0 4px 8px rgba(0,0,0,0.2)",
+      cursor: "pointer",
+      zIndex: 1000
+    }
+  }
+
+  // If it's minimized, return ONLY the button for displaying the chat
   if (isMinimized) {
     return (
-      <button
-        onClick={toggleMinimize}
-        className="fixed bottom-5 right-5 w-14 h-14 rounded-full bg-blue-500 text-white shadow-lg flex items-center justify-center transition-all duration-300 ease-in-out hover:bg-blue-600 focus:outline-none z-50"
-        aria-label="Open chat"
-      >
+      <button onClick={toggleMinimize} style={styles.chatButton} aria-label="Open chat">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="24"
@@ -104,9 +123,11 @@ export default function InGameChat({
           <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
         </svg>
       </button>
+      
     )
   }
 
+  // Otherwise, return the whole chat
   return (
     <Box 
       sx={{ 
@@ -138,7 +159,7 @@ export default function InGameChat({
         </Typography>
         <Box sx={{ marginLeft: 'auto' }}>
           <IconButton 
-            onClick={toggleMinimize}
+          onClick={toggleMinimize}
             size="small" 
             sx={{ 
               bgcolor: 'rgba(255, 255, 255, 0.2)',
