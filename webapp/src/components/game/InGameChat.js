@@ -19,6 +19,7 @@ export default function InGameChat({
   ]);
   const [isMinimized, setIsMinimized] = useState(false);
   const [input, setInput] = useState("");
+  const [isThinking, setIsThinking] = useState(false);
   const messagesEndRef = useRef(null);
 
   // Scroll to bottom whenever messages change
@@ -44,6 +45,8 @@ export default function InGameChat({
       onSendMessage(input);
     }
 
+    setIsThinking(true)
+
     try {
       const response = await fetch("http://localhost:8000/askllm", {
         method: "POST",
@@ -56,6 +59,9 @@ export default function InGameChat({
       });
       const data = await response.json();
       console.log(data.content);
+
+      setIsThinking(false);
+
       if (data.content) {
       const llmMessage = {
         id: Date.now().toString() + "_llm",
@@ -70,6 +76,16 @@ export default function InGameChat({
     }
     } catch (error) {
       console.error("Error fetching LLM response:", error);
+      setIsThinking(false);
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        {
+          id: Date.now().toString() + "_error",
+          content: "Oh no! There has been an error processing your request.",
+          isUser: false,
+          type: "error",
+        },
+      ])
   };
 }
 
@@ -104,6 +120,79 @@ export default function InGameChat({
       zIndex: 1000
     }
   }
+
+  const ThinkingIndicator = () => (
+    <Box
+      sx={{
+        display: "flex",
+        justifyContent: "flex-start",
+      }}
+    >
+      <Paper
+        elevation={0}
+        sx={{
+          px: 2,
+          py: 1,
+          borderRadius: 10,
+          maxWidth: "80%",
+          bgcolor: "#e0e0e0",
+          color: "text.primary",
+        }}
+      >
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          <Box sx={{ display: "flex" }}>
+            <Box
+              component="span"
+              sx={{
+                width: "6px",
+                height: "6px",
+                borderRadius: "50%",
+                backgroundColor: "#757575",
+                animation: "pulse 1s infinite",
+                animationDelay: "0s",
+                "@keyframes pulse": {
+                  "0%, 100%": { opacity: 0.5 },
+                  "50%": { opacity: 1 },
+                },
+              }}
+            />
+            <Box
+              component="span"
+              sx={{
+                width: "6px",
+                height: "6px",
+                borderRadius: "50%",
+                backgroundColor: "#757575",
+                ml: 0.5,
+                animation: "pulse 1s infinite",
+                animationDelay: "0.2s",
+                "@keyframes pulse": {
+                  "0%, 100%": { opacity: 0.5 },
+                  "50%": { opacity: 1 },
+                },
+              }}
+            />
+            <Box
+              component="span"
+              sx={{
+                width: "6px",
+                height: "6px",
+                borderRadius: "50%",
+                backgroundColor: "#757575",
+                ml: 0.5,
+                animation: "pulse 1s infinite",
+                animationDelay: "0.4s",
+                "@keyframes pulse": {
+                  "0%, 100%": { opacity: 0.5 },
+                  "50%": { opacity: 1 },
+                },
+              }}
+            />
+          </Box>
+        </Box>
+      </Paper>
+    </Box>
+  )
 
   // If it's minimized, return ONLY the button for displaying the chat
   if (isMinimized) {
@@ -221,6 +310,9 @@ export default function InGameChat({
               </Paper>
             </Box>
           ))}
+
+          {isThinking && <ThinkingIndicator />}
+
           <div ref={messagesEndRef} />
         </Stack>
       </Box>
@@ -245,12 +337,14 @@ export default function InGameChat({
             placeholder="Enter question..."
             variant="outlined"
             sx={{ mr: 1 }}
+            disabled={isThinking}
           />
           <Button
             variant="contained"
             color="primary"
             onClick={handleSendMessage}
             sx={{ minWidth: '36px', px: 2 }}
+            disabled={isThinking}
           >
             <svg 
               xmlns="http://www.w3.org/2000/svg" 
