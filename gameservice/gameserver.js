@@ -14,7 +14,7 @@ mongoose.connect(mongoUri)
     .catch(err => console.error('❌ Error when connecting to MongoDB:', err));
 
 // Middleware to serve static files
-app.use('/images', express.static(path.join(__dirname, 'public/images')));
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Routers
 app.use(questionRouter); 
