@@ -72,6 +72,20 @@ describe('User Service - POST /users', () => {
     await checkUserExistsInDb(testUser1, true);
   });
 
+  it('should not add a user with missing username on POST /users', async () => {
+    const noUsernameUser = {
+      // Missing username
+      password: 'password',
+      role: 'USER'
+    };
+
+    const response = await request(app).post('/users').send(noUsernameUser);
+
+    expect(response.status).toBe(400);
+
+    await checkUserExistsInDb(noUsernameUser, false);
+  });
+
   it('should not add a user with missing password on POST /users', async () => {
     const noPassUser = {
       username: 'noPassUser',
@@ -104,7 +118,7 @@ describe('User Service - POST /users', () => {
     const repeatedUser = {
       username: 'testuser1',
       password: 'repeatedTestPassword',
-      role: 'admin'
+      role: 'ADMIN'
     };
 
     const response = await request(app).post('/users').send(repeatedUser);
@@ -113,6 +127,116 @@ describe('User Service - POST /users', () => {
 
     // Check that the user in the database is still user 1
     await checkUserExistsInDb(testUser1, true);
+  });
+
+  it('should not add a user with empty username on POST /users', async () => {
+    const emptyUsernameUser = {
+      username: '',
+      password: 'password',
+      role: 'USER'
+    };
+
+    const response = await request(app).post('/users').send(emptyUsernameUser);
+
+    expect(response.status).toBe(400);
+
+    await checkUserExistsInDb(emptyUsernameUser, false);
+  });
+
+  it('should not add a user with empty password on POST /users', async () => {
+    const emptyPasswordUser = {
+      username: 'emptyPasswordUser',
+      password: '',
+      role: 'USER'
+    };
+
+    const response = await request(app).post('/users').send(emptyPasswordUser);
+
+    expect(response.status).toBe(400);
+
+    await checkUserExistsInDb(emptyPasswordUser, false);
+  });
+
+  it('should not add a user with empty role on POST /users', async () => {
+    const emptyRoleUser = {
+      username: 'emptyRoleUser',
+      password: 'password',
+      role: ''
+    };
+
+    const response = await request(app).post('/users').send(emptyRoleUser);
+
+    expect(response.status).toBe(400);
+
+    await checkUserExistsInDb(emptyRoleUser, false);
+  });
+
+  it('should not add a user with empty fields on POST /users', async () => {
+    const emptyFieldsUser = {
+      username: '',
+      password: '',
+      role: ''
+    };
+
+    const response = await request(app).post('/users').send(emptyFieldsUser);
+
+    expect(response.status).toBe(400);
+
+    await checkUserExistsInDb(emptyFieldsUser, false);
+  });
+
+  it('should not add a user with no fields on POST /users', async () => {
+    const response = await request(app).post('/users').send({});
+
+    expect(response.status).toBe(400);
+  });
+
+  it('should not add a user with no data on POST /users', async () => {
+    const response = await request(app).post('/users');
+
+    expect(response.status).toBe(400);
+  });
+
+  it('should not add a user with blank username on POST /users', async () => {
+    const blankUsernameUser = {
+      username: ' ',
+      password: 'password',
+      role: 'USER'
+    };
+
+    const response = await request(app).post('/users').send(blankUsernameUser);
+
+    expect(response.status).toBe(400);
+
+    await checkUserExistsInDb(blankUsernameUser, false);
+  });
+
+  it('should not add a user with blank password on POST /users', async () => {
+    const blankPasswordUser = {
+      username: 'blankPasswordUser',
+      password: ' ',
+      role: 'USER'
+    };
+
+    const response = await request(app).post('/users').send(blankPasswordUser);
+
+    expect(response.status).toBe(400);
+
+    await checkUserExistsInDb(blankPasswordUser, false);
+  });
+
+  it('should not add a user with blank role on POST /users', async () => {
+    const blankRoleUser = {
+      username: 'blankRoleUser',
+      password: 'password',
+      role: ' '
+    };
+
+    const response = await request(app).post('/users').send(blankRoleUser);
+
+    expect(response.status).toBe(400);
+
+    await checkUserExistsInDb(blankRoleUser, false);
   });
 });
 
