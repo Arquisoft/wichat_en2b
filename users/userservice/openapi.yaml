@@ -1,8 +1,8 @@
-openapi: 3.0.3
+openapi: 3.0.0
 info:
   title: User Service API
-  description: API for managing users
   version: 1.0.0
+  description: API for managing users in the User Service
 servers:
   - url: http://localhost:8001
     description: Local server
@@ -10,42 +10,39 @@ paths:
   /users:
     post:
       summary: Create a new user
-      operationId: createUser
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserRequest'
+              $ref: '#/components/schemas/User'
       responses:
         '201':
           description: User created successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserResponse'
+                $ref: '#/components/schemas/User'
         '400':
-          description: Bad request (missing fields, duplicate username, validation errors)
+          description: Bad request
         '500':
           description: Internal server error
     get:
       summary: Get all users
-      operationId: getUsers
       responses:
         '200':
-          description: List of users
+          description: A list of users
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/UserResponse'
+                  $ref: '#/components/schemas/User'
         '500':
           description: Internal server error
   /users/{username}:
     get:
       summary: Get a user by username
-      operationId: getUserByUsername
       parameters:
         - name: username
           in: path
@@ -58,14 +55,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserResponse'
+                $ref: '#/components/schemas/User'
         '404':
           description: User not found
         '500':
           description: Internal server error
     patch:
       summary: Update a user by username
-      operationId: updateUser
       parameters:
         - name: username
           in: path
@@ -77,23 +73,22 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserUpdateRequest'
+              $ref: '#/components/schemas/User'
       responses:
         '200':
           description: User updated successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserResponse'
+                $ref: '#/components/schemas/User'
         '400':
-          description: Bad request (duplicate username, validation errors, empty fields)
+          description: Bad request
         '404':
           description: User not found
         '500':
           description: Internal server error
     delete:
       summary: Delete a user by username
-      operationId: deleteUser
       parameters:
         - name: username
           in: path
@@ -109,44 +104,22 @@ paths:
           description: Internal server error
 components:
   schemas:
-    UserRequest:
+    User:
       type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+        role:
+          type: string
+          enum:
+            - USER
+            - ADMIN
+        createdAt:
+          type: string
+          format: date-time
       required:
         - username
         - password
         - role
-      properties:
-        username:
-          type: string
-          example: testuser1
-        password:
-          type: string
-          example: testpassword1
-        role:
-          type: string
-          example: USER
-    UserUpdateRequest:
-      type: object
-      properties:
-        username:
-          type: string
-          example: updateduser
-        password:
-          type: string
-          example: updatedpassword
-        role:
-          type: string
-          example: ADMIN
-    UserResponse:
-      type: object
-      properties:
-        username:
-          type: string
-          example: testuser1
-        role:
-          type: string
-          example: USER
-        createdAt:
-          type: string
-          format: date-time
-          example: '2023-03-06T12:34:56.789Z'

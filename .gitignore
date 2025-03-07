@@ -4,3 +4,4 @@ docs/build
 .env
 webapp/.env
 gameservice/public/images/*
+.vscode/
