@@ -6,6 +6,9 @@ const promBundle = require('express-prom-bundle');
 const swaggerUi = require('swagger-ui-express'); 
 const fs = require("fs")
 const YAML = require('yaml')
+//libraries for proxy
+const { createProxyMiddleware } = require('http-proxy-middleware');
+const path = require('path');
 
 const app = express();
 const port = 8000;
@@ -13,8 +16,9 @@ const port = 8000;
 const llmServiceUrl = process.env.LLM_SERVICE_URL || 'http://localhost:8003';
 const authServiceUrl = process.env.AUTH_SERVICE_URL || 'http://localhost:8002';
 const userServiceUrl = process.env.USER_SERVICE_URL || 'http://localhost:8001';
+const gameServiceUrl = process.env.GAME_SERVICE_URL || 'http://localhost:8004';
 
-app.use(cors());
+app.use(cors())
 app.use(express.json());
 
 //Prometheus configuration
@@ -55,6 +59,34 @@ app.post('/askllm', async (req, res) => {
     res.status(error.response.status).json({ error: error.response.data.error });
   }
 });
+
+app.get('/game/:totalQuestions/:numberOptions', async (req, res) => {
+  const { totalQuestions, numberOptions } = req.params;
+
+  try {
+    const response = await fetch(`${gameServiceUrl}/game/${totalQuestions}/${numberOptions}`, {
+      headers: {
+        'Origin': 'http://localhost:8000'
+      }});
+      
+    if (!response.ok) {
+      throw new Error('Error al hacer la solicitud al backend');
+    }
+
+    const data = await response.json();
+    return res.status(200).json(data);
+  } catch (err) {
+    console.error('Error al obtener preguntas:', err);
+    return res.status(500).json({ error: 'Hubo un problema al obtener las preguntas' });
+  }
+});
+
+
+// Proxy for images requests
+app.get('/images/:image', createProxyMiddleware({
+  target: gameServiceUrl,
+  changeOrigin: true
+}));
 
 // Read the OpenAPI YAML file synchronously
 openapiPath='./openapi.yaml'
