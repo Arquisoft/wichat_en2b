@@ -13,13 +13,11 @@ import {
 export default function InGameChat({ 
   onSendMessage, 
   initialMessages = [],
-  width = "300px",
-  height = "500px"
 }) {
   const [messages, setMessages] = useState(initialMessages.length > 0 ? initialMessages : [
     { id: "1", content: "Welcome to the quiz! Ask for hints if you need help.", isUser: false, type: "welcome" },
   ]);
-  
+  const [isMinimized, setIsMinimized] = useState(false);
   const [input, setInput] = useState("");
   const messagesEndRef = useRef(null);
 
@@ -81,6 +79,34 @@ export default function InGameChat({
     }
   };
 
+  const toggleMinimize = () => {
+    setIsMinimized(!isMinimized)
+  }
+
+  if (isMinimized) {
+    return (
+      <button
+        onClick={toggleMinimize}
+        className="fixed bottom-5 right-5 w-14 h-14 rounded-full bg-blue-500 text-white shadow-lg flex items-center justify-center transition-all duration-300 ease-in-out hover:bg-blue-600 focus:outline-none z-50"
+        aria-label="Open chat"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+        </svg>
+      </button>
+    )
+  }
+
   return (
     <Box 
       sx={{ 
@@ -112,6 +138,7 @@ export default function InGameChat({
         </Typography>
         <Box sx={{ marginLeft: 'auto' }}>
           <IconButton 
+            onClick={toggleMinimize}
             size="small" 
             sx={{ 
               bgcolor: 'rgba(255, 255, 255, 0.2)',
