@@ -88,13 +88,8 @@ const QuestionGame = () => {
         if (questions.length > 0) {
             const currentQ = questions.find(q => q.id === currentQuestion);
             if (currentQ) {
-                fetch(`http://localhost:8000${currentQ.image}`) //...8000/images/<fle>.jpg   //.image stores the images as /image/<file>.jpg
-                    .then(resp => resp.blob())
-                    .then(imgBlob => {
-                        const imgURL = URL.createObjectURL(imgBlob);
-                        setQuestionImg(imgURL); 
-                    })
-                    .catch(error => console.error("Error cargando la imagen:", error));
+                const imgURL = `http://localhost:8000${currentQ.image}`;
+                setQuestionImg(imgURL);
             }
         }
     }, [currentQuestion, questions]);

@@ -7,7 +7,8 @@ const swaggerUi = require('swagger-ui-express');
 const fs = require("fs")
 const YAML = require('yaml')
 //lib for proxy
-const http = require('http')
+const { createProxyMiddleware } = require('http-proxy-middleware');
+const path = require('path');
 
 const app = express();
 const port = 8000;
@@ -83,23 +84,12 @@ app.get('/game/:totalQuestions/:numberOptions', async (req, res) => {
 });
 
 
-app.get('/images/:imageName', async (req, res) => {
-
-  const targetUrl = `${gameServiceUrl}/images/${req.params.imageName}`;
-  
-    http.get(targetUrl, (imageRes) => {
-      
-      /*if (imageRes.statusCode !== 200) {
-          return res.status(imageRes.statusCode).send('Error retrieving image');
-      }*/
-
-      res.setHeader('Content-Type', imageRes.headers['content-type']);
-      imageRes.pipe(res); 
-  }).on('error', (err) => {
-      console.error('Error fetching image:', err);
-      res.status(500).send('Error al obtener la imagen');
-  });
-});
+// Proxy para redirigir las solicitudes de imágenes al servidor de juegos
+app.get('/images/:image', createProxyMiddleware({
+  target: gameServiceUrl,
+  changeOrigin: true,
+  pathRewrite: (path, req) => { return path.replace('/images/', '/images/'+req.params.image) }
+}));
 
 // Read the OpenAPI YAML file synchronously
 openapiPath='./openapi.yaml'
