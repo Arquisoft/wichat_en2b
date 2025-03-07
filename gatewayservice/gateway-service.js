@@ -6,6 +6,8 @@ const promBundle = require('express-prom-bundle');
 const swaggerUi = require('swagger-ui-express'); 
 const fs = require("fs")
 const YAML = require('yaml')
+//lib for proxy
+const httpProxy = require('http-proxy');
 
 const app = express();
 const port = 8000;
@@ -13,7 +15,7 @@ const port = 8000;
 const llmServiceUrl = process.env.LLM_SERVICE_URL || 'http://localhost:8003';
 const authServiceUrl = process.env.AUTH_SERVICE_URL || 'http://localhost:8002';
 const userServiceUrl = process.env.USER_SERVICE_URL || 'http://localhost:8001';
-const gameServiceUrl = process.env.GAME_SERVICE_URL || 'http://gameservice:8004';
+const gameServiceUrl = process.env.GAME_SERVICE_URL || 'http://localhost:8004';
 
 app.use(cors())
 app.use(express.json());
@@ -80,6 +82,17 @@ app.get('/game/:totalQuestions/:numberOptions', async (req, res) => {
   }
 });
 
+const proxy = httpProxy.createProxyServer({ changeOrigin: true });
+
+app.get('/images/:imageName', async (req, res) => {
+
+  const targetUrl = `${gameServiceUrl}/images/${req.params.imageName}`;
+  
+  proxy.web(req, res, { target: targetUrl }, (err) => {
+    console.error('Error al redirigir imagen:', err);
+    res.status(500).send('Error al obtener la imagen');
+  });
+});
 
 // Read the OpenAPI YAML file synchronously
 openapiPath='./openapi.yaml'

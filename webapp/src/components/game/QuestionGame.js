@@ -13,9 +13,18 @@ const QuestionGame = () => {
     
     const isLastQuestion = currentQuestion === totalQuestions - 1;
 
+    //TODO: its testing propose, to avoid undefined
+    let questionShown = [{
+        id: 0,
+        questionText: "What is shown in the image?", 
+        image: "test",
+        options: ["test", "test", "test", "test"],
+        correctAnswer: "test"
+    }];
+
     function checkAnswer (questionSelected) {
-        const currentQuestion = questions.find(q => q.id === currentQuestion)
-        if (currentQuestion && currentQuestion.options[questionSelected] === currentQuestion.correctAnswer){
+        const q = questions.find(q => q.id === currentQuestion)
+        if (q && q.options[questionSelected] === q.correctAnswer){
             alert("Correct!")
         } else {
             alert("Incorrect!")
@@ -31,29 +40,28 @@ const QuestionGame = () => {
             checkAnswer(selectedOption);   //Logic of checking the question, move it to another layer, not Presentation
             setCurrentQuestion(currentQuestion + 1);
             setSelectedOption(null);
+            questionShown = questions.find(q => q.id === currentQuestion)
         } else {
             // TODO: implement finish logic here, save game played,... It should not be done in Presentation Layer 
             alert("Quiz completed!");
         }
     };
 
-    //TODO: Move this logic into a lower layer, it could be more than enough for Presentation
     const fetchQuestions = async () => {
         try {
             const response = await fetch(`http://localhost:8000/game/${totalQuestions}/${numberOptions}`);
 
             if (!response.ok){
-                //TODO: Change this, it is just for the prototye exception detection
+                
                 console.error("Error when requesting the questions");
                 throw new Error("Response was not OK when requesting the questions");
             }
 
-            //Parse into JSON
             const questionsJSON = await response.json()
 
             const formattedQuestions = questionsJSON.map((q,index) => ({
-                    id: index+1,
-                    questionText: "What is shown in the image?", //TODO: resolve this
+                    id: index,
+                    questionText: "What is shown in the image?", //TODO: resolve this fixed
                     image: q.image_name,
                     options: q.answers,
                     correctAnswer: q.right_answer
@@ -70,6 +78,10 @@ const QuestionGame = () => {
     useEffect(() => {
         fetchQuestions();
     }, []);
+
+    useEffect(() => {
+        questionShown = questions.find(q => q.id === currentQuestion)
+    }, [currentQuestion, questions]);
 
     if (error && questions.length === 0) {
         return (
@@ -99,13 +111,13 @@ const QuestionGame = () => {
                 </div>
                 
                 {/* Question */}
-                <h2 className="question-text">{currentQuestion.questionText}</h2>
+                <h2 className="question-text">{questionShown.questionText}</h2>
                 
                 <div className="flex-container">
                     {/* Image */}
                     <div className="image-container">
                         <img 
-                            src={`http://localhost:8000/images/${currentQuestion.image}.jpg`}
+                            src={`http://localhost:8000/images/${questionShown.image}.jpg`}
                             alt="Question image" //TODO: change this? for a descriptive one? perhaps from wikidata description 
                             className="question-image"
                         />
@@ -129,7 +141,7 @@ const QuestionGame = () => {
                                     type="text"
                                     className="option-input"
                                     placeholder="Response..."
-                                    value={questions[currentQuestion]?.options?.[index] || ""}
+                                    value={questionShown.options?.[index] || ""}
                                     readOnly
                                 />
                             </div>
