@@ -50,6 +50,18 @@ services:
       - "8003:8003"
     networks:
       - mynetwork
+  
+  gameservice:
+    container_name: gameservice-wichat_en2b
+    image: ghcr.io/arquisoft/wichat_en2b/gameservice:latest
+    profiles: ["dev", "prod"]
+    build: ./gameservice
+    ports:
+      - "8004:8004"
+    networks:
+      - mynetwork
+    environment:
+      MONGODB_URI: mongodb://mongodb:27017/game
 
   gatewayservice:
     container_name: gatewayservice-wichat_en2b
