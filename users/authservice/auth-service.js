@@ -3,7 +3,7 @@ const authRouter = require('./routers/AuthRouter');
 require('dotenv').config({ path: '../../.env' }); 
 
 const app = express();
-const port = process.env.PORT; 
+const port = process.env.PORT || 8002; 
 
 // Middleware to parse JSON in request body
 app.use(express.json());
