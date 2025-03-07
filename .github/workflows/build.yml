@@ -27,3 +27,4 @@ jobs:
       uses: SonarSource/sonarqube-scan-action@master
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        JWT_SECRET: ${{ secrets.JWT_SECRET }}

@@ -4,7 +4,7 @@ const axios = require('axios');
 const bcrypt = require('bcrypt'); // Added bcrypt import
 const { check, validationResult } = require('express-validator');
 const logger = require('../logger'); 
-require('dotenv').config({ path: '../../../.env' }); 
+require('dotenv').config(); 
 const router = express.Router();
 
 // Endpoint to login a user and return a JWT token
@@ -43,7 +43,7 @@ router.post('/login', [
 
         const token = jwt.sign(
             { id: userFromDB._id, role: userFromDB.role }, 
-            process.env.JWT_SECRET, 
+            process.env.JWT_SECRET || 'testing-secret', 
             { expiresIn: '1h' }
         );
 
@@ -80,7 +80,7 @@ router.post('/register', [
         // Hashing the password before sending it back
         const token = jwt.sign(
             { username: newUser.username, role: newUser.role }, 
-            process.env.JWT_SECRET, 
+            process.env.JWT_SECRET || 'testing-secret',
             { expiresIn: '1h' }
         );
 

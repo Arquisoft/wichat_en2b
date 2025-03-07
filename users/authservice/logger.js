@@ -1,6 +1,7 @@
 const pino = require('pino');
 const pretty = require('pino-pretty');
 const fs = require('fs');
+require('dotenv').config(); 
 
 // Configuración de pino-pretty para la consola
 const prettyStream = pretty({
