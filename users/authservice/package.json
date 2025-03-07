@@ -5,7 +5,7 @@
     "main": "service.js",
     "scripts": {
         "start": "node auth-service.js",
-        "test": "jest"
+        "test": "jest --coverage"
     },
     "repository": {
         "type": "git",
@@ -18,12 +18,16 @@
     },
     "homepage": "https://github.com/arquisoft/wichat_en2b#readme",
     "dependencies": {
+        "axios": "^1.8.1",
         "bcrypt": "^5.1.1",
         "body-parser": "^1.20.3",
+        "dotenv": "^16.4.7",
         "express": "^4.21.2",
         "express-validator": "^7.2.1",
         "jsonwebtoken": "^9.0.2",
-        "mongoose": "^8.9.3"
+        "mongoose": "^8.9.3",
+        "pino": "^9.6.0",
+        "pino-pretty": "^13.0.0"
     },
     "devDependencies": {
         "jest": "^29.7.0",
