@@ -66,6 +66,7 @@ router.post('/register', [
     try {      
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
+          logger.error({ err: errors.array() }, 'Validation error in /register endpoint');
           return res.status(400).json({ error: errors.array().map(err => err.msg).join(', ') });
       }
       
@@ -84,18 +85,19 @@ router.post('/register', [
         );
 
         // Responding with the token
-        res.status(201).json({
-          token,
-        });
+        res.status(201).json({token : token});
+
       } catch (error) {
         if (error.response && error.response.status === 400) {
+          logger.error({ err: error.response.data.error }, 'Error in /register endpoint');
           return res.status(400).json({ error: error.response.data.error });
         }
+
+        logger.error({ err: error }, 'Error in /register endpoint');
         throw error;
       }
 
     } catch (error) {
-      logger.error('Error in /register endpoint', error);
       res.status(500).json({ error: 'Internal Server Error' });
     }
   }
