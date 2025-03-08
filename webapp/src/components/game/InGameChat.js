@@ -12,7 +12,7 @@ import {
 } from "@mui/material";
 
 InGameChat.propTypes = { // Recommended by SonarQube
-  initialMessages: PropTypes.array.isRequired
+  initialMessages: PropTypes.array
 };
 
 export default function InGameChat({ 
@@ -53,7 +53,9 @@ export default function InGameChat({
         body: JSON.stringify({
           conversation: [{ role: "user", content: input }], 
           model: "empathy", 
+          // This will be changed when connected to the main game view!!
           possibleAnswers: { "answers": ["San José", "Lima", "Perugia", "Panama City"], "right_answer": "Panama City" }
+          // **************************************************************
         })
       });
       const data = await response.json();
@@ -266,6 +268,7 @@ export default function InGameChat({
             disabled={isThinking}
           />
           <Button
+            aria-label="Send Message"
             variant="contained"
             color="primary"
             onClick={handleSendMessage}
