@@ -5,7 +5,9 @@ const bcrypt = require('bcrypt'); // Added bcrypt import
 const { check, validationResult } = require('express-validator');
 const logger = require('../logger'); 
 require('dotenv').config(); 
+
 const router = express.Router();
+const validRoles = ['USER', 'ADMIN'];
 
 // Endpoint to login a user and return a JWT token
 router.post('/login', [
@@ -13,6 +15,12 @@ router.post('/login', [
   check('user.username').isLength({ min: 3 }).trim().escape().withMessage('Invalid value'),
   check('user.password').isLength({ min: 3 }).trim().escape().withMessage('Invalid value'),
   check('user.role').notEmpty().withMessage('Missing required field: role'),
+  check('user.role').custom(value => {
+      if (!validRoles.includes(value.toUpperCase())) {
+          throw new Error('Role must be one of the following: USER, ADMIN');
+      }
+      return true;
+  }).trim().escape()
   ],
   async (req, res) => {
     try {
@@ -36,8 +44,8 @@ router.post('/login', [
           return res.status(401).json({ error: 'Not a valid password' });
         }
 
-        if (userFromDB.role !== user.role) {
-          logger.error(`Failure in login: user ${user.username} does not have the role ${user.role}`);
+        if (userFromDB.role.toUpperCase() !== user.role.toUpperCase()) {
+          logger.error(`Failure in login: user ${user.username} does not have the role ${user.role.toUpperCase()} assigned`);
           return res.status(401).json({ error: 'Not a valid role' });
         }
 
@@ -60,7 +68,12 @@ router.post('/login', [
 router.post('/register', [
     check('username').isLength({ min: 3 }).withMessage('Username must be at least 3 characters').trim().escape(),
     check('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters').trim().escape(),
-    check('role').isIn(['user']).withMessage('Role must be one of the following: user').trim().escape()
+    check('role').custom(value => {
+        if (!validRoles.includes(value.toUpperCase())) {
+            throw new Error('Role must be one of the following: USER, ADMIN');
+        }
+        return true;
+    }).trim().escape()
   ],
   async (req, res) => {
     try {      
@@ -70,7 +83,8 @@ router.post('/register', [
           return res.status(400).json({ error: errors.array().map(err => err.msg).join(', ') });
       }
       
-      const { username, password, role } = req.body;  
+      const { username, password } = req.body;  
+      const role = req.body.role.toUpperCase(); 
 
       try {
         // Creating a new user by sending a POST request to the user service
