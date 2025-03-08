@@ -18,13 +18,14 @@ InGameChat.propTypes = { // Recommended by SonarQube
 export default function InGameChat({ 
   initialMessages = [],
 }) {
+  // Initial message when opening the chat for the first time
   const [messages, setMessages] = useState(initialMessages.length > 0 ? initialMessages : [
     { id: "1", content: "Welcome to the quiz! Ask for hints if you need help.", isUser: false, type: "welcome" },
   ]);
   const [isMinimized, setIsMinimized] = useState(false);
   const [input, setInput] = useState("");
   const [isThinking, setIsThinking] = useState(false);
-  const messagesEndRef = useRef(null);
+  const messagesEndRef = useRef(null); // This is used for scrolling
 
   // Scroll to bottom whenever messages change
   useEffect(() => {
@@ -44,6 +45,7 @@ export default function InGameChat({
     setMessages([...messages, newMessage]);
     setInput("");
 
+    // Thinking animation
     setIsThinking(true)
 
     try {
@@ -59,12 +61,11 @@ export default function InGameChat({
         })
       });
       const data = await response.json();
-      console.log(data.content);
 
       setIsThinking(false);
 
       if (data.content) {
-      const llmMessage = {
+        const llmMessage = {
         id: Date.now().toString() + "_llm",
         content: data.content, // LLM response text
         isUser: false,
@@ -76,7 +77,6 @@ export default function InGameChat({
       console.error("Invalid LLM response", data);
     }
     } catch (error) {
-      console.error("Error fetching LLM response:", error);
       setIsThinking(false);
       setMessages((prevMessages) => [
         ...prevMessages,
