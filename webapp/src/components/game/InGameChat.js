@@ -1,5 +1,6 @@
 // InGameChat.js
 import React, { useState, useRef, useEffect } from "react";
+import PropTypes from 'prop-types';
 import { 
   Box, 
   Paper, 
@@ -10,8 +11,11 @@ import {
   Stack
 } from "@mui/material";
 
+InGameChat.propTypes = { // Recommended by SonarQube
+  initialMessages: PropTypes.array.isRequired
+};
+
 export default function InGameChat({ 
-  onSendMessage, 
   initialMessages = [],
 }) {
   const [messages, setMessages] = useState(initialMessages.length > 0 ? initialMessages : [
@@ -39,11 +43,6 @@ export default function InGameChat({
     
     setMessages([...messages, newMessage]);
     setInput("");
-    
-    // Call the external handler if provided
-    if (onSendMessage) {
-      onSendMessage(input);
-    }
 
     setIsThinking(true)
 
@@ -120,79 +119,6 @@ export default function InGameChat({
       zIndex: 1000
     }
   }
-
-  const ThinkingIndicator = () => (
-    <Box
-      sx={{
-        display: "flex",
-        justifyContent: "flex-start",
-      }}
-    >
-      <Paper
-        elevation={0}
-        sx={{
-          px: 2,
-          py: 1,
-          borderRadius: 10,
-          maxWidth: "80%",
-          bgcolor: "#e0e0e0",
-          color: "text.primary",
-        }}
-      >
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <Box sx={{ display: "flex" }}>
-            <Box
-              component="span"
-              sx={{
-                width: "6px",
-                height: "6px",
-                borderRadius: "50%",
-                backgroundColor: "#757575",
-                animation: "pulse 1s infinite",
-                animationDelay: "0s",
-                "@keyframes pulse": {
-                  "0%, 100%": { opacity: 0.5 },
-                  "50%": { opacity: 1 },
-                },
-              }}
-            />
-            <Box
-              component="span"
-              sx={{
-                width: "6px",
-                height: "6px",
-                borderRadius: "50%",
-                backgroundColor: "#757575",
-                ml: 0.5,
-                animation: "pulse 1s infinite",
-                animationDelay: "0.2s",
-                "@keyframes pulse": {
-                  "0%, 100%": { opacity: 0.5 },
-                  "50%": { opacity: 1 },
-                },
-              }}
-            />
-            <Box
-              component="span"
-              sx={{
-                width: "6px",
-                height: "6px",
-                borderRadius: "50%",
-                backgroundColor: "#757575",
-                ml: 0.5,
-                animation: "pulse 1s infinite",
-                animationDelay: "0.4s",
-                "@keyframes pulse": {
-                  "0%, 100%": { opacity: 0.5 },
-                  "50%": { opacity: 1 },
-                },
-              }}
-            />
-          </Box>
-        </Box>
-      </Paper>
-    </Box>
-  )
 
   // If it's minimized, return ONLY the button for displaying the chat
   if (isMinimized) {
@@ -366,3 +292,76 @@ export default function InGameChat({
     </Box>
   );
 }
+
+const ThinkingIndicator = () => (
+  <Box
+    sx={{
+      display: "flex",
+      justifyContent: "flex-start",
+    }}
+  >
+    <Paper
+      elevation={0}
+      sx={{
+        px: 2,
+        py: 1,
+        borderRadius: 10,
+        maxWidth: "80%",
+        bgcolor: "#e0e0e0",
+        color: "text.primary",
+      }}
+    >
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+        <Box sx={{ display: "flex" }}>
+          <Box
+            component="span"
+            sx={{
+              width: "6px",
+              height: "6px",
+              borderRadius: "50%",
+              backgroundColor: "#757575",
+              animation: "pulse 1s infinite",
+              animationDelay: "0s",
+              "@keyframes pulse": {
+                "0%, 100%": { opacity: 0.5 },
+                "50%": { opacity: 1 },
+              },
+            }}
+          />
+          <Box
+            component="span"
+            sx={{
+              width: "6px",
+              height: "6px",
+              borderRadius: "50%",
+              backgroundColor: "#757575",
+              ml: 0.5,
+              animation: "pulse 1s infinite",
+              animationDelay: "0.2s",
+              "@keyframes pulse": {
+                "0%, 100%": { opacity: 0.5 },
+                "50%": { opacity: 1 },
+              },
+            }}
+          />
+          <Box
+            component="span"
+            sx={{
+              width: "6px",
+              height: "6px",
+              borderRadius: "50%",
+              backgroundColor: "#757575",
+              ml: 0.5,
+              animation: "pulse 1s infinite",
+              animationDelay: "0.4s",
+              "@keyframes pulse": {
+                "0%, 100%": { opacity: 0.5 },
+                "50%": { opacity: 1 },
+              },
+            }}
+          />
+        </Box>
+      </Box>
+    </Paper>
+  </Box>
+)
