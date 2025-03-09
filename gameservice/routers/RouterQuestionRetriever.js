@@ -33,7 +33,7 @@ router.get('/game/:numQuestions?/:numOptions?', async (req, res) => {
 
             // Shuffle the correct answer with the fake answers
             const answers = [q.answer, ...fakeAnswers].sort(() => 0.5 - Math.random());
-
+            
             return {
                 image_name: `/images/${q._id}.jpg`,
                 answers,

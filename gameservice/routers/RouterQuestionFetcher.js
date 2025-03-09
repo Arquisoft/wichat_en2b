@@ -39,7 +39,11 @@ router.get('/generate/:type/:amount', async (req, res) => {
                 name: item.itemLabel.value,
                 image: item.image.value
             }));
-
+        // Check if items are empty (invalid type or no results)
+        if (items.length === 0) {
+            throw new Error('No valid items found for the given type');
+        }
+        
         // Save items to database and images to disk
         await saveQuestionsToDB(items, itemType);
 
