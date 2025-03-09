@@ -1339,7 +1339,7 @@ We have considered an optional requirement that include game different modes. Th
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="./images/diag-plantuml-md5-9ea75ac55f307c962435cf2901f524aa.png" alt="Diagram" width="267" height="276">
+<img src="./images/diag-plantuml-md5-9ea75ac55f307c962435cf2901f524aa.png" alt="Diagram" width="538" height="197">
 </div>
 </div>
 </div>
@@ -1403,7 +1403,7 @@ We have considered an optional requirement that include game different modes. Th
 <h4 id="_container_diagram">5.2.1. Container Diagram</h4>
 <div class="imageblock">
 <div class="content">
-<img src="./images/diag-plantuml-md5-a0419155f4f0b172791e6452a369862d.png" alt="Diagram" width="267" height="276">
+<img src="./images/diag-plantuml-md5-a0419155f4f0b172791e6452a369862d.png" alt="Diagram" width="1619" height="516">
 </div>
 </div>
 </div>
@@ -1738,7 +1738,7 @@ We have considered an optional requirement that include game different modes. Th
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="./images/UML%20diagram%201.png" alt="UML diagram 1" width="267" height="236">
+<img src="./images/UML%20diagram%201.png" alt="UML diagram 1" width="423" height="318">
 </div>
 </div>
 <div class="paragraph">
@@ -1760,7 +1760,7 @@ We have considered an optional requirement that include game different modes. Th
 <h4 id="_oracle_serverapplication">7.2.1. Oracle ServerApplication</h4>
 <div class="imageblock">
 <div class="content">
-<img src="./images/UML%20diagram%202.png" alt="UML diagram 2" width="267" height="236">
+<img src="./images/UML%20diagram%202.png" alt="UML diagram 2" width="1137" height="315">
 </div>
 </div>
 <div class="paragraph">
@@ -2249,29 +2249,115 @@ There you will find links and examples about ADR.</p>
 <h3 id="_identified_risks_and_technical_debts">11.1. Identified Risks and Technical Debts</h3>
 <div class="paragraph">
 <p>Below is a prioritized list of technical risks and debts identified in the current system architecture:
-1. <strong>Dependency on External APIs</strong>
-   - <strong>Risk</strong>: The system relies heavily on external services (e.g., Wikidata API) for core functionality. Any downtime, rate-limiting, or changes to the API could disrupt the application.
-2. <strong>Slow question retrieving</strong>
-   - <strong>Risk</strong>: If not developed correctly, the application&#8217;s speed can be severly impacted by the retrieval of questions, therefore impacting the user experience.
-   - <strong>Mitigation</strong>:
-     - Develop a kind of cache or similar system for the questions, so the user doesn&#8217;t have to wait for all of them to load.
-3. <strong>Reliance on Oracle Server</strong>
-   - <strong>Risk</strong>: The team is planning on deploying the application on an Oracle server, which was created using a free account. Although chances of losing this service are small, per contract they are still possible. Other alternative would be to deploy on a personal computer, but that entails depending on a teammate&#8217;s computer&#8217;s being available when needed.
-   - <strong>Mitigation</strong>:
-     - Having another teammate have another Oracle account, or of similar service, with a backup server to be used if needed.
-4. <strong>Starting from scratch</strong>
-   - <strong>Risk</strong>: The team has decided to start from scratch, this is beneficial cause in one hand the team doesn&#8217;t have to decipher other people&#8217;s code, but in the other hand the team has to figure out how to do everything from scratch.
-   - <strong>Mitigation</strong>:
-     - Although the team is doing everything from scratch we still have other years projects to compare and search for problems that we may have and have already been resolved in other years.
-5. <strong>Hardcoded Configuration</strong>
-   - <strong>Risk</strong>: Certain values (e.g., image directory path, API endpoints) are hardcoded in the codebase, reducing flexibility. Changes require code modifications and redeployment, slowing down maintenance.
-   - <strong>Resolution</strong>:
-     - Move configurations to environment variables or a configuration file.
-     - Document all configurable settings for easier management.
-6. <strong>Technical Skill Gaps</strong>
-   - <strong>Risk</strong>: The development team may lack certain technical skills required to maintain and enhance the system.
-   - <strong>Mitigation</strong>:
-     - The development team has to experiment with and study the different technologies used either by themselves or with the guide of another team member who knows more.</p>
+. <strong>Dependency on External APIs</strong>
+  - <strong>Risk</strong>: The system relies heavily on external services (e.g., Wikidata API) for core functionality. Any downtime, rate-limiting, or changes to the API could disrupt the application.</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Slow Question Retrieval</strong></p>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Risk</strong>: If not developed correctly, the application&#8217;s speed can be severely impacted by the retrieval of questions, therefore impacting the user experience.</p>
+</li>
+<li>
+<p><strong>Mitigation</strong>:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Develop a kind of cache or similar system for the questions, so the user doesn&#8217;t have to wait for all of them to load.</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Reliance on Oracle Server</strong></p>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Risk</strong>: The team is planning on deploying the application on an Oracle server, which was created using a free account. Although chances of losing this service are small, per contract they are still possible. The alternative would be to deploy on a personal computer, but that entails depending on a teammate&#8217;s computer being available when needed.</p>
+</li>
+<li>
+<p><strong>Mitigation</strong>:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Have another teammate set up an additional Oracle account, or a similar service, with a backup server to be used if needed.</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Starting from Scratch</strong></p>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Risk</strong>: The team has decided to start from scratch. This is beneficial because the team doesn&#8217;t have to decipher other people&#8217;s code, but it also means the team must figure out how to do everything from the ground up.</p>
+</li>
+<li>
+<p><strong>Mitigation</strong>:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Although the team is building everything from scratch, we can still reference previous years' projects to identify and resolve potential problems that have already been addressed.</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Hardcoded Configuration</strong></p>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Risk</strong>: Certain values (e.g., image directory path, API endpoints) are hardcoded in the codebase, reducing flexibility. Changes require code modifications and redeployment, slowing down maintenance.</p>
+</li>
+<li>
+<p><strong>Resolution</strong>:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Move configurations to environment variables or a configuration file.</p>
+</li>
+<li>
+<p>Document all configurable settings for easier management.</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Technical Skill Gaps</strong></p>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Risk</strong>: The development team may lack certain technical skills required to maintain and enhance the system.</p>
+</li>
+<li>
+<p><strong>Mitigation</strong>:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>The development team should experiment with and study the different technologies used, either independently or with guidance from a team member who has more expertise.</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</li>
+</ol>
 </div>
 <div style="page-break-after: always;"></div>
 </div>
@@ -2344,7 +2430,7 @@ There you will find links and examples about ADR.</p>
 <div id="footer">
 <div id="footer-text">
 Version 8.2 EN<br>
-Last updated 2025-03-09 13:38:23 +0100
+Last updated 2025-03-04 11:40:27 UTC
 </div>
 </div>
 </body>
