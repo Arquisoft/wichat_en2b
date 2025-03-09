@@ -90,7 +90,7 @@ const QuestionGame = () => {
         return (
             <div className="quiz-container">
                 <div className="blue-border"></div>
-                <div className="content-area error">
+                <div className="content-area error" data-testid="error-message">
                     <h2>{error}</h2>
                     <button className="next-button" onClick={() => window.location.reload()}>
                         Reintentar
@@ -109,12 +109,12 @@ const QuestionGame = () => {
             {/* Main content */}
             <div className="content-area">
                 {/* Question counter */}
-                <div className="question-counter">
+                <div className="question-counter" data-testid="question-counter">
                     Question {currentQuestion + 1} of {totalQuestions}
                 </div>
                 
                 {/* Question */}
-                <h2 className="question-text">{questionShown?.questionText}</h2>
+                <h2 className="question-text" data-testid="question-text">{questionShown?.questionText}</h2>
                 
                 <div className="flex-container">
                     {/* Image */}
@@ -129,26 +129,25 @@ const QuestionGame = () => {
                     
                     {/* Options */}
                     <div className="options-container">
-                        {/*TODO: more flexible*/}
-                        {['A', 'B', 'C', 'D'].map((letter, index) => (
+                    {questionShown?.options?.map((option, index) => (
+                        <div 
+                            key={index}
+                            className="option"
+                            onClick={() => handleOptionSelect(index)}
+                        >
                             <div 
-                                key={letter}
-                                className="option"
-                                onClick={() => handleOptionSelect(index)}
+                                className={`option-letter ${selectedOption === index ? 'selected' : ''}`}
                             >
-                                <div 
-                                    className={`option-letter ${selectedOption === index ? 'selected' : ''}`}
-                                >
-                                    {letter}
-                                </div>
-                                <input
-                                    type="text"
-                                    className="option-input"
-                                    placeholder="Response..."
-                                    value={questionShown?.options?.[index] || ""}
-                                    readOnly
-                                />
+                                {String.fromCharCode(65 + index)}
                             </div>
+                            <input
+                                type="text"
+                                className="option-input"
+                                placeholder="Response..."
+                                value={option}
+                                readOnly
+                            />
+                        </div>
                         ))}
                     </div>
                 </div>
@@ -156,6 +155,7 @@ const QuestionGame = () => {
                 {/* Next/Finish button */}
                 <button 
                     className="next-button"
+                    data-testid="next-button"
                     onClick={handleNext}
                 >
                     {isLastQuestion ? 'Finish' : 'Next'}

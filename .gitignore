@@ -3,3 +3,6 @@ coverage
 docs/build
 .env
 webapp/.env
+webapp/.env
+gameservice/public/images/*
+.vscode/
