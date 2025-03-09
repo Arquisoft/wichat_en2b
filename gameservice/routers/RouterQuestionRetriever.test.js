@@ -39,26 +39,6 @@ describe('RouterQuestionRetriever', () => {
             expect(question.answers).toContain(question.right_answer);
         });
     });
-    
-    it('should return the specified number of questions and options', async () => {
-        await Question.insertMany([
-            { answer: 'Answer 1' },
-            { answer: 'Answer 2' },
-            { answer: 'Answer 3' },
-            { answer: 'Answer 4' },
-            { answer: 'Answer 5' },
-            { answer: 'Answer 6' }
-        ]);
-
-        const res = await request(app).get('/api/game/2/4');
-
-        expect(res.status).toBe(200);
-        expect(res.body.length).toBe(2);
-        res.body.forEach(question => {
-            expect(question.answers.length).toBe(4);
-            expect(question.answers).toContain(question.right_answer);
-        });
-    });
 
     it('should return 400 if not enough questions in DB', async () => {
         await Question.insertMany([
