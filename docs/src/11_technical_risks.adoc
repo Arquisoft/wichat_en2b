@@ -2,26 +2,34 @@ ifndef::imagesdir[:imagesdir: ../images]
 
 [[section-technical-risks]]
 == Risks and Technical Debts
+=== Identified Risks and Technical Debts
+Below is a prioritized list of technical risks and debts identified in the current system architecture:
+. *Dependency on External APIs*
+  - *Risk*: The system relies heavily on external services (e.g., Wikidata API) for core functionality. Any downtime, rate-limiting, or changes to the API could disrupt the application.
 
+. *Slow Question Retrieval*
+  - *Risk*: If not developed correctly, the application's speed can be severely impacted by the retrieval of questions, therefore impacting the user experience.
+  - *Mitigation*:
+    * Develop a kind of cache or similar system for the questions, so the user doesn't have to wait for all of them to load.
 
-ifdef::arc42help[]
-[role="arc42help"]
-****
-.Contents
-A list of identified technical risks or technical debts, ordered by priority
+. *Reliance on Oracle Server*
+  - *Risk*: The team is planning on deploying the application on an Oracle server, which was created using a free account. Although chances of losing this service are small, per contract they are still possible. The alternative would be to deploy on a personal computer, but that entails depending on a teammate's computer being available when needed.
+  - *Mitigation*:
+    * Have another teammate set up an additional Oracle account, or a similar service, with a backup server to be used if needed.
 
-.Motivation
-“Risk management is project management for grown-ups” (Tim Lister, Atlantic Systems Guild.) 
+. *Starting from Scratch*
+  - *Risk*: The team has decided to start from scratch. This is beneficial because the team doesn't have to decipher other people's code, but it also means the team must figure out how to do everything from the ground up.
+  - *Mitigation*:
+    * Although the team is building everything from scratch, we can still reference previous years' projects to identify and resolve potential problems that have already been addressed.
 
-This should be your motto for systematic detection and evaluation of risks and technical debts in the architecture, which will be needed by management stakeholders (e.g. project managers, product owners) as part of the overall risk analysis and measurement planning.
+. *Hardcoded Configuration*
+  - *Risk*: Certain values (e.g., image directory path, API endpoints) are hardcoded in the codebase, reducing flexibility. Changes require code modifications and redeployment, slowing down maintenance.
+  - *Resolution*:
+    * Move configurations to environment variables or a configuration file.
+    * Document all configurable settings for easier management.
 
-.Form
-List of risks and/or technical debts, probably including suggested measures to minimize, mitigate or avoid risks or reduce technical debts.
-
-
-.Further Information
-
-See https://docs.arc42.org/section-11/[Risks and Technical Debt] in the arc42 documentation.
-
-****
-endif::arc42help[]
+. *Technical Skill Gaps*
+  - *Risk*: The development team may lack certain technical skills required to maintain and enhance the system.
+  - *Mitigation*:
+    * The development team should experiment with and study the different technologies used, either independently or with guidance from a team member who has more expertise.
+   
