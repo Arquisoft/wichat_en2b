@@ -509,7 +509,11 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_quality_scenarios">10.2. Quality Scenarios</a></li>
 </ul>
 </li>
-<li><a href="#section-technical-risks">11. Risks and Technical Debts</a></li>
+<li><a href="#section-technical-risks">11. Risks and Technical Debts</a>
+<ul class="sectlevel2">
+<li><a href="#_identified_risks_and_technical_debts">11.1. Identified Risks and Technical Debts</a></li>
+</ul>
+</li>
 <li><a href="#section-glossary">12. Glossary</a></li>
 </ul>
 </div>
@@ -977,7 +981,7 @@ the game with its enhancements will be made ultimately from scratch, utilizing/t
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="./images/diag-plantuml-md5-99ed14fd2557bd6fca73cf139b118e6c.png" alt="Diagram" width="950" height="561">
+<img src="./images/diag-plantuml-md5-99ed14fd2557bd6fca73cf139b118e6c.png" alt="Diagram" width="895" height="593">
 </div>
 </div>
 <div style="page-break-after: always;"></div>
@@ -1335,7 +1339,7 @@ We have considered an optional requirement that include game different modes. Th
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="./images/diag-plantuml-md5-9ea75ac55f307c962435cf2901f524aa.png" alt="Diagram" width="522" height="191">
+<img src="./images/diag-plantuml-md5-9ea75ac55f307c962435cf2901f524aa.png" alt="Diagram" width="267" height="276">
 </div>
 </div>
 </div>
@@ -1399,7 +1403,7 @@ We have considered an optional requirement that include game different modes. Th
 <h4 id="_container_diagram">5.2.1. Container Diagram</h4>
 <div class="imageblock">
 <div class="content">
-<img src="./images/diag-plantuml-md5-a0419155f4f0b172791e6452a369862d.png" alt="Diagram" width="1582" height="499">
+<img src="./images/diag-plantuml-md5-a0419155f4f0b172791e6452a369862d.png" alt="Diagram" width="267" height="276">
 </div>
 </div>
 </div>
@@ -1502,9 +1506,9 @@ We have considered an optional requirement that include game different modes. Th
 <div class="paragraph">
 <p>Users must create an account if they do not have one. The behaviour of the application is:</p>
 </div>
-<div class="imageblock">
+<div class="imageblock text-center">
 <div class="content">
-<img src="./images/Register%20diagram.png" alt="Register diagram" width="794" height="822">
+<img src="./images/Register%20diagram.png" alt="Register diagram" width="502" height="787">
 </div>
 </div>
 <div class="paragraph">
@@ -1541,9 +1545,9 @@ We have considered an optional requirement that include game different modes. Th
 <div class="paragraph">
 <p>Users must have an account to use the application. The following sequence diagram shows how the application behaves when logging in.</p>
 </div>
-<div class="imageblock">
+<div class="imageblock text-center">
 <div class="content">
-<img src="./images/Login%20diagram.png" alt="Login diagram" width="746" height="857">
+<img src="./images/Login%20diagram.png" alt="Login diagram" width="499" height="672">
 </div>
 </div>
 <div class="paragraph">
@@ -1580,9 +1584,9 @@ We have considered an optional requirement that include game different modes. Th
 <div class="paragraph">
 <p>Here is the sequence diagram when playing the game.</p>
 </div>
-<div class="imageblock">
+<div class="imageblock text-center">
 <div class="content">
-<img src="./images/Game%20diagram.png" alt="Game diagram" width="1213" height="1076">
+<img src="./images/Game%20diagram.png" alt="Game diagram" width="472" height="1611">
 </div>
 </div>
 <div class="olist arabic">
@@ -1594,10 +1598,13 @@ We have considered an optional requirement that include game different modes. Th
 <p>Gateway Service answers this request and forwards the petition to the Game Service.</p>
 </li>
 <li>
-<p>Game Service then asks the WikiData API for questions.</p>
+<p>Game Service then uses RouterQuestionRetriever.</p>
 </li>
 <li>
-<p>The API returns the list of questions with answers in a .json file.</p>
+<p>This class retrieves the number of questions desired from the database.</p>
+</li>
+<li>
+<p>RouterQuestionRetriever returns the list of questions with answers in a .json file.</p>
 </li>
 <li>
 <p>Game Service recieves these questions and forwards the data to the Gateway Service.</p>
@@ -1706,6 +1713,9 @@ We have considered an optional requirement that include game different modes. Th
 <li>
 <p>LLM not answering to the user&#8217;s prompt.</p>
 </li>
+<li>
+<p>LLM hallucinations</p>
+</li>
 </ul>
 </div>
 </li>
@@ -1728,7 +1738,7 @@ We have considered an optional requirement that include game different modes. Th
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="./images/UML%20diagram%201.png" alt="UML diagram 1" width="398" height="309">
+<img src="./images/UML%20diagram%201.png" alt="UML diagram 1" width="267" height="236">
 </div>
 </div>
 <div class="paragraph">
@@ -1750,7 +1760,7 @@ We have considered an optional requirement that include game different modes. Th
 <h4 id="_oracle_serverapplication">7.2.1. Oracle ServerApplication</h4>
 <div class="imageblock">
 <div class="content">
-<img src="./images/UML%20diagram%202.png" alt="UML diagram 2" width="1106" height="305">
+<img src="./images/UML%20diagram%202.png" alt="UML diagram 2" width="267" height="236">
 </div>
 </div>
 <div class="paragraph">
@@ -2172,7 +2182,7 @@ There you will find links and examples about ADR.</p>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="./images/diag-plantuml-md5-b3055430474e822ea75e03b26c0fe3a1.png" alt="Diagram" width="753" height="309">
+<img src="./images/diag-plantuml-md5-b3055430474e822ea75e03b26c0fe3a1.png" alt="Diagram" width="788" height="316">
 </div>
 </div>
 </div>
@@ -2235,30 +2245,36 @@ There you will find links and examples about ADR.</p>
 <div class="sect1">
 <h2 id="section-technical-risks">11. Risks and Technical Debts</h2>
 <div class="sectionbody">
-<div class="sidebarblock arc42help">
-<div class="content">
+<div class="sect2">
+<h3 id="_identified_risks_and_technical_debts">11.1. Identified Risks and Technical Debts</h3>
 <div class="paragraph">
-<div class="title">Contents</div>
-<p>A list of identified technical risks or technical debts, ordered by priority</p>
-</div>
-<div class="paragraph">
-<div class="title">Motivation</div>
-<p>“Risk management is project management for grown-ups” (Tim Lister, Atlantic Systems Guild.)</p>
-</div>
-<div class="paragraph">
-<p>This should be your motto for systematic detection and evaluation of risks and technical debts in the architecture, which will be needed by management stakeholders (e.g. project managers, product owners) as part of the overall risk analysis and measurement planning.</p>
-</div>
-<div class="paragraph">
-<div class="title">Form</div>
-<p>List of risks and/or technical debts, probably including suggested measures to minimize, mitigate or avoid risks or reduce technical debts.</p>
-</div>
-<div class="paragraph">
-<div class="title">Further Information</div>
-<p>See <a href="https://docs.arc42.org/section-11/">Risks and Technical Debt</a> in the arc42 documentation.</p>
-</div>
-</div>
+<p>Below is a prioritized list of technical risks and debts identified in the current system architecture:
+1. <strong>Dependency on External APIs</strong>
+   - <strong>Risk</strong>: The system relies heavily on external services (e.g., Wikidata API) for core functionality. Any downtime, rate-limiting, or changes to the API could disrupt the application.
+2. <strong>Slow question retrieving</strong>
+   - <strong>Risk</strong>: If not developed correctly, the application&#8217;s speed can be severly impacted by the retrieval of questions, therefore impacting the user experience.
+   - <strong>Mitigation</strong>:
+     - Develop a kind of cache or similar system for the questions, so the user doesn&#8217;t have to wait for all of them to load.
+3. <strong>Reliance on Oracle Server</strong>
+   - <strong>Risk</strong>: The team is planning on deploying the application on an Oracle server, which was created using a free account. Although chances of losing this service are small, per contract they are still possible. Other alternative would be to deploy on a personal computer, but that entails depending on a teammate&#8217;s computer&#8217;s being available when needed.
+   - <strong>Mitigation</strong>:
+     - Having another teammate have another Oracle account, or of similar service, with a backup server to be used if needed.
+4. <strong>Starting from scratch</strong>
+   - <strong>Risk</strong>: The team has decided to start from scratch, this is beneficial cause in one hand the team doesn&#8217;t have to decipher other people&#8217;s code, but in the other hand the team has to figure out how to do everything from scratch.
+   - <strong>Mitigation</strong>:
+     - Although the team is doing everything from scratch we still have other years projects to compare and search for problems that we may have and have already been resolved in other years.
+5. <strong>Hardcoded Configuration</strong>
+   - <strong>Risk</strong>: Certain values (e.g., image directory path, API endpoints) are hardcoded in the codebase, reducing flexibility. Changes require code modifications and redeployment, slowing down maintenance.
+   - <strong>Resolution</strong>:
+     - Move configurations to environment variables or a configuration file.
+     - Document all configurable settings for easier management.
+6. <strong>Technical Skill Gaps</strong>
+   - <strong>Risk</strong>: The development team may lack certain technical skills required to maintain and enhance the system.
+   - <strong>Mitigation</strong>:
+     - The development team has to experiment with and study the different technologies used either by themselves or with the guide of another team member who knows more.</p>
 </div>
 <div style="page-break-after: always;"></div>
+</div>
 </div>
 </div>
 <div class="sect1">
@@ -2328,7 +2344,7 @@ There you will find links and examples about ADR.</p>
 <div id="footer">
 <div id="footer-text">
 Version 8.2 EN<br>
-Last updated 2025-02-22 13:39:57 +0100
+Last updated 2025-03-09 13:38:23 +0100
 </div>
 </div>
 </body>
