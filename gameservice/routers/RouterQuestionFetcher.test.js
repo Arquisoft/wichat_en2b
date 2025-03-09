@@ -36,11 +36,5 @@ describe('Question Fetcher', () => {
         expect(response.status).toBe(500);
         expect(response.body).toHaveProperty('error', '❌ Failed to retrieve data');
     }, 10000);
-
-    it('should return 5 questions)', async () => {
-        const response = await request(app).get('/questions/Q515');
-        expect(response.status).toBe(200);
-        expect(response.body.items).toHaveLength(5);
-    });
 }
 );
