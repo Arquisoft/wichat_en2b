@@ -36,5 +36,9 @@ describe('Question Fetcher', () => {
         expect(response.status).toBe(500);
         expect(response.body).toHaveProperty('error', '❌ Failed to retrieve data');
     }, 10000);
+    it ('should return an expected number of items', async () => {
+        const response = await request(app).get('/generate/Q515/5');
+        expect(response.body.items.length).toBe(5);
+    }, 10000);
 }
 );

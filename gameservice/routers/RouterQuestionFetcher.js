@@ -43,11 +43,11 @@ router.get('/generate/:type/:amount', async (req, res) => {
         if (items.length === 0) {
             throw new Error('No valid items found for the given type');
         }
-        
+
         // Save items to database and images to disk
         await saveQuestionsToDB(items, itemType);
-
-        return res.status(200).json({ message: '✅ Data fetched successfully' }); 
+        
+        return res.status(200).json({ message: '✅ Data fetched successfully', items: items }); 
     } catch (error) {
         console.error('❌ Error fetching data:', error);
         return res.status(500).json({ error: '❌ Failed to retrieve data' });
