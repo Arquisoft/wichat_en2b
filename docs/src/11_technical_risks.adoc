@@ -1,9 +1,10 @@
 ifndef::imagesdir[:imagesdir: ../images]
 
 [[section-technical-risks]]
-== Risks and Technical Debts
+== Risks and Technical Debts 
 === Identified Risks and Technical Debts
 Below is a prioritized list of technical risks and debts identified in the current system architecture:
+
 . *Dependency on External APIs*
   - *Risk*: The system relies heavily on external services (e.g., Wikidata API) for core functionality. Any downtime, rate-limiting, or changes to the API could disrupt the application.
 
