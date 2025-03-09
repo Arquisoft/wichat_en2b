@@ -4,12 +4,17 @@
   "description": "This is the service in charge of managing the logic of the game",
   "scripts": {
     "start": "node gameserver.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "express": "^4.21.2",
     "mongoose": "^8.10.1"
-  }
+  },
+  "devDependencies": {
+        "jest": "^29.7.0",
+        "supertest": "^7.0.0",
+        "mongodb-memory-server": "^10.0.0"
+    }
 }

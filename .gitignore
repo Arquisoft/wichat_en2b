@@ -5,3 +5,4 @@ docs/build
 webapp/.env
 gameservice/public/images/*
 users/authservice/logger.log
+.vscode/
