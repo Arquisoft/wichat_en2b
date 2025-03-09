@@ -1,57 +1,29 @@
-// user-service.js
 const express = require('express');
 const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
-const User = require('./user-model')
-
+const helmet = require('helmet');
 const app = express();
+app.use(helmet.hidePoweredBy());
+const bodyParser = require('body-parser');
+const userRoutes = require('./routers/RouterUserCrud');
+
+app.use(bodyParser.json());
+
 const port = 8001;
 
-// Middleware to parse JSON in request body
-app.use(express.json());
-
-// Connect to MongoDB
+// Connection to MongoDB user database
 const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/userdb';
-mongoose.connect(mongoUri);
+mongoose.connect(mongoUri)
 
-
-
-// Function to validate required fields in the request body
-function validateRequiredFields(req, requiredFields) {
-    for (const field of requiredFields) {
-      if (!(field in req.body)) {
-        throw new Error(`Missing required field: ${field}`);
-      }
-    }
-}
-
-app.post('/adduser', async (req, res) => {
-    try {
-        // Check if required fields are present in the request body
-        validateRequiredFields(req, ['username', 'password']);
-
-        // Encrypt the password before saving it
-        const hashedPassword = await bcrypt.hash(req.body.password, 10);
-
-        const newUser = new User({
-            username: req.body.username,
-            password: hashedPassword,
-        });
-
-        await newUser.save();
-        res.json(newUser);
-    } catch (error) {
-        res.status(400).json({ error: error.message }); 
-    }});
+// Use the user routes
+app.use(userRoutes);
 
 const server = app.listen(port, () => {
-  console.log(`User Service listening at http://localhost:${port}`);
+    console.log(`👨 User service running on: http://localhost:${port}`);
 });
 
-// Listen for the 'close' event on the Express.js server
 server.on('close', () => {
     // Close the Mongoose connection
     mongoose.connection.close();
-  });
+});
 
-module.exports = server
+module.exports = server;
