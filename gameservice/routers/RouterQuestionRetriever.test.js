@@ -22,4 +22,16 @@ describe('RouterQuestionRetriever', () => {
         await Question.deleteMany({});
     });
 
+    it('should return 400 if not enough questions in DB', async () => {
+        await Question.insertMany([
+            { answer: 'Answer 1' }
+        ]);
+
+        const res = await request(app).get('/api/game/3');
+
+        expect(res.status).toBe(400);
+        expect(res.body.error).toBe('Not enough questions in DB.');
+    });
+
+    
 });
