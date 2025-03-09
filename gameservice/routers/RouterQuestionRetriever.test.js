@@ -33,5 +33,14 @@ describe('RouterQuestionRetriever', () => {
         expect(res.body.error).toBe('Not enough questions in DB.');
     });
 
-    
+    it('should return 500 if an error occurs', async () => {
+        jest.spyOn(Question, 'aggregate').mockImplementationOnce(() => {
+            throw new Error('Mocked error');
+        });
+
+        const res = await request(app).get('/api/game');
+
+        expect(res.status).toBe(500);
+        expect(res.body.error).toBe('Error retrieving questions');
+    });
 });
