@@ -25,10 +25,6 @@ paths:
                 password:
                   type: string
                   example: "aoeushjfiejsdniofehajdsiovjasiomoim"
-                role:
-                  type: string
-                  enum: [admin, user]
-                  example: "user"
       responses:
         '200':
           description: Successful authentication.
@@ -90,9 +86,9 @@ paths:
                 role:
                   type: string
                   enum:
-                    - admin
-                    - user
-                  example: "user"
+                    - ADMIN
+                    - USER
+                  example: "USER"
       responses:
         '201':
           description: User successfully registered
