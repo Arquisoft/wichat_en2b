@@ -11,16 +11,9 @@ const validRoles = ['USER', 'ADMIN'];
 
 // Endpoint to login a user and return a JWT token
 router.post('/login', [
-  check('user').notEmpty().withMessage('Missing required field: user'),
-  check('user.username').isLength({ min: 3 }).trim().escape().withMessage('Invalid value'),
-  check('user.password').isLength({ min: 3 }).trim().escape().withMessage('Invalid value'),
-  check('user.role').notEmpty().withMessage('Missing required field: role'),
-  check('user.role').custom(value => {
-      if (!validRoles.includes(value.toUpperCase())) {
-          throw new Error('Role must be one of the following: USER, ADMIN');
-      }
-      return true;
-  }).trim().escape()
+    check('user').notEmpty().withMessage('Missing required field: user'),
+    check('user.username').isLength({ min: 3 }).trim().escape().withMessage('Invalid username value'),
+    check('user.password').isLength({ min: 3 }).trim().escape().withMessage('Invalid password value'),
   ],
   async (req, res) => {
     try {
@@ -44,13 +37,8 @@ router.post('/login', [
           return res.status(401).json({ error: 'Not a valid password' });
         }
 
-        if (userFromDB.role.toUpperCase() !== user.role.toUpperCase()) {
-          logger.error(`Failure in login: user ${user.username} does not have the role ${user.role.toUpperCase()} assigned`);
-          return res.status(401).json({ error: 'Not a valid role' });
-        }
-
         const token = jwt.sign(
-            { id: userFromDB._id, role: userFromDB.role }, 
+            { username: userFromDB.username, role: userFromDB.role }, 
             process.env.JWT_SECRET || 'testing-secret', 
             { expiresIn: '1h' }
         );
@@ -68,8 +56,9 @@ router.post('/login', [
 router.post('/register', [
     check('username').isLength({ min: 3 }).withMessage('Username must be at least 3 characters').trim().escape(),
     check('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters').trim().escape(),
+    check('role').notEmpty().withMessage('Role must be defined.'),
     check('role').custom(value => {
-        if (!validRoles.includes(value.toUpperCase())) {
+        if (value && !validRoles.includes(value.toUpperCase())) {
             throw new Error('Role must be one of the following: USER, ADMIN');
         }
         return true;

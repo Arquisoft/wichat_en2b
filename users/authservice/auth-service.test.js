@@ -13,7 +13,7 @@ jest.mock('./logger', () => ({
 const validUser = {
   username: 'testuser',
   password: 'testpassword', // NOSONAR
-  role: 'user'
+  role: 'USER'
 };
 
 const hashedPassword = 'hashedpassword';
@@ -21,7 +21,7 @@ const hashedPassword = 'hashedpassword';
 const newUser = {
   username: 'newuser',
   password: 'newpassword', // NOSONAR
-  role: 'user'
+  role: 'USER'
 };
 
 beforeEach(() => {
@@ -47,7 +47,8 @@ describe('Auth Service', () => {
     });
   
     it('Should not register a user with an already existing username', async () => {
-      axios.post.mockRejectedValue({ // This line mocks the response from the crud service when a user already exists
+      axios.post.mockRejectedValue({ 
+        // This line mocks the response from the crud service when a user already exists
         response: { status: 400, data: { error: 'User already exists' } },
       });
   
@@ -65,7 +66,7 @@ describe('Auth Service', () => {
         .send({ username: 'incompleteuser' });  // Missing password and role
   
       expect(response.status).toBe(400);
-      expect(response.body).toHaveProperty('error', "Password must be at least 6 characters, Role must be one of the following: user");
+      expect(response.body).toHaveProperty('error', "Password must be at least 6 characters, Role must be defined.");
     });
   
     it('Should not register a user with an invalid role', async () => {
@@ -73,7 +74,7 @@ describe('Auth Service', () => {
       const response = await request(app).post('/auth/register').send(invalidRoleUser);
   
       expect(response.status).toBe(400);
-      expect(response.body).toHaveProperty('error', "Role must be one of the following: user");
+      expect(response.body).toHaveProperty('error', "Role must be one of the following: USER, ADMIN");
     });
   
     it('Should not register a user if the password is too short', async () => {
@@ -105,7 +106,7 @@ describe('Auth Service', () => {
         .send({ username: 'incompleteuser' });  // Missing password and role
   
       expect(response.status).toBe(400);
-      expect(response.body).toHaveProperty('error', "Password must be at least 6 characters, Role must be one of the following: user");
+      expect(response.body).toHaveProperty('error', "Password must be at least 6 characters, Role must be defined.");
     });
   });  
 
@@ -113,6 +114,11 @@ describe('Auth Service', () => {
     it('Should log in a valid user and return a JWT token', async () => {
       const hashedPassword = await bcrypt.hash(validUser.password, 10);
       const userFromDB = { ...validUser, password: hashedPassword};
+
+      const userToCheck = {
+        username: validUser.username,
+        password: validUser.password,
+      }
 
       // Simulate a call to the CRUD service to get the user
       axios.get.mockResolvedValue({ data: userFromDB }); 
@@ -122,7 +128,7 @@ describe('Auth Service', () => {
 
       const response = await request(app)
         .post('/auth/login')
-        .send({ user: validUser });
+        .send({ user: userToCheck });
 
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('token');
@@ -155,23 +161,10 @@ describe('Auth Service', () => {
     it('Should not log in if required fields are missing', async () => {
       const response = await request(app)
         .post('/auth/login')
-        .send({ user: { username: validUser.username } }); // Missing password, role, and id
+        .send({ user: { username: validUser.username } }); // Missing password
 
       expect(response.status).toBe(400);
-      expect(response.body).toHaveProperty('error', expect.stringContaining('Missing required field'));
-    });
-
-    it('Should not log in if the role does not match', async () => {
-      const userFromDB = { ...validUser, password: hashedPassword, _id: '123' };
-      axios.get.mockResolvedValue({ data: userFromDB });
-      bcrypt.compare.mockResolvedValue(true);
-
-      const response = await request(app)
-        .post('/auth/login')
-        .send({ user: { ...validUser, role: 'invalidrole' } });
-
-      expect(response.status).toBe(401);
-      expect(response.body).toHaveProperty('error', 'Not a valid role');
+      expect(response.body).toHaveProperty('error', 'Invalid password value');
     });
 
     it('Should log an error if an unexpected error occurs during login', async () => {
@@ -189,10 +182,10 @@ describe('Auth Service', () => {
     it('Should return a 400 error if required fields are missing during login', async () => {
       const response = await request(app)
         .post('/auth/login')
-        .send({ user: { username: 'testuser' } });  // Missing password, role, and id
+        .send({ user: { username: 'testuser' } });  // Missing password
     
       expect(response.status).toBe(400);
-      expect(response.body.error).toMatch(/Missing required/);
+      expect(response.body).toHaveProperty('error', 'Invalid password value');
     });
   });
 });
