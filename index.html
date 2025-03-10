@@ -2387,20 +2387,12 @@ There you will find links and examples about ADR.</p>
 </thead>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>arc42</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>A template for documenting software and system architecture, used in this project (Version 8.2 EN, January 2023), created by Hruschka, Starke, et al.</em></p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Frontend</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>The web-based user interface of the application, built using React.js, responsible for presenting questions, collecting answers, and displaying feedback.</em></p></td>
-</tr>
-<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><em>Backend</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>The server-side component of the system, built using Node.js and Express, handling API requests, game logic, and data management.</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>The server-side component of the system, handling API requests, game logic, and data management.</em></p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><em>Large Language Model (LLM)</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>An external AI model (e.g., via Groq API) integrated into the system to generate hints for quiz questions, aiming to avoid hallucinations or incorrect responses.</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>An external AI model integrated into the system via an API to generate hints for quiz questions, aiming to avoid hallucinations or incorrect responses.</em></p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><em>Wikidata</em></p></td>
@@ -2455,40 +2447,8 @@ There you will find links and examples about ADR.</p>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><em>A backend service managing game logic, question presentation, and interaction with external APIs (Wikidata and LLM).</em></p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>MongoDB</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>A NoSQL database used to store user data, game progress, and question history in JSON format, supporting scalability and flexibility.</em></p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>React.js</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>A JavaScript library used for building the responsive and dynamic frontend of the web application.</em></p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Node.js</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>A runtime environment for executing JavaScript on the server side, powering the backend of the application.</em></p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Express.js</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>A web framework for Node.js, used to manage client requests and define RESTful API endpoints in the backend.</em></p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Bcrypt</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>A library used for hashing and encrypting user passwords to ensure secure storage and authentication.</em></p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Docker</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>A containerization platform used to deploy the application’s services (e.g., frontend, backend, database) in isolated, reproducible environments.</em></p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Oracle Cloud Infrastructure (OCI)</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>The cloud platform hosting the application, selected for its free tier and sufficient performance for production deployment.</em></p></td>
-</tr>
-<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><em>RESTful API</em></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><em>A style of API design using HTTP methods (e.g., GET, POST) for communication between the frontend, backend, and external services.</em></p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>SPARQL</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>A query language used to retrieve structured data from Wikidata for question generation.</em></p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><em>Internationalization (i18n)</em></p></td>
@@ -2496,7 +2456,7 @@ There you will find links and examples about ADR.</p>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><em>CRUD Operations</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Create, Read, Update, Delete operations managed by the User CRUD Service for handling user data in the database.</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Create, Read, Update, Delete operations managed by the system for handling user data in the database.</em></p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><em>Gateway Service</em></p></td>
@@ -2512,7 +2472,7 @@ There you will find links and examples about ADR.</p>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><em>Cloud Deployment</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>The practice of hosting the application on a cloud infrastructure (e.g., OCI) to ensure availability, scalability, and ease of maintenance.</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>The practice of hosting the application on a cloud infrastructure to ensure availability, scalability, and ease of maintenance.</em></p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><em>Hallucinations</em></p></td>
