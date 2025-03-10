@@ -2,268 +2,224 @@ ifndef::imagesdir[:imagesdir: ../images]
 
 [[section-building-block-view]]
 
+
 == Building Block View
 
-=== Whitebox Overall System (C4 Level 1)
+ifdef::arc42help[]
+[role="arc42help"]
+****
+.Content
+The building block view shows the static decomposition of the system into building blocks (modules, components, subsystems, classes, interfaces, packages, libraries, frameworks, layers, partitions, tiers, functions, macros, operations, data structures, ...) as well as their dependencies (relationships, associations, ...)
 
-==== Overview Diagram
+This view is mandatory for every architecture documentation.
+In analogy to a house this is the _floor plan_.
 
-Business context diagram
+.Motivation
+Maintain an overview of your source code by making its structure understandable through
+abstraction.
 
-[plantuml]
-----
-@startuml
-set separator none
-title Wichat EN2B - System Context
+This allows you to communicate with your stakeholder on an abstract level without disclosing implementation details.
 
-left to right direction
+.Form
+The building block view is a hierarchical collection of black boxes and white boxes
+(see figure below) and their descriptions.
 
-skinparam {
-  arrowFontSize 10
-  defaultTextAlignment center
-  wrapWidth 200
-  maxMessageSize 100
-}
+image::05_building_blocks-EN.png["Hierarchy of building blocks"]
 
-hide stereotype
+*Level 1* is the white box description of the overall system together with black
+box descriptions of all contained building blocks.
 
-skinparam rectangle<<LLM>> {
-  BackgroundColor #2d882d
-  FontColor #ffffff
-  BorderColor #1f5f1f
-  shadowing false
-}
-skinparam person<<User>> {
-  BackgroundColor #116611
-  FontColor #ffffff
-  BorderColor #0b470b
-  shadowing false
-}
-skinparam rectangle<<WichatEN2B>> {
-  BackgroundColor #2d882d
-  FontColor #ffffff
-  BorderColor #1f5f1f
-  shadowing false
-}
-skinparam rectangle<<WikiData>> {
-  BackgroundColor #2d882d
-  FontColor #ffffff
-  BorderColor #1f5f1f
-  shadowing false
-}
+*Level 2* zooms into some building blocks of level 1.
+Thus it contains the white box description of selected building blocks of level 1, together with black box descriptions of their internal building blocks.
 
-person "==User\n<size:10>[Person]</size>" <<User>> as User
-rectangle "==WikiData\n<size:10>[Software System]</size>" <<WikiData>> as WikiData
-rectangle "==LLM\n<size:10>[Software System]</size>" <<LLM>> as LLM
-rectangle "==Wichat EN2B\n<size:10>[Software System]</size>" <<WichatEN2B>> as WichatEN2B
+*Level 3* zooms into selected building blocks of level 2, and so on.
 
-User .[#707070,thickness=2].> WichatEN2B : "<color:#707070>Uses"
-WichatEN2B .[#707070,thickness=2].> WikiData : "<color:#707070>Gets information for questions"
-WichatEN2B .[#707070,thickness=2].> LLM : "<color:#707070>Asks for hints"
-@enduml
-----
 
-==== Motivation
+.Further Information
 
-The **Whitebox Overall System** diagram provides a high-level representation of the primary components and their interactions within the application, alongside the external systems it integrates with. This diagram is crucial for understanding the foundational architecture of the platform, showcasing the flow of data, system responsibilities, and external dependencies. It emphasizes the relationships between the various building blocks, such as the interaction between the user and the system, and how dynamic content is sourced via external APIs.
+See https://docs.arc42.org/section-5/[Building Block View] in the arc42 documentation.
 
-This diagram is pivotal in illustrating system interaction patterns, including user engagement with the platform and the external API interfaces used for content generation.
+****
+endif::arc42help[]
 
-==== Contained Building Blocks
+=== Whitebox Overall System
 
-The key building blocks forming the overall system architecture include:
+ifdef::arc42help[]
+[role="arc42help"]
+****
+Here you describe the decomposition of the overall system using the following white box template. It contains
 
-* **User**: Represents the end-user of the platform, who is required to authenticate in order to access the game functionality. Once authenticated, users can interact with the system and participate in gameplay.
-  
-* **Wichat EN2B Application**: The core application responsible for managing game mechanics, including the generation of questions and content. It encapsulates the application’s game logic and drives the user experience. Detailed breakdowns of its internal components are explored further in later sections.
+ * an overview diagram
+ * a motivation for the decomposition
+ * black box descriptions of the contained building blocks. For these we offer you alternatives:
 
-* **WikiData API**: A third-party API providing structured knowledge, essential for the dynamic generation of trivia questions and content. The system queries the WikiData API for real-time data, which is used to populate game questions.
+   ** use _one_ table for a short and pragmatic overview of all contained building blocks and their interfaces
+   ** use a list of black box descriptions of the building blocks according to the black box template (see below).
+   Depending on your choice of tool this list could be sub-chapters (in text files), sub-pages (in a Wiki) or nested elements (in a modeling tool).
 
-* **LLM API**: Another third-party API used for providing hints in response to user queries. It leverages large language models (such as GPT-based systems) to dynamically generate contextual content for enhancing user interactions. **Communication with the LLM occurs in a conversational manner**, where each request includes the entire conversation history (i.e., a list of all previous messages) to ensure context and continuity across interactions.
 
-==== Important Interfaces
+ * (optional:) important interfaces, that are not explained in the black box templates of a building block, but are very important for understanding the white box.
+Since there are so many ways to specify interfaces why do not provide a specific template for them.
+ In the worst case you have to specify and describe syntax, semantics, protocols, error handling,
+ restrictions, versions, qualities, necessary compatibilities and many things more.
+In the best case you will get away with examples or simple signatures.
 
-The **Important Interfaces** section defines the key interactions between system components and explains the methods through which the business requirements are met.
+****
+endif::arc42help[]
 
-* **User to System Interaction**: Users engage with the system via a **web client** interface, which provides a rich UI experience with interactive elements such as forms, buttons, and dynamic feedback mechanisms. This client ensures a seamless user experience throughout the gameplay.
+_**<Overview Diagram>**_
 
-* **System to WikiData API Interaction**: The Wichat EN2B application interfaces with the **WikiData API** using a **question generator module**. This module sends HTTP requests containing **SPARQL queries** to retrieve structured knowledge from WikiData, which is subsequently processed and used to generate game questions.
+Motivation::
 
-* **System to LLM API Interaction**: The Wichat EN2B application communicates with the **LLM API** by passing the entire chat history of the logged-in user in each request. This ensures that the language model has full context of the ongoing conversation, enabling the generation of hints and responses that are contextually relevant and consistent with previous exchanges.
+_<text explanation>_
 
-* **Internal Services Communication**: Internal services within the Wichat EN2B application communicate over **RESTful APIs**. For example, the **Gateway Service** routes incoming requests to the appropriate internal services, while the **Game Service** ensures game state management and flow control.
 
-=== Container Diagram (C4 Level 2)
+Contained Building Blocks::
+_<Description of contained building block (black boxes)>_
 
-==== Container Diagram
+Important Interfaces::
+_<Description of important interfaces>_
 
-[plantuml]
-----
-@startuml
-set separator none
-title Wichat EN2B - Containers
+ifdef::arc42help[]
+[role="arc42help"]
+****
+Insert your explanations of black boxes from level 1:
 
-left to right direction
+If you use tabular form you will only describe your black boxes with name and
+responsibility according to the following schema:
 
-skinparam {
-  arrowFontSize 10
-  defaultTextAlignment center
-  wrapWidth 200
-  maxMessageSize 100
-}
+[cols="1,2" options="header"]
+|===
+| **Name** | **Responsibility**
+| _<black box 1>_ | _<Text>_
+| _<black box 2>_ | _<Text>_
+|===
 
-hide stereotype
 
-skinparam rectangle<<WichatEN2B.DocumentationSystem>> {
-  BackgroundColor #ff9933
-  FontColor #ffffff
-  BorderColor #b26b23
-  shadowing false
-}
-skinparam rectangle<<WichatEN2B.GameService>> {
-  BackgroundColor #ff9933
-  FontColor #ffffff
-  BorderColor #b26b23
-  shadowing false
-}
-skinparam rectangle<<WichatEN2B.GatewayService>> {
-  BackgroundColor #ff9933
-  FontColor #ffffff
-  BorderColor #b26b23
-  shadowing false
-}
-skinparam rectangle<<LLM>> {
-  BackgroundColor #2d882d
-  FontColor #ffffff
-  BorderColor #1f5f1f
-  shadowing false
-}
-skinparam rectangle<<WichatEN2B.LLMService>> {
-  BackgroundColor #ff9933
-  FontColor #ffffff
-  BorderColor #b26b23
-  shadowing false
-}
-skinparam database<<WichatEN2B.MongoDBDatabase>> {
-  BackgroundColor #ff9933
-  FontColor #ffffff
-  BorderColor #b26b23
-  shadowing false
-}
-skinparam person<<User>> {
-  BackgroundColor #116611
-  FontColor #ffffff
-  BorderColor #0b470b
-  shadowing false
-}
-skinparam rectangle<<WichatEN2B.UserAuthenticationService>> {
-  BackgroundColor #ff9933
-  FontColor #ffffff
-  BorderColor #b26b23
-  shadowing false
-}
-skinparam rectangle<<WichatEN2B.UserCRUDService>> {
-  BackgroundColor #ff9933
-  FontColor #ffffff
-  BorderColor #b26b23
-  shadowing false
-}
-skinparam rectangle<<WichatEN2B.UserGateway>> {
-  BackgroundColor #ff9933
-  FontColor #ffffff
-  BorderColor #b26b23
-  shadowing false
-}
-skinparam rectangle<<WichatEN2B.WebApplication>> {
-  BackgroundColor #ff9933
-  FontColor #ffffff
-  BorderColor #b26b23
-  shadowing false
-}
-skinparam rectangle<<WikiData>> {
-  BackgroundColor #2d882d
-  FontColor #ffffff
-  BorderColor #1f5f1f
-  shadowing false
-}
-skinparam rectangle<<WichatEN2B>> {
-  BorderColor #1f5f1f
-  FontColor #1f5f1f
-  shadowing false
-}
 
-person "==User\n<size:10>[Person]</size>" <<User>> as User
-rectangle "==WikiData\n<size:10>[Software System]</size>" <<WikiData>> as WikiData
-rectangle "==LLM\n<size:10>[Software System]</size>" <<LLM>> as LLM
+If you use a list of black box descriptions then you fill in a separate black box template for every important building block .
+Its headline is the name of the black box.
+****
+endif::arc42help[]
 
-rectangle "Wichat EN2B\n<size:10>[Software System]</size>" <<WichatEN2B>> {
-  rectangle "==Game Service\n<size:10>[Container]</size>" <<WichatEN2B.GameService>> as WichatEN2B.GameService
-  database "==MongoDB Database\n<size:10>[Container]</size>" <<WichatEN2B.MongoDBDatabase>> as WichatEN2B.MongoDBDatabase
-  rectangle "==Web Application\n<size:10>[Container]</size>" <<WichatEN2B.WebApplication>> as WichatEN2B.WebApplication
-  rectangle "==Gateway Service\n<size:10>[Container]</size>" <<WichatEN2B.GatewayService>> as WichatEN2B.GatewayService
-  rectangle "==Documentation System\n<size:10>[Container]</size>" <<WichatEN2B.DocumentationSystem>> as WichatEN2B.DocumentationSystem
-  rectangle "==LLM Service\n<size:10>[Container]</size>" <<WichatEN2B.LLMService>> as WichatEN2B.LLMService
-  rectangle "==User Gateway\n<size:10>[Container]</size>" <<WichatEN2B.UserGateway>> as WichatEN2B.UserGateway
-  rectangle "==User CRUD Service\n<size:10>[Container]</size>" <<WichatEN2B.UserCRUDService>> as WichatEN2B.UserCRUDService
-  rectangle "==User Authentication Service\n<size:10>[Container]</size>" <<WichatEN2B.UserAuthenticationService>> as WichatEN2B.UserAuthenticationService
-}
+==== <Name black box 1>
 
-WichatEN2B.LLMService .[#707070,thickness=2].> LLM : "<color:#707070>LLM ask API call"
-User .[#707070,thickness=2].> WichatEN2B.WebApplication : "<color:#707070>Uses"
-WichatEN2B.WebApplication .[#707070,thickness=2].> WichatEN2B.GatewayService : "<color:#707070>Makes API calls"
-WichatEN2B.GatewayService .[#707070,thickness=2].> WichatEN2B.LLMService : "<color:#707070>LLM ask API call"
-WichatEN2B.GatewayService .[#707070,thickness=2].> WichatEN2B.UserGateway : "<color:#707070>User related API calls"
-WichatEN2B.GatewayService .[#707070,thickness=2].> WichatEN2B.GameService : "<color:#707070>Question API calls"
-WichatEN2B.GameService .[#707070,thickness=2].> WikiData : "<color:#707070>Question batches API calls"
-WichatEN2B.UserGateway .[#707070,thickness=2].> WichatEN2B.UserCRUDService : "<color:#707070>CRUD API calls"
-WichatEN2B.UserGateway .[#707070,thickness=2].> WichatEN2B.UserAuthenticationService : "<color:#707070>Authentication API calls"
-WichatEN2B.UserCRUDService .[#707070,thickness=2].> WichatEN2B.MongoDBDatabase : "<color:#707070>User CRUD operations"
-WichatEN2B.UserAuthenticationService .[#707070,thickness=2].> WichatEN2B.MongoDBDatabase : "<color:#707070>User authentication operations"
-@enduml
-----
+ifdef::arc42help[]
+[role="arc42help"]
+****
+Here you describe <black box 1>
+according the the following black box template:
 
-==== Motivation
+* Purpose/Responsibility
+* Interface(s), when they are not extracted as separate paragraphs. This interfaces may include qualities and performance characteristics.
+* (Optional) Quality-/Performance characteristics of the black box, e.g.availability, run time behavior, ....
+* (Optional) directory/file location
+* (Optional) Fulfilled requirements (if you need traceability to requirements).
+* (Optional) Open issues/problems/risks
 
-The **Container Diagram** offers a more granular view of the Wichat EN2B application’s architecture, illustrating how the application is organized into discrete containers (services) and the relationships between them. This diagram is instrumental in detailing the internal structure of the system and clarifying how the platform's various components work together to deliver its functionality.
+****
+endif::arc42help[]
 
-It serves as an essential tool for understanding how user interactions are processed, how game logic is managed, and how both external and internal data sources are leveraged for seamless gameplay.
+_<Purpose/Responsibility>_
 
-==== Contained Building Blocks
+_<Interface(s)>_
 
-The following containers represent the primary services within the Wichat EN2B application, each with distinct responsibilities:
+_<(Optional) Quality/Performance Characteristics>_
 
-* **Web Application**: The front-end interface between the user and the system. This container is responsible for rendering the user interface (UI) and handling user interactions. Developed using **React**, the Web Application ensures a responsive and dynamic experience. It communicates with internal services via API calls.
+_<(Optional) Directory/File Location>_
 
-* **Gateway Service**: Serves as the entry point for external API requests. This container is responsible for routing incoming requests to the correct internal services, ensuring that requests are handled efficiently and securely.
+_<(Optional) Fulfilled Requirements>_
 
-* **Game Service**: This service manages the core game logic, including the flow of the game, the presentation of questions, tracking of user progress, and determining the game's end. It also handles the game state, such as the user's score and question set.
+_<(optional) Open Issues/Problems/Risks>_
 
-* **LLM Service**: This container interfaces with a **Large Language Model (LLM)** to provide hints, explanations, and additional content to assist the user during the game. It ensures that users receive context-sensitive content, enhancing the overall gaming experience by offering real-time dynamic information. Communication with the LLM API is conducted conversationally by passing the entire message history in each request to maintain context and coherence.
 
-* **MongoDB Database**: The database responsible for storing persistent system data, including user profiles, game states, and scores. MongoDB is used for its flexibility in handling semi-structured data and its scalability.
 
-* **User Gateway**: A container dedicated to managing user-specific API requests. It handles user authentication, session management, and retrieval of user-related data, ensuring secure and personalized experiences.
 
-* **User Authentication Service**: Manages user authentication processes, validating user credentials and ensuring secure access to the platform. It integrates with third-party authentication mechanisms when required.
+==== <Name black box 2>
 
-* **User CRUD Service**: Manages the **Create, Read, Update, Delete (CRUD)** operations for user data. It ensures that user profiles can be created, updated, or deleted, facilitating efficient user management.
+_<black box template>_
 
-* **WikiData API**: A third-party external API that provides structured data for generating trivia questions and content. The Wichat EN2B application communicates with WikiData to fetch real-time data using SPARQL queries.
+==== <Name black box n>
 
-* **LLM**: This container represents the external **Large Language Model** service that dynamically generates content such as hints and contextual information based on user interactions. It interacts with an advanced language model, such as GPT or similar technologies, to offer real-time, personalized content.
+_<black box template>_
 
-==== External Communication
 
-* **External API Integration**: The **WikiData API** is a critical external system that provides the data needed to generate game questions. The Wichat EN2B application sends HTTP requests to this API, utilizing SPARQL queries to retrieve relevant content based on predefined game rules.
+==== <Name interface 1>
 
-* **LLM Communication**: The **LLM Service** facilitates interaction with external language models. It generates contextual hints, descriptions, and other textual content dynamically, based on the user’s queries or the state of the game, to guide users through the experience. Communication with the LLM is conversational, where the system passes the entire list of prior messages for each new request to maintain consistency and relevance in responses.
+...
 
-==== Data Flow
+==== <Name interface m>
 
-Data flows between containers in a manner that ensures efficient communication and process execution. For example:
 
-* When a user logs in via the Web Application, the system authenticates the request using the **User Authentication Service**.
-* After successful authentication, the user interacts with the Game Service, which may request data from the WikiData API to generate a question.
-* The **LLM Service** is called when the user requests a hint, and the entire conversation history is sent to the LLM API in each request to provide context-sensitive guidance and responses.
-  
-This modular design enhances scalability, maintainability, and fault isolation, ensuring that each component is specialized in its task while working seamlessly as part of the larger system.
+
+=== Level 2
+
+ifdef::arc42help[]
+[role="arc42help"]
+****
+Here you can specify the inner structure of (some) building blocks from level 1 as white boxes.
+
+You have to decide which building blocks of your system are important enough to justify such a detailed description.
+Please prefer relevance over completeness. Specify important, surprising, risky, complex or volatile building blocks.
+Leave out normal, simple, boring or standardized parts of your system
+****
+endif::arc42help[]
+
+==== White Box _<building block 1>_
+
+ifdef::arc42help[]
+[role="arc42help"]
+****
+...describes the internal structure of _building block 1_.
+****
+endif::arc42help[]
+
+_<white box template>_
+
+==== White Box _<building block 2>_
+
+
+_<white box template>_
+
+...
+
+==== White Box _<building block m>_
+
+
+_<white box template>_
+
+
+
+=== Level 3
+
+ifdef::arc42help[]
+[role="arc42help"]
+****
+Here you can specify the inner structure of (some) building blocks from level 2 as white boxes.
+
+When you need more detailed levels of your architecture please copy this
+part of arc42 for additional levels.
+****
+endif::arc42help[]
+
+==== White Box <_building block x.1_>
+
+ifdef::arc42help[]
+[role="arc42help"]
+****
+Specifies the internal structure of _building block x.1_.
+****
+endif::arc42help[]
+
+_<white box template>_
+
+
+==== White Box <_building block x.2_>
+
+_<white box template>_
+
+
+
+==== White Box <_building block y.1_>
+
+_<white box template>_
