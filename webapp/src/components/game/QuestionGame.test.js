@@ -73,14 +73,14 @@ describe('QuestionGame component', () => {
                 right_answer: "Option B"
             },
             {
-                id: 1,
+                id: 2,
                 questionText: "What is shown in the image?",
                 image_name: "/images/sample2.jpg",
                 answers: ["Option A", "Option B", "Option C", "Option D"],
                 right_answer: "Option B"
             },
             {
-                id: 1,
+                id: 3,
                 questionText: "What is shown in the image?",
                 image_name: "/images/sample2.jpg",
                 answers: ["Option A", "Option B", "Option C", "Option D"],
@@ -92,18 +92,24 @@ describe('QuestionGame component', () => {
 
         render(<QuestionGame />);
 
+        await waitFor(() => {
+            expect(screen.getByText(/Question 1 of/)).toBeInTheDocument();
+        });
+
         for (let i=0 ; i < 3 ; i++) {
+            const currentOptions = mockQuestions[i].answers;
+        
             await waitFor(() => {
-                expect(screen.getByText(/Question/)).toBeInTheDocument();
-                mockQuestions[i].answers.forEach(answer => {
-                    const option = screen.getByDisplayValue(answer);
-                    expect(option).toBeInTheDocument();
+                currentOptions.forEach(answer => {
+                    expect(screen.getByDisplayValue(answer)).toBeInTheDocument();
                 });
             });
-    
-            fireEvent.click(screen.getByDisplayValue(mockQuestions[i].answers[0]));
-    
-            fireEvent.click(screen.getByRole('button', { name: /Next/i }));
+
+            fireEvent.click(screen.getByDisplayValue(currentOptions[0]));
+            fireEvent.click(screen.getByTestId('next-button'));
+
+            // Wait for 1000ms timeout in handleNext
+            await new Promise(resolve => setTimeout(resolve, 1100));
         }
 
         await waitFor(() => {
