@@ -21,7 +21,7 @@ router.get('/generate/:type/:amount', async (req, res) => {
     try {
         // Fetch data from Wikidata
         const url = wikiDataUri + encodeURIComponent(query);
-        const response = await fetch(wikiDataUri + encodeURIComponent(query), {
+        const response = await fetch(url, {
             headers: {
               'User-Agent': 'wichat_en2b/1.0'
             }
@@ -39,11 +39,15 @@ router.get('/generate/:type/:amount', async (req, res) => {
                 name: item.itemLabel.value,
                 image: item.image.value
             }));
+        // Check if items are empty (invalid type or no results)
+        if (items.length === 0) {
+            throw new Error('No valid items found for the given type');
+        }
 
         // Save items to database and images to disk
         await saveQuestionsToDB(items, itemType);
-
-        return res.status(200).json({ message: '✅ Data fetched successfully' }); 
+        
+        return res.status(200).json({ message: '✅ Data fetched successfully', items: items }); 
     } catch (error) {
         console.error('❌ Error fetching data:', error);
         return res.status(500).json({ error: '❌ Failed to retrieve data' });

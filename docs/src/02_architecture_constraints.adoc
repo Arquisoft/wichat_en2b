@@ -3,14 +3,34 @@ ifndef::imagesdir[:imagesdir: ../images]
 [[section-architecture-constraints]]
 == Architecture Constraints
 
+ifdef::arc42help[]
+[role="arc42help"]
+****
+.Contents
+Any requirement that constrains software architects in their freedom of design and implementation decisions or decisions about the development process. These constraints sometimes go beyond individual systems and are valid for whole organizations and companies.
+
+.Motivation
+Architects should know exactly where they are free in their design decisions and where they must adhere to constraints. Constraints must always be dealt with; they may be negotiable, though.
+
+.Form
+Simple tables of constraints with explanations. If needed you can subdivide them into:
+- Technical constraints
+- Organizational and political constraints
+- Conventions (e.g., programming or versioning guidelines, documentation or naming conventions)
+
+.Further Information
+See https://docs.arc42.org/section-2/[Architecture Constraints] in the arc42 documentation.
+****
+endif::arc42help[]
+
 === Technical Constraints
 [cols="1,2", options="header"]
 |===
 | Constraint | Justification
 | **Web-Based System** | The system must be a web application, accessible via a browser, ensuring broad accessibility and ease of deployment.
-| **Frontend Technologies** | A Web frontend must be developed to ensure a modern, responsive, and maintainable user experience.
-| **Backend Framework** | The system should include a backend aiming to support efficient API interactions and robust user management.
-| **Database** | The system must use a database to store user data, game progress, and question history efficiently.
+| **Frontend Technologies** | The frontend must be developed using modern web technologies (e.g., React, Vue, or Angular) to ensure responsiveness and maintainability.
+| **Backend Framework** | The backend should use a scalable framework such as Node.js, Django, or Spring Boot to support API interactions and user management.
+| **Database** | A relational or NoSQL database (e.g., PostgreSQL, MongoDB) must be used to store user data, game progress, and question history efficiently.
 | **Cloud Deployment** | The application must be deployed on a cloud-based infrastructure (e.g., AWS, Azure, or Google Cloud) to ensure availability and scalability.
 | **External API Integration** | The system must integrate with Wikidata and an LLM API for question and hint generation. API rate limits and response times should be considered.
 | **Performance Constraints** | The application must provide real-time interaction with the LLM for hints and ensure fast response times (<1s for hints, <3s for question generation).
@@ -35,3 +55,4 @@ ifndef::imagesdir[:imagesdir: ../images]
 | **Testing Requirements** | The project must include unit tests, integration tests, and end-to-end tests to ensure software reliability.
 | **Documentation Standards** | All architecture decisions and API endpoints must be documented using tools like OpenAPI and Markdown.
 |===
+

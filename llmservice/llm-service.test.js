@@ -1,6 +1,3 @@
-//set a fake api key
-process.env.LLM_API_KEY = 'test-api-key';
-
 const request = require('supertest');
 const axios = require('axios');
 const app = require('./llm-service'); 
