@@ -4,7 +4,7 @@ services:
     image: mongo
     profiles: ["dev", "prod"]
     volumes:
-      - mongodb_data:/data/db
+     - mongodb_data:/data/db
     ports:
       - "27017:27017"
     networks:
@@ -42,10 +42,7 @@ services:
     container_name: llmservice-wichat_en2b
     image: ghcr.io/arquisoft/wichat_en2b/llmservice:latest
     profiles: ["dev", "prod"]
-    env_file:
-      - .env
-    build: 
-      context: ./llmservice
+    build: ./llmservice
     ports:
       - "8003:8003"
     networks:
@@ -81,12 +78,16 @@ services:
       AUTH_SERVICE_URL: http://authservice:8002
       USER_SERVICE_URL: http://userservice:8001
       LLM_SERVICE_URL: http://llmservice:8003
+      GAME_SERVICE_URL: http://gameservice:8004
 
   webapp:
     container_name: webapp-wichat_en2b
     image: ghcr.io/arquisoft/wichat_en2b/webapp:latest
     profiles: ["dev", "prod"]
-    build: ./webapp
+    build: 
+      context: ./webapp
+      args:
+        LLM_API_KEY: ${LLM_API_KEY}
     depends_on:
       - gatewayservice
     ports:
