@@ -4,41 +4,47 @@ const QuestionGame = () => {
     const [currentQuestion, setCurrentQuestion] = useState(0);
     const [selectedOption, setSelectedOption] = useState(null);
     const [questions, setQuestions] = useState([]);
-    const [gameCompleted, setGameCompleted] = useState(false);
     const [error, setError] = useState(null)
     const [questionShown, setQuestionShown] = useState(null)
     const [questionImg, setQuestionImg] = useState(null)
-
+    
+    const [answerState, setAnswerState] = useState(null); 
+    const [correctAnswerIndex, setCorrectAnswerIndex] = useState(null);
 
     const totalQuestions = 4;                            //TODO: unfix this parameters, delegate its assignation value to other layer
     const numberOptions = 4;
     
     const isLastQuestion = currentQuestion === totalQuestions - 1;
 
-    function checkAnswer (questionSelected) {
-        const q = questions.find(q => q.id === currentQuestion)
-        if (q && q.options[questionSelected] === q.correctAnswer){
-            alert("Correct!")
-        } else {
-            alert("Incorrect!")
-        }
-    }
-
     const handleOptionSelect = (index) => {
         setSelectedOption(index);
     };
     
     const handleNext = () => {
-        if (currentQuestion < totalQuestions - 1) {
-            checkAnswer(selectedOption);                        //TODO: Logic of checking the question, move it to another layer, not Presentation
+        const isCorrect = questionShown && questionShown.correctAnswer === questionShown.options[selectedOption];
+        setAnswerState(isCorrect ? 'correct' : 'wrong');
+
+        if (!isCorrect) {
+            const correctIndex = questionShown.options.findIndex(
+                option => option === questionShown.correctAnswer
+            );
+            setCorrectAnswerIndex(correctIndex);
+        }
+
+        setTimeout(() => {
+            if (currentQuestion < totalQuestions - 1) {
             setCurrentQuestion(currentQuestion + 1);
             setSelectedOption(null);
-        } else {
-                                                             // TODO: implement finish logic here, save game played,... It should not be done in Presentation Layer 
-            alert("Quiz completed!");
-        }
+            setAnswerState(null);
+            } else {
+                                                                // TODO: implement finish logic here, save game played,... It should not be done in Presentation Layer 
+                alert("Quiz completed!");
+            }
+        }, 1000);
+        
     };
 
+    
     const fetchQuestions = async () => {
         try {
             const response = await fetch(`http://localhost:8000/game/${totalQuestions}/${numberOptions}`);
@@ -58,7 +64,7 @@ const QuestionGame = () => {
                     options: q.answers,
                     correctAnswer: q.right_answer
                 }));
-
+            
             setQuestions(formattedQuestions);
             setError(null);
         } catch (err) {
@@ -130,25 +136,41 @@ const QuestionGame = () => {
                     {/* Options */}
                     <div className="options-container">
                     {questionShown?.options?.map((option, index) => (
-                        <div 
+                        <button 
                             key={index}
                             className="option"
                             onClick={() => handleOptionSelect(index)}
+                            data-state={
+                                answerState && (
+                                    selectedOption === index ? answerState :
+                                    correctAnswerIndex === index ? 'correct-answer' : undefined
+                                )
+                            }
                         >
                             <div 
-                                className={`option-letter ${selectedOption === index ? 'selected' : ''}`}
+                                className={`option-letter ${selectedOption === index ? 'selected' : ''} ${
+                                    answerState && (
+                                        selectedOption === index ? answerState :
+                                        correctAnswerIndex === index ? 'correct-answer' : ''
+                                    )
+                                }`}
                             >
                                 {String.fromCharCode(65 + index)}
                             </div>
                             <input
                                 type="text"
-                                className="option-input"
+                                className={`option-input ${
+                                    answerState && (
+                                        selectedOption === index ? answerState :
+                                        correctAnswerIndex === index ? 'correct-answer' : ''
+                                    )
+                                }`}
                                 placeholder="Response..."
                                 value={option}
                                 readOnly
                             />
-                        </div>
-                        ))}
+                        </button>
+                            ))}
                     </div>
                 </div>
                 
