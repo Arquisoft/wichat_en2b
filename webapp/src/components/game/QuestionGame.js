@@ -1,5 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import "./QuestionGame.css"
+const gatewayService = process.env.GATEWAY_SERVICE_URL || 'http://158.179.215.76:8000';
 const QuestionGame = () => {
     const [currentQuestion, setCurrentQuestion] = useState(0);
     const [selectedOption, setSelectedOption] = useState(null);
@@ -47,7 +48,7 @@ const QuestionGame = () => {
     
     const fetchQuestions = async () => {
         try {
-            const response = await fetch(`http://localhost:8000/game/${totalQuestions}/${numberOptions}`);
+            const response = await fetch(`${gatewayService}/game/${totalQuestions}/${numberOptions}`);
 
             if (!response.ok){
                 
