@@ -87,7 +87,7 @@ const QuestionGame = () => {
         if (questions.length > 0) {
             const currentQ = questions.find(q => q.id === currentQuestion);
             if (currentQ) {
-                const imgURL = `http://localhost:8000${currentQ.image}`;
+                const imgURL = `${gatewayService}${currentQ.image}`;
                 setQuestionImg(imgURL);
             }
         }
