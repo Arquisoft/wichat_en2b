@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-
 import AddUser from './components/AddUser';
 import Login from './components/Login';
 import QuestionGame from './components/game/QuestionGame';
+import QuizMaster from './components/QuizMaster'; // Página de inicio
 
 import CssBaseline from '@mui/material/CssBaseline';
 import Container from '@mui/material/Container';
@@ -10,10 +10,10 @@ import Typography from '@mui/material/Typography';
 import Link from '@mui/material/Link';
 
 function App() {
-  const [currentView, setCurrentView] = useState('questionGame');
+  const [currentView, setCurrentView] = useState('questionGame'); // Inicia en 'questionGame'
 
   const handleToggleView = (view) => {
-    setCurrentView(view);
+    setCurrentView(view); // Cambia entre vistas según el valor de 'view'
   };
 
   const renderView = () => {
@@ -24,25 +24,27 @@ function App() {
         return <AddUser />;
       case 'questionGame':
         return <QuestionGame />;
+      case 'home':  // Agregamos el caso para la vista 'home'
+        return <QuizMaster />;  // Mostramos el componente 'QuizMaster' cuando se elija 'home'
       default:
-        return <Login />;
+        return <Login />;  // Por defecto, mostramos el Login
     }
   };
 
   return (
     <React.Fragment>
       <CssBaseline />
-      
-      {currentView === 'questionGame' ? (
-        <QuestionGame />
+
+      {/* Si la vista actual es 'home', muestra QuizMaster */}
+      {currentView === 'home' ? (
+        <QuizMaster />
       ) : (
-        
         <Container component="main" maxWidth="xs">
           <Typography component="h1" variant="h5" align="center" sx={{ marginTop: 2 }}>
             Welcome to the 2025 edition of the Software Architecture course
           </Typography>
           
-          {renderView()}
+          {renderView()}  {/* Renderiza la vista actual dependiendo del estado */}
           
           <Typography component="div" align="center" sx={{ marginTop: 2 }}>
             {currentView === 'login' ? (
