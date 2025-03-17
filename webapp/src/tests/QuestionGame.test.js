@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, fireEvent, screen, waitFor } from '@testing-library/react';
 import fetchMock from 'jest-fetch-mock';
-import QuestionGame from '../pages/game/QuestionGame';
+import QuestionGame from './QuestionGame';
 
 // Enable fetch mocking
 fetchMock.enableMocks();
