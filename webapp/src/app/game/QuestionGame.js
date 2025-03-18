@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from 'react';
-import "../../styles/QuestionGame.css"
+import "../../styles/QuestionGame.css";
 const gatewayService = process.env.GATEWAY_SERVICE_URL || 'http://158.179.215.76:8000';
+
 const QuestionGame = () => {
     const [currentQuestion, setCurrentQuestion] = useState(0);
     const [selectedOption, setSelectedOption] = useState(null);
