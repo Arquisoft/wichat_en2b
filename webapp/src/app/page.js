@@ -27,7 +27,7 @@ export default function Page() {
       case "questionGame":
         return <QuestionGame />;
       case "home":
-        return <HomePage />; 
+        return <Login />; 
       default:
         return <Login />;
     }
