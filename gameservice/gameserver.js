@@ -1,8 +1,8 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const path = require('path');
-const questionRouter = require('./routers/QuestionProcessorRouter');
-const generateRouter = require('./routers/QuestionCollectorRouter');
+const questionRouter = require('./routers/RouterQuestionRetriever');
+const generateRouter = require('./routers/RouterQuestionFetcher');
 
 const app = express();
 const port = 8004;

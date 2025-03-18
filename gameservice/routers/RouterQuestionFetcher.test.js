@@ -2,7 +2,7 @@ const request = require('supertest');
 const { MongoMemoryServer } = require('mongodb-memory-server');
 const mongoose = require('mongoose');
 const express = require('express');
-const router = require('./QuestionCollectorRouter');
+const router = require('./RouterQuestionFetcher');
 
 let mongoServer;
 let app;
