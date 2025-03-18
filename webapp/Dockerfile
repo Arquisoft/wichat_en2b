@@ -1,18 +1,22 @@
+# Usa la imagen oficial de Node.js
 FROM node:22
 
+# Copia los archivos del proyecto en el contenedor
 COPY . /app
 WORKDIR /app
 
-#Install the dependencies
+# Instala las dependencias
 RUN npm install
 
+# Configura las variables de entorno
 ARG API_URI="http://localhost:8000"
 ENV REACT_APP_API_ENDPOINT=$API_URI
 
-#Create an optimized version of the webapp
+# Crea una versión optimizada de la aplicación
 RUN npm run build
-RUN npm install serve
 
-#Execute npm run prod to run the server
-CMD [ "npm", "run", "prod" ]
-#CMD ["npm", "start"]
+# Expón el puerto en el que Next.js servirá la aplicación
+EXPOSE 3000
+
+# Inicia el servidor de producción de Next.js
+CMD ["npm", "run", "start"]
