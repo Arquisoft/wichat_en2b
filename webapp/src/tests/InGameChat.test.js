@@ -1,8 +1,8 @@
+import React, { act } from "react"
 import "@testing-library/jest-dom"
 import { render, screen, fireEvent, waitFor } from "@testing-library/react"
 import InGameChat from "../app/game/InGameChat"
 import fetchMock from "jest-fetch-mock"
-import { act } from "react"
 
 // Mock fetch globally
 fetchMock.enableMocks()
