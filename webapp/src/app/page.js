@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import AddUser from "./register/AddUser";
-import Login from "./login/Login";
-import QuestionGame from "./game/QuestionGame";
-//import QuizMaster from "./home/QuizMaster"; // Página de inicio
+import AddUser from "../components/register/AddUser";
+import Login from "../components/login/Login";
+import QuestionGame from "../components/game/QuestionGame";
+import HomePage from "../components/home/HomeViewPage"; // Página de inicio
 
 import CssBaseline from "@mui/material/CssBaseline";
 import Container from "@mui/material/Container";
@@ -27,7 +27,7 @@ export default function Page() {
       case "questionGame":
         return <QuestionGame />;
       case "home":
-        return <Login />; // TODO: update to render home
+        return <HomePage />; 
       default:
         return <Login />;
     }
