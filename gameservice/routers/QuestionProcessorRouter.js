@@ -3,13 +3,15 @@ const Question = require('../question-model');
 const router = express.Router();
 
 // Route to get a random question
-router.get('/game/:numQuestions?/:numOptions?', async (req, res) => {
+router.get('/game/:subject/:numQuestions?/:numOptions?', async (req, res) => {
     try {
         const numQuestions = parseInt(req.params.numQuestions, 10) || 3;
         const numOptions = parseInt(req.params.numOptions, 10) || 3;
+        const subject = req.params.subject;
 
         // Query: get random questions from the database to be used in the game
         const gameQuestions = await Question.aggregate([
+            { $match: { subject: subject } },
             { $sample: { size: numQuestions } }
         ]);
 
@@ -20,7 +22,7 @@ router.get('/game/:numQuestions?/:numOptions?', async (req, res) => {
         const formattedQuestions = await Promise.all(gameQuestions.map(async q => {
             // Obtain random fake answers from the database excluding the correct answer
             const fakeAnswersDocs = await Question.aggregate([
-                { $match: { answer: { $ne: q.answer } } },
+                { $match: { subject: subject, answer: { $ne: q.answer } } },
                 { $sample: { size: numOptions - 1 } }
             ]);
 

@@ -2,7 +2,7 @@ const request = require('supertest');
 const express = require('express');
 const mongoose = require('mongoose');
 const Question = require('../question-model');
-const router = require('./RouterQuestionRetriever');
+const router = require('./QuestionProcessorRouter');
 
 const app = express();
 app.use(express.json());
