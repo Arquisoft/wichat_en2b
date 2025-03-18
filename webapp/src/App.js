@@ -39,7 +39,7 @@ function App() {
         
         <Container component="main" maxWidth="xs">
           <Typography component="h1" variant="h5" align="center" sx={{ marginTop: 2 }}>
-            Welcome to the 2025 edition of the Software Architecture course
+            Welcome to the 2025 edition of the Software Architecture course!
           </Typography>
           
           {renderView()}
