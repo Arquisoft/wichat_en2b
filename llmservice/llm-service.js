@@ -9,6 +9,8 @@ const conversations = {};
 
 // Middleware to parse JSON in request body
 app.use(express.json());
+// Load environment variables
+require('dotenv').config();
 
 // Define configurations for different LLM APIs
 const llmConfigs = {

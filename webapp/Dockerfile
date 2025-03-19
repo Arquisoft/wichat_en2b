@@ -10,9 +10,7 @@ RUN npm install
 
 # Configura las variables de entorno
 ARG API_URI="http://localhost:8000"
-ARG LLM_API_KEY
 ENV REACT_APP_API_ENDPOINT=$API_URI
-ENV REACT_APP_LLM_API_KEY=$LLM_API_KEY
 
 # Crea una versión optimizada de la aplicación
 RUN npm run build
