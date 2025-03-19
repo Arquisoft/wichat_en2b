@@ -10,7 +10,7 @@ module.exports = {
       testEnvironment: 'jest-environment-jsdom',
       testMatch: ['<rootDir>/src/tests/**/*.js'],
       transform: {
-        '^.+\\.(js|jsx|ts|tsx)$': 'babel-jest',
+        '^.+\\.(js|jsx|ts|tsx)$': '@swc/jest',
       },
     },
     //{
