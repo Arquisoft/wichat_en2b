@@ -24,7 +24,7 @@ export default function HomePage() {
 
     useEffect(() => {
         setCurrentYear(new Date().getFullYear()); 
-        return () => clearTimeout(timer);
+        return () => clearTimeout(10);
     }, []);
 
 
@@ -32,7 +32,9 @@ export default function HomePage() {
 
     return (
         <Box sx={{ bgcolor: "#f5f5f5", minHeight: "100vh" }}>
-            <Navbar username={username} />
+            <div className="navbar-container">
+                <Navbar username={username} />
+            </div>
 
             <Container maxWidth="lg" sx={{ py: 4, maxWidth: "100% !important" }}>
                     <Typography variant="h4" component="h1" align="center" gutterBottom>
@@ -51,9 +53,9 @@ export default function HomePage() {
                         onChange={handleTabChange}
                         variant="fullWidth" 
                         sx={{
-                            boxShadow: 3, // Sombra gris
+                            boxShadow: 3, 
                             borderBottom: "1px solid #e0e0e0", // Línea de separación
-                            bgcolor: "#ffffff", // Fondo blanco
+                            bgcolor: "#ffffff", 
                         }}
                     >
                         <Tab icon={<BrainIcon />} label="Play" sx={{ textTransform: "none" }} />
@@ -67,14 +69,16 @@ export default function HomePage() {
             </Container>
 
             {/* Footer */}
-            <footer className={`footer ${currentYear ? "" : "footer-dark"}`}>
-                <div className="footer__content">
-                    <div className="footer__brand">WiChat</div>
-                    <div className="footer__text">
-                        {currentYear ? `© ${currentYear} WiChat. All rights reserved.` : "Loading..."}
+            <div className="footer-container">
+                <footer className={`footer ${currentYear ? "" : "footer-dark"}`}>
+                    <div className="footer__content">
+                        <div className="footer__brand">WiChat</div>
+                        <div className="footer__text">
+                            {currentYear ? `© ${currentYear} WiChat. All rights reserved.` : "Loading..."}
+                        </div>
                     </div>
-                </div>
-            </footer>
+                </footer>
+            </div>
         </Box>
     );
 }

@@ -1,4 +1,4 @@
-import CategoryComponent from "../../../components/home/ui/QuizzCategory";
+import CategoryComponent from "../../../components/home/QuizzCategory";
 
 const CategoryPage = () => {
   return <CategoryComponent />; 

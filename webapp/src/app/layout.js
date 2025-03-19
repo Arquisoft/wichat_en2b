@@ -1,12 +1,13 @@
 'use client';
 
-import PropTypes from "prop-types"; // Import PropTypes for validation
+import PropTypes from "prop-types"; 
 import { Geist, Geist_Mono } from "next/font/google";
-import { CssBaseline } from "@mui/material";
+import { CssBaseline, ThemeProvider } from "@mui/material";
 import { CacheProvider } from "@emotion/react";
-import ThemeProvider from "../theme/ThemeContext";
+import { theme } from "../theme/theme"; 
 import createEmotionCache from "../theme/createEmotionCache";
 import "../styles/Fullscreen.css";
+import "../styles/globals.css"; 
 
 const clientSideEmotionCache = createEmotionCache();
 
@@ -23,7 +24,7 @@ const geistMono = Geist_Mono({
 export default function RootLayout({ children }) {
   return (
     <CacheProvider value={clientSideEmotionCache}>
-      <ThemeProvider>
+      <ThemeProvider theme={theme}>
         <CssBaseline />
         <html lang="en">
           <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
@@ -35,7 +36,6 @@ export default function RootLayout({ children }) {
   );
 }
 
-// Add PropTypes validation
 RootLayout.propTypes = {
-  children: PropTypes.node.isRequired, // Validate that 'children' is a required React node
+  children: PropTypes.node.isRequired,
 };
