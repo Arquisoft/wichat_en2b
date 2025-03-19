@@ -169,7 +169,7 @@ export default function QuestionGame(params) {
                     )}
                     {isWrong && (
                         <Alert severity="error" className="alert-box">
-                            Oops! Try again.
+                            Oops! You didn't guess this one.
                         </Alert>
                     )}
 
