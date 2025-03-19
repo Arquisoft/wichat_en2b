@@ -1,0 +1,64 @@
+/* Estilos generales para la tarjeta */
+.card-root {
+    border-radius: 16px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background-color: #ffffff;
+    transition: all 0.3s ease;
+}
+
+.card-root:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.card-header {
+    background-color: #f4f6f8;
+    color: #333333;
+    border-bottom: 1px solid #e0e0e0;
+    padding: 16px;
+    font-size: 1.25rem;
+}
+
+.card-content {
+    padding: 16px;
+    font-size: 1rem;
+}
+
+.leaderboard-entry {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px;
+    border-bottom: 1px solid #e0e0e0;
+    transition: background-color 0.3s ease;
+}
+
+.leaderboard-entry:last-child {
+    border-bottom: none;
+}
+
+.leaderboard-entry:hover {
+    background-color: #f0f0f0;
+}
+
+.rank {
+    font-weight: bold;
+    font-size: 1.2rem;
+    color: #3f51b5;
+}
+
+.player-name {
+    flex-grow: 1;
+    padding-left: 16px;
+    color: #333333;
+}
+
+.score {
+    font-weight: bold;
+    color: #4caf50;
+}
+
+.no-rank {
+    font-style: italic;
+    color: #888888;
+}
