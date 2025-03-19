@@ -1,0 +1,220 @@
+/* ProgressCard.css - Elegant styling for user progress */
+
+/* Main card styling */
+.progress-card {
+    border-radius: 0.75rem; /* 12px */
+    box-shadow: 0 0.25rem 0.625rem rgba(0, 0, 0, 0.1); /* 4px 10px */
+    background-color: #fff;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    margin-bottom: 1.5rem;
+  }
+  
+  .progress-card:hover {
+    transform: translateY(-0.3125rem); /* -5px */
+    box-shadow: 0 0.5rem 1.25rem rgba(0, 0, 0, 0.15); /* 8px 20px */
+  }
+  
+  .progress-content {
+    padding: 1.5rem; /* 24px */
+  }
+  
+  /* Progress section styling */
+  .progress-section {
+    margin-bottom: 1.25rem; /* 20px */
+  }
+  
+  .progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+  }
+  
+  .progress-title {
+    font-size: 1.3rem !important;
+    font-weight: 600 !important;
+    color: #333 !important;
+  }
+  
+  .level-indicator {
+    font-size: 0.875rem !important; /* 14px */
+    color: #777 !important;
+    font-weight: 500 !important;
+  }
+  
+  /* Progress bar styling */
+  .progress-bar {
+    height: 1rem !important; /* 16px */
+    border-radius: 0.5rem !important; /* 8px */
+    background-color: #eee !important;
+    margin: 1rem 0 0.5rem 0 !important;
+  }
+  
+  .progress-bar .MuiLinearProgress-bar {
+    border-radius: 0.5rem;
+    background: linear-gradient(90deg, #8e24aa, #ff4081) !important;
+    transition: transform 1.5s ease-out !important;
+  }
+  
+  .progress-text {
+    text-align: right !important;
+    font-size: 0.85rem !important;
+    color: #555 !important;
+    margin-top: 0.25rem !important;
+  }
+  
+  /* Stats cards styling - IMPROVED FOR SINGLE ROW */
+  .stats-grid {
+    display: flex !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  
+  .stat-item {
+    padding: 0 0.5rem !important; /* Reduced padding */
+  }
+  
+  .stat-card {
+    border-radius: 0.625rem !important; /* 10px */
+    text-align: center !important;
+    transition: transform 0.3s ease, box-shadow 0.3s ease !important;
+    height: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    padding: 1rem 0.5rem !important; /* Adjusted padding */
+    box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.08) !important;
+  }
+  
+  .stat-card:hover {
+    transform: translateY(-0.25rem) !important; /* -4px */
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.12) !important;
+  }
+  
+  /* Individual stat card colors */
+  .stat-quizzes {
+    background: linear-gradient(135deg, #ab47bc, #8e24aa) !important;
+    color: white !important;
+  }
+  
+  .stat-accuracy {
+    background: linear-gradient(135deg, #ec407a, #d81b60) !important;
+    color: white !important;
+  }
+  
+  .stat-rank {
+    background: linear-gradient(135deg, #42a5f5, #1e88e5) !important;
+    color: white !important;
+  }
+  
+  .stat-value {
+    font-size: 1.25rem !important;
+    font-weight: 700 !important;
+    margin-bottom: 0.25rem !important;
+    color: white !important;
+  }
+  
+  .stat-label {
+    font-size: 0.75rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05rem !important;
+    opacity: 0.9 !important;
+    color: white !important;
+  }
+  
+  /* Animation for progress bar */
+  @keyframes progressFill {
+    from {
+      transform: scaleX(0);
+    }
+    to {
+      transform: scaleX(1);
+    }
+  }
+  
+  .progress-bar .MuiLinearProgress-bar {
+    transform-origin: left;
+    animation: progressFill 1.5s ease-out forwards;
+  }
+  
+  /* Animation for stats */
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .stat-card {
+    opacity: 0;
+    animation: fadeInUp 0.5s ease forwards;
+  }
+  
+  .stat-quizzes {
+    animation-delay: 0.2s;
+  }
+  
+  .stat-accuracy {
+    animation-delay: 0.3s;
+  }
+  
+  .stat-rank {
+    animation-delay: 0.4s;
+  }
+  
+  /* Responsive adjustments - IMPROVED TO KEEP SINGLE ROW */
+  @media (max-width: 960px) {
+    .progress-content {
+      padding: 1.25rem !important; /* 20px */
+    }
+    
+    /* Keep stats in a row but adjust sizing */
+    .stats-wrapper {
+      margin-top: 1rem !important;
+    }
+    
+    .stat-value {
+      font-size: 1.1rem !important;
+    }
+    
+    .stat-label {
+      font-size: 0.7rem !important;
+    }
+  }
+  
+  @media (max-width: 600px) {
+    .progress-content {
+      padding: 1rem !important; /* 16px */
+    }
+    
+    .progress-title {
+      font-size: 1.1rem !important;
+    }
+    
+    .level-indicator {
+      font-size: 0.8rem !important;
+    }
+    
+    .stat-value {
+      font-size: 1rem !important;
+    }
+    
+    .stat-label {
+      font-size: 0.65rem !important;
+      letter-spacing: 0.03rem !important;
+    }
+    
+    .stat-card {
+      padding: 0.75rem 0.25rem !important;
+    }
+    
+    .stat-item {
+      padding: 0 0.25rem !important;
+    }
+  }
+  
