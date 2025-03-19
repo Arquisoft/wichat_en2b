@@ -6,11 +6,18 @@ info:
 servers:
   - url: http://localhost:8004
 paths:
-  /game:
+  /game/{subject}:
     get:
       summary: Retrieve random questions for the game
       tags:
         - Questions
+      parameters:
+        - in: path
+          name: subject
+          schema:
+            type: string
+          required: true
+          description: The subject of the questions
       responses:
         '200':
           description: A list of formatted questions
