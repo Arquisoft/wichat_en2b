@@ -25,7 +25,10 @@ export default function QuestionGame(params) {
             setIsWrong(true);
         }
 
-        setSelectedOption(option); // Mark the selected option
+        if (option === null)
+            setSelectedOption('This is an option that will never be selected.')
+        else
+            setSelectedOption(option); // Mark the selected option
 
         setTimeout(() => {
             if (currentQuestion < totalQuestions - 1) {
@@ -57,7 +60,7 @@ export default function QuestionGame(params) {
 
         const timerInterval = setInterval(() => {
             setTimeLeft((prevTime) => {
-                if (prevTime > 0.00 && prevTime <= 0.01 && selectedOption === null) {
+                if (prevTime > 0.00 && prevTime <= 0.01 && selectedOption !== 'This is an option that will never be selected.') {
                     clearInterval(timerInterval);
                     handleOptionSelect(null); // Automatically move to next question
                 }
@@ -76,7 +79,7 @@ export default function QuestionGame(params) {
         <div className="quiz-wrapper">{/* Timer and progress bar */}
             <Box className="timer-container">
                 <Typography variant="body2" className="timer-text">
-                    Time Left: {Math.ceil(timeLeft)}s
+                    Time left: {Math.ceil(timeLeft)}s
                 </Typography>
                 <LinearProgress
                     className="progress-bar"
