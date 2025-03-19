@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Box, Paper, Typography, TextField, Button, IconButton, Stack, CircularProgress } from "@mui/material";
 import '../../styles/InGameChat.css';
-import { FaPaperPlane, FaRobot } from "react-icons/fa"; // Import the CSS file
+import {FaAngleDown, FaPaperPlane, FaRobot, FaWindowMinimize} from "react-icons/fa";
+import {FaMinimize} from "react-icons/fa6"; // Import the CSS file
 
 export default function InGameChat(params) {
     const { initialMessages, question } = params;
@@ -96,7 +97,7 @@ export default function InGameChat(params) {
             <Box display="flex" justifyContent="space-between" alignItems="center" p={2}>
                 <Typography variant="h6" fontWeight="medium" className="headerText">Ask for hints</Typography>
                 <IconButton onClick={toggleMinimize} size="small" className="minimizeButton">
-                    <FaRobot />
+                    <FaAngleDown />
                 </IconButton>
             </Box>
 

@@ -4,7 +4,6 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 60%;
   margin: auto;
   background: #fdfdfd;
   border-radius: 12px;
@@ -12,7 +11,7 @@
   padding: 40px;
   font-family: 'Poppins', sans-serif;
   position: relative;
-  min-height: 300px;
+  width: 85%;
 }
 
 /* Decorative dividers */

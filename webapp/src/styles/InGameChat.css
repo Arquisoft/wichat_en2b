@@ -1,7 +1,7 @@
 /* Main Chat Window Styling */
 .chatWindow {
     width: 400px; /* Increased width for a larger chat */
-    background: #fff;
+    background: linear-gradient(135deg, #F5F5F5, #E0E0E0); /* Light to gray gradient */
     border-radius: 12px;
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
     font-family: 'Poppins', sans-serif;
@@ -44,21 +44,24 @@
     border-radius: 2px;
 }
 
-/* User Message Styling (Right-aligned) */
+/* User Message Styling (Right-aligned and fits text) */
 .userMessage {
     background-color: #6C63FF;
     color: #fff;
     text-align: right; /* Align messages to the right */
     padding: 12px;
     border-radius: 12px;
-    max-width: 75%;
-    margin-left: auto;
+    width: fit-content;
+    margin-left: auto; /* Aligns the message box to the right */
     margin-bottom: 10px;
     word-wrap: break-word;
     white-space: normal;
+    display: inline-block; /* Makes the box size fit the content */
+    min-width: 50px; /* Prevents the message box from becoming too small */
+    align-self: flex-end;
 }
 
-/* LLM Message Styling (Left-aligned) */
+/* LLM Message Styling (Left-aligned and fits text) */
 .llmMessage {
     background-color: #f1f1f1;
     color: #333;
@@ -66,10 +69,12 @@
     padding: 12px;
     border-radius: 12px;
     max-width: 75%;
-    margin-right: auto;
+    margin-right: auto; /* Aligns the message box to the left */
     margin-bottom: 10px;
     word-wrap: break-word;
     white-space: normal;
+    display: inline-block; /* Makes the box size fit the content */
+    min-width: 50px; /* Prevents the message box from becoming too small */
 }
 
 /* Input and Send Button */
