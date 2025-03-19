@@ -19,9 +19,9 @@ export default function QuestionGame(params) {
     const [timeLeft, setTimeLeft] = useState(timerDuration); // Time left for the current question
 
     const handleOptionSelect = (option) => {
-        if (option === questions[currentQuestion].right_answer) {
+        if (option === questions[currentQuestion].right_answer && option !== null) {
             setIsRight(true);
-        } else {
+        } else if (option !== null) {
             setIsWrong(true);
         }
 
@@ -57,7 +57,7 @@ export default function QuestionGame(params) {
 
         const timerInterval = setInterval(() => {
             setTimeLeft((prevTime) => {
-                if (prevTime > 0.00 && prevTime <= 0.01) {
+                if (prevTime > 0.00 && prevTime <= 0.01 && selectedOption === null) {
                     clearInterval(timerInterval);
                     handleOptionSelect(null); // Automatically move to next question
                 }
@@ -81,7 +81,7 @@ export default function QuestionGame(params) {
                 <LinearProgress
                     className="progress-bar"
                     variant="determinate"
-                    value={timeLeft * 10}
+                    value={timeLeft/timerDuration * 100}
                 />
             </Box>
             {loading ? (

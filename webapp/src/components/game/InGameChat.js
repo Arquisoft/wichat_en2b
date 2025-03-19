@@ -9,7 +9,7 @@ export default function InGameChat(params) {
     const [messages, setMessages] = useState(initialMessages.length > 0 ? initialMessages : [
         { id: "1", content: "Welcome to the quiz! Ask for hints if you need help.", isUser: false, type: "welcome" },
     ]);
-    const [isMinimized, setIsMinimized] = useState(false);
+    const [isMinimized, setIsMinimized] = useState(true);
     const [input, setInput] = useState("");
     const [isThinking, setIsThinking] = useState(false);
     const messagesEndRef = useRef(null);
