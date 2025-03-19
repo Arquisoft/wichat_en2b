@@ -51,6 +51,7 @@
 .content-box {
   width: 100%;
   text-align: center;
+  position: relative; /* This allows absolute positioning inside it */
 }
 
 /* Question counter */
@@ -89,8 +90,17 @@
   flex-direction: column;
   align-items: center;
   gap: 12px;
+  position: relative; /* Allow absolute positioning of the robot button */
 }
 
+/* Robot button styling */
+.robot-button {
+  position: fixed;
+  right: 1%; /* Position it to the right edge of the options box */
+  bottom: 3%;
+}
+
+/* Quiz options */
 .quiz-option {
   width: 85%;
   padding: 14px;
