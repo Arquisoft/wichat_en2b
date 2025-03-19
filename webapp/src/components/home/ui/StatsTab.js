@@ -1,7 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
 import { Card, CardHeader, CardContent, List, ListItem, ListItemText, Typography } from "@mui/material";
-import "../../../styles/StatsTab.css"; 
+import "../../../styles/home/StatsTab.css"; 
 
 export default function StatsTab({ recentQuizzes }) {
   return (

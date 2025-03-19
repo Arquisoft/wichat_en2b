@@ -6,7 +6,7 @@ import StatsTab from "./ui/StatsTab";
 import LeaderboardTab from "./ui/LeaderboardTab";
 import StatisticsCard from "./ui/StatisticsCard";
 import { recentQuizzes, leaderboardData } from "./data";
-import "../../styles/HomePage.css";
+import "../../styles/home/HomePage.css";
 import Navbar from "./ui/Navbar";
 import "../../styles/Footer.css";
 
@@ -23,7 +23,6 @@ export default function HomePage() {
 
 
     useEffect(() => {
-        const timer = setTimeout(() => setProgress(78), 500);
         setCurrentYear(new Date().getFullYear()); 
         return () => clearTimeout(timer);
     }, []);

@@ -1,0 +1,92 @@
+/* Estilos generales para la página de Categorías */
+.category-container {
+    background-color: #f5f5f5;
+    min-height: 100vh;
+    padding: 40px 0;
+  }
+  
+  /* Título de la categoría */
+  .category-title {
+    margin-bottom: 20px;
+    font-weight: 600;
+  }
+  
+  /* Descripción de la categoría */
+  .category-description {
+    color: #666;
+    margin-bottom: 30px;
+  }
+  
+  /* Estilos para el botón de "Go Back" */
+  .back-button {
+    background-color: #2196f3;
+    color: white;
+    font-weight: 600;
+    text-transform: none;
+    padding: 10px 20px;
+    margin-bottom: 40px;
+    display: inline-block;
+  }
+  
+  .back-button:hover {
+    background-color: #1976d2;
+  }
+  
+  /* Estilo de la cuadrícula de los quizzes */
+  .quizzes-grid {
+    margin-top: 40px;
+  }
+  
+  /* Estilo de cada ítem de quiz */
+  .quiz-item {
+    display: flex;
+    justify-content: center;
+  }
+  
+  /* Estilo para la tarjeta de cada quiz */
+  .quiz-card {
+    background-color: white;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    padding: 20px;
+    width: 100%;
+    max-width: 300px;
+    text-align: center;
+    transition: transform 0.3s ease;
+  }
+  
+  .quiz-card:hover {
+    transform: translateY(-5px);
+  }
+  
+  /* Título del quiz */
+  .quiz-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+  
+  /* Descripción del quiz */
+  .quiz-description {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 20px;
+  }
+  
+  /* Estilo de los botones dentro de cada quiz */
+  .quiz-buttons {
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  .quiz-button {
+    width: 30%;
+    padding: 8px;
+    text-transform: none;
+    font-size: 0.9rem;
+  }
+  
+  .quiz-button:hover {
+    background-color: #f1f1f1;
+  }
+  

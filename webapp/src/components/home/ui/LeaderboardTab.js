@@ -1,7 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
 import { Card, CardHeader, CardContent, Typography } from "@mui/material";
-import "../../../styles/LeaderboardTab.css"; 
+import "../../../styles/home/LeaderboardTab.css"; 
 
 export default function LeaderboardTab({ leaderboardData }) {
   return (

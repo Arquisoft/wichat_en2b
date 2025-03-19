@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import PropTypes from "prop-types";
 import { AppBar, Toolbar, Avatar, IconButton, Button, Box, Typography, Dialog } from "@mui/material";
 import { Logout as LogoutIcon, Person as PersonIcon } from "@mui/icons-material";
-import Link from "next/link"; // Importar Link de Next.js
-import "../../../styles/Navbar.css";
+import Link from "next/link"; 
+import "../../../styles/home/Navbar.css";
 import ProfileForm from "./ProfileForm";
 
 const Navbar = ({ username }) => {

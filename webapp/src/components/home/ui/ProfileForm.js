@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import PropTypes from "prop-types";
 import { Save, Edit, Lock, Security, Person, Smartphone, VerifiedUser } from "@mui/icons-material";
-import "../../../styles/ProfilePage.css"; // Importamos el CSS
+import "../../../styles/home/ProfilePage.css"; 
 
 import {
     Box,

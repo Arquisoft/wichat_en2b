@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
 import { Card, CardContent, Grid, Typography, Paper } from "@mui/material";
-import "../../../styles/StatisticsCard.css";
+import "../../../styles/home/StatisticsCard.css";
 
 const StatisticsCard = ({ stats }) => {
   return (
