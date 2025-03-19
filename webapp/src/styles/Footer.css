@@ -1,0 +1,37 @@
+.footer {
+    width: 100%;
+    padding: 2rem 0;
+    background-color: #f5f5f5; /* bg-gray-100 */
+    color: #4b4b4b; /* text-gray-500 */
+    text-align: center;
+}
+
+.footer-dark {
+    background-color: #1f1f1f; /* dark:bg-gray-900 */
+    color: #cfcfcf; /* text-gray-400 */
+}
+
+.footer__content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.footer__text {
+    font-size: 0.875rem; /* text-sm */
+}
+
+.footer__brand {
+    font-weight: bold;
+    font-size: 1.25rem; /* text-xl */
+    background: linear-gradient(90deg, #9c27b0, #e91e63); /* bg-gradient-to-r from-purple-600 to-pink-600 */
+    background-clip: text;
+    color: transparent;
+}
+
+.footer__year {
+    font-size: 0.875rem;
+    color: #757575; /* text-gray-500 */
+}

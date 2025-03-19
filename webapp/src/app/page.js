@@ -22,7 +22,18 @@ export default function Page() {
   return (
     <>
       <CssBaseline />
-      <Box sx={{ display: "flex", flexDirection: "column", width: "100vw", height: "100vh" }}>
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          width: "100vw",
+          // Keep the height at 100vh to maintain the scroll behavior
+          height: "100vh",
+          // Add padding at the bottom to make space for the footer
+          paddingBottom: "80px", // Adjust this value based on your footer height
+          boxSizing: "border-box",
+        }}
+      >
         <Box sx={{ flex: 1, overflow: "auto" }}>{views[currentView] || <Login />}</Box>
       </Box>
     </>
