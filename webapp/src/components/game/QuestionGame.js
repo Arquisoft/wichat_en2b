@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import "../../styles/QuestionGame.css";
-import { Alert, CircularProgress, Fab } from "@mui/material";
-import { FaRobot } from "react-icons/fa";
+import { Alert, CircularProgress } from "@mui/material";
 import InGameChat from "@/components/game/InGameChat";
 const gatewayService = process.env.GATEWAY_SERVICE_URL || 'http://localhost:8004';
 
