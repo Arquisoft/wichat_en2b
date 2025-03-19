@@ -8,12 +8,15 @@ const apiEndpoint = process.env.REACT_APP_API_ENDPOINT || 'http://localhost:8000
 const AddUser = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [role, setRole] = useState('USER');
+  const [date, setDate] = useState(Date.now());
   const [error, setError] = useState('');
   const [openSnackbar, setOpenSnackbar] = useState(false);
 
   const addUser = async () => {
     try {
-      await axios.post(`${apiEndpoint}/adduser`, { username, password });
+      setDate(Date.now());
+      await axios.post(`${apiEndpoint}/adduser`, { username, password, role, date });
       setOpenSnackbar(true);
     } catch (error) {
       setError(error.response.data.error);
