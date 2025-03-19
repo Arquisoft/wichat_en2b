@@ -1,0 +1,45 @@
+/* src/styles/Navbar.css */
+.navbar {
+    background-color: #3f51b5;
+    box-shadow: none;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.navbar-toolbar {
+    display: flex;
+    justify-content: space-between;
+}
+
+.navbar-left {
+    display: flex;
+    align-items: center;
+}
+
+.navbar-avatar {
+    background-color: white;
+    color: #3f51b5;
+    margin-right: 10px;
+}
+
+.navbar-title {
+    font-weight: bold;
+}
+
+.navbar-right {
+    display: flex;
+    align-items: center;
+}
+
+.navbar-profile-button {
+    text-transform: none;
+    font-weight: bold;
+    margin-right: 10px;
+}
+
+.navbar-icon-button {
+    color: white;
+}
+
+.navbar-user-avatar {
+    background-color: #ff5722;
+}
