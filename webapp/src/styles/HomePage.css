@@ -96,30 +96,61 @@
     color: #666666;
     font-size: 14px;
   }
+
+  /* Estiliza los Tabs para mejorar el sombreado */
+.MuiTabs-root {
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); /* Sombra más intensa */
+  background-color: #ffffff;
+}
+
+/* Estiliza las pestañas */
+.MuiTab-root {
+  text-transform: none; /* Evita la mayúscula automática */
+  font-weight: 600;
+  padding: 12px 16px;
+  color: #333333;
+  border-radius: 4px;
+}
+
+/* Cuando una pestaña está activa, se resalta */
+.Mui-selected {
+  background-color: #f1f1f1; /* Fondo gris suave */
+  color: #9c27b0; /* Color para la pestaña seleccionada */
+}
+
+/* Cuando una pestaña no está seleccionada */
+.MuiTab-root:not(.Mui-selected):hover {
+  background-color: #f5f5f5; /* Fondo gris claro en hover */
+}
+
+/* Sombra al pasar el cursor */
+.MuiTabs-flexContainer {
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+}
   
-  /* Responsive adjustments */
-  @media (max-width: 600px) {
-    .content-container {
-      padding-left: 16px;
-      padding-right: 16px;
-    }
-    
-    .profile-button {
-      display: none;
-    }
-    
-    .profile-icon-button {
-      display: flex;
-    }
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  .content-container {
+    padding-left: 16px;
+    padding-right: 16px;
   }
   
-  @media (min-width: 601px) {
-    .profile-button {
-      display: flex;
-    }
-    
-    .profile-icon-button {
-      display: none;
-    }
+  .profile-button {
+    display: none;
   }
+  
+  .profile-icon-button {
+    display: flex;
+  }
+}
+  
+@media (min-width: 601px) {
+  .profile-button {
+    display: flex;
+  }
+  
+  .profile-icon-button {
+    display: none;
+  }
+}
   

@@ -36,10 +36,19 @@ export default function HomePage() {
 
                     <ProgressCard progress={progress} />
 
-                    <Tabs value={tabValue} onChange={handleTabChange}>
-                        <Tab icon={<BrainIcon />} label="Play" />
-                        <Tab icon={<StatsIcon />} label="Stats" />
-                        <Tab icon={<TrophyIcon />} label="Leaderboard" />
+                    <Tabs 
+                        value={tabValue} 
+                        onChange={handleTabChange}
+                        variant="fullWidth" 
+                        sx={{
+                            boxShadow: 3, // Sombra gris
+                            borderBottom: "1px solid #e0e0e0", // Línea de separación
+                            bgcolor: "#ffffff", // Fondo blanco
+                        }}
+                    >
+                        <Tab icon={<BrainIcon />} label="Play" sx={{ textTransform: "none" }} />
+                        <Tab icon={<StatsIcon />} label="Stats" sx={{ textTransform: "none" }} />
+                        <Tab icon={<TrophyIcon />} label="Leaderboard" sx={{ textTransform: "none" }} />
                     </Tabs>
 
                     {tabValue === 0 && <PlayTab />}
