@@ -1,0 +1,132 @@
+/* InGameChat.css */
+
+/* Chat button styling */
+.chatButton {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-color: #2196f3;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    z-index: 1000;
+}
+
+/* Chat Window Styling */
+.chatWindow {
+    position: fixed;
+    bottom: 80px;  /* Keep the window above the button */
+    right: 20px;
+    width: 300px;
+    max-width: 100%;
+    height: 400px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Chat Header */
+.chatHeader {
+    background-color: #2196f3;
+    color: white;
+    padding: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+
+/* Chat Message Area */
+.messageArea {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 12px;
+    background-color: #f1f1f1;
+    border-bottom: 1px solid #ddd;
+}
+
+/* Message bubble */
+.messageBubble {
+    max-width: 80%;
+    padding: 8px 12px;
+    border-radius: 12px;
+    margin-bottom: 10px;
+}
+
+.userMessage {
+    background-color: #2196f3;
+    color: white;
+    align-self: flex-end;
+}
+
+.llmMessage {
+    background-color: #e0e0e0;
+    color: black;
+    align-self: flex-start;
+}
+
+/* Thinking Indicator */
+.thinkingIndicator {
+    display: flex;
+    justify-content: flex-start;
+    gap: 8px;
+    animation: pulse 1s infinite;
+}
+
+.thinkingIndicator span {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #757575;
+}
+
+@keyframes pulse {
+    0%,
+    100% {
+        opacity: 0.5;
+    }
+    50% {
+        opacity: 1;
+    }
+}
+
+/* Chat Input Area */
+.chatInputArea {
+    display: flex;
+    padding: 12px;
+    border-top: 1px solid #ddd;
+}
+
+.chatInputField {
+    flex-grow: 1;
+    margin-right: 10px;
+}
+
+.chatSendButton {
+    background-color: #2196f3;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    border: none;
+}
+
+.chatSendButton:disabled {
+    background-color: #ddd;
+    cursor: not-allowed;
+}
+
+.chatSendButton svg {
+    fill: white;
+}

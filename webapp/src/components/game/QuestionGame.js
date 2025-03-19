@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import "../../styles/QuestionGame.css";
 import { Alert, CircularProgress, Fab } from "@mui/material";
 import { FaRobot } from "react-icons/fa";
+import InGameChat from "@/components/game/InGameChat";
 const gatewayService = process.env.GATEWAY_SERVICE_URL || 'http://localhost:8004';
 
 export default function QuestionGame(params) {
@@ -85,10 +86,7 @@ export default function QuestionGame(params) {
                         ))}
                     </div>
 
-                    {/* Add the robot button here */}
-                    <Fab size="large" color="secondary" aria-label="add" className="robot-button">
-                        <FaRobot size={30} />
-                    </Fab>
+                    <InGameChat initialMessages={[]} question={questions[currentQuestion]}/>
                 </div>
             )}
             <div className="divider"></div>
