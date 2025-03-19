@@ -61,18 +61,24 @@ export default function ProfileForm({ onSave }) {
         {/* Contenido de la pestaña "Cuenta" */}
         {tabIndex === 0 && (
           <Box component="form" className="form-section">
-            <TextField fullWidth label="Username" name="username" value={profileData.username} onChange={handleChange} disabled={!editing} />
-            <TextField fullWidth label="Email" name="email" type="email" value={profileData.email} onChange={handleChange} disabled={!editing} />
-            <TextField fullWidth label="Bio" name="bio" value={profileData.bio} onChange={handleChange} multiline rows={3} disabled={!editing} />
-          </Box>
+            <TextField fullWidth label="Username" 
+                name="username" value={profileData.username} 
+                onChange={handleChange} disabled={!editing} />
+            </Box>
         )}
 
         {/* Contenido de la pestaña "Seguridad" */}
         {tabIndex === 1 && (
           <Box className="form-section">
-            <TextField fullWidth label="Contraseña actual" name="currentPassword" type="password" value={profileData.currentPassword} onChange={handleChange} disabled={!editing} />
-            <TextField fullWidth label="Nueva contraseña" name="newPassword" type="password" value={profileData.newPassword} onChange={handleChange} disabled={!editing} />
-            <TextField fullWidth label="Confirmar nueva contraseña" name="confirmPassword" type="password" value={profileData.confirmPassword} onChange={handleChange} disabled={!editing} />
+            <TextField fullWidth label="Contraseña actual" 
+                  name="currentPassword" type="password" 
+                  value={profileData.currentPassword} onChange={handleChange} disabled={!editing} />
+            <TextField fullWidth label="Nueva contraseña" 
+                  name="newPassword" type="password" value={profileData.newPassword} 
+                  onChange={handleChange} disabled={!editing} />
+            <TextField fullWidth label="Confirmar nueva contraseña" 
+                  name="confirmPassword" type="password" value={profileData.confirmPassword} 
+                  onChange={handleChange} disabled={!editing} />
           </Box>
         )}
 

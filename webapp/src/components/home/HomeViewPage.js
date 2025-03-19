@@ -4,7 +4,7 @@ import { EmojiEvents as TrophyIcon, BarChart as StatsIcon, Psychology as BrainIc
 import PlayTab from "./ui/PlayTab";
 import StatsTab from "./ui/StatsTab";
 import LeaderboardTab from "./ui/LeaderboardTab";
-import ProgressCard from "./ui/ProgressBar";
+import StatisticsCard from "./ui/StatisticsCard";
 import { recentQuizzes, leaderboardData } from "./data";
 import "../../styles/HomePage.css";
 import Navbar from "./ui/Navbar";
@@ -12,9 +12,15 @@ import "../../styles/Footer.css";
 
 export default function HomePage() {
     const [username] = useState("QuizMaster");
-    const [progress, setProgress] = useState(0);
     const [tabValue, setTabValue] = useState(0);
     const [currentYear, setCurrentYear] = useState(null);
+
+    const [stats] = useState({
+        quizzes: 42,     // Ejemplo: número de quizzes
+        accuracy: 78,    // Ejemplo: porcentaje de precisión
+        rank: 12         // Ejemplo: rango del jugador
+    });
+
 
     useEffect(() => {
         const timer = setTimeout(() => setProgress(78), 500);
@@ -38,7 +44,8 @@ export default function HomePage() {
                         Connect, Learn, and Play with WiChat
                     </Typography>
 
-                    <ProgressCard progress={progress} />
+                    {/* Pasar las estadísticas al componente StatisticsCard */}
+                    <StatisticsCard stats={stats} />
 
                     <Tabs 
                         value={tabValue} 
