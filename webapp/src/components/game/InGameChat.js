@@ -1,8 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Box, Paper, Typography, TextField, Button, IconButton, Stack, CircularProgress } from "@mui/material";
 import '../../styles/InGameChat.css';
-import {FaAngleDown, FaPaperPlane, FaRobot, FaWindowMinimize} from "react-icons/fa";
-import {FaMinimize} from "react-icons/fa6"; // Import the CSS file
+import {FaAngleDown, FaPaperPlane, FaRobot} from "react-icons/fa";
 
 export default function InGameChat(params) {
     const { initialMessages, question } = params;
