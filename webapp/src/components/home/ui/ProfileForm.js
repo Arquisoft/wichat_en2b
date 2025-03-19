@@ -11,6 +11,7 @@ import {
   Switch,
   FormControlLabel,
 } from "@mui/material";
+
 import { Save, Edit } from "@mui/icons-material";
 
 export default function ProfileForm({ onSave }) {
@@ -81,6 +82,7 @@ export default function ProfileForm({ onSave }) {
         <Typography variant="subtitle1" sx={{ mt: 2 }}>
           Preferences
         </Typography>
+
         <FormControlLabel
           control={
             <Switch
@@ -91,16 +93,7 @@ export default function ProfileForm({ onSave }) {
           }
           label="Notifications"
         />
-        <FormControlLabel
-          control={
-            <Switch
-              checked={profileData.darkMode}
-              onChange={handleToggle("darkMode")}
-              disabled={!editing}
-            />
-          }
-          label="Dark Mode"
-        />
+
         <FormControlLabel
           control={
             <Switch

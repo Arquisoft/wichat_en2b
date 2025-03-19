@@ -2,10 +2,10 @@
 
 import PropTypes from "prop-types"; // Import PropTypes for validation
 import { Geist, Geist_Mono } from "next/font/google";
-import { ThemeProvider, CssBaseline } from "@mui/material";
-import theme from "../theme/theme";
-import createEmotionCache from "../theme/createEmotionCache";
+import { CssBaseline } from "@mui/material";
 import { CacheProvider } from "@emotion/react";
+import ThemeProvider from "../theme/ThemeContext";
+import createEmotionCache from "../theme/createEmotionCache";
 import "../styles/Fullscreen.css";
 
 const clientSideEmotionCache = createEmotionCache();
@@ -23,7 +23,7 @@ const geistMono = Geist_Mono({
 export default function RootLayout({ children }) {
   return (
     <CacheProvider value={clientSideEmotionCache}>
-      <ThemeProvider theme={theme}>
+      <ThemeProvider>
         <CssBaseline />
         <html lang="en">
           <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
