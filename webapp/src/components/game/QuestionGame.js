@@ -59,6 +59,7 @@ export default function QuestionGame(params) {
                         answer: option,
                         right_answer: questions[currentQuestion].right_answer,
                         isCorrect: option === questions[currentQuestion].right_answer,
+                        points: option === questions[currentQuestion].right_answer ? Math.ceil(10 * (300/timerDuration) * (timeLeft/timerDuration)) : 0,
                     },
                 ]);
                 setCurrentQuestion(currentQuestion + 1);
@@ -213,11 +214,15 @@ export default function QuestionGame(params) {
                 <span className="score-percentage">
                     {(answers.filter((a) => a.isCorrect).length / totalQuestions) * 100}% Correct
                 </span>
+                <span className="score-points">
+                    {answers.reduce((acc, a) => acc + a.points, 0)} points
+                </span>
             </div>
             <div className="answers-header">Your Answers:</div>
             <div className="answers-list">
                 {answers.map((answer, index) => (
                     <div key={index + 1} className="answer-item">
+                        <h4 className="answer-number">Question {index + 1}:</h4>
                         {answer.isCorrect ? (
                             <Alert severity="success" className="result-box alert-success">
                                 You answered: {answer.answer}

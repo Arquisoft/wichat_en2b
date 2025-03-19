@@ -77,8 +77,7 @@
 }
 
 .quiz-image {
-  max-height: 40vh;
-  height: auto;
+  height: 35vh;
   border-radius: 10px;
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
 }
@@ -198,7 +197,9 @@
   padding: 20px;
   max-width: 400px;
   margin: 20px auto;
-  font-family: 'Arial', sans-serif;
+  font-family: 'Poppins', sans-serif;
+  max-height: 80vh;
+  color: black;
 }
 
 .quiz-header {
@@ -234,6 +235,9 @@
 
 .answers-list {
   margin-bottom: 20px;
+  max-height: 300px; /* Adjust the height to fit your design */
+  overflow-y: auto;  /* Adds vertical scrolling */
+  padding-right: 10px; /* Optional: adds a small space for scroll */
 }
 
 .answer-item {
@@ -302,4 +306,8 @@
 .play-again-button:hover {
   background: #6b48ff;
   color: #ffffff;
+}
+
+.answer-number {
+  margin-bottom: 10px;
 }
