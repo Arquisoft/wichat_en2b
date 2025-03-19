@@ -101,16 +101,17 @@
 /* Chat Button when Minimized */
 .chatButton {
     position: fixed;
-    right: 10px;
-    bottom: 10px;
+    bottom: 10px; /* Ensure it's fixed to the bottom */
+    right: 10px; /* Ensure it's fixed to the right */
     background: #6C63FF;
     color: white;
     border-radius: 50%;
     padding: 12px;
     box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
-    z-index: 1001; /* Ensures the floating button is above the chat */
+    z-index: 1001; /* Make sure it's above the chat window */
 }
 
+/* Hover Effect for Chat Button */
 .chatButton:hover {
     background: #5a54e6;
 }

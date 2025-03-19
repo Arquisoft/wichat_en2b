@@ -9,6 +9,7 @@ export default function QuestionGame(params) {
     const totalQuestions = params.totalQuestions;
     const numberOptions = params.numberOptions;
     const timerDuration = params.timerDuration; // Time per question in seconds (default to 30 if not passed)
+    const question = params.question;
 
     const [currentQuestion, setCurrentQuestion] = useState(0);
     const [questions, setQuestions] = useState([]);
@@ -17,6 +18,7 @@ export default function QuestionGame(params) {
     const [loading, setLoading] = useState(true);
     const [selectedOption, setSelectedOption] = useState(null); // Track the selected option
     const [timeLeft, setTimeLeft] = useState(timerDuration); // Time left for the current question
+    const [answers, setAnswers] = useState([]);
 
     const handleOptionSelect = (option) => {
         if (option === questions[currentQuestion].right_answer && option !== null) {
@@ -25,20 +27,19 @@ export default function QuestionGame(params) {
             setIsWrong(true);
         }
 
-        if (option === null)
-            setSelectedOption('This is an option that will never be selected.')
-        else
-            setSelectedOption(option); // Mark the selected option
+        setSelectedOption(option); // Mark the selected option
 
         setTimeout(() => {
-            if (currentQuestion < totalQuestions - 1) {
+            if (currentQuestion < totalQuestions) {
+                setAnswers(prevAnswers => [
+                    ...prevAnswers,
+                    { answer: option, right_answer: questions[currentQuestion].right_answer, isCorrect: option === questions[currentQuestion].right_answer }
+                ]);
                 setCurrentQuestion(currentQuestion + 1);
                 setIsRight(false);
                 setIsWrong(false);
                 setSelectedOption(null);
                 setTimeLeft(timerDuration);
-            } else {
-                alert("Quiz completed!");
             }
         }, 2000);
     };
@@ -60,22 +61,23 @@ export default function QuestionGame(params) {
 
         const timerInterval = setInterval(() => {
             setTimeLeft((prevTime) => {
-                if (prevTime > 0.00 && prevTime <= 0.01 && selectedOption !== 'This is an option that will never be selected.') {
-                    clearInterval(timerInterval);
-                    handleOptionSelect(null); // Automatically move to next question
+                if (prevTime <= 0) {
+                    clearInterval(timerInterval); // Stop the timer
+                    handleOptionSelect('None'); // Move to next question
+                    return 0; // Prevent going into negative values
                 }
-                return prevTime - 0.01;
+                return prevTime - 0.01; // Decrement the time
             });
-        }, 10);
+        }, 10); // Run every 10ms
 
-        return () => clearInterval(timerInterval);
+        return () => clearInterval(timerInterval); // Cleanup interval when the component is unmounted or dependencies change
     }, [currentQuestion, loading]);
 
     useEffect(() => {
         fetchQuestions();
     }, []);
 
-    return (
+    return currentQuestion < totalQuestions ? (
         <div className="quiz-wrapper">{/* Timer and progress bar */}
             <Box className="timer-container">
                 <Typography variant="body2" className="timer-text">
@@ -98,7 +100,7 @@ export default function QuestionGame(params) {
                     {isWrong && <Alert severity="error" className="alert-box">Oops! Try again.</Alert>}
 
                     <div className="progress-indicator">Question {currentQuestion + 1} of {totalQuestions}</div>
-                    <h2 className="question-title">{questions[currentQuestion].question}</h2>
+                    <h2 className="question-title">{question}</h2>
 
                     <div className="image-box">
                         <img src={`${gatewayService}${questions[currentQuestion].image_name}`} alt="Question" className="quiz-image" />
@@ -121,6 +123,39 @@ export default function QuestionGame(params) {
                 </div>
             )}
             <div className="divider"></div>
+        </div>
+    ) : (
+        <div className="quiz-results-container">
+            <div className="quiz-header">Quiz Completed!</div>
+            <div className="score">
+                <span className="score-fraction">{answers.filter(a => a.isCorrect).length}/{totalQuestions}</span>
+                <span className="score-percentage">{answers.filter(a => a.isCorrect).length/totalQuestions*100}% Correct</span>
+            </div>
+            <div className="answers-header">Your Answers:</div>
+            <div className="answers-list">
+                {answers.map((answer, index) => (
+                    <div key={index + 1} className="answer-item">
+                        {answer.isCorrect ? (
+                            <Alert severity="success" className="result-box alert-success">
+                                You answered: {answer.answer}
+                            </Alert>
+                        ) : (
+                            <>
+                                <Alert severity="error" className="result-box alert-error">
+                                    You answered: {answer.answer}
+                                </Alert>
+                                <Alert severity="success" className="result-box alert-correct">
+                                    Right answer: {answer.right_answer}
+                                </Alert>
+                            </>
+                        )}
+                    </div>
+                ))}
+            </div>
+            <div className="buttons">
+                <button className="back-button">Back to home</button>
+                <button className="play-again-button">Play again</button>
+            </div>
         </div>
     );
 }

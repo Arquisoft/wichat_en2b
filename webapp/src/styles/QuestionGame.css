@@ -189,3 +189,117 @@
 .progress-bar .MuiLinearProgress-bar {
   background: linear-gradient(90deg, #6C63FF, #FF6584); /* Gradient color */
 }
+
+/* Results */
+.quiz-results-container {
+  background-color: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  max-width: 400px;
+  margin: 20px auto;
+  font-family: 'Arial', sans-serif;
+}
+
+.quiz-header {
+  font-size: 24px;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.score {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.score-fraction {
+  font-size: 48px;
+  font-weight: bold;
+  color: #6b48ff; /* Purple color for the fraction */
+}
+
+.score-percentage {
+  display: block;
+  font-size: 16px;
+  color: #888888;
+  margin-top: 5px;
+}
+
+.answers-header {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+
+.answers-list {
+  margin-bottom: 20px;
+}
+
+.answer-item {
+  margin-bottom: 15px;
+}
+
+.result-box {
+  padding: 10px;
+  border-radius: 5px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+}
+
+.alert-success {
+  background-color: #e6f4ea;
+  border: 1px solid #34c759;
+  color: #2e7d32;
+}
+
+.alert-error {
+  background-color: #ffebee;
+  border: 1px solid #ef5350;
+  color: #d32f2f;
+}
+
+.alert-correct {
+  background-color: #e6f4ea;
+  border: 1px solid #34c759;
+  color: #2e7d32;
+  margin-top: 5px;
+}
+
+.buttons {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.back-button {
+  background: linear-gradient(90deg, #6b48ff, #ff4081); /* Gradient from purple to pink */
+  color: #ffffff;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.back-button:hover {
+  background: linear-gradient(90deg, #5a3de6, #e63977);
+}
+
+.play-again-button {
+  background: none;
+  border: 1px solid #6b48ff;
+  border-radius: 5px;
+  padding: 10px 20px;
+  font-size: 16px;
+  color: #6b48ff;
+  cursor: pointer;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.play-again-button:hover {
+  background: #6b48ff;
+  color: #ffffff;
+}
