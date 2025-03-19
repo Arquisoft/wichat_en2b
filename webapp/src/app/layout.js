@@ -1,10 +1,12 @@
 'use client';
 
+import PropTypes from "prop-types"; // Import PropTypes for validation
 import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider, CssBaseline } from "@mui/material";
 import theme from "../theme/theme";
 import createEmotionCache from "../theme/createEmotionCache";
 import { CacheProvider } from "@emotion/react";
+import "../styles/Fullscreen.css";
 
 const clientSideEmotionCache = createEmotionCache();
 
@@ -32,3 +34,8 @@ export default function RootLayout({ children }) {
     </CacheProvider>
   );
 }
+
+// Add PropTypes validation
+RootLayout.propTypes = {
+  children: PropTypes.node.isRequired, // Validate that 'children' is a required React node
+};
