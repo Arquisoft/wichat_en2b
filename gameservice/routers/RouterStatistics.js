@@ -15,13 +15,49 @@ router.get('/statistics/subject/:subject', verifyToken, async (req, res) => {
                 _id: "$subject",
                 totalGames: { $sum: 1 },
                 avgScore: { $avg: '$points_gain' },
+                totalScore: { $sum: '$points_gain' },
                 totalCorrectAnswers: { $sum: '$number_correct_answers' },
                 totalQuestions: { $sum: '$number_of_questions' },
-                avgTime: { $avg: '$total_time' }
+                avgTime: { $avg: '$total_time' },
+                successRatio: {
+                        $avg: {
+                            $divide: ['$number_correct_answers', '$number_of_questions']
+                        }
+                }
             }}
         ]);
         res.json({
             subject: req.params.subject,
+            stats: stats[0] || null
+        });
+    } catch (error) {
+        res.status(500).json({ error: 'Error retrieving statistics' });
+    }
+});
+
+// global statistics
+router.get('/statistics/global', verifyToken, async (req, res) => {
+    try{
+        const stats = await GameInfo.aggregate([
+            { $match: {
+                user_id: req.user.username
+            }},
+            { $group: {
+                _id: null,
+                totalGames: { $sum: 1 },
+                avgScore: { $avg: '$points_gain' },
+                totalScore: { $sum: '$points_gain' },
+                totalCorrectAnswers: { $sum: '$number_correct_answers' },
+                totalQuestions: { $sum: '$number_of_questions' },
+                avgTime: { $avg: '$total_time' },
+                successRatio: {
+                        $avg: {
+                            $divide: ['$number_correct_answers', '$number_of_questions']
+                        }
+                }
+            }}
+        ]);
+        res.json({
             stats: stats[0] || null
         });
     } catch (error) {
