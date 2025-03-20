@@ -1,6 +1,6 @@
 const express = require('express')
 const jwt = require('jsonwebtoken');
-const GameInfo = require('../game-info-model')
+const GameInfo = require('../game-result-model')
 const {model} = require("mongoose");
 const router = express.Router()
 
@@ -53,8 +53,8 @@ router.post('/game', verifyToken, async (req, res) => {
             total_time: req.body.total_time
         });
 
-        await gameInfo.save();
-        res.status(201);
+        const savedGame = await gameInfo.save();
+        res.status(201).json(savedGame);
     } catch (error) {
         console.error("Error when saving the game data:", error);
         res.status(500).json({ error: 'Error saving game data' });
