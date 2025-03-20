@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import { ArrowLeft, Clock, Star } from "lucide-react";
+import { ArrowLeft, Clock } from "lucide-react";
 import { quizzesByCategory, quizCategories } from "./data"; 
 import Link from "next/link";
 import "../../styles/home/Categories.css";
@@ -10,11 +10,15 @@ import {
   Button, Container, Box, Typography, Grid, Card, CardContent, CardHeader, Badge, CircularProgress 
 } from "@mui/material";
 
+import QuestionGame from "../game/QuestionGame"; 
+
 function CategoryComponent() {
   const [quizzes, setQuizzes] = useState([]);
   const [category, setCategory] = useState(null);
   const [loading, setLoading] = useState(true);
   const [difficulty] = useState("easy");
+  const [showQuiz, setShowQuiz] = useState(false);  
+  const [quizData, setQuizData] = useState(null);
 
   const router = useRouter();
   const { id } = router.query;
@@ -74,6 +78,21 @@ function CategoryComponent() {
     if (difficulty === "hell") return "error";   // Rojo brillante para hell 
     return "default";                              // Color por defecto
   };
+
+  const handleStartQuiz = (quiz) => {
+    setQuizData({
+      topic: 'Q515', 
+      totalQuestions: quiz.questions,
+      numberOptions: 4,  
+      timerDuration: quiz.timeEstimate,
+      question: "Maricón",  
+    });
+    setShowQuiz(true);  
+  };
+
+  if (showQuiz) {
+    return <QuestionGame {...quizData} />;  // Pasar los datos al componente QuestionGame
+  }
   
 
   return (
@@ -141,7 +160,7 @@ function CategoryComponent() {
                     <Button
                       variant="contained"
                       className="start-quiz-button"
-                      onClick={() => router.push(`/quiz/play/${quiz.id}`)}
+                      onClick={() => handleStartQuiz(quiz)}
                     >
                       Start Quiz
                     </Button>
