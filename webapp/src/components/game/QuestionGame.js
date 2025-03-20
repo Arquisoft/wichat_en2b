@@ -5,7 +5,7 @@ import "../../styles/QuestionGame.css";
 import { Alert, CircularProgress, LinearProgress, Box, Typography } from "@mui/material";
 import InGameChat from "@/components/game/InGameChat";
 
-const gatewayService = process.env.GATEWAY_SERVICE_URL || "http://localhost:8004"
+const gatewayService = process.env.GATEWAY_SERVICE_URL || "http://localhost:8000"
 
 export default function QuestionGame(params) {
     const topic = params.topic;
