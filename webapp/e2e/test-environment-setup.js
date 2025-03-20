@@ -6,15 +6,21 @@ let authservice;
 let llmservice;
 let gatewayservice;
 
-async function startServer() {
-    console.log('Starting MongoDB memory server...');
-    mongoserver = await MongoMemoryServer.create();
-    const mongoUri = mongoserver.getUri();
-    process.env.MONGODB_URI = mongoUri;
-    userservice = await require("../../users/userservice/user-service");
-    authservice = await require("../../users/authservice/auth-service");
-    llmservice = await require("../../llmservice/llm-service");
-    gatewayservice = await require("../../gatewayservice/gateway-service");
-}
+module.exports = async () => {
+  console.log('Starting MongoDB memory server...');
+  
+  // Crear el servidor MongoDB en memoria
+  mongoserver = await MongoMemoryServer.create();
+  const mongoUri = mongoserver.getUri();
+  
+  // Establecer variable de entorno
+  process.env.MONGODB_URI = mongoUri;
+  
+  // Importar los servicios después de establecer MONGODB_URI
+  userservice = await require("../../users/userservice/user-service");
+  authservice = await require("../../users/authservice/auth-service");
+  llmservice = await require("../../llmservice/llm-service");
+  gatewayservice = await require("../../gatewayservice/gateway-service");
 
-startServer();
+  console.log('MongoDB memory server started and services loaded.');
+};
