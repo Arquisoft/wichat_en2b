@@ -72,29 +72,28 @@ function CategoryComponent() {
 
   const badgeColor = (difficulty) => {
     console.log(difficulty);
-    if (difficulty === "easy") return "success";   // Verde para fácil
-    if (difficulty === "medium") return "warning"; // Amarillo para medio
-    if (difficulty === "hard") return "error";     // Rojo para difícil
-    if (difficulty === "hell") return "error";   // Rojo brillante para hell 
-    return "default";                              // Color por defecto
+    if (difficulty === "easy") return "success";    // Verde 
+    if (difficulty === "medium") return "warning";  // Amarillo 
+    if (difficulty === "hard") return "error";      // Rojo 
+    if (difficulty === "hell") return "error";      // Rojo 
+    return "default";                               
   };
 
   const handleStartQuiz = (quiz) => {
     setQuizData({
-      topic: 'Q515', 
+      topic: quiz.wikidataCode, 
       totalQuestions: quiz.questions,
-      numberOptions: 4,  
+      numberOptions: quiz.options,  
       timerDuration: quiz.timeEstimate,
-      question: "Maricón",  
+      question: quiz.question,  
     });
     setShowQuiz(true);  
   };
 
   if (showQuiz) {
-    return <QuestionGame {...quizData} />;  // Pasar los datos al componente QuestionGame
+    return <QuestionGame {...quizData} />; 
   }
   
-
   return (
     <Box className="main-container">
       <Box component="header" className="category-header" 

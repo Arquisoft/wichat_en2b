@@ -1,14 +1,18 @@
 {
-    "jsc": {
-      "parser": {
-        "syntax": "ecmascript",
-        "jsx": true
-      },
-      "transform": {
-        "react": {
-          "runtime": "automatic"
-        }
+  "jsc": {
+    "parser": {
+      "syntax": "ecmascript",
+      "jsx": true
+    },
+    "transform": {
+      "react": {
+        "runtime": "automatic"
       }
-    }
-  }
-  
+    },
+    "target": "es2018"
+  },
+  "module": {
+    "type": "commonjs"
+  },
+  "sourceMaps": "inline"
+}
