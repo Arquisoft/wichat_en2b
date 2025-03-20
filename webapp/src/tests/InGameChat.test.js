@@ -31,7 +31,19 @@ describe("InGameChat Component", () => {
     expect(screen.getByText("Custom message")).toBeInTheDocument();
   });
 
-  it("allows user to type and send a message and it is displayed correcly", async () => {
+  test("does not send an empty message", () => {
+    render(<InGameChat initialMessages={[]} question={{ answers: [], right_answer: "" }} />);
+
+    openChat();
+
+    const input = screen.getByPlaceholderText("Enter question...");
+    fireEvent.change(input, { target: { value: "" } });
+    fireEvent.click(document.querySelector(".sendButton"));
+
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("allows user to type and send a message and it is displayed correctly", async () => {
     render(<InGameChat initialMessages={[]} question={{ answers: [], right_answer: "" }} />);
 
     openChat();
@@ -73,6 +85,19 @@ describe("InGameChat Component", () => {
     expect(document.querySelector(".MuiCircularProgress-root")).toBeInTheDocument();
 
     await waitFor(() => expect(document.querySelector(".MuiCircularProgress-root")).not.toBeInTheDocument());
+  });
+
+  test("handles empty response from LLM gracefully", async () => {
+    fetchMock.mockResponseOnce(JSON.stringify({}));
+    render(<InGameChat initialMessages={[]} question={{ answers: [], right_answer: "" }} />);
+
+    openChat();
+
+    const input = screen.getByPlaceholderText("Enter question...");
+    fireEvent.change(input, { target: { value: "What is the capital of Panama?" } });
+    fireEvent.click(document.querySelector(".sendButton"));
+
+    await waitFor(() => expect(screen.getByText("Oh no! There has been an error processing your request.")).toBeInTheDocument());
   });
 
   it("handles LLM API errors gracefully", async () => {
