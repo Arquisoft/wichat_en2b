@@ -63,7 +63,7 @@
 
 /* Question text */
 .question-title {
-  font-size: 24px;
+  font-size: 20px;
   font-weight: 600;
   margin-bottom: 25px;
   color: #222;
@@ -84,11 +84,11 @@
 
 /* Options container */
 .options-box {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* Two equal columns */
   gap: 12px;
-  position: relative; /* Allow absolute positioning of the robot button */
+  width: 100%; /* Ensure full width */
+  justify-items: center; /* Center items within the grid */
 }
 
 /* Robot button styling */
@@ -100,7 +100,7 @@
 
 /* Quiz options */
 .quiz-option {
-  width: 85%;
+  width: 100%; /* Make each option take full width of its column */
   padding: 14px;
   font-size: 16px;
   border: 2px solid #ddd;
@@ -110,7 +110,8 @@
   cursor: pointer;
   transition: all 0.25s ease-in-out;
   font-weight: 500;
-  pointer-events: auto; /* Allow interaction only when it's not selected */
+  pointer-events: auto;
+  text-align: center;
 }
 
 .quiz-option:not(:disabled):hover {
