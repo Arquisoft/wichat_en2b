@@ -64,3 +64,25 @@ router.get('/statistics/global', verifyToken, async (req, res) => {
         res.status(500).json({ error: 'Error retrieving statistics' });
     }
 });
+
+// leaderboard
+router.get('/leaderboard', verifyToken, async (req, res) => {
+    try {
+        const leaderboard = await GameInfo.aggregate([
+            { $group: {
+                    _id: '$user_id',
+                    totalScore: { $sum: '$points_gain' },
+                    totalGames: { $sum: 1 },
+                    avgScore: { $avg: '$points_gain' }
+                }},
+            { $sort: { totalScore: -1 }},
+            { $limit: 15 }
+        ]);
+
+        res.json({ leaderboard });
+    } catch (error) {
+        res.status(500).json({ error: 'Error fetching leaderboard' });
+    }
+});
+
+module.exports = router;
