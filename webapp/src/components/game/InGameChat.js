@@ -93,7 +93,7 @@ export default function InGameChat(params) {
     return (
         <Box className="chatWindow">
             {/* Header */}
-            <Box display="flex" justifyContent="space-between" alignItems="center" p={2}>
+            <Box className={"chatHeader"} display="flex" justifyContent="space-between" alignItems="center" p={2}>
                 <Typography variant="h6" fontWeight="medium" className="headerText">Ask for hints</Typography>
                 <IconButton onClick={toggleMinimize} size="small" className="minimizeButton">
                     <FaAngleDown />
@@ -125,7 +125,7 @@ export default function InGameChat(params) {
             </Box>
 
             {/* Chat Input Area */}
-            <Box p={2} display="flex" justifyContent="space-between">
+            <Box className={"inputArea"} p={2} display="flex" justifyContent="space-between">
                 <TextField
                     fullWidth
                     size="small"
