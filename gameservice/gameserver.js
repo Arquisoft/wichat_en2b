@@ -4,6 +4,7 @@ const path = require('path');
 const questionRouter = require('./routers/RouterQuestionRetriever');
 const generateRouter = require('./routers/RouterQuestionFetcher');
 const gameRouter = require('./routers/RouterGameInfo');
+const statisticsRouter = require('./routers/RouterStatistics');
 
 const app = express();
 const port = 8004;
