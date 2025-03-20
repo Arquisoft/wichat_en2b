@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import AddUser from "./register/AddUser";
-import Login from "./login/Login";
-import QuestionGame from "./game/QuestionGame";
+import AddUser from "../components/register/AddUser";
+import Login from "../components/login/Login";
+import QuestionGame from "../components/game/QuestionGame";
 //import QuizMaster from "./home/QuizMaster"; // Página de inicio
 
 import CssBaseline from "@mui/material/CssBaseline";
