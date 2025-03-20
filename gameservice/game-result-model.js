@@ -8,6 +8,6 @@ const gameResultSchema = new mongoose.Schema({
     number_correct_answers: Number,
     total_time: Number
 })
-const Question = mongoose.model('Question', gameResultSchema);
+const GameInfo = mongoose.model('GameInfo', gameResultSchema);
 
-module.exports = Question
+module.exports = GameInfo
