@@ -56,10 +56,18 @@ export default function InGameChat(params) {
 
                 setMessages(prevMessages => [...prevMessages, llmMessage]);
             } else {
-                console.error("Invalid LLM response", data);
+                setIsThinking(false);
+                setMessages(prevMessages => [
+                    ...prevMessages,
+                    {
+                        id: Date.now().toString() + "_error",
+                        content: "Oh no! There has been an error processing your request.",
+                        isUser: false,
+                        type: "error",
+                    },
+                ]);
             }
         } catch (error) {
-            console.log(error);
             setIsThinking(false);
             setMessages(prevMessages => [
                 ...prevMessages,
