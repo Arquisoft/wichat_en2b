@@ -192,7 +192,7 @@ export default function QuestionGame(params) {
                                 key={option}
                                 className={`quiz-option 
                                 ${selectedOption === option ? "selected" : ""} 
-                                ${option === questions[currentQuestion].right_answer ? "correct-answer" : ""}`}
+                                ${selectedOption != null && option === questions[currentQuestion].right_answer ? "correct-answer" : ""}`}
                                 onClick={() => handleOptionSelect(option)}
                                 disabled={selectedOption !== null}>
                                 {option}
