@@ -311,3 +311,19 @@
 .answer-number {
   margin-bottom: 10px;
 }
+
+/* Highlight the correct answer */
+.quiz-option:disabled.selected {
+  background-color: #f8d7da; /* Light red background (MUI error alert style) */
+  color: #d32f2f; /* Dark red text */
+  border: 1px solid #d32f2f; /* Dark red border */
+  font-weight: bold;
+}
+
+/* Highlight the correct answer */
+.quiz-option:disabled.correct-answer {
+  background-color: #dff0d8; /* Light green background (MUI success alert style) */
+  color: #2e7d32; /* Darker green text (MUI success text color) */
+  border: 1px solid #2e7d32; /* Darker green border */
+  font-weight: bold;
+}

@@ -20,6 +20,7 @@
 /* Header Text */
 .headerText {
     color: #6C63FF;
+    align-self: center;
 }
 
 /* Chat Header Button */
@@ -91,7 +92,7 @@
     border-radius: 8px;
     padding: 6px 12px;
     transition: background 0.3s ease;
-    margin-top: 10px;
+    height: 40px;
 }
 
 .sendButton:hover {

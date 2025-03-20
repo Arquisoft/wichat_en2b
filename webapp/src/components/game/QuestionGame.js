@@ -190,12 +190,14 @@ export default function QuestionGame(params) {
                         {questions[currentQuestion].answers.map((option) => (
                             <button
                                 key={option}
-                                className={`quiz-option ${selectedOption === option ? "selected" : ""}`}
+                                className={`quiz-option 
+                                ${selectedOption === option ? "selected" : ""} 
+                                ${option === questions[currentQuestion].right_answer ? "correct-answer" : ""}`}
                                 onClick={() => handleOptionSelect(option)}
-                                disabled={selectedOption !== null} // Disable all options after one is selected
-                            >
+                                disabled={selectedOption !== null}>
                                 {option}
                             </button>
+
                         ))}
                     </div>
 
