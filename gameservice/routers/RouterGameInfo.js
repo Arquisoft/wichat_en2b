@@ -1,7 +1,6 @@
 const express = require('express')
 const jwt = require('jsonwebtoken');
 const GameInfo = require('../game-result-model')
-const {model} = require("mongoose");
 const router = express.Router()
 
 // Middleware to verify JWT token
