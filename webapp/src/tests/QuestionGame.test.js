@@ -96,4 +96,34 @@ describe('QuestionGame component', () => {
         expect(screen.getByText(/100% Correct/)).toBeInTheDocument();
         expect(screen.getByText(/2\/2/)).toBeInTheDocument();
     });
+
+    it('handles the timer running out', async () => {
+        jest.useFakeTimers(); // Enable fake timers
+        fetchMock.mockResponseOnce(JSON.stringify(mockQuestions));
+
+        render(<QuestionGame topic="test" totalQuestions={2} numberOptions={4} timerDuration={5} />);
+
+        // Wait for the first question to appear
+        await waitFor(() => screen.getByText(/Question 1 of/));
+
+        // Wait for the next question to appear, confirming the state has updated
+        await waitFor(() => screen.getByText(/Question 2 of/), {timeout: 8000, interval: 10});
+
+        jest.useRealTimers(); // Restore real timers after the test
+    });
+
+    it('restarts the game when "Play again" is clicked', async () => {
+        fetchMock.mockResponse(JSON.stringify(mockQuestions));
+        render(<QuestionGame topic="test" totalQuestions={2} numberOptions={4} timerDuration={30} />);
+
+        await waitFor(() => screen.getByText(/Question 1 of/));
+        fireEvent.click(screen.getByText('Option 1'));
+        act(() => jest.advanceTimersByTime(2050));
+        fireEvent.click(screen.getByText('B'));
+        act(() => jest.advanceTimersByTime(2050));
+        await waitFor(() => screen.getByText('Quiz Completed!'));
+
+        fireEvent.click(screen.getByText('Play again'));
+        await waitFor(() => screen.getByText(/Question 1 of/));
+    });
 });

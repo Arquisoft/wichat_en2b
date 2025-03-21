@@ -110,15 +110,16 @@ export default function QuestionGame(params) {
         timerIntervalRef.current = setInterval(() => {
             setTimeLeft((prevTime) => {
                 if (prevTime <= 0) {
-                    // If time is up and we're not already transitioning
-                    if (!isTransitioning.current) {
-                        // Clear the interval immediately to prevent multiple calls
-                        clearInterval(timerIntervalRef.current);
-                        timerIntervalRef.current = null;
+                    clearInterval(timerIntervalRef.current);
+                    timerIntervalRef.current = null;
 
-                        // Handle timeout
-                        handleOptionSelect("None");
-                    }
+                    // Ensure we transition to the next question
+                    setTimeout(() => {
+                        if (!isTransitioning.current) {
+                            handleOptionSelect("None");
+                        }
+                    }, 0);
+
                     return 0;
                 }
                 return prevTime - 0.01;
