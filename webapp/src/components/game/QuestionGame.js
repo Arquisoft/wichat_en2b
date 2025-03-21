@@ -1,149 +1,133 @@
-"use client";
-
 import React, { useEffect, useState } from "react";
 import "../../styles/QuestionGame.css";
 import { Alert, CircularProgress, LinearProgress, Box, Typography } from "@mui/material";
 import InGameChat from "@/components/game/InGameChat";
 
-const gatewayService = process.env.GATEWAY_SERVICE_URL || "http://localhost:8000"
+const gatewayService = process.env.GATEWAY_SERVICE_URL || "http://localhost:8000";
 
 export default function QuestionGame(params) {
-    const topic = params.topic;
-    const totalQuestions = params.totalQuestions;
-    const numberOptions = params.numberOptions;
-    const timerDuration = params.timerDuration; // Time per question in seconds (default to 30 if not passed)
-    const question = params.question;
+    const { topic, totalQuestions, numberOptions, timerDuration, question } = params;
 
     const [currentQuestion, setCurrentQuestion] = useState(0);
     const [questions, setQuestions] = useState([]);
     const [isWrong, setIsWrong] = useState(false);
     const [isRight, setIsRight] = useState(false);
     const [loading, setLoading] = useState(true);
-    const [selectedOption, setSelectedOption] = useState(null); // Track the selected option
-    const [timeLeft, setTimeLeft] = useState(timerDuration); // Time left for the current question
+    const [selectedOption, setSelectedOption] = useState(null);
+    const [timeLeft, setTimeLeft] = useState(timerDuration);
     const [answers, setAnswers] = useState([]);
 
-    // Use a ref to track if we're currently transitioning to the next question
     const isTransitioning = React.useRef(false);
-    // Use a ref to track the current timer interval
     const timerIntervalRef = React.useRef(null);
-
-    const handleOptionSelect = (option) => {
-        // If we're already transitioning to the next question, don't process again
-        if (isTransitioning.current) {
-            return;
-        }
-
-        // Mark that we're transitioning to prevent duplicate calls
-        isTransitioning.current = true;
-
-        // Clear any existing timer
-        if (timerIntervalRef.current) {
-            clearInterval(timerIntervalRef.current);
-            timerIntervalRef.current = null;
-        }
-
-        if (option === questions[currentQuestion].right_answer && option !== "None") {
-            setIsRight(true);
-        } else if (option !== "None") {
-            setIsWrong(true);
-        }
-
-        setSelectedOption(option); // Mark the selected option
-
-        setTimeout(() => {
-            if (currentQuestion < totalQuestions) {
-                setAnswers((prevAnswers) => [
-                    ...prevAnswers,
-                    {
-                        answer: option,
-                        right_answer: questions[currentQuestion].right_answer,
-                        isCorrect: option === questions[currentQuestion].right_answer,
-                        points: option === questions[currentQuestion].right_answer ? Math.ceil(10 * (300/timerDuration) * (timeLeft/timerDuration)) : 0,
-                    },
-                ]);
-                setCurrentQuestion(currentQuestion + 1);
-                setIsRight(false);
-                setIsWrong(false);
-                setSelectedOption(null);
-                setTimeLeft(timerDuration);
-
-                // Reset the transitioning flag after the state updates
-                setTimeout(() => {
-                    isTransitioning.current = false;
-                }, 0);
-            }
-        }, 2000);
-    };
 
     const fetchQuestions = async () => {
         try {
             const response = await fetch(`${gatewayService}/game/${topic}/${totalQuestions}/${numberOptions}`);
             const data = await response.json();
             setQuestions(data);
-            setAnswers([])
-            setCurrentQuestion(0);
-            setIsRight(false);
-            setIsWrong(false);
-            setSelectedOption(null);
-            setTimeLeft(timerDuration);
+            resetState();
             setLoading(false);
         } catch (err) {
             console.error("Error fetching questions:", err);
         }
     };
 
-    // Timer logic: countdown for each question
+    const resetState = () => {
+        setAnswers([]);
+        setCurrentQuestion(0);
+        setIsRight(false);
+        setIsWrong(false);
+        setSelectedOption(null);
+        setTimeLeft(timerDuration);
+    };
+
+    const handleTimerUpdate = (prevTime) => {
+        if (prevTime <= 0) {
+            stopTimerAndTransition();
+            return 0;
+        }
+        return prevTime - 0.01;
+    };
+
+    const stopTimerAndTransition = () => {
+        clearInterval(timerIntervalRef.current);
+        timerIntervalRef.current = null;
+
+        // Transition to the next question if not already transitioning
+        setTimeout(() => {
+            if (!isTransitioning.current) {
+                handleOptionSelect("None");
+            }
+        }, 0);
+    };
+
+    const handleOptionSelect = (option) => {
+        if (isTransitioning.current || selectedOption !== null) return;
+
+        isTransitioning.current = true;
+        clearInterval(timerIntervalRef.current);
+        timerIntervalRef.current = null;
+
+        const isCorrect = option === questions[currentQuestion].right_answer;
+        setIsRight(isCorrect);
+        setIsWrong(!isCorrect);
+
+        setSelectedOption(option);
+
+        setAnswers((prevAnswers) => [
+            ...prevAnswers,
+            {
+                answer: option,
+                right_answer: questions[currentQuestion].right_answer,
+                isCorrect,
+                points: calculatePoints(isCorrect),
+            },
+        ]);
+
+        setTimeout(() => {
+            transitionToNextQuestion();
+        }, 2000);
+    };
+
+    const calculatePoints = (isCorrect) => {
+        if (isCorrect) {
+            return Math.ceil(10 * (80 * numberOptions / timerDuration) * (timeLeft / timerDuration));
+        }
+        return 0;
+    };
+
+    const transitionToNextQuestion = () => {
+        if (currentQuestion < totalQuestions) {
+            setCurrentQuestion(currentQuestion + 1);
+            resetQuestionState();
+            isTransitioning.current = false;
+        }
+    };
+
+    const resetQuestionState = () => {
+        setIsRight(false);
+        setIsWrong(false);
+        setSelectedOption(null);
+        setTimeLeft(timerDuration);
+    };
+
     useEffect(() => {
-        // Clean up any existing timer
-        if (timerIntervalRef.current) {
-            clearInterval(timerIntervalRef.current);
-            timerIntervalRef.current = null;
-        }
+        if (loading || currentQuestion >= totalQuestions || isTransitioning.current || selectedOption !== null) return;
 
-        // Don't start a new timer if loading, at the end of questions, transitioning, or already selected
-        if (loading || currentQuestion >= totalQuestions || isTransitioning.current || selectedOption !== null) {
-            return;
-        }
-
-        // Set up a new timer
         timerIntervalRef.current = setInterval(() => {
-            setTimeLeft((prevTime) => {
-                if (prevTime <= 0) {
-                    clearInterval(timerIntervalRef.current);
-                    timerIntervalRef.current = null;
-
-                    // Ensure we transition to the next question
-                    setTimeout(() => {
-                        if (!isTransitioning.current) {
-                            handleOptionSelect("None");
-                        }
-                    }, 0);
-
-                    return 0;
-                }
-                return prevTime - 0.01;
-            });
+            setTimeLeft(handleTimerUpdate);
         }, 10);
 
-        // Cleanup function
         return () => {
-            if (timerIntervalRef.current) {
-                clearInterval(timerIntervalRef.current);
-                timerIntervalRef.current = null;
-            }
+            clearInterval(timerIntervalRef.current);
         };
     }, [currentQuestion, loading, selectedOption]);
 
     useEffect(() => {
-        fetchQuestions().then(() => {});
+        fetchQuestions();
 
-        // Cleanup on component unmount
         return () => {
-            if (timerIntervalRef.current) {
-                clearInterval(timerIntervalRef.current);
-                timerIntervalRef.current = null;
-            }
+            clearInterval(timerIntervalRef.current);
         };
     }, []);
 
@@ -193,12 +177,11 @@ export default function QuestionGame(params) {
                                 key={option}
                                 className={`quiz-option 
                                 ${selectedOption === option ? "selected" : ""} 
-                                ${selectedOption != null && option === questions[currentQuestion].right_answer ? "correct-answer" : ""}`}
+                                ${selectedOption !== null && option === questions[currentQuestion].right_answer ? "correct-answer" : ""}`}
                                 onClick={() => handleOptionSelect(option)}
                                 disabled={selectedOption !== null}>
                                 {option}
                             </button>
-
                         ))}
                     </div>
 
