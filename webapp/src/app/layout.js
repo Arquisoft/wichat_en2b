@@ -1,4 +1,4 @@
-'use client';
+'use client'; // This is needed
 
 import PropTypes from "prop-types"; 
 import { CssBaseline, ThemeProvider } from "@mui/material";
@@ -8,21 +8,27 @@ import createEmotionCache from "../theme/createEmotionCache";
 import "../styles/Fullscreen.css";
 import "../styles/globals.css"; 
 
+// Client-side cache, shared for the whole session of the user in the browser.
 const clientSideEmotionCache = createEmotionCache();
 
+/**
+ * RootLayout component that wraps the application with necessary providers.
+ * 
+ * @param {*} children - Contains the children components to be rendered.
+ * 
+ * @returns {JSX.Element} - The rendered layout of the application.
+ */
 export default function RootLayout({ children }) {
-  return (
-    <CacheProvider value={clientSideEmotionCache}>
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
-        <html lang="en">
-          <body>
-            {children}
-          </body>
-        </html>
-      </ThemeProvider>
-    </CacheProvider>
-  );
+	return (
+		<CacheProvider value={clientSideEmotionCache}>
+			<ThemeProvider theme={theme}>
+				<CssBaseline />
+				<html lang="en">
+					<body>{children}</body>
+				</html>
+			</ThemeProvider>
+		</CacheProvider>
+	);
 }
 
 RootLayout.propTypes = {
