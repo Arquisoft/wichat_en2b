@@ -6,6 +6,13 @@ import Link from "next/link";
 import "../../../styles/home/Navbar.css";
 import ProfileForm from "./ProfileForm";
 
+/**
+ * Navigation bar for the application.
+ *
+ * @param {string} username - The username of the player.
+ * 
+ * @returns {JSX.Element} The rendered Navbar component.
+ */
 const Navbar = ({ username }) => {
     console.log(username);
     

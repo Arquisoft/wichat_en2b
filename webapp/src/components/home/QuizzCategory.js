@@ -58,8 +58,6 @@ function CategoryComponent() {
     if(quizzes.length <= 0 || !category) {
       return (
           <Box className="no-quizzes-container">
-              <Box className="no-quizzes-icon">{category.icon}</Box>
-
               <Card sx={{ maxWidth: 500 }}>
                   <CardHeader title="No quizzes available for this category." />
 

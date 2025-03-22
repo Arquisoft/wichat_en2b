@@ -9,6 +9,8 @@ import { recentQuizzes, leaderboardData } from "./data";
 import "../../styles/home/HomePage.css";
 import Navbar from "./ui/Navbar";
 import "../../styles/Footer.css";
+import PropTypes from "prop-types";
+
 
 /**
  * Displays the home view of the application.
@@ -18,7 +20,7 @@ import "../../styles/Footer.css";
  * 
  * @returns {JSX.Element} The rendered component.
  */
-export default function HomePage({ username, stats }) {
+function HomePage({ username, stats }) {
     if (!username) {
         username = "QuizMaster";
     }
@@ -92,3 +94,11 @@ export default function HomePage({ username, stats }) {
         </Box>
     );
 }
+
+// Validation with PropTypes for the username prop
+HomePage.propTypes = {
+    username: PropTypes.string.isRequired,
+    stats: PropTypes.object.isRequired
+};
+
+export default HomePage;

@@ -17,16 +17,17 @@ describe("CategoryComponent", () => {
       push: jest.fn(),
       query: { id: "1" },
     };
+    
     useRouter.mockReturnValue(mockRouter);
   });
 
-  test("Muestra el mensaje de carga al inicio", async () => {
+  test("Shows loading message at start", async () => {
     render(<CategoryComponent />);
     expect(screen.getByText("Loading...")).toBeInTheDocument();
   });
 
-  test("Muestra 'No quizzes available for this category' si la categoría no existe", async () => {
-    mockRouter.query.id = "999"; // ID de categoría inexistente
+  test("Shows 'No quizzes available for this category' if the category does not exist", async () => {
+    mockRouter.query.id = "999"; // ID of non-existent category
     render(<CategoryComponent />);
 
     await waitFor(() => {
@@ -34,8 +35,8 @@ describe("CategoryComponent", () => {
     });
   });
 
-  test("Muestra 'No quizzes available for this category' si no hay cuestionarios para la categoría", async () => {
-    quizzesByCategory["1"] = []; // Sin cuestionarios
+  test("Shows 'No quizzes available for this category' if there are no quizzes for the category", async () => {
+    mockRouter.query.id = "7"; // ID of category with no quizzes
     render(<CategoryComponent />);
 
     await waitFor(() => {
@@ -43,10 +44,11 @@ describe("CategoryComponent", () => {
     });
   });
 
-  test("Muestra la lista de cuestionarios disponibles para una categoría válida", async () => {
+  test("Shows the list of available quizzes for a valid category", async () => {
     quizzesByCategory["1"] = [
       { id: 1, title: "Quiz 1", description: "Test Quiz", difficulty: "easy", timeEstimate: 60, questions: 10 },
     ];
+
     quizCategories.push({ id: 1, name: "Science", icon: "🔬", color: "blue" });
     
     render(<CategoryComponent />);
@@ -54,6 +56,21 @@ describe("CategoryComponent", () => {
     await waitFor(() => {
       expect(screen.getByText("Quiz 1")).toBeInTheDocument();
       expect(screen.getByText("Test Quiz")).toBeInTheDocument();
+    });
+  });
+
+  test("Shows the correct number of quizzes for a valid category", async () => {
+    quizzesByCategory["1"] = [
+      { id: 1, title: "Quiz 1", description: "Test Quiz", difficulty: "easy", timeEstimate: 60, questions: 10 },
+      { id: 2, title: "Quiz 2", description: "Another Test Quiz", difficulty: "medium", timeEstimate: 120, questions: 15 },
+    ];
+
+    render(<CategoryComponent />);
+    
+    await waitFor(() => {
+      expect(screen.getByText("Quiz 1")).toBeInTheDocument();
+      expect(screen.getByText("Quiz 2")).toBeInTheDocument();
+      expect(screen.getByText("Another Test Quiz")).toBeInTheDocument();
     });
   });
 });
