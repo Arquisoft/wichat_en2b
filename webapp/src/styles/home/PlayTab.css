@@ -1,0 +1,193 @@
+.categories-container {
+    padding-top: 16px;
+    padding-bottom: 16px;
+}
+
+.category-card {
+    transition: all 0.3s ease;
+    border-radius: 12px;
+    overflow: hidden;
+    height: 100%;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    animation: fadeIn 0.5s ease forwards;
+}
+
+.category-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 20px rgba(0, 0, 0, 0.1);
+}
+
+.category-header {
+    padding: 20px 24px;
+    position: relative;
+    overflow: hidden;
+}
+
+.category-header::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #ffffff33 0%, #ffffff00 50%);
+    pointer-events: none;
+}
+
+.category-title {
+    font-weight: 600;
+    font-size: 1.4rem;
+    letter-spacing: 0.5px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.category-icon {
+    font-size: 1.6rem;
+    margin-right: 8px;
+}
+
+.category-content {
+    padding: 20px 24px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.quiz-count {
+    color: #666;
+    margin-bottom: 20px;
+    font-size: 0.95rem;
+}
+
+.start-button {
+    margin-top: auto;
+    padding: 10px 0;
+    border-radius: 8px;
+    text-transform: none;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+}
+
+.start-button:hover {
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+/* Color-specific button styling */
+.button-science {
+    background-color: rgba(33, 150, 243, 0.1);
+    color: #2196f3;
+}
+.button-science:hover {
+    background-color: rgba(33, 150, 243, 0.2);
+}
+
+.button-history {
+    background-color: rgba(255, 152, 0, 0.1);
+    color: #ff9800;
+}
+
+.button-history:hover {
+    background-color: rgba(255, 152, 0, 0.2);
+}
+
+.button-geography {
+    background-color: rgba(76, 175, 80, 0.1);
+    color: #4caf50;
+}
+
+.button-geography:hover {
+    background-color: rgba(76, 175, 80, 0.2);
+}
+
+.button-entertainment {
+    background-color: rgba(156, 39, 176, 0.1);
+    color: #9c27b0;
+}
+
+.button-entertainment:hover {
+    background-color: rgba(156, 39, 176, 0.2);
+}
+
+.button-sports {
+    background-color: rgba(244, 67, 54, 0.1);
+    color: #f44336;
+}
+
+.button-sports:hover {
+    background-color: rgba(244, 67, 54, 0.2);
+}
+
+.button-technology {
+    background-color: rgba(63, 81, 181, 0.1);
+    color: #3f51b5;
+}
+
+.button-technology:hover {
+    background-color: rgba(63, 81, 181, 0.2);
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+    .category-card {
+        margin-bottom: 16px;
+    }
+
+    .category-title {
+        font-size: 1.2rem;
+    }
+
+    .category-header {
+        padding: 16px 20px;
+    }
+
+    .category-content {
+        padding: 16px 20px;
+    }
+}
+
+@media (min-width: 601px) and (max-width: 960px) {
+    .category-title {
+        font-size: 1.3rem;
+    }
+}
+
+/* Animation for cards */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+}
+}
+
+/* Staggered animation delay for cards */
+.categories-container > div:nth-child(1) .category-card {
+    animation-delay: 0.1s;
+}
+.categories-container > div:nth-child(2) .category-card {
+    animation-delay: 0.2s;
+}
+.categories-container > div:nth-child(3) .category-card {
+    animation-delay: 0.3s;
+}
+.categories-container > div:nth-child(4) .category-card {
+    animation-delay: 0.4s;
+}
+.categories-container > div:nth-child(5) .category-card {
+    animation-delay: 0.5s;
+}
+.categories-container > div:nth-child(6) .category-card {
+    animation-delay: 0.6s;
+}
+

@@ -1,0 +1,135 @@
+/* Main layout */
+.home-container {
+  background-color: #f5f5f5;
+  min-height: 100vh;
+  width: 100%;
+}
+  
+/* App bar styles */
+.app-bar {
+  background-color: #ffffff;
+  color: #333333;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+}
+
+.logo-avatar {
+  background: linear-gradient(to right, #9c27b0, #e91e63);
+  margin-right: 8px;
+  width: 32px;
+  height: 32px;
+  font-size: 14px;
+}
+
+.app-title {
+  font-weight: 600;
+  flex-grow: 0;
+}
+
+.spacer {
+  flex-grow: 1;
+}
+
+.user-section {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.profile-button {
+  margin-right: 8px;
+  text-transform: none;
+}
+
+/* Home container */
+.home-content {
+  padding-top: 16px; 
+  padding-bottom: 16px; 
+  max-width: 100% !important; 
+}
+
+/* Tabs */
+.tabs-container {
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); 
+  border-bottom: 1px solid #e0e0e0; 
+  background-color: #ffffff; 
+}
+
+.tab-content {
+  text-transform: none;
+}
+
+/* Progress card */
+.progress-card {
+  margin-bottom: 24px;
+  padding: 16px;
+}
+  
+.progress-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+  
+.progress-text {
+  color: #666666;
+  font-size: 14px;
+}
+
+.MuiTabs-root {
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); 
+  background-color: #ffffff;
+}
+
+.MuiTab-root {
+  text-transform: none;
+  font-weight: 600;
+  padding: 12px 16px;
+  color: #333333;
+  border-radius: 4px;
+}
+
+.Mui-selected {
+  background-color: #f1f1f1; 
+  color: #9c27b0; 
+}
+
+.MuiTab-root:not(.Mui-selected):hover {
+  background-color: #f5f5f5; 
+}
+
+.MuiTabs-flexContainer {
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+}
+  
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  .home-content {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  
+  .profile-button {
+    display: none;
+  }
+  
+  .profile-icon-button {
+    display: flex;
+  }
+}
+  
+@media (min-width: 601px) {
+  .profile-button {
+    display: flex;
+  }
+  
+  .profile-icon-button {
+    display: none;
+  }
+}
+  
