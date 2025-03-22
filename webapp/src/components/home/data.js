@@ -5,16 +5,15 @@ export const quizCategories = [
     { id: 4, name: "Entertainment", icon: "🎬", color: "#9c27b0", quizCount: 4 },
     { id: 5, name: "Sports", icon: "⚽", color: "#f44336", quizCount: 4 },
     { id: 6, name: "Technology", icon: "💻", color: "#3f51b5", quizCount: 4 },
+    { id: 7, name: "General Knowledge", icon: "❓", color: "#795548", quizCount: 4 },
 ];
 
 export const quizzesByCategory = {
     "1": [
-      /*
       { id: 1, title: "Science Basics", description: "Test your knowledge of basic science.", question: "What is the basic unit of life?", difficulty: "easy", timeEstimate: 60, questions: 10, options: 4, popularity: 8, wikidataCode: "Q336" },
       { id: 2, title: "Physics 101", description: "Test your knowledge of physics.", question: "What is Newton's First Law of Motion?", difficulty: "medium", timeEstimate: 40, questions: 10, options: 4, popularity: 6, wikidataCode: "Q413" },
       { id: 3, title: "Chemistry 101", description: "Test your knowledge of basic chemistry.", question: "What is the chemical symbol for gold?", difficulty: "hard", timeEstimate: 20, questions: 10, options: 4, popularity: 7, wikidataCode: "Q2329" },
       { id: 4, title: "Advanced Chemistry", description: "Get into advanced chemistry topics.", question: "What is Avogadro's number?", difficulty: "hell", timeEstimate: 10, questions: 10, options: 4, popularity: 9, wikidataCode: "Q173251" },
-      */ 
     ],
     "2": [
       { id: 1, title: "Ancient Civilizations", description: "Explore ancient Egypt, Greece, and Rome.", question: "Who was the first emperor of Rome?", difficulty: "easy", timeEstimate: 60, questions: 10, options: 4, popularity: 5, wikidataCode: "Q11772" },
@@ -46,6 +45,7 @@ export const quizzesByCategory = {
       { id: 3, title: "Gadgets and Devices", description: "Test your knowledge of the latest gadgets and devices.", question: "Which company created the first commercially successful personal computer?", difficulty: "hard", timeEstimate: 20, questions: 10, options: 4, popularity: 7, wikidataCode: "Q1243271" },
       { id: 4, title: "Future Tech", description: "Learn about future technologies.", question: "What technology is expected to revolutionize transportation in the future?", difficulty: "hell", timeEstimate: 10, questions: 10, options: 4, popularity: 9, wikidataCode: "Q11016" },
     ],
+    "7": [],
 };
 
 export const recentQuizzes = [

@@ -8,8 +8,17 @@
   overflow-y: auto; 
 }
 
+/* While loading */
 .loading-container {
   display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+/* If there are no quizzes or category*/
+.no-quizzes-container {
+  display: "flex";
   justify-content: center;
   align-items: center;
   height: 100vh;
@@ -32,8 +41,7 @@
 }
 
 .back-button {
-  color: white;
-  margin-bottom: 1rem;
+  margin-bottom: 16px; 
   text-transform: none;
 }
 
