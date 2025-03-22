@@ -1,191 +1,330 @@
-/* Main container styles */
-.quiz-container {
-  width: 100%;
-  height: 100vh; /* Full viewport height */
-  max-width: 100%;
-  margin: 0;
-  font-family: Arial, sans-serif;
+/* General container styling */
+.quiz-wrapper {
   display: flex;
   flex-direction: column;
-  overflow: hidden; /* Prevent scrolling */
+  align-items: center;
+  justify-content: center;
+  margin: auto;
+  background: #fdfdfd;
+  border-radius: 12px;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  padding: 40px;
+  font-family: 'Poppins', sans-serif;
+  position: relative;
+  width: 85%;
 }
 
-/* Blue border sections */
-.blue-border {
-  height: 8vh;
-  background-color: #4285f4;
+/* Decorative dividers */
+.divider {
   width: 100%;
-  flex-shrink: 0; /* Prevent shrinking */
+  height: 3px;
+  background: linear-gradient(90deg, #6C63FF, #FF6584);
+  margin: 20px 0;
+  border-radius: 2px;
+}
+
+/* Loading State */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  min-height: 300px;
+}
+
+.loading-spinner {
+  color: #007bff;
+  margin-bottom: 10px;
+}
+
+.loading-text {
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: #333;
+  text-align: center;
 }
 
 /* Content area */
-.content-area {
-  background-color: white;
-  padding: 20px;
-  border-left: 1px solid #e0e0e0;
-  border-right: 1px solid #e0e0e0;
-  flex-grow: 1; /* Take up all available space */
-  overflow-y: auto; /* Allow scrolling if content is too tall */
-  display: flex;
-  flex-direction: column;
+.content-box {
+  width: 100%;
+  text-align: center;
+  position: relative; /* This allows absolute positioning inside it */
 }
 
 /* Question counter */
-.question-counter {
-  color: #555;
+.progress-indicator {
   font-size: 14px;
-  margin-bottom: 16px;
+  color: #777;
+  margin-bottom: 12px;
+  font-weight: 500;
 }
 
 /* Question text */
-.question-text {
-  font-size: 18px;
-  font-weight: bold;
-  margin-bottom: 24px;
-}
-
-/* Flex container for image and options */
-.flex-container {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  flex-grow: 1; /* Take up available space */
+.question-title {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 25px;
+  color: #222;
 }
 
 /* Image container */
-.image-container {
-  width: 100%;
-  background-color: #f0f0f0;
+.image-box {
   display: flex;
   justify-content: center;
-  align-items: center;
-  padding: 10px;
-  min-height: 200px; /* Minimum height for the image container */
+  margin-bottom: 25px;
 }
 
-.question-image {
-  max-width: 100%;
-  max-height: 300px;
+.quiz-image {
+  height: 35vh;
+  border-radius: 10px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
 }
 
 /* Options container */
-.options-container {
-  display: flex;
-  flex-direction: column;
-  gap: 10%;
-  align-items: center;
-  justify-content: center;
+.options-box {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* Two equal columns */
+  gap: 12px;
+  width: 100%; /* Ensure full width */
+  justify-items: center; /* Center items within the grid */
 }
 
-/* Option styles */
-.option {
-  position: relative;
-  display: flex;
-  align-items: center;
-  width: 100%;
-  background: none;
-  border: none;
-  padding: 0;
-  text-align: left;
-  cursor: pointer;
+/* Robot button styling */
+.robot-button {
+  position: fixed;
+  right: 1%; /* Position it to the right edge of the options box */
+  bottom: 3%;
 }
 
-.option-letter {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background-color: #d0d0d0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: absolute;
-  left: 5px;
-  z-index: 1;
-  cursor: pointer;
-}
-
-.option-letter.selected {
-  background-color: #4285f4;
-  color: white;
-}
-
-.option-input {
-  width: 100%;
-  padding: 10px 10px 10px 40px;
-  border: 1px solid #d0d0d0;
-  border-radius: 4px;
-  font-size: 14px;
-  cursor: pointer;
-}
-
-/* Styling for correct answer when user failed */
-.option-input.correct-answer {
-  border: 2px solid #4CAF50;
-  background-color: rgba(76, 175, 80, 0.05); /* Lighter green */
-}
-
-.option-letter.correct-answer {
-  background-color: #81c784; /* Lighter green */
-  color: white;
-}
-
-/* Styling for wrong answer */
-.option-input.wrong {
-  border: 2px solid #f44336; /* Red border for wrong answer */
-  background-color: rgba(244, 67, 54, 0.1); /* Light red background */
-}
-
-.option-letter.correct {
-  background-color: #4CAF50; /* Green background */
-  color: white;
-}
-
-/* Button styles */
-.next-button {
-  width: 100%;
-  background-color: #4285f4;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  padding: 12px;
+/* Quiz options */
+.quiz-option {
+  width: 100%; /* Make each option take full width of its column */
+  padding: 14px;
   font-size: 16px;
-  font-weight: 500;
+  border: 2px solid #ddd;
+  border-radius: 10px;
+  background: #fff;
+  color: #333;
   cursor: pointer;
-  margin-top: 20px;
+  transition: all 0.25s ease-in-out;
+  font-weight: 500;
+  pointer-events: auto;
+  text-align: center;
 }
 
-.next-button:hover {
-  background-color: #3b78e7;
+.quiz-option:not(:disabled):hover {
+  background: #efefef;
+  transform: scale(1.03);
+  border-color: #6C63FF;
 }
 
-/* Cursor icon */
-.cursor-icon {
-  position: absolute;
-  right: 10px;
-  top: 50%;
-  transform: translateY(-50%);
+/* Alerts */
+.alert-box {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  width: fit-content;
+  max-width: 80%;
+  padding: 10px 20px;
+  margin: 10px auto;
+  border-radius: 8px;
+
+  /* New styles for fixed position */
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%); /* Center it horizontally */
+  z-index: 1000; /* Ensure it is on top of other elements */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Optional: Add a shadow to make it stand out */
 }
 
-/* Media query for desktop screens */
-@media (min-width: 768px) {
-  .flex-container {
-    flex-direction: row;
-  }
-  
-  .image-container {
-    width: 50%;
-  }
-  
-  .options-container {
-    width: 50%;
-  }
+
+/* Disable hover effect and change the background color of the selected option */
+.quiz-option:disabled {
+  background-color: #f0f0f0;
+  color: #aaa;
+  cursor: not-allowed;
+  border-color: #ddd;
 }
 
-/* Add these styles to make the app take full screen */
-html, body {
-  margin: 0;
-  padding: 0;
-  height: 100%;
+/* Style for the selected option */
+.quiz-option.selected {
+  background-color: #6C63FF; /* You can customize this color */
+  color: #fff;
+  border-color: #6C63FF;
+}
+
+.quiz-option.selected:hover {
+  background-color: #5a54e6; /* Darker shade for hover */
+  border-color: #5a54e6;
+}
+
+/* Timer container styling */
+.timer-container {
   width: 100%;
-  overflow: hidden;
+  margin-top: 20px;
+  text-align: center;
+}
+
+/* Timer text */
+.quiz-wrapper>.timer-container>.timer-text {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+/* Progress bar styling */
+.quiz-wrapper>.timer-container>.progress-bar {
+  width: 100%;
+  height: 15px; /* Increased height for thicker bar */
+  border-radius: 8px; /* Rounded corners */
+  background-color: #E0E0E0;
+  margin-bottom: 10px; /* Margin below the progress bar */
+}
+
+.progress-bar .MuiLinearProgress-bar {
+  background: linear-gradient(90deg, #6C63FF, #FF6584); /* Gradient color */
+}
+
+/* Results */
+.quiz-results-container {
+  background-color: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  max-width: 400px;
+  margin: 20px auto;
+  font-family: 'Poppins', sans-serif;
+  max-height: 80vh;
+  color: black;
+}
+
+.quiz-header {
+  font-size: 24px;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.score {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.score-fraction {
+  font-size: 48px;
+  font-weight: bold;
+  color: #6b48ff; /* Purple color for the fraction */
+}
+
+.score-percentage {
+  display: block;
+  font-size: 16px;
+  color: #888888;
+  margin-top: 5px;
+}
+
+.answers-header {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+
+.answers-list {
+  margin-bottom: 20px;
+  max-height: 300px; /* Adjust the height to fit your design */
+  overflow-y: auto;  /* Adds vertical scrolling */
+  padding-right: 10px; /* Optional: adds a small space for scroll */
+}
+
+.answer-item {
+  margin-bottom: 15px;
+}
+
+.result-box {
+  padding: 10px;
+  border-radius: 5px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+}
+
+.alert-success {
+  background-color: #e6f4ea;
+  border: 1px solid #34c759;
+  color: #2e7d32;
+}
+
+.alert-error {
+  background-color: #ffebee;
+  border: 1px solid #ef5350;
+  color: #d32f2f;
+}
+
+.alert-correct {
+  background-color: #e6f4ea;
+  border: 1px solid #34c759;
+  color: #2e7d32;
+  margin-top: 5px;
+}
+
+.buttons {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.back-button {
+  background: linear-gradient(90deg, #6b48ff, #ff4081); /* Gradient from purple to pink */
+  color: #ffffff;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.back-button:hover {
+  background: linear-gradient(90deg, #5a3de6, #e63977);
+}
+
+.play-again-button {
+  background: none;
+  border: 1px solid #6b48ff;
+  border-radius: 5px;
+  padding: 10px 20px;
+  font-size: 16px;
+  color: #6b48ff;
+  cursor: pointer;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.play-again-button:hover {
+  background: #6b48ff;
+  color: #ffffff;
+}
+
+.answer-number {
+  margin-bottom: 10px;
+}
+
+/* Highlight the correct answer */
+.quiz-option:disabled.selected {
+  background-color: #f8d7da; /* Light red background (MUI error alert style) */
+  color: #d32f2f; /* Dark red text */
+  border: 1px solid #d32f2f; /* Dark red border */
+  font-weight: bold;
+}
+
+/* Highlight the correct answer */
+.quiz-option:disabled.correct-answer {
+  background-color: #dff0d8; /* Light green background (MUI success alert style) */
+  color: #2e7d32; /* Darker green text (MUI success text color) */
+  border: 1px solid #2e7d32; /* Darker green border */
+  font-weight: bold;
 }
