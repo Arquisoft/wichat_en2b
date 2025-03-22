@@ -1,7 +1,7 @@
 import React from 'react';
-import { render, fireEvent, screen, waitFor } from '@testing-library/react';
+import { render, fireEvent, screen, waitFor, act } from '@testing-library/react';
 import fetchMock from 'jest-fetch-mock';
-import QuestionGame from '../components/game/QuestionGame';
+import QuestionGame from "@/components/game/QuestionGame";
 
 // Enable fetch mocking
 fetchMock.enableMocks();
@@ -9,111 +9,121 @@ fetchMock.enableMocks();
 describe('QuestionGame component', () => {
     beforeEach(() => {
         fetchMock.resetMocks();
-
-        // Silence console.error during tests to keep output clean
-        jest.spyOn(console, 'error').mockImplementation(() => {});
+        jest.useFakeTimers();
     });
 
     afterEach(() => {
-        console.error.mockRestore();
+        jest.useRealTimers();
     });
 
-    it('should fetch and display questions correctly', async () => {
-        const mockQuestions = [
-            {
-                id: 0,
-                questionText: "What is shown in the image?",
-                image_name: "/images/sample1.jpg",
-                answers: ["Option 1", "Option 2", "Option 3", "Option 4"],
-                right_answer: "Option 1"
-            }
-        ];
-
-        fetchMock.mockResponseOnce(JSON.stringify(mockQuestions));
-
-        render(<QuestionGame />);
-
-        await waitFor(() => {
-            expect(screen.getByText(/Question 1 of/)).toBeInTheDocument();
-            expect(screen.getByTestId('question-text')).toBeInTheDocument();
-        });
-
-        await waitFor(() => {
-            mockQuestions[0].answers.forEach(answer => {
-                const option = screen.getByDisplayValue(answer);
-                expect(option).toBeInTheDocument();
-            });
-        });
-    });
-
-    it('should handle error when fetching questions', async () => {
-        fetchMock.mockReject(new Error('An error occurred'));
-
-        render(<QuestionGame />);
-        
-        await waitFor(() => {
-            expect(screen.getByTestId('error-message')).toBeInTheDocument();
-        });
-    });
-
-    it('should handle option selection and next button click', async () => {
-        const mockQuestions = [
-            {
-                id: 0,
-                questionText: "What is shown in the image?",
-                image_name: "/images/sample1.jpg",
-                answers: ["Option 1", "Option 2", "Option 3", "Option 4"],
-                right_answer: "Option 1"
-            },
-            {
-                id: 1,
-                questionText: "What is shown in the image?",
-                image_name: "/images/sample2.jpg",
-                answers: ["Option A", "Option B", "Option C", "Option D"],
-                right_answer: "Option B"
-            },
-            {
-                id: 2,
-                questionText: "What is shown in the image?",
-                image_name: "/images/sample2.jpg",
-                answers: ["Option A", "Option B", "Option C", "Option D"],
-                right_answer: "Option B"
-            },
-            {
-                id: 3,
-                questionText: "What is shown in the image?",
-                image_name: "/images/sample2.jpg",
-                answers: ["Option A", "Option B", "Option C", "Option D"],
-                right_answer: "Option B"
-            }
-        ];
-
-        fetchMock.mockResponseOnce(JSON.stringify(mockQuestions));
-
-        render(<QuestionGame />);
-
-        await waitFor(() => {
-            expect(screen.getByText(/Question 1 of/)).toBeInTheDocument();
-        });
-
-        for (let i=0 ; i < 3 ; i++) {
-            const currentOptions = mockQuestions[i].answers;
-        
-            await waitFor(() => {
-                currentOptions.forEach(answer => {
-                    expect(screen.getByDisplayValue(answer)).toBeInTheDocument();
-                });
-            });
-
-            fireEvent.click(screen.getByDisplayValue(currentOptions[0]));
-            fireEvent.click(screen.getByTestId('next-button'));
-
-            // Wait for 1000ms timeout in handleNext
-            await new Promise(resolve => setTimeout(resolve, 1100));
+    const mockQuestions = [
+        {
+            image_name: '/images/sample1.jpg',
+            answers: ['Option 1', 'Option 2', 'Option 3', 'Option 4'],
+            right_answer: 'Option 1'
+        },
+        {
+            image_name: '/images/sample2.jpg',
+            answers: ['A', 'B', 'C', 'D'],
+            right_answer: 'B'
         }
+    ];
 
+    it('fetches and displays questions correctly', async () => {
+        fetchMock.mockResponseOnce(JSON.stringify(mockQuestions));
+        render(<QuestionGame topic="test" totalQuestions={2} numberOptions={4} timerDuration={30} />);
+
+        await waitFor(() => expect(screen.getByText(/Question 1 of/)).toBeInTheDocument());
+        expect(screen.getByRole('img')).toHaveAttribute('src', 'http://localhost:8000/images/sample1.jpg');
+    });
+
+    it("displays an error message when fetching questions fails", async () => {
+        // Mock console.error before calling the component
+        const consoleErrorMock = jest.spyOn(console, "error").mockImplementation(() => {});
+
+        // Mock the API call to reject
+        fetchMock.mockReject(new Error("Failed to fetch"));
+
+        render(<QuestionGame topic="test" totalQuestions={2} numberOptions={4} timerDuration={30} />);
+
+        // Ensure console.error was called
         await waitFor(() => {
-            expect(screen.getByRole('button', { name: /Finish/i })).toBeInTheDocument();
+            expect(consoleErrorMock).toHaveBeenCalled();
         });
+
+        // Clean up the mock
+        consoleErrorMock.mockRestore();
+    });
+
+    it('handles option selection and moves to the next question', async () => {
+        fetchMock.mockResponseOnce(JSON.stringify(mockQuestions));
+        render(<QuestionGame topic="test" totalQuestions={2} numberOptions={4} timerDuration={30} />);
+
+        await waitFor(() => screen.getByText(/Question 1 of/));
+
+        fireEvent.click(screen.getByText('Option 1'));
+        expect(screen.getByText('Great job! You got it right!')).toBeInTheDocument();
+
+        act(() => jest.advanceTimersByTime(2000));
+        await waitFor(() => screen.getByText(/Question 2 of/));
+    });
+
+    it('handles incorrect option selection', async () => {
+        fetchMock.mockResponseOnce(JSON.stringify(mockQuestions));
+        render(<QuestionGame topic="test" totalQuestions={2} numberOptions={4} timerDuration={30} />);
+
+        await waitFor(() => screen.getByText(/Question 1 of/));
+
+        fireEvent.click(screen.getByText('Option 2'));
+        expect(screen.getByText(/Oops! You didn't guess this one./)).toBeInTheDocument();
+    });
+
+    it('displays final results at the end of the game', async () => {
+        fetchMock.mockResponseOnce(JSON.stringify(mockQuestions));
+        render(<QuestionGame topic="test" totalQuestions={2} numberOptions={4} timerDuration={30} />);
+
+        await waitFor(() => screen.getByText(/Question 1 of/));
+        fireEvent.click(screen.getByText('Option 1'));
+        // A bit more than 2 seconds so that the next question is loaded before checking
+        act(() => jest.advanceTimersByTime(2050));
+
+        await waitFor(() => screen.getByText(/Question 2 of/));
+        fireEvent.click(screen.getByText('B'));
+        // A bit more than 2 seconds so that the next question is loaded before checking
+        act(() => jest.advanceTimersByTime(2050));
+
+        await waitFor(() => screen.getByText('Quiz Completed!'));
+        expect(screen.getByText(/100% Correct/)).toBeInTheDocument();
+        expect(screen.getByText(/2\/2/)).toBeInTheDocument();
+    });
+
+    it('handles the timer running out', async () => {
+        jest.useFakeTimers(); // Enable fake timers
+        fetchMock.mockResponseOnce(JSON.stringify(mockQuestions));
+
+        render(<QuestionGame topic="test" totalQuestions={2} numberOptions={4} timerDuration={5} />);
+
+        // Wait for the first question to appear
+        await waitFor(() => screen.getByText(/Question 1 of/));
+
+        // Wait for the next question to appear, confirming the state has updated
+        await waitFor(() => screen.getByText(/Question 2 of/), {timeout: 8000, interval: 10});
+
+        jest.useRealTimers(); // Restore real timers after the test
+    });
+
+    it('restarts the game when "Play again" is clicked', async () => {
+        fetchMock.mockResponse(JSON.stringify(mockQuestions));
+        render(<QuestionGame topic="test" totalQuestions={2} numberOptions={4} timerDuration={30} />);
+
+        await waitFor(() => screen.getByText(/Question 1 of/));
+        fireEvent.click(screen.getByText('Option 1'));
+        act(() => jest.advanceTimersByTime(2050));
+        fireEvent.click(screen.getByText('B'));
+        act(() => jest.advanceTimersByTime(2050));
+        await waitFor(() => screen.getByText('Quiz Completed!'));
+
+        fireEvent.click(screen.getByText('Play again'));
+        await waitFor(() => screen.getByText(/Question 1 of/));
     });
 });
