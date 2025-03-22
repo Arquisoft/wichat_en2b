@@ -224,7 +224,7 @@ describe('Gateway Service', () => {
   });
 
 // Test error handling
-  it('should handle game service errors for statistics endpoints', async () => {
+  it('should handle subject statistics service errors', async () => {
     global.fetch.mockImplementationOnce(() =>
         Promise.resolve({
           ok: false
@@ -232,12 +232,59 @@ describe('Gateway Service', () => {
     );
 
     const response = await request(app)
-        .get('/statistics/global')
+        .get('/statistics/subject/Math')
         .set('Authorization', 'Bearer mockToken');
 
     expect(response.statusCode).toBe(500);
     expect(response.body).toEqual({
-      error: 'Error retrieving global statistics'
+      error: 'Error retrieving subject statistics'
+    });
+  });
+
+  it('should handle subject statistics network errors', async () => {
+    global.fetch.mockImplementationOnce(() =>
+        Promise.reject(new Error('Network error'))
+    );
+
+    const response = await request(app)
+        .get('/statistics/subject/Math')
+        .set('Authorization', 'Bearer mockToken');
+
+    expect(response.statusCode).toBe(500);
+    expect(response.body).toEqual({
+      error: 'Error retrieving subject statistics'
+    });
+  });
+
+  it('should handle leaderboard service errors', async () => {
+    global.fetch.mockImplementationOnce(() =>
+        Promise.resolve({
+          ok: false
+        })
+    );
+
+    const response = await request(app)
+        .get('/leaderboard')
+        .set('Authorization', 'Bearer mockToken');
+
+    expect(response.statusCode).toBe(500);
+    expect(response.body).toEqual({
+      error: 'Error retrieving leaderboard'
+    });
+  });
+
+  it('should handle leaderboard network errors', async () => {
+    global.fetch.mockImplementationOnce(() =>
+        Promise.reject(new Error('Network error'))
+    );
+
+    const response = await request(app)
+        .get('/leaderboard')
+        .set('Authorization', 'Bearer mockToken');
+
+    expect(response.statusCode).toBe(500);
+    expect(response.body).toEqual({
+      error: 'Error retrieving leaderboard'
     });
   });
 });
