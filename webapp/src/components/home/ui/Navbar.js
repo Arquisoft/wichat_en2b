@@ -7,68 +7,63 @@ import "../../../styles/home/Navbar.css";
 import ProfileForm from "./ProfileForm";
 
 const Navbar = ({ username }) => {
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
+    const [isProfileOpen, setIsProfileOpen] = useState(false);
 
-  // Manejar clic en el logo
-  const handleLogoClick = () => {
-    window.location.reload(); // Recarga la página actual
-  };
+    const handleLogoClick = () => {
+      window.location.reload(); 
+    };
+    const handleProfileClick = () => {
+      setIsProfileOpen(true); 
+    };
+    const handleCloseProfile = () => {
+      setIsProfileOpen(false); 
+    };
+    const handleSaveProfile = (profileData) => {
+      setIsProfileOpen(false); // To be decided how this is managed
+    };
 
-  // Manejar clic en el perfil
-  const handleProfileClick = () => {
-    setIsProfileOpen(true); // Abrir ProfileForm
-  };
+    return (
+      <>
+        <AppBar position="sticky" className="app-bar">
+          <Toolbar className="toolbar">
+            <Box className="navbar-left" onClick={handleLogoClick}>
+              <Avatar className="logo-avatar">Wi</Avatar>
+              <Typography variant="h6" className="app-title">WiChat</Typography>              
+            </Box>
 
-  const handleCloseProfile = () => {
-    setIsProfileOpen(false); // Cerrar ProfileForm
-  };
+            <Box className="spacer" />
 
-  const handleSaveProfile = (profileData) => {
-    setIsProfileOpen(false); // Cerrar el formulario después de guardar
-  };
+            {/* Profile button */}
+            <Box className="user-section">        
+              <Button
+                variant="contained"
+                color="secondary"
+                startIcon={<PersonIcon />}
+                onClick={handleProfileClick}
+                className="navbar-profile-button"
+              >
+                Profile
+              </Button>
 
-  return (
-    <>
-      <AppBar position="sticky" className="app-bar">
-        <Toolbar className="toolbar">
-          <Box className="navbar-left" onClick={handleLogoClick}>
-            <Avatar className="logo-avatar">Wi</Avatar>
-            <Typography variant="h6" className="app-title">
-              WiChat
-            </Typography>
-          </Box>
+              {/* Logout button */}
+              <Link href="/login" passHref>
+                <IconButton>
+                  <LogoutIcon />
+                </IconButton>
+              </Link>
+            </Box>
+          </Toolbar>
+        </AppBar>
 
-          <Box className="spacer" />
-
-          <Box className="user-section">
-            <Button
-              variant="contained"
-              color="secondary"
-              startIcon={<PersonIcon />}
-              onClick={handleProfileClick}
-              className="navbar-profile-button"
-            >
-              Profile
-            </Button>
-
-            {/* Redirigir al login utilizando Link */}
-            <Link href="/login" passHref>
-              <IconButton>
-                <LogoutIcon />
-              </IconButton>
-            </Link>
-          </Box>
-        </Toolbar>
-      </AppBar>
-
-      {/* Dialog para el formulario de perfil */}
-      <Dialog open={isProfileOpen} onClose={handleCloseProfile} maxWidth="sm" fullWidth>
-        <ProfileForm onSave={handleSaveProfile} />
-      </Dialog>
-    </>
-  );
+        {/* Dialog for profile form */}
+        <Dialog open={isProfileOpen} onClose={handleCloseProfile} maxWidth="sm" fullWidth>
+          <ProfileForm username={username} onSave={handleSaveProfile} />
+        </Dialog>
+      </>
+    );
 };
 
+// Validation with PropTypes for the username prop
 Navbar.propTypes = {
   username: PropTypes.string.isRequired,
 };

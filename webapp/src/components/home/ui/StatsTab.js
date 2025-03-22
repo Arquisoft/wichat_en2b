@@ -3,10 +3,18 @@ import PropTypes from "prop-types";
 import { Card, CardHeader, CardContent, List, ListItem, ListItemText, Typography } from "@mui/material";
 import "../../../styles/home/StatsTab.css"; 
 
+/**
+ * Displays a list of recent quizzes.
+ *
+ * @param {Array} recentQuizzes - Array of recent quiz objects.
+ * 
+ * @returns {JSX.Element} Rendered StatsTab component.
+ */
 export default function StatsTab({ recentQuizzes }) {
   return (
     <Card>
       <CardHeader title="Recent Quizzes" />
+
       <CardContent>
         <List>
           {recentQuizzes.map((quiz) => (
@@ -17,10 +25,12 @@ export default function StatsTab({ recentQuizzes }) {
           ))}
         </List>
       </CardContent>
+
     </Card>
   );
 };
 
+// Prop types for StatsTab component
 StatsTab.propTypes = {
   recentQuizzes: PropTypes.arrayOf(
     PropTypes.shape({

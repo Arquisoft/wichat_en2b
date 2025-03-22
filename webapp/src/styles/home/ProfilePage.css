@@ -1,11 +1,9 @@
-/* Contenedor principal */
 .profile-container {
   padding: 1rem;
   max-width: 100%;
   margin: 0rem auto;
 }
 
-/* Header del perfil */
 .profile-header {
   display: flex;
   align-items: center;
@@ -13,14 +11,12 @@
   gap: 1rem;
 }
 
-/* Avatar del usuario */
 .profile-avatar {
   width: 90px;
   height: 90px;
   font-size: 40px;
 }
 
-/* Sección de formularios */
 .form-section {
   display: flex;
   flex-direction: column;
@@ -28,7 +24,6 @@
   margin-top: 1.5rem;
 }
 
-/* Botón de guardar */
 .save-button {
   display: flex;
   justify-content: center;
@@ -42,7 +37,7 @@
   padding: 0.7rem;
 }
 
-/* Estilos para la tarjeta 2FA */
+/* 2FA */
 .twofa-card {
   margin-top: 2rem;
   padding: 1.5rem;
@@ -50,7 +45,6 @@
   border-radius: 10px;
 }
 
-/* Opción de 2FA */
 .twofa-option {
   display: flex;
   align-items: center;
@@ -62,14 +56,12 @@
   box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.15);
 }
 
-/* Iconos de 2FA */
 .twofa-icon {
   font-size: 35px;
   color: #1976d2;
   margin-right: 15px;
 }
 
-/* Mejor diseño para los botones de 2FA */
 .twofa-option button {
   background-color: #1976d2;
   color: white;

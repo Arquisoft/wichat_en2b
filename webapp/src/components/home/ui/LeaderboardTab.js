@@ -3,13 +3,17 @@ import PropTypes from "prop-types";
 import { Card, CardHeader, CardContent, Typography } from "@mui/material";
 import "../../../styles/home/LeaderboardTab.css"; 
 
+/**
+ * Displays a leaderboard of players.
+ * 
+ * @param {Array} leaderboardData - The data for the leaderboard.
+ * @returns {JSX.Element} The rendered component.
+ */
 export default function LeaderboardTab({ leaderboardData }) {
   return (
     <Card className="card-root">
-      <CardHeader 
-        className="card-header" 
-        title="Leaderboard" 
-      />
+      <CardHeader className="card-header" title="Leaderboard" />
+      
       <CardContent className="card-content">
         {leaderboardData.map((player) => (
           <div key={player.rank} className="leaderboard-entry">

@@ -10,33 +10,50 @@ import "../../styles/home/HomePage.css";
 import Navbar from "./ui/Navbar";
 import "../../styles/Footer.css";
 
-export default function HomePage() {
-    const [username] = useState("QuizMaster");
+/**
+ * Displays the home view of the application.
+ * 
+ * @param {String} username         - The username of the player.
+ * @param {JSON} stats              - The statistics of the player.
+ * 
+ * @returns {JSX.Element} The rendered component.
+ */
+export default function HomePage(username, stats) {
+    if (username === undefined) {
+        username = "QuizMaster";
+    }
+
+    if (stats === undefined) {
+        stats = {
+            quizzes: 42,     // Ejemplo: número de quizzes
+            accuracy: 78,    // Ejemplo: porcentaje de precisión
+            rank: 12         // Ejemplo: rango del jugador
+        };
+    }
+
+    const [usernameState] = useState(username);
     const [tabValue, setTabValue] = useState(0);
     const [currentYear, setCurrentYear] = useState(null);
-
-    const [stats] = useState({
-        quizzes: 42,     // Ejemplo: número de quizzes
-        accuracy: 78,    // Ejemplo: porcentaje de precisión
-        rank: 12         // Ejemplo: rango del jugador
-    });
+    const [statsState] = useState(stats);
 
 
     useEffect(() => {
-        setCurrentYear(new Date().getFullYear()); 
-        return () => clearTimeout(10);
+        setCurrentYear(new Date().getFullYear()); // For footer
+        return () => clearTimeout(10); // Cleanup
     }, []);
 
-
-    const handleTabChange = (event, newValue) => setTabValue(newValue);
+    // Change tab value when clicked
+    const handleTabChange = (_, newValue) => setTabValue(newValue);
 
     return (
-        <Box sx={{ bgcolor: "#f5f5f5", minHeight: "100vh" }}>
+        <Box className="home-container">
+
+            {/* Navbar */}
             <div className="navbar-container">
-                <Navbar username={username} />
+                <Navbar username={usernameState} />
             </div>
 
-            <Container maxWidth="lg" sx={{ py: 4, maxWidth: "100% !important" }}>
+            <Container maxWidth="lg" className="home-content">
                     <Typography variant="h4" component="h1" align="center" gutterBottom>
                             WiChat
                     </Typography>
@@ -45,22 +62,18 @@ export default function HomePage() {
                         Connect, Learn, and Play with WiChat
                     </Typography>
 
-                    {/* Pasar las estadísticas al componente StatisticsCard */}
-                    <StatisticsCard stats={stats} />
+                    {/* Pass the stats to the stats component */}
+                    <StatisticsCard stats={statsState} />
 
                     <Tabs 
                         value={tabValue} 
                         onChange={handleTabChange}
                         variant="fullWidth" 
-                        sx={{
-                            boxShadow: 3, 
-                            borderBottom: "1px solid #e0e0e0", // Línea de separación
-                            bgcolor: "#ffffff", 
-                        }}
+                        className="tabs-container"
                     >
-                        <Tab icon={<BrainIcon />} label="Play" sx={{ textTransform: "none" }} />
-                        <Tab icon={<StatsIcon />} label="Stats" sx={{ textTransform: "none" }} />
-                        <Tab icon={<TrophyIcon />} label="Leaderboard" sx={{ textTransform: "none" }} />
+                        <Tab icon={<BrainIcon />} label="Play" className="tab-content" />
+                        <Tab icon={<StatsIcon />} label="Stats" className="tab-content" />
+                        <Tab icon={<TrophyIcon />} label="Leaderboard" className="tab-content" />
                     </Tabs>
 
                     {tabValue === 0 && <PlayTab />}

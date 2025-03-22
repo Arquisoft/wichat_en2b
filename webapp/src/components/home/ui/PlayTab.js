@@ -4,12 +4,20 @@ import { quizCategories } from "../data";
 import Link from "next/link";
 import "../../../styles/home/PlayTab.css";
 
+/**
+ * Displays quiz categories for the user to select.
+ * 
+ * @returns {JSX.Element} The rendered component.
+ */
 function PlayTab() {
   return (
     <Grid container spacing={3} className="categories-container">
+
       {quizCategories.map((category) => (
         <Grid item key={category.id} xs={12} sm={6} md={4}>
           <Card className="category-card">
+
+            {/* Category header */}
             <CardHeader
               title={
                 <>
@@ -17,11 +25,15 @@ function PlayTab() {
                   {category.name}
                 </>
               }
+
               className="category-header"
-              sx={{ bgcolor: category.color, color: "white" }}
             />
+              
+            {/* Category content */}
             <CardContent className="category-content">
               <Typography className="quiz-count">{category.quizCount} quizzes available</Typography>
+
+              {/* Enter category button */}
               <Link href={`/quiz/category/${category.id}`} passHref>
                 <Button
                   variant="text"
