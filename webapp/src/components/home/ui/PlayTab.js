@@ -14,7 +14,7 @@ function PlayTab() {
   	return (
 		<Grid container spacing={3} className="categories-container">
 			{quizCategories.map((category) => (
-				<Grid item key={category.id} size={{ xs: 12, sm: 6, md: 4 }}>
+				<Grid key={category.id} size={{ xs: 12, sm: 6, md: 4 }}>
 					<Card className="category-card">
 						{/* Category header */}
 						<CardHeader
