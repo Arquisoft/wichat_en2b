@@ -1,24 +1,9 @@
 const express = require('express')
 const jwt = require('jsonwebtoken');
 const GameInfo = require('../game-result-model')
-const router = express.Router()
-
 // Middleware to verify JWT token
-const verifyToken = (req, res, next) => {
-    const token = req.headers.authorization?.split(' ')[1];
-
-    if (!token) {
-        return res.status(401).json({ error: 'Access token is required' });
-    }
-
-    try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'testing-secret');
-        req.user = decoded;
-        next();
-    } catch (error) {
-        return res.status(401).json({ error: 'Invalid token' });
-    }
-};
+const verifyToken = require('./middleware/auth');
+const router = express.Router()
 
 function validateGameInfo(body) {
     if (body.subject === null || typeof(body.subject) === 'undefined') {
