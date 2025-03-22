@@ -27,6 +27,10 @@ import {
  * @returns {JSX.Element} 
  */
 export default function ProfileForm({ username, onSave }) {
+    if (!username || typeof onSave !== "function") {
+        throw new Error("Invalid props for ProfileForm component.");
+    }
+
     const [editing, setEditing] = useState(false);
     const [tabIndex, setTabIndex] = useState(0);
     const [openSnackbar, setOpenSnackbar] = useState(false);
@@ -58,14 +62,18 @@ export default function ProfileForm({ username, onSave }) {
         <CardContent>
           {/* Username */}
           <Box className="profile-header">
-            <Avatar className="profile-avatar">{profileData.username.charAt(0)}</Avatar>
-            <Typography variant="h6">{profileData.username}</Typography>
+            <Avatar className="profile-avatar">
+                {typeof username === "string" && username.length > 0 ? username.charAt(0) : "?"}
+            </Avatar>
+            <Typography variant="h6">
+                {typeof username === "string" ? username : "Unknown User"}
+            </Typography>
           </Box>
 
           {/* Tabs */}
           <Tabs value={tabIndex} onChange={(e, newValue) => setTabIndex(newValue)} centered>
-            <Tab label="Cuenta" icon={<Person />} />
-            <Tab label="Seguridad" icon={<Lock />} />
+            <Tab label="Account" icon={<Person />} />
+            <Tab label="Security" icon={<Lock />} />
             <Tab label="2FA" icon={<Security />} />
           </Tabs>
 
@@ -81,13 +89,13 @@ export default function ProfileForm({ username, onSave }) {
           {/* Security tab */}
           {tabIndex === 1 && (
             <Box className="form-section">
-              <TextField fullWidth label="Contraseña actual" 
+              <TextField fullWidth label="Actual password" 
                     name="currentPassword" type="password" 
                     value={profileData.currentPassword} onChange={handleChange} disabled={!editing} />
-              <TextField fullWidth label="Nueva contraseña" 
+              <TextField fullWidth label="New password" 
                     name="newPassword" type="password" value={profileData.newPassword} 
                     onChange={handleChange} disabled={!editing} />
-              <TextField fullWidth label="Confirmar nueva contraseña" 
+              <TextField fullWidth label="Confirm new password" 
                     name="confirmPassword" type="password" value={profileData.confirmPassword} 
                     onChange={handleChange} disabled={!editing} />
             </Box>
@@ -96,31 +104,22 @@ export default function ProfileForm({ username, onSave }) {
           {/* Authentication tab */}
           {tabIndex === 2 && (
             <Card className="twofa-card">
-              <CardHeader title="Autenticación en dos pasos" />
+              <CardHeader title="2-step authentication" />
+
               <CardContent>
-                <Typography variant="body1">Agrega una capa extra de seguridad a tu cuenta.</Typography>
+                <Typography variant="body1">Add an extra layer of security.</Typography>
 
                 {/* App authentication */}
                 <Box className="twofa-option">
                   <VerifiedUser className="twofa-icon" />
-                  <Box>
-                    <Typography variant="subtitle1">Auth app</Typography>
-                    <Typography variant="body2" color="text.secondary">
-                        Use Google Authenticator.
-                    </Typography>
-                  </Box>
+                  <Typography variant="subtitle1" className="twofa-option-text">Application</Typography>              
                   <Button variant="contained" color="primary">Configure</Button>
                 </Box>
 
                 {/* SMS authentication */}
                 <Box className="twofa-option">
                   <Smartphone className="twofa-icon" />
-                  <Box>
-                    <Typography variant="subtitle1">Text message</Typography>
-                    <Typography variant="body2" color="text.secondary">
-                        Receive an SMS code in your phone.
-                    </Typography>
-                  </Box>
+                  <Typography variant="subtitle1" className="twofa-option-text">Text message</Typography>
                   <Button variant="contained" color="primary">Configure</Button>
                 </Box>
               </CardContent>

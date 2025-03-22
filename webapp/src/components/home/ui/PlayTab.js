@@ -27,6 +27,7 @@ function PlayTab() {
               }
 
               className="category-header"
+              sx={{ bgcolor: category.color }}
             />
               
             {/* Category content */}
@@ -44,6 +45,7 @@ function PlayTab() {
                 </Button>
               </Link>
             </CardContent>
+
           </Card>
         </Grid>
       ))}

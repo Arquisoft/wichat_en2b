@@ -3,15 +3,20 @@ import { useRouter } from "next/router";
 import { ArrowLeft, Clock } from "lucide-react";
 import { quizzesByCategory, quizCategories } from "./data"; 
 import Link from "next/link";
+import QuestionGame from "../game/QuestionGame"; 
+
 import "../../styles/home/Categories.css";
 import "@/app/layout";
 
 import { 
-  Button, Container, Box, Typography, Grid, Card, CardContent, CardHeader, Badge 
+    Button, Container, Box, Typography, Grid, Card, CardContent, CardHeader, Badge 
 } from "@mui/material";
 
-import QuestionGame from "../game/QuestionGame"; 
-
+/**
+ * Renders the quiz categories and handles quiz selection.
+ * 
+ * @returns {JSX.Element} The rendered component.
+ */
 function CategoryComponent() {
     const [quizzes, setQuizzes] = useState([]);
     const [category, setCategory] = useState(null);
@@ -28,17 +33,18 @@ function CategoryComponent() {
       setLoading(true);
 
       const timer = setTimeout(() => {
-          // Asignar la categoría usando quizCategories
           const selectedCategory = quizCategories.find(category => category.id === parseInt(id));
           setCategory(selectedCategory || null);
 
-          // Obtener todos los cuestionarios de la categoría seleccionada
+          // Get all quizzes for the selected category
           const selectedQuizzes = quizzesByCategory[id] || [];
           setQuizzes(selectedQuizzes);
+
+          // Set loading to false after 200ms
           setLoading(false);
       }, 200);
 
-      return () => clearTimeout(timer);
+      return () => clearTimeout(timer); // Clear the timeout
     }, [id, difficulty]); 
 
     if (loading) {
@@ -83,6 +89,7 @@ function CategoryComponent() {
         timerDuration: quiz.timeEstimate,
         question: quiz.question,  
       });
+
       setShowQuiz(true);  
     };
 

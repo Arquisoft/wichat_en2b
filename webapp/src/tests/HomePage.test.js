@@ -38,37 +38,37 @@ describe("HomePage Component", () => {
     test("renders the HomePage component correctly", () => {
         render(<HomePage />);
         
-        // Verifica si la barra de navegación se renderiza
+        // Verify that the Navbar and StatisticsCard components are rendered
         expect(screen.getByTestId("navbar")).toBeInTheDocument();
 
-        // Verifica si el título WiChat aparece
+        // Verify that the title WiChat appears
         expect(screen.getByText("WiChat", { selector: 'h1' })).toBeInTheDocument();
 
-        // Verifica si la descripción aparece
+        // Verify that the description appears
         expect(screen.getByText("Connect, Learn, and Play with WiChat")).toBeInTheDocument();
 
-        // Verifica si el StatisticsCard se renderiza
+        // Verify that the StatisticsCard is rendered
         expect(screen.getByTestId("statistics-card")).toBeInTheDocument();
 
-        // Verifica si la pestaña Play está activa al inicio
+        // Verify that the Play tab is active at the start
         expect(screen.getByTestId("play-tab")).toBeInTheDocument();
     });
 
     test("changes tabs when clicked", () => {
         render(<HomePage />);
 
-        // Asegurarse de que la pestaña inicial es "Play"
+        // Verify that the initial tab is "Play"
         expect(screen.getByTestId("play-tab")).toBeInTheDocument();
         expect(screen.queryByTestId("stats-tab")).not.toBeInTheDocument();
         expect(screen.queryByTestId("leaderboard-tab")).not.toBeInTheDocument();
 
-        // Cambiar a la pestaña "Stats"
+        // Change to the "Stats" tab
         fireEvent.click(screen.getByText("Stats"));
         expect(screen.getByTestId("stats-tab")).toBeInTheDocument();
         expect(screen.queryByTestId("play-tab")).not.toBeInTheDocument();
         expect(screen.queryByTestId("leaderboard-tab")).not.toBeInTheDocument();
 
-        // Cambiar a la pestaña "Leaderboard"
+        // Change to the "Leaderboard" tab
         fireEvent.click(screen.getByText("Leaderboard"));
         expect(screen.getByTestId("leaderboard-tab")).toBeInTheDocument();
         expect(screen.queryByTestId("play-tab")).not.toBeInTheDocument();
@@ -78,30 +78,80 @@ describe("HomePage Component", () => {
     test("renders the footer with the current year", () => {
         render(<HomePage />);
         
+        // Verify that the footer is rendered
         const currentYear = new Date().getFullYear();
         expect(screen.getByText(`© ${currentYear} WiChat. All rights reserved.`)).toBeInTheDocument();
     });
 
     test("does not render the HomePage components if data is missing", () => {
-        // Mockear el caso en que no se encuentre la categoría o datos
-        jest.spyOn(global, "setTimeout").mockImplementationOnce((cb) => cb()); // evitar retrasos en el uso de setTimeout
-    
+        // Mock the setTimeout function to execute the callback immediately
+        jest.spyOn(global, "setTimeout").mockImplementationOnce((cb) => cb()); 
+        
         render(<HomePage />);
     
-        // Asegurarse de que no se rendericen componentes si faltan datos
+        // Verify that the Navbar and StatisticsCard components are rendered
         expect(screen.queryByTestId("navbar")).toBeInTheDocument();
         expect(screen.getByText("WiChat", { selector: 'h1' })).toBeInTheDocument();
         expect(screen.queryByText("Connect, Learn, and Play with WiChat")).toBeInTheDocument();
         expect(screen.queryByTestId("statistics-card")).toBeInTheDocument();
     
-        // Verificar si no hay otras pestañas visibles en un estado erróneo
+        // Verify that no other tabs are visible in an erroneous state
         expect(screen.queryByTestId("stats-tab")).not.toBeInTheDocument();
         expect(screen.queryByTestId("leaderboard-tab")).not.toBeInTheDocument();
     });
 
-    test("logs out correctly", () => {
+    test("navbar renders correctly", () => {
+        jest.spyOn(global, "setTimeout").mockImplementationOnce((cb) => cb()); 
+        
         render(<HomePage />);
 
+        expect(screen.getByText("WiChat")).toBeInTheDocument();
+        expect(screen.getByText("Profile")).toBeInTheDocument();
+        expect(screen.getByRole("link")).toBeInTheDocument(); // Logout link
+    });
+
+    test("navbar opens profile dialog when profile button is clicked", () => {
+        jest.spyOn(global, "setTimeout").mockImplementationOnce((cb) => cb()); 
         
+        render(<HomePage />);
+
+        // Profile dialog should be closed initially
+        expect(screen.getByText("Account")).not.toBeInTheDocument();
+
+        // Click profile button
+        fireEvent.click(screen.getByText("Profile"));
+
+        // Dialog should be open
+        expect(screen.getByText("Account")).toBeInTheDocument();
+    });
+
+    test("navbar closes profile dialog when close button is clicked", () => {
+        jest.spyOn(global, "setTimeout").mockImplementationOnce((cb) => cb()); 
+        
+        render(<HomePage />);
+
+        // Open dialog
+        fireEvent.click(screen.getByText("Profile"));
+        expect(screen.getByText("Account")).toBeInTheDocument();
+
+        // Close dialog
+        fireEvent.click(screen.getByLabelText("close"));
+
+        // Profile dialog should be closed
+        expect(screen.queryByText("Account")).not.toBeInTheDocument();
+    });
+
+    test("redirects to login page when logout button is clicked", () => {
+        const pushMock = jest.fn();
+        useRouter.mockReturnValue({ push: pushMock });
+
+        render(<HomePage />);
+
+        // Click logout button
+        const logoutLink = screen.getByRole("link");
+        fireEvent.click(logoutLink);
+        
+        // Verify that the push function was called with the correct path
+        expect(pushMock).toHaveBeenCalledWith("/login");
     });
 });

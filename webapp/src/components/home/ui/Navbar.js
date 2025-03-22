@@ -7,6 +7,12 @@ import "../../../styles/home/Navbar.css";
 import ProfileForm from "./ProfileForm";
 
 const Navbar = ({ username }) => {
+    console.log(username);
+    
+    if (!username) {
+      throw new Error("Invalid props for Navbar component.");
+    }
+    
     const [isProfileOpen, setIsProfileOpen] = useState(false);
 
     const handleLogoClick = () => {

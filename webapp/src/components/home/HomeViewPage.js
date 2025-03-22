@@ -18,12 +18,12 @@ import "../../styles/Footer.css";
  * 
  * @returns {JSX.Element} The rendered component.
  */
-export default function HomePage(username, stats) {
-    if (username === undefined) {
+export default function HomePage({ username, stats }) {
+    if (!username) {
         username = "QuizMaster";
     }
 
-    if (stats === undefined) {
+    if (!stats) {
         stats = {
             quizzes: 42,     // Ejemplo: número de quizzes
             accuracy: 78,    // Ejemplo: porcentaje de precisión
@@ -31,11 +31,8 @@ export default function HomePage(username, stats) {
         };
     }
 
-    const [usernameState] = useState(username);
     const [tabValue, setTabValue] = useState(0);
     const [currentYear, setCurrentYear] = useState(null);
-    const [statsState] = useState(stats);
-
 
     useEffect(() => {
         setCurrentYear(new Date().getFullYear()); // For footer
@@ -50,7 +47,7 @@ export default function HomePage(username, stats) {
 
             {/* Navbar */}
             <div className="navbar-container">
-                <Navbar username={usernameState} />
+                <Navbar username={username} />
             </div>
 
             <Container maxWidth="lg" className="home-content">
@@ -63,7 +60,7 @@ export default function HomePage(username, stats) {
                     </Typography>
 
                     {/* Pass the stats to the stats component */}
-                    <StatisticsCard stats={statsState} />
+                    <StatisticsCard stats={stats} />
 
                     <Tabs 
                         value={tabValue} 
