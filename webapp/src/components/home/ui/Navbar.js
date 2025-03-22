@@ -60,7 +60,7 @@ const Navbar = ({ username }) => {
 
               {/* Logout button */}
               <Link href="/login" passHref>
-                <IconButton>
+                <IconButton aria-label="logout">
                   <LogoutIcon />
                 </IconButton>
               </Link>
