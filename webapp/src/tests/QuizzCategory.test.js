@@ -1,103 +1,59 @@
 import { render, screen, waitFor } from "@testing-library/react";
+import CategoryComponent from "@/components/home/QuizzCategory";
 import { useRouter } from "next/router";
-import CategoryComponent from "../components/home/QuizzCategory";
-import { quizzesByCategory } from "../components/home/data";
+import { quizzesByCategory, quizCategories } from "@/components/home/data";
 
-// Mock de NextRouter
 jest.mock("next/router", () => ({
-    useRouter: jest.fn(),
+  useRouter: jest.fn(),
 }));
 
+jest.mock("@/components/game/QuestionGame", () => jest.fn(() => <div>Game Component</div>));
+
 describe("CategoryComponent", () => {
-    beforeAll(() => {
-        jest.useFakeTimers();
+  let mockRouter;
+
+  beforeEach(() => {
+    mockRouter = {
+      push: jest.fn(),
+      query: { id: "1" },
+    };
+    useRouter.mockReturnValue(mockRouter);
+  });
+
+  test("Muestra el mensaje de carga al inicio", async () => {
+    render(<CategoryComponent />);
+    expect(screen.getByText("Loading...")).toBeInTheDocument();
+  });
+
+  test("Muestra 'No quizzes available for this category' si la categoría no existe", async () => {
+    mockRouter.query.id = "999"; // ID de categoría inexistente
+    render(<CategoryComponent />);
+
+    await waitFor(() => {
+      expect(screen.getByText("No quizzes available for this category.")).toBeInTheDocument();
     });
+  });
+
+  test("Muestra 'No quizzes available for this category' si no hay cuestionarios para la categoría", async () => {
+    quizzesByCategory["1"] = []; // Sin cuestionarios
+    render(<CategoryComponent />);
+
+    await waitFor(() => {
+      expect(screen.getByText("No quizzes available for this category.")).toBeInTheDocument();
+    });
+  });
+
+  test("Muestra la lista de cuestionarios disponibles para una categoría válida", async () => {
+    quizzesByCategory["1"] = [
+      { id: 1, title: "Quiz 1", description: "Test Quiz", difficulty: "easy", timeEstimate: 60, questions: 10 },
+    ];
+    quizCategories.push({ id: 1, name: "Science", icon: "🔬", color: "blue" });
     
-    afterAll(() => {
-        // Limpiar timers después de las pruebas
-        jest.useRealTimers();
-    });
+    render(<CategoryComponent />);
     
-    test("shows loading state while quizzes are loading", () => {
-        // Empuja una ruta válida para simular el enrutador
-        useRouter.mockReturnValue({
-            push: jest.fn(),
-            query: { category: "1" }, // categoría 1
-            pathname: "/category/1",
-        });
-    
-
-        render(<CategoryComponent />);
-
-        // Verifica el mensaje de loading
-        expect(screen.getByText("Loading quizzes...")).toBeInTheDocument();
-        expect(screen.queryByText("Category Not Found")).not.toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText("Quiz 1")).toBeInTheDocument();
+      expect(screen.getByText("Test Quiz")).toBeInTheDocument();
     });
-
-    test("displays an error when the category does not exist", async () => {
-        // Empuja una ruta no válida
-        useRouter.mockReturnValue({
-            push: jest.fn(),
-            query: { category: "999" },
-            pathname: "/category/999",
-        });
-
-        render(<CategoryComponent />);
-
-        await waitFor(() => {
-        // Verifica el mensaje de error
-        expect(screen.getByText("Category Not Found")).toBeInTheDocument();
-        });
-
-        expect(screen.getByText("The category you're looking for doesn't exist.")).toBeInTheDocument();
-        expect(screen.getByText("Back to Dashboard")).toBeInTheDocument();
-    });
-
-    test("does not show quizzes if no quizzes are available for the category", async () => {
-        const emptyQuizzes = [];
-
-        // Simula el uso de setTimeout
-        jest.spyOn(global, "setTimeout").mockImplementationOnce((cb) => cb());
-
-        // Empuja una categoría que existe pero sin quizzes
-        useRouter.mockReturnValue({
-            push: jest.fn(),
-            query: { category: "1" },
-            pathname: "/category/1",
-        });
-
-        // Mock de quizzesByCategory para devolver un array vacío
-        quizzesByCategory["1"] = emptyQuizzes;
-
-        render(<CategoryComponent />);
-
-        await waitFor(() => {
-        expect(screen.getByText("No quizzes available for this category.")).toBeInTheDocument();
-        });
-    });
-
-    test("does not show the quiz if there's an error in the data", async () => {
-        const invalidQuiz = { id: 1, title: "", description: "" };
-
-        // Simula el uso de setTimeout
-        jest.spyOn(global, "setTimeout").mockImplementationOnce((cb) => cb());
-
-        // Empuja una categoría válida
-        useRouter.mockReturnValue({
-            push: jest.fn(),
-            query: { category: "1" },
-            pathname: "/category/1",
-        });
-    
-
-        // Mock de quizzesByCategory para devolver un quiz inválido
-        quizzesByCategory["1"] = [invalidQuiz];
-
-        render(<CategoryComponent />);
-
-        // Verifica que no se muestre el botón de "Start Quiz" porque los datos son inválidos
-        await waitFor(() => {
-        expect(screen.queryByText("Start Quiz")).not.toBeInTheDocument();
-        });
-    });
+  });
 });

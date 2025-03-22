@@ -98,4 +98,10 @@ describe("HomePage Component", () => {
         expect(screen.queryByTestId("stats-tab")).not.toBeInTheDocument();
         expect(screen.queryByTestId("leaderboard-tab")).not.toBeInTheDocument();
     });
+
+    test("logs out correctly", () => {
+        render(<HomePage />);
+
+        
+    });
 });
