@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import AddUser from "../components/register/AddUser";
 import Login from "../components/login/Login";
-import QuestionGame from "../components/game/QuestionGame";
+import QuestionGame from "@/components/game/QuestionGame";
 import HomePage from "../components/home/HomeViewPage";
 import CssBaseline from "@mui/material/CssBaseline";
 import Box from "@mui/material/Box";
@@ -16,7 +16,7 @@ export default function Page() {
 	const views = {
 		login: <Login />,
 		adduser: <AddUser />,
-		questionGame: <QuestionGame />,
+		questionGame: <QuestionGame topic={'Q515'} totalQuestions={'10'} numberOptions={'4'} timerDuration={'20'} question={'What city is shown in the image?'} />,
 		home: <HomePage />,
 	};
 
@@ -38,4 +38,3 @@ export default function Page() {
 			</Box>
 		</>
 	);
-}

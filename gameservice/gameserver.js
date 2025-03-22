@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const path = require('path');
 const questionRouter = require('./routers/RouterQuestionRetriever');
 const generateRouter = require('./routers/RouterQuestionFetcher');
+const gameRouter = require('./routers/RouterGameInfo');
 
 const app = express();
 const port = 8004;
@@ -19,6 +20,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Routers
 app.use(questionRouter); 
 app.use(generateRouter); 
+app.use(gameRouter);
 
 app.listen(port, () => {
     console.log(`🚀 Server running on: http://localhost:${port}`);

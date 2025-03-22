@@ -60,11 +60,11 @@ app.post('/askllm', async (req, res) => {
   }
 });
 
-app.get('/game/:totalQuestions/:numberOptions', async (req, res) => {
-  const { totalQuestions, numberOptions } = req.params;
+app.get('/game/:subject/:totalQuestions/:numberOptions', async (req, res) => {
+  const { subject, totalQuestions, numberOptions } = req.params;
 
   try {
-    const response = await fetch(`${gameServiceUrl}/game/${totalQuestions}/${numberOptions}`, {
+    const response = await fetch(`${gameServiceUrl}/game/${subject}/${totalQuestions}/${numberOptions}`, {
       headers: {
         'Origin': 'http://localhost:8000'
       }});
