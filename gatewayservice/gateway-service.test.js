@@ -112,4 +112,132 @@ describe('Gateway Service', () => {
       error: 'Hubo un problema al obtener las preguntas'
     });
   });
+
+  // Test /game/statistics/subject/:subject endpoint
+  it('should forward subject statistics request to game service', async () => {
+    const mockStats = {
+      stats: {
+        totalGames: 10,
+        avgScore: 85,
+        totalScore: 850,
+        totalCorrectAnswers: 42,
+        totalQuestions: 50,
+        avgTime: 25,
+        successRatio: 0.84
+      }
+    };
+
+    global.fetch.mockImplementationOnce(() =>
+        Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve(mockStats)
+        })
+    );
+
+    const response = await request(app)
+        .get('/statistics/subject/Math')
+        .set('Authorization', 'Bearer mockToken');
+
+    expect(response.statusCode).toBe(200);
+    expect(response.body).toEqual(mockStats);
+    expect(fetch).toHaveBeenCalledWith(
+        'http://localhost:8004/statistics/subject/Math',
+        expect.objectContaining({
+          headers: expect.objectContaining({
+            'Authorization': 'Bearer mockToken',
+            'Origin': 'http://localhost:8000'
+          })
+        })
+    );
+  });
+
+// Test /game/statistics/global endpoint
+  it('should forward global statistics request to game service', async () => {
+    const mockGlobalStats = {
+      stats: {
+        totalGames: 20,
+        avgScore: 75,
+        totalScore: 1500,
+        totalCorrectAnswers: 80,
+        totalQuestions: 100,
+        avgTime: 30,
+        successRatio: 0.8
+      }
+    };
+
+    global.fetch.mockImplementationOnce(() =>
+        Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve(mockGlobalStats)
+        })
+    );
+
+    const response = await request(app)
+        .get('/statistics/global')
+        .set('Authorization', 'Bearer mockToken');
+
+    expect(response.statusCode).toBe(200);
+    expect(response.body).toEqual(mockGlobalStats);
+    expect(fetch).toHaveBeenCalledWith(
+        'http://localhost:8004/statistics/global',
+        expect.objectContaining({
+          headers: expect.objectContaining({
+            'Authorization': 'Bearer mockToken',
+            'Origin': 'http://localhost:8000'
+          })
+        })
+    );
+  });
+
+// Test /game/leaderboard endpoint
+  it('should forward leaderboard request to game service', async () => {
+    const mockLeaderboard = {
+      leaderboard: [
+        { username: 'user1', score: 100 },
+        { username: 'user2', score: 90 },
+        { username: 'user3', score: 80 }
+      ]
+    };
+
+    global.fetch.mockImplementationOnce(() =>
+        Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve(mockLeaderboard)
+        })
+    );
+
+    const response = await request(app)
+        .get('/leaderboard')
+        .set('Authorization', 'Bearer mockToken');
+
+    expect(response.statusCode).toBe(200);
+    expect(response.body).toEqual(mockLeaderboard);
+    expect(fetch).toHaveBeenCalledWith(
+        'http://localhost:8004/leaderboard',
+        expect.objectContaining({
+          headers: expect.objectContaining({
+            'Authorization': 'Bearer mockToken',
+            'Origin': 'http://localhost:8000'
+          })
+        })
+    );
+  });
+
+// Test error handling
+  it('should handle game service errors for statistics endpoints', async () => {
+    global.fetch.mockImplementationOnce(() =>
+        Promise.resolve({
+          ok: false
+        })
+    );
+
+    const response = await request(app)
+        .get('/statistics/global')
+        .set('Authorization', 'Bearer mockToken');
+
+    expect(response.statusCode).toBe(500);
+    expect(response.body).toEqual({
+      error: 'Error retrieving global statistics'
+    });
+  });
 });

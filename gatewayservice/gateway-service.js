@@ -81,7 +81,7 @@ app.get('/game/:subject/:totalQuestions/:numberOptions', async (req, res) => {
   }
 });
 
-app.get('/game/statistics/subject/:subject', async (req, res) => {
+app.get('/statistics/subject/:subject', async (req, res) => {
   try {
     const { subject } = req.params;
     const response = await fetch(`${gameServiceUrl}/statistics/subject/${subject}`, {
@@ -103,7 +103,7 @@ app.get('/game/statistics/subject/:subject', async (req, res) => {
   }
 });
 
-app.get('/game/statistics/global', async (req, res) => {
+app.get('/statistics/global', async (req, res) => {
   try {
     const response = await fetch(`${gameServiceUrl}/statistics/global`, {
       headers: {
@@ -124,7 +124,7 @@ app.get('/game/statistics/global', async (req, res) => {
   }
 });
 
-app.get('/game/leaderboard', async (req, res) => {
+app.get('/leaderboard', async (req, res) => {
   try {
     const response = await fetch(`${gameServiceUrl}/leaderboard`, {
       headers: {
