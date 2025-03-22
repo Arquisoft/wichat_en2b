@@ -143,4 +143,40 @@ describe('Statistics Router', function() {
 
         });
     });
+
+    describe('Authentication', function() {
+        it('should reject requests without valid token', async function() {
+            const invalidToken = 'invalid.token.here';
+            const endpoints = [
+                '/statistics/subject/math',
+                '/statistics/global',
+                '/leaderboard'
+            ];
+
+            for (const endpoint of endpoints) {
+                const response = await request(app)
+                    .get(endpoint)
+                    .set('Authorization', `Bearer ${invalidToken}`);
+
+                expect(response.status).toBe(401);
+                expect(response.body.error).toBe('Invalid token');
+            }
+        });
+
+        it('should reject requests without token', async function() {
+            const endpoints = [
+                '/statistics/subject/math',
+                '/statistics/global',
+                '/leaderboard'
+            ];
+
+            for (const endpoint of endpoints) {
+                const response = await request(app)
+                    .get(endpoint);
+
+                expect(response.status).toBe(401);
+                expect(response.body.error).toBe('Access token is required');
+            }
+        });
+    });
 });
