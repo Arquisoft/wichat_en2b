@@ -1,92 +1,50 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AddUser from "../components/register/AddUser";
 import Login from "../components/login/Login";
 import QuestionGame from "../components/game/QuestionGame";
-//import QuizMaster from "./home/QuizMaster"; // Página de inicio
 
 import CssBaseline from "@mui/material/CssBaseline";
-import Container from "@mui/material/Container";
-import Typography from "@mui/material/Typography";
-import Link from "@mui/material/Link";
+import Box from "@mui/material/Box";
+import "../styles/globals.css";
 
 export default function Page() {
-  const [currentView, setCurrentView] = useState("home");
+  const [currentView, setCurrentView] = useState(null); // Inicializar como null
 
-  const handleToggleView = (view) => {
-    setCurrentView(view); // Cambia entre vistas según el valor de 'view'
+  const views = {
+    login: <Login />,
+    adduser: <AddUser />,
+    questionGame: <QuestionGame />
   };
 
-  const renderView = () => {
-    switch (currentView) {
-      case "login":
-        return <Login />;
-      case "adduser":
-        return <AddUser />;
-      case "questionGame":
-        return <QuestionGame />;
-      case "home":
-        return <Login />; // TODO: update to render home
-      default:
-        return <Login />;
-    }
-  };
+  useEffect(() => {
+    // Aseguramos que `currentView` tenga un valor después de la renderización en el cliente
+    setCurrentView("adduser");
+  }, []); // Se ejecuta solo después de la carga inicial en el cliente
+
+  if (currentView === null) {
+    // Mientras se espera el estado inicial
+    return null;
+  }
 
   return (
     <>
       <CssBaseline />
-
-      <Container component="main" maxWidth="xs">
-        <Typography component="h1" variant="h5" align="center" sx={{ marginTop: 2 }}>
-          Welcome to the 2025 edition of the Software Architecture course
-        </Typography>
-
-        {renderView()}
-
-        <Typography component="div" align="center" sx={{ marginTop: 2 }}>
-          {currentView === "login" ? (
-            <div>
-              <Link
-                name="gotoregister"
-                component="button"
-                variant="body2"
-                onClick={() => handleToggleView("register")}
-              >
-                Don't have an account? Register here.
-              </Link>
-              <br />
-              <Link
-                component="button"
-                variant="body2"
-                onClick={() => handleToggleView("quiz")}
-                sx={{ marginTop: 1 }}
-              >
-                Go to Quiz
-              </Link>
-            </div>
-          ) : (
-            <div>
-              <Link
-                component="button"
-                variant="body2"
-                onClick={() => handleToggleView("login")}
-              >
-                Already have an account? Login here.
-              </Link>
-              <br />
-              <Link
-                component="button"
-                variant="body2"
-                onClick={() => handleToggleView("quiz")}
-                sx={{ marginTop: 1 }}
-              >
-                Go to Quiz
-              </Link>
-            </div>
-          )}
-        </Typography>
-      </Container>
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          width: "100vw",
+          height: "100vh",
+          paddingBottom: "80px",
+          boxSizing: "border-box",
+        }}
+      >
+        <Box sx={{ flex: 1, overflow: "auto" }}>
+          {views[currentView] || <Login />}
+        </Box>
+      </Box>
     </>
   );
 }
