@@ -6,10 +6,8 @@ import Link from "next/link";
 import QuestionGame from "../game/QuestionGame"; 
 import "../../styles/home/Categories.css";
 import "@/app/layout";
-
-import { 
-    Button, Container, Box, Typography, Grid, Card, CardContent, CardHeader, Badge 
-} from "@mui/material";
+import { Button, Container, Box, Typography, Card, CardContent, CardHeader, Badge } from "@mui/material";
+import Grid from '@mui/material/Grid2';
 
 /**
  * Renders the quiz categories and handles quiz selection.
@@ -138,10 +136,10 @@ function CategoryComponent() {
         <Box className="main-content">
           <Container maxWidth="lg">
 
-            <Grid container spacing={4}>
+            <Grid container spacing={4}> 
               {/* Render all quizzes for the selected category */}
               {quizzes.map((quiz) => (
-                <Grid item xs={12} sm={6} md={4} key={quiz.id}>
+                <Grid size={{ xs: 12, sm: 6, md: 4 }} key={quiz.id}>
 
                   <Card className="quiz-card">
                     {/* Quiz Card Header */}

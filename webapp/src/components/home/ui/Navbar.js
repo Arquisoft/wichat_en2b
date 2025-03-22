@@ -14,71 +14,69 @@ import ProfileForm from "./ProfileForm";
  * @returns {JSX.Element} The rendered Navbar component.
  */
 const Navbar = ({ username }) => {
-    console.log(username);
-    
-    if (!username) {
-      throw new Error("Invalid props for Navbar component.");
-    }
-    
-    const [isProfileOpen, setIsProfileOpen] = useState(false);
+	if (!username) {
+		throw new Error("Invalid props for Navbar component.");
+	}
+	
+	const [isProfileOpen, setIsProfileOpen] = useState(false);
 
-    const handleLogoClick = () => {
-      window.location.reload(); 
-    };
-    const handleProfileClick = () => {
-      setIsProfileOpen(true); 
-    };
-    const handleCloseProfile = () => {
-      setIsProfileOpen(false); 
-    };
-    const handleSaveProfile = (profileData) => {
-      setIsProfileOpen(false); // To be decided how this is managed
-    };
+	const handleLogoClick = () => {
+		window.location.reload(); 
+	};
+	const handleProfileClick = () => {
+		setIsProfileOpen(true); 
+	};
+	const handleCloseProfile = () => {
+		setIsProfileOpen(false); 
+	};
+	const handleSaveProfile = (profileData) => {
+		setIsProfileOpen(false); // To be decided how this is managed
+	};
 
-    return (
-      <>
-        <AppBar position="sticky" className="app-bar">
-          <Toolbar className="toolbar">
-            <Box className="navbar-left" onClick={handleLogoClick}>
-              <Avatar className="logo-avatar">Wi</Avatar>
-              <Typography variant="h6" className="app-title">WiChat</Typography>              
-            </Box>
+	return (
+		<>
+			<AppBar position="sticky" className="app-bar">
+				<Toolbar className="toolbar">
+					<Box className="navbar-left" onClick={handleLogoClick}>
+						<Avatar className="logo-avatar">Wi</Avatar>
+						<Typography variant="h6" className="app-title">WiChat</Typography>              
+					</Box>
 
-            <Box className="spacer" />
+					<Box className="spacer" />
 
-            {/* Profile button */}
-            <Box className="user-section">        
-              <Button
-                variant="contained"
-                color="secondary"
-                startIcon={<PersonIcon />}
-                onClick={handleProfileClick}
-                className="navbar-profile-button"
-              >
-                Profile
-              </Button>
+					{/* Profile button */}
+					<Box className="user-section">        
+						<Button
+							variant="contained"
+							color="secondary"
+							startIcon={<PersonIcon />}
+							onClick={handleProfileClick}
+							className="navbar-profile-button"
+						>
+							Profile
+						</Button>
 
-              {/* Logout button */}
-              <Link href="/login" passHref>
-                <IconButton aria-label="logout">
-                  <LogoutIcon />
-                </IconButton>
-              </Link>
-            </Box>
-          </Toolbar>
-        </AppBar>
+						{/* Logout button */}
+						<Link href="/login" passHref>
+							<IconButton aria-label="logout">
+								<LogoutIcon />
+							</IconButton>
+						</Link>
+					</Box>
+				</Toolbar>
+			</AppBar>
 
-        {/* Dialog for profile form */}
-        <Dialog open={isProfileOpen} onClose={handleCloseProfile} maxWidth="sm" fullWidth>
-          <ProfileForm username={username} onSave={handleSaveProfile} />
-        </Dialog>
-      </>
-    );
+			{/* Dialog for profile form */}
+			<Dialog open={isProfileOpen} onClose={handleCloseProfile} maxWidth="sm" fullWidth>
+				<ProfileForm username={username} onSave={handleSaveProfile} />
+			</Dialog>
+		</>
+	);
 };
 
 // Validation with PropTypes for the username prop
 Navbar.propTypes = {
-  username: PropTypes.string.isRequired,
+	username: PropTypes.string.isRequired,
 };
 
 export default Navbar;

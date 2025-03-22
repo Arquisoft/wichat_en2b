@@ -1,5 +1,6 @@
 import PropTypes from "prop-types";
-import { Card, CardContent, Grid, Typography, Paper } from "@mui/material";
+import { Card, CardContent, Typography, Paper } from "@mui/material";
+import Grid from '@mui/material/Grid2';
 import "../../../styles/home/StatisticsCard.css";
 
 /**
@@ -10,42 +11,41 @@ import "../../../styles/home/StatisticsCard.css";
  * @returns {JSX.Element} - Rendered StatisticsCard component.
  */
 const StatisticsCard = ({ stats }) => {
-  return (
-    <Card className="stats-card">
-      <CardContent className="stats-content">
-        <Grid container spacing={3}>
+	return (
+		<Card className="stats-card">
+			<CardContent className="stats-content">
+				<Grid container spacing={3}>
+					{/* Quizzes */}
+					<Grid size={{ xs: 12 }}>
+						<Grid container spacing={2} className="stats-container">
+							<Grid size={{ xs: 12, sm: 4 }}>
+								<Paper className="stat-card stat-quizzes">
+								<Typography className="stat-value">{stats.quizzes}</Typography>
+								<Typography className="stat-label">Quizzes</Typography>
+								</Paper>
+							</Grid>
 
-          {/* Quizzes */}
-          <Grid item xs={12}>
-            <Grid container spacing={2} className="stats-container">
-              <Grid item xs={12} sm={4}>
-                <Paper className="stat-card stat-quizzes">
-                  <Typography className="stat-value">{stats.quizzes}</Typography>
-                  <Typography className="stat-label">Quizzes</Typography>
-                </Paper>
-              </Grid>
+							{/* Accuracy (in %) */}
+							<Grid size={{ xs: 12, sm: 4 }}>
+								<Paper className="stat-card stat-accuracy">
+								<Typography className="stat-value">{stats.accuracy}%</Typography>
+								<Typography className="stat-label">Accuracy</Typography>
+								</Paper>
+							</Grid>
 
-              {/* Accuracy (in %) */}
-              <Grid item xs={12} sm={4}>
-                <Paper className="stat-card stat-accuracy">
-                  <Typography className="stat-value">{stats.accuracy}%</Typography>
-                  <Typography className="stat-label">Accuracy</Typography>
-                </Paper>
-              </Grid>
-
-              {/* Ranking */}
-              <Grid item xs={12} sm={4}>
-                <Paper className="stat-card stat-rank">
-                  <Typography className="stat-value">#{stats.rank}</Typography>
-                  <Typography className="stat-label">Rank</Typography>
-                </Paper>
-              </Grid>
-            </Grid>
-          </Grid>
-        </Grid>
-      </CardContent>
-    </Card>
-  );
+							{/* Rank */}
+							<Grid size={{ xs: 12, sm: 4 }}>
+								<Paper className="stat-card stat-rank">
+								<Typography className="stat-value">#{stats.rank}</Typography>
+								<Typography className="stat-label">Rank</Typography>
+								</Paper>
+							</Grid>
+						</Grid>
+					</Grid>
+				</Grid>
+			</CardContent>
+		</Card>
+	);
 };
 
 // Add PropTypes validation

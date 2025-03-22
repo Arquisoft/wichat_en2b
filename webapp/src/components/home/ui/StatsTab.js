@@ -11,34 +11,46 @@ import "../../../styles/home/StatsTab.css";
  * @returns {JSX.Element} Rendered StatsTab component.
  */
 export default function StatsTab({ recentQuizzes }) {
-  return (
-    <Card>
-      <CardHeader title="Recent Quizzes" />
+	if (recentQuizzes.length <= 0) {
+		return (
+		<Card>
+			<CardHeader title="Recent Quizzes" />
+			<CardContent>
+				<Typography variant="body1" align="center">
+					No recent quizzes available.
+				</Typography>
+			</CardContent>
+		</Card>
+		);
+	}
+	
+	return (
+		<Card>
+			<CardHeader title="Recent Quizzes" />
 
-      <CardContent>
-        <List>
-          {recentQuizzes.map((quiz) => (
-            <ListItem key={quiz.id}>
-              <ListItemText primary={quiz.title} secondary={quiz.date} />
-              <Typography>{quiz.score}/{quiz.total}</Typography>
-            </ListItem>
-          ))}
-        </List>
-      </CardContent>
-
-    </Card>
-  );
+			<CardContent>
+				<List>
+					{recentQuizzes.map((quiz) => (
+						<ListItem key={quiz.id}>
+							<ListItemText primary={quiz.title} secondary={quiz.date} />
+							<Typography>{quiz.score}/{quiz.total}</Typography>
+						</ListItem>
+					))}
+				</List>
+			</CardContent>
+		</Card>
+	);
 };
 
 // Prop types for StatsTab component
 StatsTab.propTypes = {
   recentQuizzes: PropTypes.arrayOf(
     PropTypes.shape({
-      id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-      title: PropTypes.string.isRequired,
-      date: PropTypes.string.isRequired,
-      score: PropTypes.number.isRequired,
-      total: PropTypes.number.isRequired,
+		id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+		title: PropTypes.string.isRequired,
+		date: PropTypes.string.isRequired,
+		score: PropTypes.number.isRequired,
+		total: PropTypes.number.isRequired,
     })
   ).isRequired,
 };
