@@ -81,6 +81,70 @@ app.get('/game/:subject/:totalQuestions/:numberOptions', async (req, res) => {
   }
 });
 
+app.get('/game/statistics/subject/:subject', async (req, res) => {
+  try {
+    const { subject } = req.params;
+    const response = await fetch(`${gameServiceUrl}/statistics/subject/${subject}`, {
+      headers: {
+        'Authorization': req.headers.authorization, // this is the JWT token
+        'Origin': 'http://localhost:8000'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error('Error fetching subject statistics');
+    }
+
+    const data = await response.json();
+    return res.status(200).json(data);
+  } catch (err) {
+    console.error('Error getting subject statistics:', err);
+    return res.status(500).json({ error: 'Error retrieving subject statistics' });
+  }
+});
+
+app.get('/game/statistics/global', async (req, res) => {
+  try {
+    const response = await fetch(`${gameServiceUrl}/statistics/global`, {
+      headers: {
+        'Authorization': req.headers.authorization,
+        'Origin': 'http://localhost:8000'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error('Error fetching global statistics');
+    }
+
+    const data = await response.json();
+    return res.status(200).json(data);
+  } catch (err) {
+    console.error('Error getting global statistics:', err);
+    return res.status(500).json({ error: 'Error retrieving global statistics' });
+  }
+});
+
+app.get('/game/leaderboard', async (req, res) => {
+  try {
+    const response = await fetch(`${gameServiceUrl}/leaderboard`, {
+      headers: {
+        'Authorization': req.headers.authorization,
+        'Origin': 'http://localhost:8000'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error('Error fetching leaderboard');
+    }
+
+    const data = await response.json();
+    return res.status(200).json(data);
+  } catch (err) {
+    console.error('Error getting leaderboard:', err);
+    return res.status(500).json({ error: 'Error retrieving leaderboard' });
+  }
+});
+
 
 // Proxy for images requests
 app.get('/images/:image', createProxyMiddleware({
