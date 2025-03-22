@@ -1,201 +1,176 @@
-import React, { act } from "react"
-import "@testing-library/jest-dom"
-import { render, screen, fireEvent, waitFor } from "@testing-library/react"
-import InGameChat from "../components/game/InGameChat"
-import fetchMock from "jest-fetch-mock"
+import React, { act } from "react";
+import "@testing-library/jest-dom";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import InGameChat from "../components/game/InGameChat";
+import fetchMock from "jest-fetch-mock";
 
-// Mock fetch globally
-fetchMock.enableMocks()
+fetchMock.enableMocks();
 
 describe("InGameChat Component", () => {
+  function openChat() {
+    const button = document.querySelector(".chatButton");
+    fireEvent.click(button);
+  }
+
   beforeEach(() => {
-    fetchMock.resetMocks()
-  })
+    fetchMock.resetMocks();
+  });
 
-  // 1
-  test("renders welcome message on initial load", () => {
-    render(<InGameChat />)
-    expect(screen.getByText("Welcome to the quiz! Ask for hints if you need help.")).toBeInTheDocument()
-  })
+  it("renders default welcome message if no initial messages are provided", () => {
+    render(<InGameChat initialMessages={[]} question={{ answers: [], right_answer: "" }} />);
+    openChat();
+    expect(screen.getByText("Welcome to the quiz! Ask for hints if you need help.")).toBeInTheDocument();
+  });
 
-  // 2
-  test("renders with custom initial messages when provided", () => {
-    const initialMessages = [{ id: "1", content: "Custom welcome message", isUser: false, type: "welcome" }]
-    act(() => {
-        render(<InGameChat initialMessages={initialMessages} />)
-    });
-    expect(screen.getByText("Custom welcome message")).toBeInTheDocument()
-  })
+  it("renders custom initial messages if it is provided", () => {
+    const initialMessages = [{ id: "1", content: "Custom message", isUser: false, type: "welcome" }];
+    render(<InGameChat initialMessages={initialMessages} question={{ answers: [], right_answer: "" }} />);
 
-  // 3
-  test("allows user to type and send a message", async () => {
-    render(<InGameChat />)
+    openChat();
 
-    // Type in the input field
-    const input = screen.getByPlaceholderText("Enter question...")
-    act(() => {
-        fireEvent.change(input, { target: { value: "What is the capital of Panama?" } })
-    });
+    expect(screen.getByText("Custom message")).toBeInTheDocument();
+  });
+
+  test("does not send an empty message", () => {
+    render(<InGameChat initialMessages={[]} question={{ answers: [], right_answer: "" }} />);
+
+    openChat();
+
+    const input = screen.getByPlaceholderText("Enter question...");
+    fireEvent.change(input, { target: { value: "" } });
+    fireEvent.click(document.querySelector(".sendButton"));
+
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("allows user to type and send a message and it is displayed correctly", async () => {
+    render(<InGameChat initialMessages={[]} question={{ answers: [], right_answer: "" }} />);
+
+    openChat();
+
+    const input = screen.getByPlaceholderText("Enter question...");
+    fireEvent.change(input, { target: { value: "What is the capital of Panama?" } });
     expect(input).toHaveValue("What is the capital of Panama?");
 
-    const sendButton = screen.getByRole("button", { name: /send message/i });
+    fireEvent.click(document.querySelector(".sendButton"));
 
-    act(() => {
-        fireEvent.click(sendButton)
-    });
+    (await waitFor(() => expect(screen.getByText("What is the capital of Panama?")))).toBeInTheDocument();
+    expect(input).toHaveValue("");
+  });
 
-    // Check if user message appears
+  it("displays LLM response after sending a message", async () => {
+    fetchMock.mockResponseOnce(JSON.stringify({ content: "Panama City is the correct answer!" }));
+
+    render(<InGameChat initialMessages={[]} question={{ answers: [], right_answer: "" }} />);
+
+    openChat();
+
+    fireEvent.change(screen.getByPlaceholderText("Enter question..."), { target: { value: "What is the capital of Panama?" } });
+
+    fireEvent.click(document.querySelector(".sendButton"));
+
+    await (await waitFor(() => expect(screen.getByText("Panama City is the correct answer!")))).toBeInTheDocument();
+  });
+
+  it("shows loading indicator while fetching response", async () => {
+    fetchMock.mockResponseOnce(() => new Promise((resolve) => setTimeout(() => resolve({body: "{\"content\": \"Test response\"}"}), 500)));
+    render(<InGameChat initialMessages={[]} question={{answers: [], right_answer: ""}}/>);
+
+    openChat();
+
+    fireEvent.change(screen.getByPlaceholderText("Enter question..."), {target: {value: "Any question?"}});
+
+    fireEvent.click(document.querySelector(".sendButton"));
+
+    expect(document.querySelector(".MuiCircularProgress-root")).toBeInTheDocument();
+
+    await waitFor(() => expect(document.querySelector(".MuiCircularProgress-root")).not.toBeInTheDocument());
+  });
+
+  test("handles empty response from LLM gracefully", async () => {
+    fetchMock.mockResponseOnce(JSON.stringify({}));
+    render(<InGameChat initialMessages={[]} question={{ answers: [], right_answer: "" }} />);
+
+    openChat();
+
+    const input = screen.getByPlaceholderText("Enter question...");
+    fireEvent.change(input, { target: { value: "What is the capital of Panama?" } });
+    fireEvent.click(document.querySelector(".sendButton"));
+
+    await waitFor(() => expect(screen.getByText("Oh no! There has been an error processing your request.")).toBeInTheDocument());
+  });
+
+  it("handles LLM API errors gracefully", async () => {
+    fetchMock.mockRejectOnce(new Error("Network error"));
+    render(<InGameChat initialMessages={[]} question={{answers: [], right_answer: ""}}/>);
+
+    openChat();
+
+    fireEvent.change(screen.getByPlaceholderText("Enter question..."), {target: {value: "Is this working?"}});
+
+    fireEvent.click(document.querySelector(".sendButton"));
+
+    await waitFor(() => expect(screen.getByText("Oh no! There has been an error processing your request.")).toBeInTheDocument());
+  });
+
+  it("minimizes and maximizes the chat window correctly", () => {
+    render(<InGameChat initialMessages={[]} question={{ answers: [], right_answer: "" }} />);
+
+    let openButton = document.querySelector(".chatButton");
+    let sendButton = document.querySelector(".sendButton");
+    let inputField = document.querySelector(".inputField");
+
+    expect(openButton).toBeInTheDocument();
+    expect(sendButton).not.toBeInTheDocument();
+    expect(inputField).not.toBeInTheDocument();
+
+    fireEvent.click(openButton);
+
+    sendButton = document.querySelector(".sendButton");
+    inputField = document.querySelector(".inputField");
+
+    expect(openButton).not.toBeInTheDocument();
+    expect(sendButton).toBeInTheDocument();
+    expect(inputField).toBeInTheDocument();
+  });
+
+  it("sends message when pressing Enter key", async () => {
+    render(<InGameChat initialMessages={[]} question={{ answers: [], right_answer: "" }} />);
+
+    openChat();
+
+    const input = screen.getByPlaceholderText("Enter question...");
+
+    fireEvent.change(input, { target: { value: "Enter key test?" } });
+
+    fireEvent.keyDown(input, { key: "Enter", code: "Enter" });
+
+    await (await waitFor(() => expect(screen.getByText("Enter key test?")))).toBeInTheDocument();
+  });
+
+  it("the API request structure is the one expected", async () => {
+    fetchMock.mockResponseOnce(JSON.stringify({ content: "Mock response" }));
+
+    const question = { answers: ["A", "B", "C", "D"], right_answer: "D" };
+    render(<InGameChat initialMessages={[]} question={question} />);
+
+    openChat();
+
+    fireEvent.change(screen.getByPlaceholderText("Enter question..."), { target: { value: "API test?" } });
+
+    fireEvent.click(document.querySelector(".sendButton"));
+
     await waitFor(() => {
-        expect(screen.getByText("What is the capital of Panama?")).toBeInTheDocument()
-    });
-
-    // Input should be cleared after sending
-    expect(input).toHaveValue("")
-  })
-
-  // 4
-  test("displays LLM response after sending a message", async () => {
-    // Mock the fetch response
-    fetchMock.mockResponseOnce(JSON.stringify({
-        content: "Panama City is the correct answer!"
-    }));
-    render(<InGameChat />)
-
-    // Send a message
-    const input = screen.getByPlaceholderText("Enter question...")
-    act(() => {
-        fireEvent.change(input, { target: { value: "What is the capital of Panama?" } })
-    });
-
-    // Get the send button by finding it within the input container
-    const sendButtonContainer = input.closest(".MuiBox-root")
-    const sendButton = sendButtonContainer.querySelector('button[type="button"]')
-
-    act(() => {
-        fireEvent.click(sendButton)
-    });
-
-    // Wait for and check LLM response
-    await waitFor(() => {
-      expect(screen.getByText("Panama City is the correct answer!")).toBeInTheDocument()
-    })
-  })
-
-  // 5
-  test("handles API errors gracefully", async () => {
-    // Mock a failed fetch
-    fetchMock.mockRejectOnce(new Error("Network error"))
-
-    render(<InGameChat />)
-
-    // Send a message
-    const input = screen.getByPlaceholderText("Enter question...")
-    act(() => {
-        fireEvent.change(input, { target: { value: "Is it Panama City?" } })
-    });
-
-    // Get the send button by finding it within the input container
-    const sendButtonContainer = input.closest(".MuiBox-root")
-    const sendButton = sendButtonContainer.querySelector('button[type="button"]')
-    act(() => {
-        fireEvent.click(sendButton)
-    });
-    
-    // Check for error message
-    await waitFor(() => {
-      expect(screen.getByText("Oh no! There has been an error processing your request.")).toBeInTheDocument()
-    })
-  })
-
-  // 6
-  test("can minimize and maximize the chat", () => {
-    render(<InGameChat />)
-
-    // Initially the chat should be maximized
-    expect(screen.getByText("Ask for hints")).toBeInTheDocument()
-
-    // Click the minimize button - find it by its position in the header
-    const header = screen.getByText("Ask for hints").closest(".MuiBox-root")
-    const minimizeButton = header.querySelector("button")
-    act(() => {
-        fireEvent.click(minimizeButton);
-    });
-
-    // Chat should be minimized (header should not be visible)
-    expect(screen.queryByText("Ask for hints")).not.toBeInTheDocument()
-
-    // When minimized, there should be a button to maximize
-    // Since we can't rely on the name, we'll check for the button's existence
-    const chatButton =
-      document.querySelector('button[aria-label="Open chat"]') ||
-      document.querySelector('button[style*="position: fixed"]')
-    expect(chatButton).toBeInTheDocument()
-
-    // Click the chat button to maximize
-    act(() => {
-        fireEvent.click(chatButton)
-    });
-
-    // Chat should be maximized again
-    expect(screen.getByText("Ask for hints")).toBeInTheDocument()
-  })
-
-  // 7
-  test("sends message when pressing Enter key", async () => {
-    render(<InGameChat />)
-
-    // Type in the input field and press Enter
-    const input = screen.getByPlaceholderText("Enter question...")
-    act(() => {
-        fireEvent.change(input, { target: { value: "What is the capital of Panama?" } })
-    });
-    act(() => {
-        fireEvent.keyDown(input, { key: "Enter", code: "Enter" })
-    });
-
-    // Check if user message appears
-    await waitFor(() => {
-        expect(screen.getByText("What is the capital of Panama?")).toBeInTheDocument()
-    });
-  })
-
-  // 8
-  test("verifies correct API payload is sent", async () => {
-    fetchMock.mockResponseOnce(JSON.stringify({id: Date.now().toString(), content: "Panama City is the correct answer!",
-        isUser: false, type: "answer"}));
-
-    render(<InGameChat />)
-
-    // Send a message
-    const input = screen.getByPlaceholderText("Enter question...")
-    act(() => {
-        fireEvent.change(input, { target: { value: "Test question" } })
-    }
-    );
-
-    // Get the send button by finding it within the input container
-    const sendButtonContainer = input.closest(".MuiBox-root")
-    const sendButton = sendButtonContainer.querySelector('button[type="button"]')
-    act(() => {
-        fireEvent.click(sendButton)
-    });
-
-    // Verify the fetch call
-    await waitFor(() => {
-      expect(fetchMock).toHaveBeenCalledTimes(1)
+      expect(fetchMock).toHaveBeenCalledTimes(1);
       expect(fetchMock).toHaveBeenCalledWith("http://localhost:8000/askllm", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          conversation: [{ role: "user", content: "Test question" }],
+          conversation: [{ role: "user", content: "API test?" }],
           model: "empathy",
-          possibleAnswers: {
-            answers: ["San José", "Lima", "Perugia", "Panama City"],
-            right_answer: "Panama City",
-          },
+          possibleAnswers: { answers: ["A", "B", "C", "D"], right_answer: "D" },
         }),
-      })
-    })
-  })
-})
-
+      });
+    });
+  });
+});

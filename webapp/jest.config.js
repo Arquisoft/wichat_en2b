@@ -5,12 +5,13 @@ module.exports = {
       displayName: 'unit',
       moduleNameMapper: {
         '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
+        '^@/(.*)$': '<rootDir>/src/$1',  // alias '@'
       },
       setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
       testEnvironment: 'jest-environment-jsdom',
       testMatch: ['<rootDir>/src/tests/**/*.js'],
       transform: {
-        '^.+\\.(js|jsx|ts|tsx)$': 'babel-jest',
+        '^.+\\.(js|jsx|ts|tsx)$': '@swc/jest',
       },
     },
     //{
