@@ -113,10 +113,11 @@ describe('Gateway Service', () => {
     });
   });
 
-  // Test /game/statistics/subject/:subject endpoint
+  // Test /statistics/subject/:subject endpoint
   it('should forward subject statistics request to game service', async () => {
     const mockStats = {
       stats: {
+        _id: "Math",
         totalGames: 10,
         avgScore: 85,
         totalScore: 850,
@@ -151,10 +152,11 @@ describe('Gateway Service', () => {
     );
   });
 
-// Test /game/statistics/global endpoint
+// Test /statistics/global endpoint
   it('should forward global statistics request to game service', async () => {
     const mockGlobalStats = {
       stats: {
+        _id: null,
         totalGames: 20,
         avgScore: 75,
         totalScore: 1500,
@@ -189,7 +191,7 @@ describe('Gateway Service', () => {
     );
   });
 
-// Test /game/leaderboard endpoint
+// Test /leaderboard endpoint
   it('should forward leaderboard request to game service', async () => {
     const mockLeaderboard = {
       leaderboard: [
