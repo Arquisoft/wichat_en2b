@@ -125,6 +125,9 @@ paths:
                   stats:
                     type: object
                     properties:
+                      _id:
+                        type: string
+                        example: Math
                       totalGames:
                         type: integer
                       avgScore:
@@ -159,6 +162,11 @@ paths:
                   stats:
                     type: object
                     properties:
+                      _id:
+                        type: string
+                        nullable: true
+                        description: Null for global statistics
+                        example: null
                       totalGames:
                         type: integer
                       avgScore:
