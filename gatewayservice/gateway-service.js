@@ -18,6 +18,28 @@ const authServiceUrl = process.env.AUTH_SERVICE_URL || 'http://localhost:8002';
 const userServiceUrl = process.env.USER_SERVICE_URL || 'http://localhost:8001';
 const gameServiceUrl = process.env.GAME_SERVICE_URL || 'http://localhost:8004';
 
+// Function to generalize the handling of statistics requests
+const handleStatisticsRequest = async (endpoint, req, res, errorMessage) => {
+  try {
+    const response = await fetch(`${gameServiceUrl}${endpoint}`, {
+      headers: {
+        'Authorization': req.headers.authorization,
+        'Origin': 'http://localhost:8000'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error fetching ${errorMessage}`);
+    }
+
+    const data = await response.json();
+    return res.status(200).json(data);
+  } catch (err) {
+    console.error(`Error getting ${errorMessage}:`, err);
+    return res.status(500).json({ error: `Error retrieving ${errorMessage}` });
+  }
+};
+
 app.use(cors())
 app.use(express.json());
 
@@ -79,6 +101,34 @@ app.get('/game/:subject/:totalQuestions/:numberOptions', async (req, res) => {
     console.error('Error al obtener preguntas:', err);
     return res.status(500).json({ error: 'Hubo un problema al obtener las preguntas' });
   }
+});
+
+app.get('/statistics/subject/:subject', async (req, res) => {
+  const { subject } = req.params;
+  await handleStatisticsRequest(
+      `/statistics/subject/${subject}`,
+      req,
+      res,
+      'subject statistics'
+  );
+});
+
+app.get('/statistics/global', async (req, res) => {
+  await handleStatisticsRequest(
+      '/statistics/global',
+      req,
+      res,
+      'global statistics'
+  );
+});
+
+app.get('/leaderboard', async (req, res) => {
+  await handleStatisticsRequest(
+      '/leaderboard',
+      req,
+      res,
+      'leaderboard'
+  );
 });
 
 

@@ -98,7 +98,120 @@ paths:
                   error:
                     type: string
                     example: ❌ Failed to retrieve data
+  /statistics/subject/{subject}:
+    get:
+      summary: Get user statistics for a specific subject
+      tags:
+        - Statistics
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - in: path
+          name: subject
+          schema:
+            type: string
+          required: true
+          description: The subject to get statistics for
+      responses:
+        '200':
+          description: Subject statistics retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  subject:
+                    type: string
+                  stats:
+                    type: object
+                    properties:
+                      totalGames:
+                        type: integer
+                      avgScore:
+                        type: number
+                      totalScore:
+                        type: integer
+                      totalCorrectAnswers:
+                        type: integer
+                      totalQuestions:
+                        type: integer
+                      avgTime:
+                        type: number
+                      successRatio:
+                        type: number
+        '500':
+          description: Error retrieving statistics
+  /statistics/global:
+    get:
+      summary: Get user global statistics
+      tags:
+        - Statistics
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: Global statistics retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  stats:
+                    type: object
+                    properties:
+                      totalGames:
+                        type: integer
+                      avgScore:
+                        type: number
+                      totalScore:
+                        type: integer
+                      totalCorrectAnswers:
+                        type: integer
+                      totalQuestions:
+                        type: integer
+                      avgTime:
+                        type: number
+                      successRatio:
+                        type: number
+        '500':
+          description: Error retrieving statistics
+
+  /leaderboard:
+    get:
+      summary: Get global leaderboard
+      tags:
+        - Statistics
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: Leaderboard retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  leaderboard:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        _id:
+                          type: string
+                        totalScore:
+                          type: integer
+                        totalGames:
+                          type: integer
+                        avgScore:
+                          type: number
+        '500':
+          description: Error retrieving leaderboard
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
   schemas:
     Question:
       type: object
