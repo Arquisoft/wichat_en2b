@@ -1,7 +1,11 @@
 const axios = require('axios');
 const express = require('express');
+const helmet = require('helmet')
 
 const app = express();
+
+app.use(helmet());
+
 const port = 8003;
 
 // Store conversations by user or session ID (in memory)
@@ -55,7 +59,7 @@ function validateRequiredFields(req, requiredFields) {
 }
 
 // Function to send questions to LLM
-async function sendQuestionToLLM(conversation, apiKey, model = 'empathy', answer) {
+async function sendQuestionToLLM(conversation, apiKey, answer, model = 'empathy') {
   try {
     const config = llmConfigs[model];
     if (!config) {

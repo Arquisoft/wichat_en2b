@@ -1,5 +1,4 @@
 const request = require('supertest');
-const axios = require('axios');
 const app = require('./gateway-service'); 
 
 afterAll(async () => {
@@ -12,19 +11,16 @@ describe('Gateway Service', () => {
   beforeEach(()=>{
     jest.clearAllMocks();
   });
-  // Mock responses from external services
-  axios.post.mockImplementation((url, data) => {
-    if (url.endsWith('/login')) {
-      return Promise.resolve({ data: { token: 'mockedToken' } });
-    } else if (url.endsWith('/adduser')) {
-      return Promise.resolve({ data: { userId: 'mockedUserId' } });
-    } else if (url.endsWith('/askllm')) {
-      return Promise.resolve({ data: { answer: 'llmanswer' } });
-    }
-  });
 
   // Test /login endpoint
   it('should forward login request to auth service', async () => {
+    global.fetch.mockImplementationOnce(() =>
+        Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ token: 'mockedToken' })
+        })
+    );
+
     const response = await request(app)
       .post('/login')
       .send({ username: 'testuser', password: 'testpassword' });
@@ -35,6 +31,13 @@ describe('Gateway Service', () => {
 
   // Test /adduser endpoint
   it('should forward add user request to user service', async () => {
+    global.fetch.mockImplementationOnce(() =>
+        Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ userId: 'mockedUserId' })
+        })
+    );
+
     const response = await request(app)
       .post('/adduser')
       .send({ username: 'newuser', password: 'newpassword' });
@@ -45,6 +48,13 @@ describe('Gateway Service', () => {
 
   // Test /askllm endpoint
   it('should forward askllm request to the llm service', async () => {
+    global.fetch.mockImplementationOnce(() =>
+        Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ answer: 'llmanswer' })
+        })
+    );
+
     const response = await request(app)
       .post('/askllm')
       .send({ question: 'question', apiKey: 'apiKey', model: 'gemini' });
