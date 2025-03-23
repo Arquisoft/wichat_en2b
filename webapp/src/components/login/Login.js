@@ -35,6 +35,7 @@ const Login = () => {
       // Successful login - store the token (e.g., in localStorage) and redirect
       localStorage.setItem('token', data.token);
       alert('Login successful! Token stored in localStorage.');
+      window.location.href = "/";
       // Redirect to game page or dashboard (e.g., window.location.href = '/game');
     } catch (err) {
       setError(err.message);
