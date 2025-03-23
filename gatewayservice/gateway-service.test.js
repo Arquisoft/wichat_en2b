@@ -29,7 +29,7 @@ describe('Gateway Service', () => {
     expect(response.body.token).toBe('mockedToken');
   });
 
-  // Test /adduser endpoint
+  // Test /register endpoint
   it('should forward add user request to user service', async () => {
     global.fetch.mockImplementationOnce(() =>
         Promise.resolve({
@@ -39,7 +39,7 @@ describe('Gateway Service', () => {
     );
 
     const response = await request(app)
-      .post('/adduser')
+      .post('/register')
       .send({ username: 'newuser', password: 'newpassword' });
 
     expect(response.statusCode).toBe(200);

@@ -72,7 +72,9 @@ const AddUser = () => {
         role:role,
         createdAt:date
       }
-      await axios.post(`${apiEndpoint}/adduser`,  User );
+
+      await axios.post(`${apiEndpoint}/register`, User);
+
       setOpenSnackbar(true);
     } catch (error) {
       setError(error.response.data.error);
