@@ -53,6 +53,7 @@ const AddUser = () => {
   }
 
   const addUser = async (e) => {
+    // For anyone reading, the default behavior of a form submit is to reload the page  
     e.preventDefault(); // Prevent the default form submit so that errors can be shown (if any)
 
     if (!validateForm()) { // If there are errors, do not submit the form
@@ -64,8 +65,14 @@ const AddUser = () => {
     try {
       setDate(Date.now());
       setRole('USER');
-
-      await axios.post(`${apiEndpoint}/adduser`, { username:username, password:password, role:role, createdAt:date });
+      const User =
+      {
+        username:username,
+        password:password,
+        role:role,
+        createdAt:date
+      }
+      await axios.post(`${apiEndpoint}/adduser`,  User );
       setOpenSnackbar(true);
     } catch (error) {
       setError(error.response.data.error);
@@ -141,7 +148,7 @@ const AddUser = () => {
               helperText={validationErrors.confirmPassword}
             />
 
-            <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2, py: 1.5 }} disabled={isSubmitting} >
+            <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2, py: 1.5 }} disabled={isSubmitting}>
               {isSubmitting ? (
                 <>
                   <CircularProgress size={24} sx={{ mr: 1, color: "white" }} />
