@@ -131,6 +131,52 @@ app.get('/leaderboard', async (req, res) => {
   );
 });
 
+app.post('/users', async (req, res) => {
+  try {
+    const userResponse = await axios.post(`${userServiceUrl}/users`, req.body);
+    res.status(201).json(userResponse.data);
+  } catch (error) {
+    res.status(error.response?.status || 500).json({ error: error.response?.data.error || 'Failed to create user' });
+  }
+});
+
+app.get('/users', async (req, res) => {
+  try {
+    const { id } = req.query; // Forward query params (e.g., ?id=username)
+    const url = id ? `${userServiceUrl}/users?id=${id}` : `${userServiceUrl}/users`;
+    const userResponse = await axios.get(url);
+    res.status(200).json(userResponse.data);
+  } catch (error) {
+    res.status(error.response?.status || 500).json({ error: error.response?.data.error || 'Failed to fetch users' });
+  }
+});
+
+app.get('/users/:username', async (req, res) => {
+  try {
+    const userResponse = await axios.get(`${userServiceUrl}/users/${req.params.username}`);
+    res.status(200).json(userResponse.data);
+  } catch (error) {
+    res.status(error.response?.status || 500).json({ error: error.response?.data.error || 'Failed to fetch user' });
+  }
+});
+
+app.patch('/users/:username', async (req, res) => {
+  try {
+    const userResponse = await axios.patch(`${userServiceUrl}/users/${req.params.username}`, req.body);
+    res.status(200).json(userResponse.data);
+  } catch (error) {
+    res.status(error.response?.status || 500).json({ error: error.response?.data.error || 'Failed to update user' });
+  }
+});
+
+app.delete('/users/:username', async (req, res) => {
+  try {
+    const userResponse = await axios.delete(`${userServiceUrl}/users/${req.params.username}`);
+    res.status(200).json(userResponse.data);
+  } catch (error) {
+    res.status(error.response?.status || 500).json({ error: error.response?.data.error || 'Failed to delete user' });
+  }
+});
 
 // Proxy for images requests
 app.get('/images/:image', createProxyMiddleware({

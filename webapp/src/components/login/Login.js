@@ -4,13 +4,43 @@ import '../../styles/login/Login.css'; // We'll define the styles separately
 const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Here you would typically call an API to authenticate the user
-    console.log('Login attempt with:', { username, password });
-    // For now, we'll just log the input
-    alert('Login submitted! Check console for details.');
+    setError('');
+    setLoading(true);
+
+    try {
+      const response = await fetch('http://localhost:8000/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user: {
+            username,
+            password,
+          },
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Login failed');
+      }
+
+      // Successful login - store the token (e.g., in localStorage) and redirect
+      localStorage.setItem('token', data.token);
+      alert('Login successful! Token stored in localStorage.');
+      // Redirect to game page or dashboard (e.g., window.location.href = '/game');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -18,6 +48,7 @@ const Login = () => {
       <div className="login-card">
         <h2>Welcome to WIChat</h2>
         <p>Login to start playing!</p>
+        {error && <p className="error-message">{error}</p>}
         <form onSubmit={handleSubmit}>
           <div className="input-group">
             <label htmlFor="username">Username</label>
@@ -28,6 +59,7 @@ const Login = () => {
               onChange={(e) => setUsername(e.target.value)}
               placeholder="Enter your username"
               required
+              disabled={loading}
             />
           </div>
           <div className="input-group">
@@ -39,10 +71,11 @@ const Login = () => {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Enter your password"
               required
+              disabled={loading}
             />
           </div>
-          <button type="submit" className="login-button">
-            Login
+          <button type="submit" className="login-button" disabled={loading}>
+            {loading ? 'Logging in...' : 'Login'}
           </button>
         </form>
         <p className="register-link">
