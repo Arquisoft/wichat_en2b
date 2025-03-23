@@ -110,7 +110,7 @@ app.post('/askllm', async (req, res) => {
     validateRequiredFields(req, ['conversation', 'model', 'possibleAnswers']);
     const {conversation, model, possibleAnswers} = req.body;
     const apiKey=process.env.LLM_API_KEY;
-    const llmAnswer = await sendQuestionToLLM(conversation, apiKey, model, possibleAnswers);
+    const llmAnswer = await sendQuestionToLLM(conversation, apiKey, possibleAnswers, model);
     if (llmAnswer) {
       res.json( { role: "assistant", content: llmAnswer });
     } else {

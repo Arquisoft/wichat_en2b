@@ -10,10 +10,10 @@ export const quizCategories = [
 
 export const quizzesByCategory = {
     "1": [
-      { id: 1, title: "Science Basics", description: "Test your knowledge of basic science.", question: "What is the basic unit of life?", difficulty: "easy", timeEstimate: 60, questions: 10, options: 4, popularity: 8, wikidataCode: "Q336" },
-      { id: 2, title: "Physics 101", description: "Test your knowledge of physics.", question: "What is Newton's First Law of Motion?", difficulty: "medium", timeEstimate: 40, questions: 10, options: 4, popularity: 6, wikidataCode: "Q413" },
-      { id: 3, title: "Chemistry 101", description: "Test your knowledge of basic chemistry.", question: "What is the chemical symbol for gold?", difficulty: "hard", timeEstimate: 20, questions: 10, options: 4, popularity: 7, wikidataCode: "Q2329" },
-      { id: 4, title: "Advanced Chemistry", description: "Get into advanced chemistry topics.", question: "What is Avogadro's number?", difficulty: "hell", timeEstimate: 10, questions: 10, options: 4, popularity: 9, wikidataCode: "Q173251" },
+        { id: 1, title: "Scientific disciplines", description: "Test your knowledge about scientific disciplines.", question: "What's the discipline shown in the image?", difficulty: "hard", timeEstimate: 60, questions: 10, options: 4, popularity: 6, wikidataCode: "Q336" },
+        { id: 2, title: "Weather phenomena", description: "Test your knowledge about weather phenomena.", question: "What's the phenomena shown in the image?", difficulty: "hard", timeEstimate: 40, questions: 10, options: 4, popularity: 6, wikidataCode: "Q336" },
+        { id: 3, title: "Scientific instruments", description: "Test your knowledge about scientific instruments.", question: "What's the scientific instrument shown in the image?", difficulty: "hard", timeEstimate: 20, questions: 10, options: 4, popularity: 6, wikidataCode: "Q3099911" },
+        { id: 4, title: "Chemical elements", description: "Test your knowledge about chemistry.", question: "What is the chemical element shown in the image?", difficulty: "hell", timeEstimate: 20, questions: 10, options: 4, popularity: 7, wikidataCode: "Q8054" }
     ],
     "2": [
       { id: 1, title: "Ancient Civilizations", description: "Explore ancient Egypt, Greece, and Rome.", question: "Who was the first emperor of Rome?", difficulty: "easy", timeEstimate: 60, questions: 10, options: 4, popularity: 5, wikidataCode: "Q11772" },
