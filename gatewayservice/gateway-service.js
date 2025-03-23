@@ -61,15 +61,6 @@ const forwardRequest = async (service, endpoint, req, res) => {
   }
 };
 
-// Publicly accessible endpoints
-app.use(['/api/users', '/api/questions'], publicCors);
-
-// User API
-app.get('/api/users', (req, res) => forwardRequest('user', '/users', req, res));
-
-// Questions API
-app.get('/api/questions', (req, res) => forwardRequest('game', '/questions', req, res));
-
 // Authentication
 app.use('/login', restrictedCors);
 app.post('/login', (req, res) => forwardRequest('auth', '/login', req, res));
@@ -146,7 +137,10 @@ app.get('/game/:subject/:totalQuestions/:numberOptions', async (req, res) => {
 });
 
 // Proxy for images
-app.use('/images', createProxyMiddleware({ target: serviceUrls.game, changeOrigin: true }));
+app.get('/images/:image', createProxyMiddleware({
+  target: serviceUrls.game,
+  changeOrigin: true
+}));
 
 // OpenAPI Documentation
 const openapiPath = './openapi.yaml';
