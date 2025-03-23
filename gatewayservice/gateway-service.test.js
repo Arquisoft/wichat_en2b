@@ -140,7 +140,18 @@ describe('Gateway Service', () => {
         .set('Authorization', 'Bearer mockToken');
 
     expect(response.statusCode).toBe(200);
-    expect(response.body).toEqual(mockStats);
+    expect(response.body).toEqual({
+      stats: {
+        _id: "Math",
+        totalGames: 10,
+        avgScore: 85,
+        totalScore: 850,
+        totalCorrectAnswers: 42,
+        totalQuestions: 50,
+        avgTime: 25,
+        successRatio: 0.84
+      }
+    });
     expect(fetch).toHaveBeenCalledWith(
         'http://localhost:8004/statistics/subject/Math',
         expect.objectContaining({
@@ -179,7 +190,18 @@ describe('Gateway Service', () => {
         .set('Authorization', 'Bearer mockToken');
 
     expect(response.statusCode).toBe(200);
-    expect(response.body).toEqual(mockGlobalStats);
+    expect(response.body).toEqual({
+      stats: {
+        _id: null,
+        totalGames: 20,
+        avgScore: 75,
+        totalScore: 1500,
+        totalCorrectAnswers: 80,
+        totalQuestions: 100,
+        avgTime: 30,
+        successRatio: 0.8
+      }
+    });
     expect(fetch).toHaveBeenCalledWith(
         'http://localhost:8004/statistics/global',
         expect.objectContaining({
@@ -195,9 +217,9 @@ describe('Gateway Service', () => {
   it('should forward leaderboard request to game service', async () => {
     const mockLeaderboard = {
       leaderboard: [
-        { username: 'user1', score: 100 },
-        { username: 'user2', score: 90 },
-        { username: 'user3', score: 80 }
+        { _id: 'user1', totalScore: 100, totalGames: 2, avgScore: 50 },
+        { _id: 'user2', totalScore: 90, totalGames: 1, avgScore: 90 },
+        { _id: 'user3', totalScore: 80, totalGames: 1, avgScore: 80 }
       ]
     };
 
@@ -213,7 +235,13 @@ describe('Gateway Service', () => {
         .set('Authorization', 'Bearer mockToken');
 
     expect(response.statusCode).toBe(200);
-    expect(response.body).toEqual(mockLeaderboard);
+    expect(response.body).toEqual({
+      leaderboard: [
+        { _id: 'user1', totalScore: 100, totalGames: 2, avgScore: 50 },
+        { _id: 'user2', totalScore: 90, totalGames: 1, avgScore: 90 },
+        { _id: 'user3', totalScore: 80, totalGames: 1, avgScore: 80 }
+      ]
+    });
     expect(fetch).toHaveBeenCalledWith(
         'http://localhost:8004/leaderboard',
         expect.objectContaining({
