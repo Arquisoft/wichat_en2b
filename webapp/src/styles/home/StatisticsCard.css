@@ -1,0 +1,151 @@
+.stats-card {
+  margin-bottom: 5rem;
+}
+
+.progress-card {
+  border-radius: 0.75rem; 
+  box-shadow: 0 0.25rem 0.625rem rgba(0, 0, 0, 0.1); 
+  background-color: #fff;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  margin-bottom: 1.5rem;
+}
+
+.progress-card:hover {
+  transform: translateY(-0.3125rem); /* -5px */
+  box-shadow: 0 0.5rem 1.25rem rgba(0, 0, 0, 0.15); 
+}
+
+.progress-content {
+  padding: 1.5rem;
+}
+
+.progress-section {
+  margin-bottom: 1.25rem;
+}
+
+.progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.progress-title {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.stats-grid {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.stat-item {
+  flex: 1;
+  padding: 0 0.5rem;
+}
+
+.stat-card {
+  border-radius: 0.625rem; 
+  text-align: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 1rem 0.5rem;
+  box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.08);
+  height: 100%;
+  opacity: 0;
+  animation: fadeInUp 0.5s ease forwards;
+}
+
+.stat-card:hover {
+  transform: translateY(-0.25rem);
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.12);
+}
+
+.stat-quizzes {
+  background: linear-gradient(135deg, #ab47bc, #8e24aa);
+}
+
+.stat-accuracy {
+  animation-delay: 0.3s;
+  background: linear-gradient(135deg, #ec407a, #d81b60);
+}
+
+.stat-rank {
+  background: linear-gradient(135deg, #42a5f5, #1e88e5);
+}
+
+.stat-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+  color: white;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05rem;
+  opacity: 0.9;
+  color: white;
+}
+
+/* Animation */
+@keyframes progressFill {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive adjustments */
+@media (max-width: 960px) {
+  .progress-content {
+    padding: 1.25rem;
+  }
+  
+  .stats-grid {
+    flex-direction: column;
+  }
+  
+  .stat-value {
+    font-size: 1.1rem;
+  }
+
+  .stat-label {
+    font-size: 0.7rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .progress-content {
+    padding: 1rem;
+  }
+
+  .progress-title {
+    font-size: 1.1rem;
+  }
+
+  .level-indicator {
+    font-size: 0.8rem;
+  }
+
+  .stat-value {
+    font-size: 1rem;
+  }
+
+  .stat-label {
+    font-size: 0.65rem;
+  }
+
+  .stat-card {
+    padding: 0.75rem 0.25rem;
+  }
+}
