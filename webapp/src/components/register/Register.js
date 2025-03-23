@@ -13,7 +13,7 @@ import {
   Snackbar,
   CircularProgress,
 } from "@mui/material";
-
+import '../../styles/register/Register.css';
 
 const apiEndpoint = process.env.GATEWAY_SERVICE_URL || 'http://localhost:8000';
 
@@ -88,8 +88,8 @@ const AddUser = () => {
   };
 
   return (
-    <Container component="main" maxWidth="xs" sx={{ marginTop: 4 }}>
-      <Card sx={{ width: "100%", maxWidth: 450, boxShadow: 3 }}>
+    <Container component="main" className='register-container' maxWidth="xs">
+      <Card sx={{ width: "100%", maxWidth: 450, boxShadow: 3 }} className='register-card'>
         <CardHeader
           title={
             <Typography variant="h5" align="center" fontWeight="bold">
@@ -103,7 +103,7 @@ const AddUser = () => {
           }
         />
         <CardContent>
-          <Box component="form" onSubmit={addUser} sx={{ mt: 1 }}>
+          <Box className="input-group" component="form" onSubmit={addUser} sx={{ mt: 1 }}>
             <TextField
               margin="normal"
               required
@@ -150,7 +150,8 @@ const AddUser = () => {
               helperText={validationErrors.confirmPassword}
             />
 
-            <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2, py: 1.5 }} disabled={isSubmitting}>
+            <Button className='register-button' type="submit" fullWidth variant="contained" 
+              sx={{ mt: 3, mb: 2, py: 1.5 }} disabled={isSubmitting}>
               {isSubmitting ? (
                 <>
                   <CircularProgress size={24} sx={{ mr: 1, color: "white" }} />

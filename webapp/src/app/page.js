@@ -5,7 +5,7 @@ import CssBaseline from "@mui/material/CssBaseline";
 import Box from "@mui/material/Box";
 import "../styles/globals.css";
 import "../styles/Page.css";
-import AddUser from "@/components/register/AddUser";
+import Register from "@/components/register/Register";
 
 export default function Page() {
 	return (
@@ -13,7 +13,7 @@ export default function Page() {
 			<CssBaseline />
 			<Box className="App">
 				<Box className="App-header">
-					<AddUser />
+					<Register />
 				</Box>
 			</Box>
 		</>
