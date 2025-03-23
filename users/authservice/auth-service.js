@@ -12,7 +12,7 @@ app.use(express.json());
 app.disable('x-powered-by');
 
 // Routers
-app.use("/auth", authRouter); 
+app.use("/", authRouter); 
 
 // Start the server
 const server = app.listen(port, () => {
