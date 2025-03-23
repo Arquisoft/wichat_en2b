@@ -1,0 +1,208 @@
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background: linear-gradient(135deg, #1e1e2f 0%, #3a3a5a 100%); /* Dark gradient for depth */
+    overflow: hidden;
+    position: relative;
+}
+
+.login-container::before {
+    content: '';
+    position: absolute;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+    animation: glowPulse 8s infinite ease-in-out;
+    top: -50%;
+    left: -50%;
+}
+
+.login-card {
+    background: rgba(255, 255, 255, 0.95);
+    padding: 2.5rem;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2), 0 0 50px rgba(0, 123, 255, 0.1);
+    width: 100%;
+    max-width: 420px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(10px); /* Glassmorphism effect */
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    animation: fadeIn 0.8s ease-out;
+}
+
+.login-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(45deg, rgba(0, 123, 255, 0.05), rgba(255, 255, 255, 0));
+    pointer-events: none;
+}
+
+.login-card h2 {
+    margin-bottom: 0.75rem;
+    color: #1a1a2e;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    letter-spacing: -0.5px;
+    font-size: 2rem;
+    text-transform: uppercase;
+    background: linear-gradient(to right, #007bff, #00ddeb);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.login-card p {
+    color: #7a7a9d;
+    margin-bottom: 2rem;
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+.input-group {
+    margin-bottom: 1.75rem;
+    text-align: left;
+    position: relative;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 0.6rem;
+    color: #4a4a6a;
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    font-size: 0.95rem;
+    transition: color 0.3s ease;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 1rem 1rem;
+    border: none;
+    border-radius: 8px;
+    background: rgba(245, 245, 250, 0.9);
+    font-size: 1rem;
+    color: #1a1a2e;
+    outline: none;
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+}
+
+.input-group input:focus {
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.3), inset 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.input-group input::placeholder {
+    color: #a0a0c0;
+    font-style: italic;
+}
+
+.login-button {
+    width: 100%;
+    padding: 1rem;
+    background: linear-gradient(90deg, #007bff 0%, #00ddeb 100%);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 500;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.3s ease;
+}
+
+.error-message {
+    color: #d9534f; /* Red for errors */
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+}
+
+.login-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 123, 255, 0.4);
+}
+
+.login-button::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.6s ease, height 0.6s ease;
+}
+
+.login-button:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+.register-link {
+    margin-top: 1.5rem;
+    font-size: 0.95rem;
+    font-family: 'Inter', sans-serif;
+    color: #7a7a9d;
+}
+
+.register-link a {
+    color: #00ddeb;
+    text-decoration: none;
+    font-weight: 500;
+    position: relative;
+    transition: color 0.3s ease;
+}
+
+.register-link a::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: -4px;
+    left: 0;
+    background: #00ddeb;
+    transition: width 0.3s ease;
+}
+
+.register-link a:hover::after {
+    width: 100%;
+}
+
+.register-link a:hover {
+    color: #007bff;
+}
+
+
+.login-card .error-message {
+    color: #d9534f;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+}
+
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes glowPulse {
+    0%, 100% { opacity: 0.3; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(1.05); }
+}
