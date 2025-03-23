@@ -34,44 +34,27 @@ app.get('/health', (req, res) => res.json({ status: 'OK' }));
 // Helper function for forwarding requests using fetch
 const forwardRequest = async (service, endpoint, req, res) => {
   try {
-    const targetUrl = `${serviceUrls[service]}${endpoint}`;
-    console.log(`Forwarding ${req.method} request to: ${targetUrl}`);
-    console.log(`Request body:`, req.body);
-
-    const response = await fetch(targetUrl, {
+    const response = await fetch(`${serviceUrls[service]}${endpoint}`, {
       method: req.method,
       headers: {
         Authorization: req.headers.authorization,
         'Content-Type': 'application/json',
-        Origin: 'http://localhost:8000',
+        Origin: 'http://localhost:8000', // Assuming the same origin as the previous example
       },
-      body: req.method !== 'GET' ? JSON.stringify(req.body) : undefined,
+      body: req.method !== 'GET' ? JSON.stringify(req.body) : undefined, // Only include body for non-GET requests
     });
-
-    console.log(`Response status: ${response.status} ${response.statusText}`);
-
-    // Always extract the response body, whether success or error
-    const responseBody = await (response.headers.get('content-type')?.includes('application/json')
-      ? response.json()
-      : response.text());
-
     if (!response.ok) {
-      // Pass through the original status code and response body
       return res.status(response.status).json(
-        typeof responseBody === 'object'
-          ? responseBody // JSON error response (e.g., { error: "Not a valid password" })
-          : { error: responseBody || 'Unknown error from downstream service' } // Text or fallback
+        response.json()
       );
     }
 
-    // Success case: send the JSON data
-    res.json(responseBody);
+    const data = await response.json();
+    res.json(data);
   } catch (error) {
     console.error(`Error forwarding request to ${service}${endpoint}:`, error.message, error.stack);
     res.status(500).json({
-      error: 'Failed to forward request',
-      details: error.message || 'Unknown error',
-      target: targetUrl,
+      error: 'Hubo un problema al procesar la solicitud',
     });
   }
 };
