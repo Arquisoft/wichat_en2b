@@ -113,10 +113,11 @@ describe('Gateway Service', () => {
     });
   });
 
-  // Test /game/statistics/subject/:subject endpoint
+  // Test /statistics/subject/:subject endpoint
   it('should forward subject statistics request to game service', async () => {
     const mockStats = {
       stats: {
+        _id: "Math",
         totalGames: 10,
         avgScore: 85,
         totalScore: 850,
@@ -139,7 +140,7 @@ describe('Gateway Service', () => {
         .set('Authorization', 'Bearer mockToken');
 
     expect(response.statusCode).toBe(200);
-    expect(response.body).toEqual(mockStats);
+    expect(response.body).toStrictEqual(mockStats);
     expect(fetch).toHaveBeenCalledWith(
         'http://localhost:8004/statistics/subject/Math',
         expect.objectContaining({
@@ -151,17 +152,18 @@ describe('Gateway Service', () => {
     );
   });
 
-// Test /game/statistics/global endpoint
+// Test /statistics/global endpoint
   it('should forward global statistics request to game service', async () => {
     const mockGlobalStats = {
       stats: {
-        totalGames: 20,
-        avgScore: 75,
-        totalScore: 1500,
-        totalCorrectAnswers: 80,
-        totalQuestions: 100,
-        avgTime: 30,
-        successRatio: 0.8
+        _id: null,
+        totalGames: 10,
+        avgScore: 85.5,
+        totalScore: 855,
+        totalCorrectAnswers: 42,
+        totalQuestions: 50,
+        avgTime: 25.3,
+        successRatio: 0.84
       }
     };
 
@@ -175,9 +177,8 @@ describe('Gateway Service', () => {
     const response = await request(app)
         .get('/statistics/global')
         .set('Authorization', 'Bearer mockToken');
-
     expect(response.statusCode).toBe(200);
-    expect(response.body).toEqual(mockGlobalStats);
+    expect(response.body).toStrictEqual(mockGlobalStats);
     expect(fetch).toHaveBeenCalledWith(
         'http://localhost:8004/statistics/global',
         expect.objectContaining({
@@ -189,13 +190,13 @@ describe('Gateway Service', () => {
     );
   });
 
-// Test /game/leaderboard endpoint
+// Test /leaderboard endpoint
   it('should forward leaderboard request to game service', async () => {
     const mockLeaderboard = {
       leaderboard: [
-        { username: 'user1', score: 100 },
-        { username: 'user2', score: 90 },
-        { username: 'user3', score: 80 }
+        { _id: 'user1', totalScore: 100, totalGames: 2, avgScore: 50 },
+        { _id: 'user2', totalScore: 90, totalGames: 1, avgScore: 90 },
+        { _id: 'user3', totalScore: 80, totalGames: 1, avgScore: 80 }
       ]
     };
 
@@ -211,7 +212,7 @@ describe('Gateway Service', () => {
         .set('Authorization', 'Bearer mockToken');
 
     expect(response.statusCode).toBe(200);
-    expect(response.body).toEqual(mockLeaderboard);
+    expect(response.body).toStrictEqual(mockLeaderboard);
     expect(fetch).toHaveBeenCalledWith(
         'http://localhost:8004/leaderboard',
         expect.objectContaining({
