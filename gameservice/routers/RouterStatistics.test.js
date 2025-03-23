@@ -78,7 +78,7 @@ describe('Statistics Router', function() {
 
             expect(response.status).toBe(200);
             expect(response.body.subject).toBe('math');
-            expect(response.body.stats).toMatchObject({
+            expect(response.body.stats).toStrictEqual({
                 _id: 'math',
                 totalGames: 2,
                 avgScore: 90,
@@ -128,13 +128,13 @@ describe('Statistics Router', function() {
 
             expect(response.status).toBe(200);
             expect(response.body.leaderboard).toHaveLength(2);
-            expect(response.body.leaderboard[0]).toMatchObject({
+            expect(response.body.leaderboard[0]).toStrictEqual({
                 _id: 'testuser',
                 totalScore: 180,
                 totalGames: 2,
                 avgScore: 90
             });
-            expect(response.body.leaderboard[1]).toMatchObject({
+            expect(response.body.leaderboard[1]).toStrictEqual({
                 _id: 'otheruser',
                 totalScore: 150,
                 totalGames: 1,
