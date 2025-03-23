@@ -98,6 +98,7 @@ function CategoryComponent() {
     }
     
     return (
+        <div style={{ overflowY: 'auto', maxHeight: '100vh' }}> {/* Added scrollable div */}
       <Box className="main-container">
 
         {/* Header */}
@@ -184,6 +185,7 @@ function CategoryComponent() {
           </Container>
         </Box>
       </Box>
+        </div>
     );
 }
 

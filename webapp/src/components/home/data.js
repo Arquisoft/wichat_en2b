@@ -10,8 +10,8 @@ export const quizCategories = [
 
 export const quizzesByCategory = {
     "1": [
-        { id: 1, title: "Scientific disciplines", description: "Test your knowledge about scientific disciplines.", question: "What's the discipline shown in the image?", difficulty: "hard", timeEstimate: 60, questions: 10, options: 4, popularity: 6, wikidataCode: "Q336" },
-        { id: 2, title: "Weather phenomena", description: "Test your knowledge about weather phenomena.", question: "What's the phenomena shown in the image?", difficulty: "hard", timeEstimate: 40, questions: 10, options: 4, popularity: 6, wikidataCode: "Q336" },
+        { id: 1, title: "Scientific disciplines", description: "Test your knowledge about scientific disciplines.", question: "What's the discipline shown in the image?", difficulty: "easy", timeEstimate: 60, questions: 10, options: 4, popularity: 6, wikidataCode: "Q336" },
+        { id: 2, title: "Weather phenomena", description: "Test your knowledge about weather phenomena.", question: "What's the phenomena shown in the image?", difficulty: "medium", timeEstimate: 40, questions: 10, options: 4, popularity: 6, wikidataCode: "Q16332653" },
         { id: 3, title: "Scientific instruments", description: "Test your knowledge about scientific instruments.", question: "What's the scientific instrument shown in the image?", difficulty: "hard", timeEstimate: 20, questions: 10, options: 4, popularity: 6, wikidataCode: "Q3099911" },
         { id: 4, title: "Chemical elements", description: "Test your knowledge about chemistry.", question: "What is the chemical element shown in the image?", difficulty: "hell", timeEstimate: 20, questions: 10, options: 4, popularity: 7, wikidataCode: "Q8054" }
     ],
