@@ -15,16 +15,18 @@ describe('Gateway Service', () => {
   // Test /login endpoint
   it('should forward login request to auth service', async () => {
     global.fetch.mockImplementationOnce(() =>
-        Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve({ token: 'mockedToken' })
-        })
+      Promise.resolve({
+        ok: true,
+        status: 200,
+        headers: new Headers({ 'Content-Type': 'application/json' }),
+        json: () => Promise.resolve({ token: 'mockedToken' }),
+      })
     );
-
+  
     const response = await request(app)
       .post('/login')
-      .send({ username: 'testuser', password: 'testpassword' });
-
+      .send({ user: { username: 'testuser', password: 'testpassword' } }); // Match auth service expectation
+  
     expect(response.statusCode).toBe(200);
     expect(response.body.token).toBe('mockedToken');
   });
@@ -32,10 +34,12 @@ describe('Gateway Service', () => {
   // Test /adduser endpoint
   it('should forward add user request to user service', async () => {
     global.fetch.mockImplementationOnce(() =>
-        Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve({ userId: 'mockedUserId' })
-        })
+      Promise.resolve({
+        ok: true,
+        status: 200,
+        headers: new Headers({ 'Content-Type': 'application/json' }),
+        json: () => Promise.resolve({ userId: 'mockedUserId' }),
+      })
     );
 
     const response = await request(app)
@@ -49,10 +53,12 @@ describe('Gateway Service', () => {
   // Test /askllm endpoint
   it('should forward askllm request to the llm service', async () => {
     global.fetch.mockImplementationOnce(() =>
-        Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve({ answer: 'llmanswer' })
-        })
+      Promise.resolve({
+        ok: true,
+        status: 200,
+        headers: new Headers({ 'Content-Type': 'application/json' }),
+        json: () => Promise.resolve({ answer: 'llmanswer' }),
+      })
     );
 
     const response = await request(app)

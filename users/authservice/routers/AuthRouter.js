@@ -8,47 +8,53 @@ require('dotenv').config();
 
 const router = express.Router();
 const validRoles = ['USER', 'ADMIN'];
-
+const gatewayServiceUrl = process.env.GATEWAY_SERVICE_URL || 'http://gatewayservice:8000'; // Default to container name
 // Endpoint to login a user and return a JWT token
 router.post('/login', [
-    check('user').notEmpty().withMessage('Missing required field: user'),
-    check('user.username').isLength({ min: 3 }).trim().escape().withMessage('Invalid username value'),
-    check('user.password').isLength({ min: 3 }).trim().escape().withMessage('Invalid password value'),
-  ],
-  async (req, res) => {
-    try {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-          return res.status(400).json({ error: errors.array().map(err => err.msg).join(', ') });
-        }
-
-        const { user } = req.body; 
-        const userResponse = await axios.get(`http://localhost:8001/users?id=${user.username}`);
-        const userFromDB = userResponse.data;
-
-        if (!userFromDB || userFromDB.length === 0) {
-          logger.error(`Failure in login: user ${user.username} not found`);
-          return res.status(401).json({ error: 'Not a valid user' });
-        }
-
-        const passwordMatch = await bcrypt.compare(user.password, userFromDB.password);
-        if (!passwordMatch) {
-          logger.error(`Failure in login: invalid password for user ${user.username}`);
-          return res.status(401).json({ error: 'Not a valid password' });
-        }
-
-        const token = jwt.sign(
-            { username: userFromDB.username, role: userFromDB.role }, 
-            process.env.JWT_SECRET || 'testing-secret', 
-            { expiresIn: '1h' }
-        );
-
-        res.json({ token: token});
-
-    } catch (error) {
-      logger.error('Error in /login endpoint', error);
-      res.status(500).json({ error: 'Internal Server Error' });
+  check('user').notEmpty().withMessage('Missing required field: user'),
+  check('user.username').isLength({ min: 3 }).trim().escape().withMessage('Invalid username value'),
+  check('user.password').isLength({ min: 3 }).trim().escape().withMessage('Invalid password value'),
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ error: errors.array().map(err => err.msg).join(', ') });
     }
+
+    const { user } = req.body;
+    let userResponse;
+    try {
+      userResponse = await axios.get(`${gatewayServiceUrl}/users/${user.username}`);
+    } catch (err) {
+      if (err.response && err.response.status === 404) {
+        logger.error(`Failure in login: user ${user.username} not found`);
+        return res.status(401).json({ error: 'Not a valid user' });
+      }
+      throw err; // Re-throw other errors (e.g., network issues)
+    }
+    const userFromDB = userResponse.data;
+    if (!userFromDB || userFromDB.length === 0) {
+      logger.error(`Failure in login: user ${user.username} not found`);
+      return res.status(401).json({ error: 'Not a valid user' });
+    }
+
+    const passwordMatch = await bcrypt.compare(user.password, userFromDB.password);
+    if (!passwordMatch) {
+      logger.error(`Failure in login: invalid password for user ${user.username}`);
+      return res.status(401).json({ error: 'Not a valid password' });
+    }
+
+    const token = jwt.sign(
+      { username: userFromDB.username, role: userFromDB.role },
+      process.env.JWT_SECRET || 'testing-secret',
+      { expiresIn: '1h' }
+    );
+
+    res.json({ token: token });
+  } catch (error) {
+    logger.error('Error in /login endpoint', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
 });
 
 
@@ -77,7 +83,7 @@ router.post('/register', [
 
       try {
         // Creating a new user by sending a POST request to the user service
-        const newUserResponse = await axios.post('http://localhost:8001/users', { username, password, role });
+        const newUserResponse = await axios.post(`${gatewayServiceUrl}/users`, { username, password, role });
         const newUser = newUserResponse.data;
 
         // Hashing the password before sending it back
