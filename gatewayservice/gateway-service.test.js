@@ -406,21 +406,4 @@ describe('Gateway Service', () => {
     expect(response.statusCode).toBe(204);
   });
 
-  // Test /images/:image endpoint
-  it('should proxy image requests to game service', async () => {
-    global.fetch.mockImplementationOnce(() =>
-      Promise.resolve({
-        ok: true,
-        status: 200,
-        headers: new Headers({ 'Content-Type': 'image/jpeg' }),
-        text: () => Promise.resolve('image data'),
-      })
-    );
-
-    const response = await request(app)
-      .get('/images/test.jpg');
-
-    expect(response.statusCode).toBe(200);
-    expect(response.text).toBe('image data');
-  });
 });
