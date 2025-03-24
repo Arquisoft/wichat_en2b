@@ -74,7 +74,6 @@ const AddUser = () => {
       }
 
       await axios.post(`${apiEndpoint}/register`, User);
-
       setOpenSnackbar(true);
     } catch (error) {
       setError(error.response.data.error);
