@@ -78,22 +78,18 @@ const AddUser = () => {
 
       await axios.post(`${apiEndpoint}/adduser`, User).then((response) => {
         console.log(response);
+        router.push('/login');
       });
       setOpenSnackbar(true);
 
-      router.push('/login');
-      
+
     } catch (error) {    
       if (error.response && error.response.status === 400 && error.response.data.error === 'Username already exists') {
         const newErrors = { ...validationErrors };
         newErrors.username = 'Username already exists'; // Set the error message for the username field
         setValidationErrors(newErrors);
-      } else if (error.response && error.response.data && error.response.data.error) {
-        setError(error.response.data.error); // Use the error message from the server
-      } else if (error.response && error.response.data) {
-        setError(error.response.data); // Use the entire response data if no specific error field exists
       } else {
-        setError('An unexpected error occurred'); // Fallback for network or other errors
+        console.error(error);
       }
     } finally{
       setIsSubmitting(false)
