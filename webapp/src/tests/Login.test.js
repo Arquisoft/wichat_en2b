@@ -36,7 +36,7 @@ describe('Login Component', () => {
     expect(screen.getByLabelText('Password')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Login' })).toBeInTheDocument();
     expect(screen.getByText('Don’t have an account?')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Register here' })).toHaveAttribute('href', '/register');
+    expect(screen.getByRole('link', { name: 'Register here' })).toHaveAttribute('href', '/addUser');
   });
 
   test('updates username and password inputs on change', () => {
