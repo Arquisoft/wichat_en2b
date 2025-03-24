@@ -14,6 +14,7 @@ import {
   CircularProgress,
 } from "@mui/material";
 import '../../styles/register/Register.css';
+import { useRouter } from "next/navigation";
 
 const apiEndpoint = process.env.GATEWAY_SERVICE_URL || 'http://localhost:8000';
 
@@ -27,6 +28,8 @@ const AddUser = () => {
   const [validationErrors, setValidationErrors] = useState({});
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const router = useRouter();
 
   const validateForm = () => {
     const newErrors = {}
@@ -77,6 +80,9 @@ const AddUser = () => {
         console.log(response);
       });
       setOpenSnackbar(true);
+
+      router.push('/login');
+      
     } catch (error) {    
       if (error.response && error.response.status === 400 && error.response.data.error === 'Username already exists') {
         const newErrors = { ...validationErrors };
@@ -120,10 +126,10 @@ const AddUser = () => {
               required
               fullWidth
               id="username"
-              label="Username"
               name="username"
               variant="standard"
               autoComplete="username"
+              placeholder='Username *'
               autoFocus
               value={username}
               onChange={(e) => setUsername(e.target.value)}
@@ -136,10 +142,10 @@ const AddUser = () => {
               required
               fullWidth
               name="password"
-              label="Password"
               type="password"
               id="password"
               variant="standard"
+              placeholder='Password *'
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               error={!!validationErrors.password}
@@ -151,15 +157,17 @@ const AddUser = () => {
               required
               fullWidth
               name="confirmPassword"
-              label="Confirm Password"
               type="password"
               id="confirmPassword"
               variant="standard"
+              placeholder='Confirm Password *'
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               error={!!validationErrors.confirmPassword}
               helperText={validationErrors.confirmPassword}
             />
+
+            <a href="/login" className="login-link">Already have an account? Login here</a>
 
             <Button className='register-button' type="submit" fullWidth variant="contained" 
               sx={{ mt: 3, mb: 2, py: 1.5 }} disabled={isSubmitting}>

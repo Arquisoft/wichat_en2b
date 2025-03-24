@@ -68,7 +68,6 @@
 }
 
 .input-group {
-    margin-bottom: 1.75rem;
     text-align: left;
     position: relative;
 }
@@ -87,8 +86,7 @@
     width: 100%;
     padding: 1rem 1rem;
     border: none;
-    border-radius: 8px;
-    background: rgba(224, 224, 224, 0.9);
+    background: rgba(255, 255, 255, 0.9);
     font-size: 1rem;
     color: #1a1a2e;
     outline: none;
@@ -103,7 +101,7 @@
 }
 
 .input-group input::placeholder {
-    color: #a0a0c0;
+    color: linear-gradient(to right, #621d6e, #691531);
     font-style: italic;
 }
 
