@@ -19,4 +19,4 @@ const server = app.listen(port, () => {
     console.log(`Auth server listening at http://localhost:${port}`);
 });
 
-module.exports = { app, server };
+module.exports = server;
