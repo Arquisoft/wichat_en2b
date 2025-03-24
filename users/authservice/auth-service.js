@@ -1,5 +1,6 @@
 const express = require('express');
 const authRouter = require('./routers/AuthRouter');
+const router2fa = require('./routers/2faRouter');
 require('dotenv').config(); 
 
 const app = express();
@@ -13,6 +14,7 @@ app.disable('x-powered-by');
 
 // Routers
 app.use("/auth", authRouter); 
+app.use("/auth", router2fa); 
 
 // Start the server
 const server = app.listen(port, () => {

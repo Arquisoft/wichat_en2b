@@ -29,6 +29,11 @@ const userSchema = new mongoose.Schema({
       type: Date,
       default: Date.now,
       immutable: true,
+    }, secret: {
+      type: String,
+      required: false,
+      unique: true,
+      validate: [noWhitespaceValidator],
     },
 });
 

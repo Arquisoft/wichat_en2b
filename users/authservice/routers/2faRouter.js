@@ -6,27 +6,49 @@ const qrcode = require("qrcode")
 require('dotenv').config(); 
 
 const router = express.Router();
-
-// Endpoint to login a user and return a JWT token
-router.post('/setup2fa',
-  async (req, res) => {
-    try {
-      const secret = otplib.authenticator.generateSecret();
-      qrcode.toDataURL(
-        otplib.authenticator.keyuri(req.user,"wichat_en2b",secret),
-        (err, imageUrl) => {
-          if(err){
-            return res.status(500).send("Error generating QR code");
-          }
-          res.send({ secret, imageUrl})
+// Endpoint to set-up a 2fa
+router.post('/setup2fa', async (req, res) => {
+  try {
+    const secret = otplib.authenticator.generateSecret();
+    qrcode.toDataURL(
+      otplib.authenticator.keyuri("user", "wichat_en2b", secret),
+      (err, imageUrl) => {
+        if (err) {
+          return res.status(500).send("Error generating QR code");
         }
-      )
-
-    } catch (error) {
-     
-    }
+        res.send({ secret, imageUrl });
+      }
+    );
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Error setting up 2FA");
+  }
 });
 
+router.post('/verify2fa', async (req, res) => {
+  try {
+    const { token, secret } = req.body;
 
+    // Validate input
+    if (!token || !secret) {
+      return res.status(400).send("Token and Secret are required");
+    }
+
+    // Verify the token using the otplib authenticator
+    const isValid = otplib.authenticator.verify({ token, secret });
+
+    if (isValid) {
+      // If the token is valid, return a success message
+      res.send("2FA Verified");
+    } else {
+      // If the token is invalid, return an error
+      res.status(400).send("Invalid 2FA Token");
+    }
+  } catch (error) {
+    // Handle any unexpected errors
+    console.error(error);
+    res.status(500).send("Error verifying 2FA token");
+  }
+});
 
 module.exports = router;
