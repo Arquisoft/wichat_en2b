@@ -44,8 +44,9 @@ const forwardRequest = async (service, endpoint, req, res) => {
     });
 
     if (!response.ok) {
-      return res.status(response.status === 404 ? 404 : 500).json({
-        error: 'Hubo un problema al procesar la solicitud',
+      const errorData = await response.json();
+      return res.status(response.status).json({
+        error: errorData.error || 'Hubo un problema al procesar la solicitud',
       });
     }
 
@@ -67,7 +68,7 @@ app.post('/login', (req, res) => forwardRequest('auth', '/login', req, res));
 
 // User Management
 app.use('/adduser', restrictedCors);
-app.post('/adduser', (req, res) => forwardRequest('user', '/adduser', req, res));
+app.post('/adduser', (req, res) => forwardRequest('user', '/users', req, res));
 
 // LLM Question Handling
 app.use('/askllm', restrictedCors);

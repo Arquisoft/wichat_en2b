@@ -3,7 +3,7 @@
     justify-content: center;
     align-items: center;
     height: 100vh;
-    background: linear-gradient(135deg, #1e1e2f 0%, #3a3a5a 100%);
+    background: linear-gradient(to right, #290a2e, #380717);
     overflow: hidden;
     position: relative;
 }
@@ -20,7 +20,7 @@
 }
 
 .register-card {
-    background: rgba(255, 255, 255, 0.95);
+    background: rgba(95, 95, 95, 0.95);
     padding: 2.5rem;
     border-radius: 16px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2), 0 0 50px rgba(0, 123, 255, 0.1);
@@ -53,7 +53,7 @@
     letter-spacing: -0.5px;
     font-size: 2rem;
     text-transform: uppercase;
-    background: linear-gradient(to right, #007bff, #00ddeb);
+    background: linear-gradient(to right, #9c27b0, #e91e63);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
@@ -88,7 +88,7 @@
     padding: 1rem 1rem;
     border: none;
     border-radius: 8px;
-    background: rgba(245, 245, 250, 0.9);
+    background: rgba(157, 157, 160, 0.9);
     font-size: 1rem;
     color: #1a1a2e;
     outline: none;
@@ -98,7 +98,7 @@
 }
 
 .input-group input:focus {
-    background: #fff;
+    background: #838181;
     box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.3), inset 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
@@ -110,7 +110,7 @@
 .register-button {
     width: 100%;
     padding: 1rem;
-    background: linear-gradient(90deg, #007bff 0%, #00ddeb 100%);
+    background: linear-gradient(to right, #9c27b0, #e91e63);
     color: #fff;
     border: none;
     border-radius: 8px;
@@ -162,7 +162,7 @@
 }
 
 .register-link a {
-    color: #00ddeb;
+    color: linear-gradient(to right, #9c27b0, #e91e63);
     text-decoration: none;
     font-weight: 500;
     position: relative;
@@ -176,7 +176,7 @@
     height: 2px;
     bottom: -4px;
     left: 0;
-    background: #00ddeb;
+    background: linear-gradient(to right, #9c27b0, #e91e63);
     transition: width 0.3s ease;
 }
 
@@ -185,13 +185,13 @@
 }
 
 .register-link a:hover {
-    color: #007bff;
+    color: linear-gradient(to right, #9c27b0, #e91e63);
 }
 
 .register-card .error-message {
     color: #d9534f;
     margin-bottom: 1rem;
-    font-size: 0.9rem;
+    font-size: 0.8rem;
 }
 
 /* Animations */

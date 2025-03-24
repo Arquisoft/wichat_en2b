@@ -63,7 +63,7 @@ const AddUser = () => {
     setIsSubmitting(true)
 
     try {
-      setDate(Date.now());
+      setDate(new Date().toLocaleDateString());
       setRole('USER');
       const User =
       {
@@ -73,10 +73,22 @@ const AddUser = () => {
         createdAt:date
       }
 
-      await axios.post(`${apiEndpoint}/register`, User);
+      await axios.post(`${apiEndpoint}/adduser`, User).then((response) => {
+        console.log(response);
+      });
       setOpenSnackbar(true);
-    } catch (error) {
-      setError(error.response.data.error);
+    } catch (error) {    
+      if (error.response && error.response.status === 400 && error.response.data.error === 'Username already exists') {
+        const newErrors = { ...validationErrors };
+        newErrors.username = 'Username already exists'; // Set the error message for the username field
+        setValidationErrors(newErrors);
+      } else if (error.response && error.response.data && error.response.data.error) {
+        setError(error.response.data.error); // Use the error message from the server
+      } else if (error.response && error.response.data) {
+        setError(error.response.data); // Use the entire response data if no specific error field exists
+      } else {
+        setError('An unexpected error occurred'); // Fallback for network or other errors
+      }
     } finally{
       setIsSubmitting(false)
     }
@@ -87,8 +99,8 @@ const AddUser = () => {
   };
 
   return (
-    <Container component="main" className='register-container' maxWidth="xs">
-      <Card sx={{ width: "100%", maxWidth: 450, boxShadow: 3 }} className='register-card'>
+    <div component="main" className='register-container'>
+      <Card sx={{ width: "100%", boxShadow: 3 }} className='register-card'>
         <CardHeader
           title={
             <Typography variant="h5" align="center" fontWeight="bold">
@@ -162,13 +174,13 @@ const AddUser = () => {
             </Button>
             <Snackbar open={openSnackbar} autoHideDuration={6000} onClose={handleCloseSnackbar} message="User added successfully" />
               {error && (
-                <Snackbar open={!!error} autoHideDuration={6000} onClose={() => setError('')} message={`Error: ${error}`} />
+                <Snackbar open={!!error} autoHideDuration={6000} onClose={() => setError('')} message={error} />
               )}
           </Box>
         </CardContent>
       </Card>
 
-    </Container>
+    </div>
   );
 };
 
