@@ -14,10 +14,10 @@ module.exports = {
         '^.+\\.(js|jsx|ts|tsx)$': '@swc/jest',
       },
     },
-    //{
-     //displayName: 'e2e',
-     //setupFilesAfterEnv: ['expect-puppeteer'],
-     //testMatch: ['<rootDir>/e2e/**/*.js'],
-    //},
+    {
+       displayName: 'e2e',
+       setupFilesAfterEnv: ['expect-puppeteer'],
+       testMatch: ['<rootDir>/e2e/**/*.js'],
+    },
   ],
 };
