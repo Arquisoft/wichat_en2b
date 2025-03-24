@@ -35,11 +35,11 @@ afterAll(() => {
 describe('Auth Service', () => {
   describe('POST /register', () => {
     it('Should register a new user', async () => {
-      // This line mocks an HTTP petition to the /register endpoint and its response
+      // This line mocks an HTTP petition to the /auth/register endpoint and its response
       axios.post.mockResolvedValue({ data: { token: 'JWT_TOKEN' } });
   
       const response = await request(app)
-        .post('/register')
+        .post('/auth/register')
         .send({ username: newUser.username, password: newUser.password, role: newUser.role });
   
       expect(response.status).toBe(201); // 201 == Created status code
@@ -53,7 +53,7 @@ describe('Auth Service', () => {
       });
   
       const response = await request(app)
-        .post('/register')
+        .post('/auth/register')
         .send({ username: validUser.username, password: validUser.password, role: validUser.role });
   
       expect(response.status).toBe(400);
@@ -62,7 +62,7 @@ describe('Auth Service', () => {
   
     it('Should not register a user if required fields are missing', async () => {
       const response = await request(app)
-        .post('/register')
+        .post('/auth/register')
         .send({ username: 'incompleteuser' });  // Missing password and role
   
       expect(response.status).toBe(400);
@@ -71,7 +71,7 @@ describe('Auth Service', () => {
   
     it('Should not register a user with an invalid role', async () => {
       const invalidRoleUser = { username: 'testuser', password: 'testpassword', role: 'invalidrole' }; // NOSONAR
-      const response = await request(app).post('/register').send(invalidRoleUser);
+      const response = await request(app).post('/auth/register').send(invalidRoleUser);
   
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty('error', "Role must be one of the following: USER, ADMIN");
@@ -79,7 +79,7 @@ describe('Auth Service', () => {
   
     it('Should not register a user if the password is too short', async () => {
       const shortPasswordUser = { username: 'user', password: '123', role: 'user' }; // NOSONAR
-      const response = await request(app).post('/register').send(shortPasswordUser);
+      const response = await request(app).post('/auth/register').send(shortPasswordUser);
   
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty('error',"Password must be at least 6 characters");
@@ -89,7 +89,7 @@ describe('Auth Service', () => {
       axios.post.mockRejectedValue(new Error('Database error')); // This line mocks the response from the crud service when an error occurs
   
       const response = await request(app)
-        .post('/register')
+        .post('/auth/register')
         .send({ username: newUser.username, password: newUser.password, role: newUser.role });
   
       expect(response.status).toBe(500);
@@ -102,7 +102,7 @@ describe('Auth Service', () => {
   
     it('Should return a 400 error if required fields are missing during registration', async () => {
       const response = await request(app)
-        .post('/register')
+        .post('/auth/register')
         .send({ username: 'incompleteuser' });  // Missing password and role
   
       expect(response.status).toBe(400);
@@ -127,7 +127,7 @@ describe('Auth Service', () => {
       bcrypt.compare.mockResolvedValue(true);
 
       const response = await request(app)
-        .post('/login')
+        .post('/auth/login')
         .send({ user: userToCheck });
 
       expect(response.status).toBe(200);
@@ -138,7 +138,7 @@ describe('Auth Service', () => {
       axios.get.mockResolvedValue({ data: null });
 
       const response = await request(app)
-        .post('/login')
+        .post('/auth/login')
         .send({ user: { ...validUser, username: 'nonexistent', id: '999' } });
 
       expect(response.status).toBe(401);
@@ -151,7 +151,7 @@ describe('Auth Service', () => {
       bcrypt.compare.mockResolvedValue(false);
 
       const response = await request(app)
-        .post('/login')
+        .post('/auth/login')
         .send({ user: validUser });
 
       expect(response.status).toBe(401);
@@ -160,7 +160,7 @@ describe('Auth Service', () => {
 
     it('Should not log in if required fields are missing', async () => {
       const response = await request(app)
-        .post('/login')
+        .post('/auth/login')
         .send({ user: { username: validUser.username } }); // Missing password
 
       expect(response.status).toBe(400);
@@ -171,17 +171,17 @@ describe('Auth Service', () => {
       axios.get.mockRejectedValue(new Error('Database error'));  
 
       const response = await request(app)
-        .post('/login')
+        .post('/auth/login')
         .send({ user: validUser });
     
       expect(response.status).toBe(500);
       expect(response.body).toHaveProperty('error', 'Internal Server Error');
-      expect(logger.error).toHaveBeenCalledWith('Error in /login endpoint:', expect.any(Error));
+      expect(logger.error).toHaveBeenCalledWith('Error in /login endpoint', expect.any(Error));
     });
 
     it('Should return a 400 error if required fields are missing during login', async () => {
       const response = await request(app)
-        .post('/login')
+        .post('/auth/login')
         .send({ user: { username: 'testuser' } });  // Missing password
     
       expect(response.status).toBe(400);
