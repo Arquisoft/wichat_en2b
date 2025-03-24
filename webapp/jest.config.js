@@ -15,9 +15,9 @@ module.exports = {
       },
     },
     //{
-    //  displayName: 'e2e',
-    //  setupFilesAfterEnv: ['expect-puppeteer'],
-    //  testMatch: ['<rootDir>/e2e/**/*.js'],
-    //}, These tetsts are obsolete
+     //displayName: 'e2e',
+     //setupFilesAfterEnv: ['expect-puppeteer'],
+     //testMatch: ['<rootDir>/e2e/**/*.js'],
+    //},
   ],
 };

@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "jest"
+    "test": "jest",
+    "test:e2e": "start-server-and-test 'node e2e/test-environment-setup.js' http://localhost:8000/health prod 3000 \"cd e2e && jest\"",
+    "prod": "serve -s build"
   },
   "dependencies": {
     "@babel/preset-env": "^7.26.9",
@@ -46,6 +48,8 @@
     "jest-environment-puppeteer": "^11.0.0",
     "jest-puppeteer": "^11.0.0",
     "lightningcss": "^1.29.3",
+    "serve": "^14.2.4",
+    "start-server-and-test": "^2.0.11",
     "tailwindcss": "^4"
   }
 }
