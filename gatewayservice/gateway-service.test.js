@@ -25,7 +25,7 @@ describe('Gateway Service', () => {
   
     const response = await request(app)
       .post('/login')
-      .send({ user: { username: 'testuser', password: 'testpassword' } }); // Match auth service expectation
+      .send({ user: { username: 'testuser', password: 'testpassword' } }); // NOSONAR
   
     expect(response.statusCode).toBe(200);
     expect(response.body.token).toBe('mockedToken');
@@ -44,7 +44,7 @@ describe('Gateway Service', () => {
 
     const response = await request(app)
       .post('/adduser')
-      .send({ username: 'newuser', password: 'newpassword' });
+      .send({ username: 'newuser', password: 'newpassword' }); // NOSONAR
 
     expect(response.statusCode).toBe(200);
     expect(response.body.userId).toBe('mockedUserId');
@@ -294,21 +294,23 @@ describe('Gateway Service', () => {
     });
   });
 
-  // Test /users POST endpoint
-  it('should forward create user request to user service', async () => {
+  const mockFetchForUsers = (data, status = 200) => {
     global.fetch.mockImplementationOnce(() =>
       Promise.resolve({
         ok: true,
-        status: 201,
+        status,
         headers: new Headers({ 'Content-Type': 'application/json' }),
-        json: () => Promise.resolve({ userId: 'newUserId' }),
+        json: () => Promise.resolve(data),
       })
     );
+  };
 
+  // Test /users POST endpoint
+  it('should forward create user request to user service', async () => {
+    mockFetchForUsers({ userId: 'newUserId' }, 201);
     const response = await request(app)
       .post('/users')
       .send({ username: 'testuser', data: 'testdata' });
-
     expect(response.statusCode).toBe(201);
     expect(response.body.userId).toBe('newUserId');
   });
@@ -316,36 +318,18 @@ describe('Gateway Service', () => {
   // Test /users GET endpoint
   it('should forward get all users request to user service', async () => {
     const mockUsers = [{ username: 'user1' }, { username: 'user2' }];
-    global.fetch.mockImplementationOnce(() =>
-      Promise.resolve({
-        ok: true,
-        status: 200,
-        headers: new Headers({ 'Content-Type': 'application/json' }),
-        json: () => Promise.resolve(mockUsers),
-      })
-    );
-
+    mockFetchForUsers(mockUsers);
     const response = await request(app)
       .get('/users');
-
     expect(response.statusCode).toBe(200);
     expect(response.body).toEqual(mockUsers);
   });
 
   it('should forward get user by id request to user service', async () => {
     const mockUser = { username: 'testuser', id: '123' };
-    global.fetch.mockImplementationOnce(() =>
-      Promise.resolve({
-        ok: true,
-        status: 200,
-        headers: new Headers({ 'Content-Type': 'application/json' }),
-        json: () => Promise.resolve(mockUser),
-      })
-    );
-
+    mockFetchForUsers(mockUser);
     const response = await request(app)
       .get('/users?id=123');
-
     expect(response.statusCode).toBe(200);
     expect(response.body).toEqual(mockUser);
   });
@@ -353,18 +337,9 @@ describe('Gateway Service', () => {
   // Test /users/:username GET endpoint
   it('should forward get user by username request to user service', async () => {
     const mockUser = { username: 'testuser', data: 'testdata' };
-    global.fetch.mockImplementationOnce(() =>
-      Promise.resolve({
-        ok: true,
-        status: 200,
-        headers: new Headers({ 'Content-Type': 'application/json' }),
-        json: () => Promise.resolve(mockUser),
-      })
-    );
-
+    mockFetchForUsers(mockUser);
     const response = await request(app)
       .get('/users/testuser');
-
     expect(response.statusCode).toBe(200);
     expect(response.body).toEqual(mockUser);
   });
@@ -372,38 +347,19 @@ describe('Gateway Service', () => {
   // Test /users/:username PATCH endpoint
   it('should forward update user request to user service', async () => {
     const mockUpdatedUser = { username: 'testuser', data: 'updateddata' };
-    global.fetch.mockImplementationOnce(() =>
-      Promise.resolve({
-        ok: true,
-        status: 200,
-        headers: new Headers({ 'Content-Type': 'application/json' }),
-        json: () => Promise.resolve(mockUpdatedUser),
-      })
-    );
-
+    mockFetchForUsers(mockUpdatedUser);
     const response = await request(app)
       .patch('/users/testuser')
       .send({ data: 'updateddata' });
-
     expect(response.statusCode).toBe(200);
     expect(response.body).toEqual(mockUpdatedUser);
   });
 
   // Test /users/:username DELETE endpoint
   it('should forward delete user request to user service', async () => {
-    global.fetch.mockImplementationOnce(() =>
-      Promise.resolve({
-        ok: true,
-        status: 204,
-        headers: new Headers({ 'Content-Type': 'application/json' }),
-        json: () => Promise.resolve({}),
-      })
-    );
-
+    mockFetchForUsers({}, 204);
     const response = await request(app)
       .delete('/users/testuser');
-
     expect(response.statusCode).toBe(204);
   });
-
 });

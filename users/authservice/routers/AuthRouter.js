@@ -8,7 +8,7 @@ require('dotenv').config();
 
 const router = express.Router();
 const validRoles = ['USER', 'ADMIN'];
-const gatewayServiceUrl = process.env.GATEWAY_SERVICE_URL || 'http://gatewayservice:8000'; // Default to container name
+const gatewayServiceUrl = process.env.GATEWAY_SERVICE_URL || 'http://gatewayservice:8000'; // NOSONAR
 // Endpoint to login a user and return a JWT token
 router.post('/login', [
   check('user').notEmpty().withMessage('Missing required field: user'),
