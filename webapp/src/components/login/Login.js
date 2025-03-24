@@ -1,22 +1,26 @@
-import React, { useState } from 'react';
-import '../../styles/login/Login.css'; // We'll define the styles separately
+"use client";
+
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
+import "../../styles/login/Login.css";
 
 const Login = () => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setLoading(true);
 
     try {
-      const response = await fetch('http://localhost:8000/login', {
-        method: 'POST',
+      const response = await fetch("http://localhost:8000/login", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           user: {
@@ -29,14 +33,12 @@ const Login = () => {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Login failed');
+        throw new Error(data.error || "Login failed");
       }
 
-      // Successful login - store the token (e.g., in localStorage) and redirect
-      localStorage.setItem('token', data.token);
-      alert('Login successful! Token stored in localStorage.');
-      window.location.href = "/";
-      // Redirect to game page or dashboard (e.g., window.location.href = '/game');
+      // Set token in cookies instead of localStorage
+      document.cookie = `token=${data.token}; path=/; max-age=3600`; // Expires in 1 hour
+      router.push("/"); // Redirect to home
     } catch (err) {
       setError(err.message);
     } finally {
@@ -76,7 +78,7 @@ const Login = () => {
             />
           </div>
           <button type="submit" className="login-button" disabled={loading}>
-            {loading ? 'Logging in...' : 'Login'}
+            {loading ? "Logging in..." : "Login"}
           </button>
         </form>
         <p className="register-link">

@@ -77,6 +77,7 @@ app.post('/login', (req, res) => forwardRequest('auth', '/auth/login', req, res)
 app.use('/adduser', restrictedCors);
 app.post('/adduser', (req, res) => forwardRequest('auth', '/auth/register', req, res));
 
+app.use('/users', restrictedCors);
 app.post('/users', (req, res) => forwardRequest('user', '/users', req, res));
 
 app.get('/users', (req, res) => {
