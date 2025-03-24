@@ -3,7 +3,7 @@ const app = require('./gateway-service');
 
 afterAll(async () => {
     app.close();
-  });
+});
 global.fetch = jest.fn();
 jest.mock('axios');
 
@@ -168,7 +168,7 @@ describe('Gateway Service', () => {
     );
   });
 
-// Test /statistics/global endpoint
+  // Test /statistics/global endpoint
   it('should forward global statistics request to game service', async () => {
     const mockGlobalStats = {
       stats: {
@@ -206,7 +206,7 @@ describe('Gateway Service', () => {
     );
   });
 
-// Test /leaderboard endpoint
+  // Test /leaderboard endpoint
   it('should forward leaderboard request to game service', async () => {
     const mockLeaderboard = {
       leaderboard: [
@@ -240,7 +240,7 @@ describe('Gateway Service', () => {
     );
   });
 
-// Test error handling
+  // Test error handling
   describe('Error handling for statistics endpoints', () => {
     const errorScenarios = [
       {
@@ -292,5 +292,135 @@ describe('Gateway Service', () => {
         });
       });
     });
+  });
+
+  // Test /users POST endpoint
+  it('should forward create user request to user service', async () => {
+    global.fetch.mockImplementationOnce(() =>
+      Promise.resolve({
+        ok: true,
+        status: 201,
+        headers: new Headers({ 'Content-Type': 'application/json' }),
+        json: () => Promise.resolve({ userId: 'newUserId' }),
+      })
+    );
+
+    const response = await request(app)
+      .post('/users')
+      .send({ username: 'testuser', data: 'testdata' });
+
+    expect(response.statusCode).toBe(201);
+    expect(response.body.userId).toBe('newUserId');
+  });
+
+  // Test /users GET endpoint
+  it('should forward get all users request to user service', async () => {
+    const mockUsers = [{ username: 'user1' }, { username: 'user2' }];
+    global.fetch.mockImplementationOnce(() =>
+      Promise.resolve({
+        ok: true,
+        status: 200,
+        headers: new Headers({ 'Content-Type': 'application/json' }),
+        json: () => Promise.resolve(mockUsers),
+      })
+    );
+
+    const response = await request(app)
+      .get('/users');
+
+    expect(response.statusCode).toBe(200);
+    expect(response.body).toEqual(mockUsers);
+  });
+
+  it('should forward get user by id request to user service', async () => {
+    const mockUser = { username: 'testuser', id: '123' };
+    global.fetch.mockImplementationOnce(() =>
+      Promise.resolve({
+        ok: true,
+        status: 200,
+        headers: new Headers({ 'Content-Type': 'application/json' }),
+        json: () => Promise.resolve(mockUser),
+      })
+    );
+
+    const response = await request(app)
+      .get('/users?id=123');
+
+    expect(response.statusCode).toBe(200);
+    expect(response.body).toEqual(mockUser);
+  });
+
+  // Test /users/:username GET endpoint
+  it('should forward get user by username request to user service', async () => {
+    const mockUser = { username: 'testuser', data: 'testdata' };
+    global.fetch.mockImplementationOnce(() =>
+      Promise.resolve({
+        ok: true,
+        status: 200,
+        headers: new Headers({ 'Content-Type': 'application/json' }),
+        json: () => Promise.resolve(mockUser),
+      })
+    );
+
+    const response = await request(app)
+      .get('/users/testuser');
+
+    expect(response.statusCode).toBe(200);
+    expect(response.body).toEqual(mockUser);
+  });
+
+  // Test /users/:username PATCH endpoint
+  it('should forward update user request to user service', async () => {
+    const mockUpdatedUser = { username: 'testuser', data: 'updateddata' };
+    global.fetch.mockImplementationOnce(() =>
+      Promise.resolve({
+        ok: true,
+        status: 200,
+        headers: new Headers({ 'Content-Type': 'application/json' }),
+        json: () => Promise.resolve(mockUpdatedUser),
+      })
+    );
+
+    const response = await request(app)
+      .patch('/users/testuser')
+      .send({ data: 'updateddata' });
+
+    expect(response.statusCode).toBe(200);
+    expect(response.body).toEqual(mockUpdatedUser);
+  });
+
+  // Test /users/:username DELETE endpoint
+  it('should forward delete user request to user service', async () => {
+    global.fetch.mockImplementationOnce(() =>
+      Promise.resolve({
+        ok: true,
+        status: 204,
+        headers: new Headers({ 'Content-Type': 'application/json' }),
+        json: () => Promise.resolve({}),
+      })
+    );
+
+    const response = await request(app)
+      .delete('/users/testuser');
+
+    expect(response.statusCode).toBe(204);
+  });
+
+  // Test /images/:image endpoint
+  it('should proxy image requests to game service', async () => {
+    global.fetch.mockImplementationOnce(() =>
+      Promise.resolve({
+        ok: true,
+        status: 200,
+        headers: new Headers({ 'Content-Type': 'image/jpeg' }),
+        text: () => Promise.resolve('image data'),
+      })
+    );
+
+    const response = await request(app)
+      .get('/images/test.jpg');
+
+    expect(response.statusCode).toBe(200);
+    expect(response.text).toBe('image data');
   });
 });
