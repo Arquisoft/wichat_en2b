@@ -14,10 +14,11 @@ module.exports = {
         '^.+\\.(js|jsx|ts|tsx)$': '@swc/jest',
       },
     },
-    //{
-    //  displayName: 'e2e',
-    //  setupFilesAfterEnv: ['expect-puppeteer'],
-    //  testMatch: ['<rootDir>/e2e/**/*.js'],
-    //}, These tetsts are obsolete
+    {
+       displayName: 'e2e',
+       globalSetup:'<rootDir>/e2e/test-environment-setup.js',
+       setupFilesAfterEnv: ['expect-puppeteer'],
+       testMatch: ['<rootDir>/e2e/steps/*.js'],
+    },
   ],
 };
