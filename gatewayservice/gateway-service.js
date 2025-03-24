@@ -31,7 +31,6 @@ app.use(promBundle({ includeMethod: true }));
 app.get('/health', (req, res) => res.json({ status: 'OK' }));
 
 // Helper function for forwarding requests using fetch
-// Helper function for forwarding requests using fetch
 const forwardRequest = async (service, endpoint, req, res) => {
   try {
     const response = await fetch(`${serviceUrls[service]}${endpoint}`, {
@@ -43,16 +42,19 @@ const forwardRequest = async (service, endpoint, req, res) => {
       },
       body: req.method !== 'GET' ? JSON.stringify(req.body) : undefined, // Only include body for non-GET requests
     });
+
     if (!response.ok) {
-      return res.status(response.status).json(
-        response.json()
-      );
+      return res.status(response.status === 404 ? 404 : 500).json({
+        error: 'Hubo un problema al procesar la solicitud',
+      });
     }
 
     const data = await response.json();
     res.json(data);
   } catch (error) {
-    console.error(`Error forwarding request to ${service}${endpoint}:`, error.message, error.stack);
+    console.error(`Error forwarding request to ${service}${endpoint}:`, error.message);
+
+    // Handle fetch errors
     res.status(500).json({
       error: 'Hubo un problema al procesar la solicitud',
     });
@@ -68,33 +70,13 @@ app.get('/api/users', (req, res) => forwardRequest('user', '/users', req, res));
 // Questions API
 app.get('/api/questions', (req, res) => forwardRequest('game', '/questions', req, res));
 
-app.post('/users', (req, res) => forwardRequest('user', '/users', req, res));
-
-app.get('/users', (req, res) => {
-  const { id } = req.query;
-  const endpoint = id ? `/users?id=${id}` : '/users';
-  forwardRequest('user', endpoint, req, res);
-});
-
-app.get('/users/:username', (req, res) => {
-  forwardRequest('user', `/users/${req.params.username}`, req, res);
-});
-
-app.patch('/users/:username', (req, res) => {
-  forwardRequest('user', `/users/${req.params.username}`, req, res);
-});
-
-app.delete('/users/:username', (req, res) => {
-  forwardRequest('user', `/users/${req.params.username}`, req, res);
-});
-
 // Authentication
 app.use('/login', restrictedCors);
 app.post('/login', (req, res) => forwardRequest('auth', '/login', req, res));
 
 // User Management
-app.use('/register', restrictedCors);
-app.post('/register', (req, res) => forwardRequest('auth', '/register', req, res));
+app.use('/adduser', restrictedCors);
+app.post('/adduser', (req, res) => forwardRequest('user', '/adduser', req, res));
 
 // LLM Question Handling
 app.use('/askllm', restrictedCors);
