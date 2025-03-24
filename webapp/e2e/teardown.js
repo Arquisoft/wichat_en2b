@@ -5,7 +5,7 @@ module.exports = async () => {
 
     global.llmservice.close();
 
-    global.authservice.close();
+    global.authservice.server.close();
 
     global.userservice.close();
 
