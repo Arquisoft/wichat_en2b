@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "test": "jest",
-    "test:e2e": "start-server-and-test 'node e2e/test-environment-setup.js' http://localhost:8000/health prod 3000 jest e2e",
+    "test:e2e": "start-server-and-test 'node e2e/test-environment-setup.js' http://localhost:8000/health prod 3000 \"jest e2e\"",
     "prod": "serve -s build"
   },
   "dependencies": {
@@ -42,12 +42,14 @@
     "@swc/jest": "^0.2.37",
     "@tailwindcss/postcss": "^4",
     "expect-puppeteer": "^11.0.0",
+    "express": "^4.21.2",
     "identity-obj-proxy": "^3.0.0",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
     "jest-environment-puppeteer": "^11.0.0",
     "jest-puppeteer": "^11.0.0",
     "lightningcss": "^1.29.3",
+    "puppeteer": "^24.4.0",
     "serve": "^14.2.4",
     "start-server-and-test": "^2.0.11",
     "tailwindcss": "^4"
