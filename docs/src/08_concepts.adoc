@@ -75,3 +75,9 @@ The architectural design of WIChat ensures that the system can handle fluctuatin
 
 === 5. Consistency in User Experience (UX)
 A unified user experience is essential for user satisfaction and system usability:
+
+==== UI/UX Guidelines
+* **Design Consistency:** Adherence to a comprehensive style guide ensures that all user interfaces are consistent in terms of colors, typography, and layout.
+* **Responsive Design:** The application is designed to function seamlessly across various devices, including desktops, tablets, and smartphones.
+* **User-Centered Design:** Interfaces are crafted based on user feedback and usability testing, ensuring intuitive navigation and interaction.
+* **Real-Time Feedback:** Mechanisms for providing immediate feedback (e.g., progress indicators, confirmation messages) enhance the overall user experience.
