@@ -15,7 +15,7 @@ const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/userdb';
 mongoose.connect(mongoUri)
 
 // Use the user routes
-app.use("/", userRoutes);
+app.use(userRoutes);
 
 const server = app.listen(port, () => {
     console.log(`👨 User service running on: http://localhost:${port}`);

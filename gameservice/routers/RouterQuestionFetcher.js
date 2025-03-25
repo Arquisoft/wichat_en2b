@@ -7,10 +7,10 @@ const wikiDataUri = "https://query.wikidata.org/sparql?format=json&query=";
 
 router.get('/generate/:type/:amount', async (req, res) => {
     // Query for fetching items of a specific type from Wikidata
-    var itemType = req.params['type'];
-    var amount = req.params['amount'];
+    let itemType = req.params['type'];
+    let amount = req.params['amount'];
     const query = `
-        SELECT ?item ?itemLabel ?image WHERE {
+        SELECT DISTINCT ?item ?itemLabel ?image WHERE {
             ?item wdt:P31 wd:${itemType}.  # Item type or subclass of item type
             ?item wdt:P18 ?image.  # Item image (compulsory)
             SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
@@ -55,34 +55,58 @@ router.get('/generate/:type/:amount', async (req, res) => {
 });
 
 async function saveQuestionsToDB(items, code) {
-    // Ensure the images directory exists
-    const imagesDir = './public/images/';
-    if (!fs.existsSync(imagesDir)) {
-        fs.mkdirSync(imagesDir, { recursive: true });
-    }
-    try {
-        for (const item of items) {
-            var question = await Question.findOne({ subject: code, answer: item.name });
+    const imagesDir = './public/images';
 
-            if (!question) {
-                question = new Question({
-                    subject: code,
-                    answer: item.name
+    // Ensure images directory exists asynchronously
+    await fs.promises.mkdir(imagesDir, { recursive: true });
+
+    try {
+        // Step 1: Fetch existing questions in one go to reduce DB queries
+        const existingQuestions = await Question.find({ subject: code }).lean();
+        const existingMap = new Map(existingQuestions.map(q => [q.answer, q]));
+
+        // Step 2: Prepare bulk operations
+        const bulkOps = [];
+        const fetchPromises = [];
+
+        for (const item of items) {
+            const existingQuestion = existingMap.get(item.name);
+            let questionId;
+
+            if (existingQuestion) {
+                // Update existing question
+                bulkOps.push({
+                    updateOne: {
+                        filter: { _id: existingQuestion._id },
+                        update: { $set: { subject: code, answer: item.name }, $inc: { __v: 1 } }
+                    }
                 });
+                questionId = existingQuestion._id;
             } else {
-                question.subject = code;
-                question.answer = item.name;
-                question.__v = question.__v + 1;
+                // Insert new question
+                const newQuestion = new Question({ subject: code, answer: item.name });
+                bulkOps.push({ insertOne: { document: newQuestion } });
+                questionId = newQuestion._id;
             }
 
-            await question.save();
-
-            // Save image to disk
-            const imageResponse = await fetch(item.image);
-            const arrayBuffer = await imageResponse.arrayBuffer();
-            const imageBuffer = Buffer.from(arrayBuffer);
-            fs.writeFile(`./public/images/${question._id.toString()}.jpg`, imageBuffer, () => {});
+            // Fetch and save image in parallel
+            fetchPromises.push(
+                fetch(item.image)
+                    .then(res => res.arrayBuffer())
+                    .then(buffer => fs.promises.writeFile(`${imagesDir}/${questionId}.jpg`, Buffer.from(buffer)))
+                    .catch(err => console.error(`Error saving image for ${item.name}:`, err))
+            );
         }
+
+        // Step 3: Execute bulk database operations
+        if (bulkOps.length > 0) {
+            await Question.bulkWrite(bulkOps);
+        }
+
+        // Step 4: Wait for all images to be downloaded and saved
+        await Promise.all(fetchPromises);
+
+        console.log('Data and images saved successfully.');
     } catch (error) {
         console.error('Error saving data:', error);
     }
