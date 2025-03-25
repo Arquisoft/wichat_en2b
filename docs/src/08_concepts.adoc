@@ -56,3 +56,8 @@ Ensuring the security of user data and the integrity of system operations is par
 ==== Continuous Security Practices
 * **Vulnerability Assessments:** Regular security audits and penetration testing are conducted to identify and address potential vulnerabilities.
 * **Incident Response:** A robust incident response plan is in place to manage and mitigate security breaches swiftly and effectively.
+
+
+=== 4. Scalability and Performance
+The architectural design of WIChat ensures that the system can handle fluctuating loads and maintain high performance:
+
