@@ -3,9 +3,6 @@ ifndef::imagesdir[:imagesdir: ../images]
 [[section-concepts]]
 == Cross-cutting Concepts
 
-ifdef::arc42help[]
-[role="arc42help"]
-
 === 1. Domain and Integration Concepts
 The WIChat system relies on the seamless integration of multiple external sources to generate dynamic content:
   
