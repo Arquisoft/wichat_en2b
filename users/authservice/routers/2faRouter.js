@@ -21,6 +21,8 @@ router.post('/setup2fa', async (req, res) => {
   }
 });
 
+otplib.authenticator.options = { window: 1}
+
 router.post('/verify2fa', async (req, res) => {
   try {
     const { token, secret } = req.body;
@@ -29,7 +31,9 @@ router.post('/verify2fa', async (req, res) => {
     if (!token || !secret) {
       return res.status(401).send("Token and Secret are required");
     }
-
+    console.log("Received Token:", token);
+    console.log("Stored Secret:", secret);
+    
     // Verify the token using the otplib authenticator
     const isValid = otplib.authenticator.verify({ token, secret });
 
@@ -39,6 +43,11 @@ router.post('/verify2fa', async (req, res) => {
     } else {
       // If the token is invalid, return an error
       res.status(401).send("Invalid 2FA Token");
+      const secret = "JBSWY3DPEHPK3PXP"; // Use your stored secret
+      const token = otplib.authenticator.generate(secret); // Generate test token
+
+      console.log("Generated Token:", token);
+      console.log("Is Valid?", otplib.authenticator.verify({ token, secret }));
     }
   } catch (error) {
     // Handle any unexpected errors
