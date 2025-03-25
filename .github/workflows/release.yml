@@ -121,7 +121,7 @@ jobs:
         workdir: llmservice
 
   docker-push-gameservice:
-    name: Push gateway service Docker Image to GitHub Packages
+    name: Push game service Docker Image to GitHub Packages
     runs-on: ubuntu-latest
     permissions:
       contents: read
