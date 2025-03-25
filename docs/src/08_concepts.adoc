@@ -9,3 +9,10 @@ ifdef::arc42help[]
 === 1. Domain and Integration Concepts
 The WIChat system relies on the seamless integration of multiple external sources to generate dynamic content:
   
+==== Integration with External Sources
+WIChat leverages external data from Wikidata and a Large Language Model (LLM) for automatically generating questions, hints, and related images. This integration follows RESTful API principles with JSON as the primary data exchange format. Key considerations include:
+  
+* **API Gateway and Mediator Pattern:** An API gateway is implemented to manage and route requests to external services. A mediator layer decouples the integration logic from core business functionalities.
+* **Asynchronous Processing:** To improve performance and responsiveness, calls to external services are handled asynchronously. This includes the use of message queues to decouple request processing and ensure smooth operation during peak loads.
+* **Error Handling and Retry Logic:** Robust error handling mechanisms are in place to manage API failures or slow responses. Automated retries, circuit breakers, and fallback strategies are applied to minimize disruption.
+* **Data Validation:** Incoming data from external sources is rigorously validated to prevent issues like data inconsistency or LLM hallucinations, ensuring that only high-quality information is used in the application.
