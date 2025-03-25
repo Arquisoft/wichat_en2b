@@ -55,7 +55,7 @@ jobs:
     - name: Publish to Registry
       uses: elgohr/Publish-Docker-Github-Action@v5
       env:
-        API_URI: http://${{ secrets.DEPLOY_HOST }}:8000
+        API_URI: http://${{ secrets.DEPOLOY_HOST_ORACLE }}:8000
       with:
           name: arquisoft/wichat_en2b/webapp
           username: ${{ github.actor }}
@@ -83,7 +83,7 @@ jobs:
           registry: ghcr.io
           workdir: users/authservice
           platforms: linux/amd64,linux/arm64
-          
+
   docker-push-userservice:
     name: Push user service Docker Image to GitHub Packages
     runs-on: ubuntu-latest
@@ -120,6 +120,28 @@ jobs:
         registry: ghcr.io
         workdir: llmservice
 
+  docker-push-gameservice:
+    name: Push gateway service Docker Image to GitHub Packages
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    needs: [ e2e-tests ]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Update OpenAPI configuration
+        run: |
+          DEPOLOY_HOST_ORACLE=${{ secrets.DEPLOY_HOST_ORACLE}}
+          sed -i "s/SOMEIP/${DEPOLOY_HOST_ORACLE}/g" gameservice/openapi.yaml
+      - name: Publish to Registry
+        uses: elgohr/Publish-Docker-Github-Action@v5
+        with:
+          name: arquisoft/wichat_en2b/gameservice
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          registry: ghcr.io
+          workdir: gameservice
+
   docker-push-gatewayservice:
     name: Push gateway service Docker Image to GitHub Packages
     runs-on: ubuntu-latest
@@ -131,8 +153,8 @@ jobs:
     - uses: actions/checkout@v4
     - name: Update OpenAPI configuration
       run: |
-        DEPLOY_HOST=${{ secrets.DEPLOY_HOST }}
-        sed -i "s/SOMEIP/${DEPLOY_HOST}/g" gatewayservice/openapi.yaml
+        DEPLOY_HOST=${{ secrets.DEPOLOY_HOST_ORACLE }}
+        sed -i "s/SOMEIP/${DEPOLOY_HOST_ORACLE}/g" gatewayservice/openapi.yaml
     - name: Publish to Registry
       uses: elgohr/Publish-Docker-Github-Action@v5
       with:
