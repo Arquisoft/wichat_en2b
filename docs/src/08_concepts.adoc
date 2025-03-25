@@ -61,3 +61,8 @@ Ensuring the security of user data and the integrity of system operations is par
 === 4. Scalability and Performance
 The architectural design of WIChat ensures that the system can handle fluctuating loads and maintain high performance:
 
+==== Scalability Strategies
+* **Horizontal and Vertical Scaling:** The system is designed to support both horizontal scaling (adding more servers) and vertical scaling (enhancing server capacity) as needed.
+* **Load Balancing:** Distributed load balancers ensure that incoming requests are efficiently distributed across available resources, reducing bottlenecks.
+* **Microservices Architecture:** A microservices-based design allows individual components to scale independently, promoting flexibility and resilience.
+* **Caching and Asynchronous Processing:** Extensive use of caching (e.g., in-memory caches, CDN) and asynchronous processing helps minimize latency and improve throughput during high demand periods.
