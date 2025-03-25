@@ -16,3 +16,10 @@ WIChat leverages external data from Wikidata and a Large Language Model (LLM) fo
 * **Asynchronous Processing:** To improve performance and responsiveness, calls to external services are handled asynchronously. This includes the use of message queues to decouple request processing and ensure smooth operation during peak loads.
 * **Error Handling and Retry Logic:** Robust error handling mechanisms are in place to manage API failures or slow responses. Automated retries, circuit breakers, and fallback strategies are applied to minimize disruption.
 * **Data Validation:** Incoming data from external sources is rigorously validated to prevent issues like data inconsistency or LLM hallucinations, ensuring that only high-quality information is used in the application.
+
+==== Integration Patterns
+The architecture employs several integration patterns to maintain loose coupling and facilitate scalability:
+  
+* **Facade Pattern:** A facade provides a simplified interface to complex subsystems (Wikidata and LLM integration).
+* **Adapter Pattern:** Custom adapters transform external data into the internal domain model, allowing for easy substitution of external providers.
+* **Event-driven Architecture:** Events triggered by external data changes or updates allow the system to react in real time, further enhancing responsiveness.
