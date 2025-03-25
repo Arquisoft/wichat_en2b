@@ -69,6 +69,10 @@ app.post('/login', (req, res) => forwardRequest('auth', '/login', req, res));
 app.use('/adduser', restrictedCors);
 app.post('/adduser', (req, res) => forwardRequest('user', '/adduser', req, res));
 
+// User Management
+app.use('/setup2fa', restrictedCors);
+app.post('/setup2fa', (req, res) => forwardRequest('auth', '/setup2fa', req, res));
+
 // LLM Question Handling
 app.use('/askllm', restrictedCors);
 app.post('/askllm', (req, res) => forwardRequest('llm', '/askllm', req, res));

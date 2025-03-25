@@ -3,7 +3,11 @@ const axios = require('axios');
 const bcrypt = require('bcrypt');
 const logger = require('./logger'); 
 const { app, server } = require('./auth-service');
+const otplib = require('otplib');
+const qrcode = require('qrcode');
 
+jest.mock('qrcode');
+jest.mock('otplib');
 jest.mock('axios');
 jest.mock('bcrypt');
 jest.mock('./logger', () => ({
@@ -31,7 +35,103 @@ beforeEach(() => {
 afterAll(() => {
   server.close();
 });
+describe('2FA Service', () => {
+  describe('POST /auth/setup2fa', () => {
+    it('Should generate a 2FA secret and QR code image URL', async () => {
+      const imageUrl = 'mockImageUrl';
 
+      qrcode.toDataURL.mockImplementation((uri, callback) => callback(null, imageUrl));
+
+      const response = await request(app)
+        .post('/auth/setup2fa')
+        .send();
+
+      expect(response.status).toBe(200);
+      expect(otplib.authenticator.generateSecret).toHaveBeenCalled();
+      expect(response.body).toHaveProperty('imageUrl', imageUrl);
+    });
+
+    it('Should handle errors when generating 2FA setup', async () => {
+      const errorMessage = 'Error generating QR code';
+      qrcode.toDataURL.mockImplementation((uri, callback) => callback(new Error(errorMessage)));
+
+      const response = await request(app)
+        .post('/auth/setup2fa')
+        .send();
+
+      expect(response.status).toBe(500);
+      expect(response.body).toHaveProperty('error', 'Error generating QR code');
+    });
+
+    it('Should log errors when there is an issue generating 2FA setup', async () => {
+      const errorMessage = 'Error setting up 2FA';
+      otplib.authenticator.generateSecret.mockImplementation(() => { throw new Error(errorMessage); });
+
+      const response = await request(app)
+        .post('/auth/setup2fa')
+        .send();
+
+      expect(response.status).toBe(500);
+      expect(response.body).toHaveProperty('error', 'Error setting up 2FA');
+      expect(logger.error).toHaveBeenCalledWith('Failure setting up the 2FA');
+    });
+  });
+
+  describe('POST /auth/verify2fa', () => {
+    it('Should verify a valid 2FA token', async () => {
+      const secret = 'validSecret';
+      const token = '123456';
+      
+      otplib.authenticator.verify.mockReturnValue(true);
+
+      const response = await request(app)
+        .post('/auth/verify2fa')
+        .send({ token, secret });
+
+      expect(response.status).toBe(200);
+      expect(response.body).toHaveProperty('message', '2FA Verified');
+    });
+
+    it('Should reject an invalid 2FA token', async () => {
+      const secret = 'validSecret';
+      const token = '123456';
+      
+      otplib.authenticator.verify.mockReturnValue(false);
+
+      const response = await request(app)
+        .post('/auth/verify2fa')
+        .send({ token, secret });
+
+      expect(response.status).toBe(401);
+      expect(response.body).toHaveProperty('error', 'Invalid 2FA Token');
+    });
+
+    it('Should handle missing token or secret', async () => {
+      const response = await request(app)
+        .post('/auth/verify2fa')
+        .send({});
+
+      expect(response.status).toBe(401);
+      expect(response.body).toHaveProperty('error', 'Token and Secret are required');
+    });
+
+    it('Should log an error if an unexpected error occurs during token verification', async () => {
+      const secret = 'validSecret';
+      const token = '123456';
+      const errorMessage = 'Unexpected error during verification';
+      
+      otplib.authenticator.verify.mockImplementation(() => { throw new Error(errorMessage); });
+
+      const response = await request(app)
+        .post('/auth/verify2fa')
+        .send({ token, secret });
+
+      expect(response.status).toBe(500);
+      expect(response.body).toHaveProperty('error', 'Error verifying 2FA token');
+      expect(logger.error).toHaveBeenCalledWith('Failure verifying the 2FA token');
+    });
+  });
+});
 describe('Auth Service', () => {
   describe('POST /register', () => {
     it('Should register a new user', async () => {

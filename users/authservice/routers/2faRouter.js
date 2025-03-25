@@ -1,57 +1,50 @@
 const express = require('express');
 const otplib = require('otplib');
-const qrcode = require("qrcode")
-
+const qrcode = require("qrcode");
+const logger = require('../logger'); 
 const router = express.Router();
-// Endpoint to set-up a 2fa
+
+otplib.authenticator.options = { window: 1 };
+
+// Endpoint to set up 2FA
 router.post('/setup2fa', async (req, res) => {
   try {
     const secret = otplib.authenticator.generateSecret();
-    qrcode.toDataURL(
-      otplib.authenticator.keyuri("user", "wichat_en2b", secret),
-      (err, imageUrl) => {
-        if (err) {
-          return res.status(500).send("Error generating QR code");
-        }
-        res.send({ secret, imageUrl });
+    const otpauth = otplib.authenticator.keyuri("user", "wichat_en2b", secret);
+
+    qrcode.toDataURL(otpauth, (err, imageUrl) => {
+      if (err) {
+        return res.status(500).json({ error: "Error generating QR code" });
       }
-    );
+      // Send only the QR Code URL, not the secret
+      res.json({ imageUrl });
+
+    });
   } catch (error) {
-    res.status(500).send("Error setting up 2FA");
+    logger.error(`Failure setting up the 2FA`);
+    res.status(500).json({ error: "Error setting up 2FA" });
   }
 });
 
-otplib.authenticator.options = { window: 1}
-
+// Endpoint to verify 2FA token
 router.post('/verify2fa', async (req, res) => {
   try {
     const { token, secret } = req.body;
 
-    // Validate input
     if (!token || !secret) {
-      return res.status(401).send("Token and Secret are required");
+      return res.status(401).json({ error: "Token and Secret are required" });
     }
-    console.log("Received Token:", token);
-    console.log("Stored Secret:", secret);
-    
-    // Verify the token using the otplib authenticator
+
     const isValid = otplib.authenticator.verify({ token, secret });
 
     if (isValid) {
-      // If the token is valid, return a success message
-      res.send("2FA Verified");
+      res.json({ message: "2FA Verified" });
     } else {
-      // If the token is invalid, return an error
-      res.status(401).send("Invalid 2FA Token");
-      const secret = "JBSWY3DPEHPK3PXP"; // Use your stored secret
-      const token = otplib.authenticator.generate(secret); // Generate test token
-
-      console.log("Generated Token:", token);
-      console.log("Is Valid?", otplib.authenticator.verify({ token, secret }));
+      res.status(401).json({ error: "Invalid 2FA Token" });
     }
   } catch (error) {
-    // Handle any unexpected errors
-    res.status(500).send("Error verifying 2FA token");
+    logger.error(`Failure verifying the 2FA token`);
+    res.status(500).json({ error: "Error verifying 2FA token" });
   }
 });
 
