@@ -38,69 +38,65 @@ const forwardRequest = async (service, endpoint, req, res) => {
       headers: {
         Authorization: req.headers.authorization,
         'Content-Type': 'application/json',
-        Origin: 'http://localhost:8000', // Assuming the same origin as the previous example
+        Origin: 'http://localhost:8000',
       },
-      body: req.method !== 'GET' ? JSON.stringify(req.body) : undefined, // Only include body for non-GET requests
+      body: req.method !== 'GET' ? JSON.stringify(req.body) : undefined,
     });
-
-
-    if (!response.ok) {
-      return res.status(response.status === 404 ? 404 : 500).json({
-        error: 'Hubo un problema al procesar la solicitud',
-      });
+    // Get the response body (if any) and content type
+    const contentType = response.headers.get('Content-Type');
+    let responseBody;
+    if (contentType && contentType.includes('application/json')) {
+      responseBody = await response.json();
+    } else {
+      responseBody = await response.text();
     }
-
-    const data = await response.json();
-    res.json(data);
+    
+    // Set the status code from the downstream service response
+    res.status(response.status);
+    // Send the response body as-is
+    if (responseBody) {
+      if (contentType && contentType.includes('application/json')) {
+        res.json(responseBody); // Send JSON (e.g., token or error message)
+      } else {
+        res.send(responseBody); // Send text if not JSON
+      }
+    } else {
+      res.send(); // No body, just send the status
+    }
   } catch (error) {
-    console.error(`Error forwarding request to ${service}${endpoint}:`, error.message);
-
-    // Handle fetch errors
-    res.status(500).json({
-      error: 'Hubo un problema al procesar la solicitud',
-    });
+    console.log(`Error forwarding request to ${service}${endpoint}:`, error.message);
+    res.status(500).json({ error: 'Hubo un problema al procesar la solicitud' });
   }
 };
-
-const forwardRequestWithErrors = async (service, endpoint, req, res) => {
-  try {
-    const response = await fetch(`${serviceUrls[service]}${endpoint}`, {
-      method: req.method,
-      headers: {
-        Authorization: req.headers.authorization,
-        'Content-Type': 'application/json',
-        Origin: 'http://localhost:8000', // Assuming the same origin as the previous example
-      },
-      body: req.method !== 'GET' ? JSON.stringify(req.body) : undefined, // Only include body for non-GET requests
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      return res.status(response.status).json({
-        error: errorData.error || 'Hubo un problema al procesar la solicitud',
-      });
-    }
-
-    const data = await response.json();
-    res.json(data);
-  } catch (error) {
-    console.error(`Error forwarding request to ${service}${endpoint}:`, error.message);
-
-    // Handle fetch errors
-    res.status(500).json({
-      error: 'Hubo un problema al procesar la solicitud',
-    });
-  }
-};
-
 
 // Authentication
 app.use('/login', restrictedCors);
-app.post('/login', (req, res) => forwardRequest('auth', '/login', req, res));
+app.post('/login', (req, res) => forwardRequest('auth', '/auth/login', req, res));
 
 // User Management
 app.use('/adduser', restrictedCors);
-app.post('/adduser', (req, res) => forwardRequestWithErrors('user', '/users', req, res));
+app.post('/adduser', (req, res) => forwardRequest('auth', '/auth/register', req, res));
+
+app.use('/users', restrictedCors);
+app.post('/users', (req, res) => forwardRequest('user', '/users', req, res));
+
+app.get('/users', (req, res) => {
+  const { id } = req.query;
+  const endpoint = id ? `/users?id=${id}` : '/users';
+  forwardRequest('user', endpoint, req, res);
+});
+
+app.get('/users/:username', (req, res) => {
+  forwardRequest('user', `/users/${req.params.username}`, req, res);
+});
+
+app.patch('/users/:username', (req, res) => {
+  forwardRequest('user', `/users/${req.params.username}`, req, res);
+});
+
+app.delete('/users/:username', (req, res) => {
+  forwardRequest('user', `/users/${req.params.username}`, req, res);
+});
 
 // LLM Question Handling
 app.use('/askllm', restrictedCors);

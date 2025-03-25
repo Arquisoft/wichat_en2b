@@ -23,7 +23,6 @@ const AddUser = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [role, setRole] = useState('USER');
-  const [date, setDate] = useState(Date.now());
   const [error, setError] = useState('');
   const [validationErrors, setValidationErrors] = useState({});
   const [openSnackbar, setOpenSnackbar] = useState(false);
@@ -37,11 +36,15 @@ const AddUser = () => {
     // Validate username
     if (!username) {
       newErrors.username = "Username is required"
+    } else if (username.length < 3) {
+      newErrors.username = "Username must be at least 3 characters"
     }
   
     // Validate password
     if (!password) {
       newErrors.password = "Password is required"
+    } else if (password.length < 6) {
+      newErrors.password = "Password must be at least 6 characters"
     }
   
     // Validate confirm password
@@ -66,14 +69,12 @@ const AddUser = () => {
     setIsSubmitting(true)
 
     try {
-      setDate(new Date().toLocaleDateString());
       setRole('USER');
       const User =
       {
         username:username,
         password:password,
         role:role,
-        createdAt:date
       }
 
       await axios.post(`${apiEndpoint}/adduser`, User).then((response) => {
@@ -88,9 +89,7 @@ const AddUser = () => {
         const newErrors = { ...validationErrors };
         newErrors.username = 'Username already exists'; // Set the error message for the username field
         setValidationErrors(newErrors);
-      } else {
-        console.error(error);
-      }
+      } 
     } finally{
       setIsSubmitting(false)
     }
