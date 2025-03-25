@@ -52,6 +52,8 @@ jobs:
     needs: [e2e-tests]
     steps:
     - uses: actions/checkout@v4
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
     - name: Publish to Registry
       uses: elgohr/Publish-Docker-Github-Action@v5
       env:
@@ -94,6 +96,8 @@ jobs:
     needs: [e2e-tests]
     steps:
     - uses: actions/checkout@v4
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
     - name: Publish to Registry
       uses: elgohr/Publish-Docker-Github-Action@v5
       with:
@@ -113,6 +117,8 @@ jobs:
     needs: [e2e-tests]
     steps:
     - uses: actions/checkout@v4
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
     - name: Publish to Registry
       uses: elgohr/Publish-Docker-Github-Action@v5
       with:
@@ -132,6 +138,8 @@ jobs:
     needs: [e2e-tests]
     steps:
       - uses: actions/checkout@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
       - name: Publish to Registry
         uses: elgohr/Publish-Docker-Github-Action@v5
         with:
@@ -151,6 +159,8 @@ jobs:
     needs: [e2e-tests]
     steps:
     - uses: actions/checkout@v4
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
     - name: Update OpenAPI configuration
       run: |
         DEPLOY_HOST=${{ secrets.DEPOLOY_HOST_ORACLE }}
