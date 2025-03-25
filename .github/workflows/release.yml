@@ -126,13 +126,9 @@ jobs:
     permissions:
       contents: read
       packages: write
-    needs: [ e2e-tests ]
+    needs: [e2e-tests]
     steps:
       - uses: actions/checkout@v4
-      - name: Update OpenAPI configuration
-        run: |
-          DEPOLOY_HOST_ORACLE=${{ secrets.DEPLOY_HOST_ORACLE}}
-          sed -i "s/SOMEIP/${DEPOLOY_HOST_ORACLE}/g" gameservice/openapi.yaml
       - name: Publish to Registry
         uses: elgohr/Publish-Docker-Github-Action@v5
         with:
