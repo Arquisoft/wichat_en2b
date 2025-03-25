@@ -1,4 +1,4 @@
-.footer {
+body .footer {
     width: 100%;
     padding: 2rem 0;
     background-color: #f5f5f5; 
@@ -6,12 +6,12 @@
     text-align: center;
 }
 
-.footer-dark {
+body .footer-dark {
     background-color: #1f1f1f; 
     color: #cfcfcf; 
 }
 
-.footer__content {
+body .footer__content {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -19,11 +19,11 @@
     gap: 1rem;
 }
 
-.footer__text {
+body .footer__text {
     font-size: 0.875rem; 
 }
 
-.footer__brand {
+body .footer__brand {
     font-weight: bold;
     font-size: 1.25rem;
     background: linear-gradient(90deg, #9c27b0, #e91e63); 
@@ -31,7 +31,7 @@
     color: transparent;
 }
 
-.footer__year {
+body .footer__year {
     font-size: 0.875rem;
     color: #757575; 
 }
