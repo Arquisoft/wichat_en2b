@@ -1,9 +1,6 @@
 const express = require('express');
-const bodyParser = require('body-parser');
 const otplib = require('otplib');
 const qrcode = require("qrcode")
-
-require('dotenv').config(); 
 
 const router = express.Router();
 // Endpoint to set-up a 2fa
@@ -20,7 +17,6 @@ router.post('/setup2fa', async (req, res) => {
       }
     );
   } catch (error) {
-    console.error(error);
     res.status(500).send("Error setting up 2FA");
   }
 });
@@ -31,7 +27,7 @@ router.post('/verify2fa', async (req, res) => {
 
     // Validate input
     if (!token || !secret) {
-      return res.status(400).send("Token and Secret are required");
+      return res.status(401).send("Token and Secret are required");
     }
 
     // Verify the token using the otplib authenticator
@@ -42,11 +38,10 @@ router.post('/verify2fa', async (req, res) => {
       res.send("2FA Verified");
     } else {
       // If the token is invalid, return an error
-      res.status(400).send("Invalid 2FA Token");
+      res.status(401).send("Invalid 2FA Token");
     }
   } catch (error) {
     // Handle any unexpected errors
-    console.error(error);
     res.status(500).send("Error verifying 2FA token");
   }
 });
