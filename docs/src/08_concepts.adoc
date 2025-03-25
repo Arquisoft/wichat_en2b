@@ -17,7 +17,6 @@ WIChat leverages external data from Wikidata and a Large Language Model (LLM) fo
 ==== Integration Patterns
 The architecture employs several integration patterns to maintain loose coupling and facilitate scalability:
   
-* **Facade Pattern:** A facade provides a simplified interface to complex subsystems (Wikidata and LLM integration).
 * **Adapter Pattern:** Custom adapters transform external data into the internal domain model, allowing for easy substitution of external providers.
 * **Event-driven Architecture:** Events triggered by external data changes or updates allow the system to react in real time, further enhancing responsiveness.
 * **Quality Assurance:** Implementing automated testing and validation processes ensures that generated content meets predefined standards before being published.
@@ -32,10 +31,6 @@ Given that images, hints, and questions are generated dynamically, it is crucial
 * **Caching Mechanisms:** Frequently requested or computed data is cached to reduce latency and minimize redundant calls to external APIs.
 * **Logging and Monitoring:** Detailed logs capture content generation events and errors, enabling continuous monitoring and rapid debugging of issues.
 
-==== Continuous Improvement
-* **Feedback Loop:** User feedback on content quality is collected and analyzed to iteratively improve the generation algorithms and validation rules.
-* **Machine Learning Enhancements:** The system incorporates machine learning techniques to refine content generation over time, using historical data to predict and adjust quality parameters.
-
 
 === 3. Security and Access Control
 Ensuring the security of user data and the integrity of system operations is paramount:
@@ -47,12 +42,7 @@ Ensuring the security of user data and the integrity of system operations is par
 
 ==== Data Protection and Privacy
 * **Encryption:** All sensitive data, both in transit and at rest, is protected using industry-standard encryption protocols (e.g., TLS, AES).
-* **Audit Trails:** Comprehensive audit logs track user actions and system events, enabling regular security reviews and forensic analysis.
 * **Compliance:** The system adheres to relevant data protection regulations and standards, ensuring user privacy and legal compliance.
-
-==== Continuous Security Practices
-* **Vulnerability Assessments:** Regular security audits and penetration testing are conducted to identify and address potential vulnerabilities.
-* **Incident Response:** A robust incident response plan is in place to manage and mitigate security breaches swiftly and effectively.
 
 
 === 4. Scalability and Performance
@@ -60,9 +50,7 @@ The architectural design of WIChat ensures that the system can handle fluctuatin
 
 ==== Scalability Strategies
 * **Horizontal and Vertical Scaling:** The system is designed to support both horizontal scaling (adding more servers) and vertical scaling (enhancing server capacity) as needed.
-* **Load Balancing:** Distributed load balancers ensure that incoming requests are efficiently distributed across available resources, reducing bottlenecks.
-* **Microservices Architecture:** A microservices-based design allows individual components to scale independently, promoting flexibility and resilience.
-* **Caching and Asynchronous Processing:** Extensive use of caching (e.g., in-memory caches, CDN) and asynchronous processing helps minimize latency and improve throughput during high demand periods.
+* **Caching and Asynchronous Processing:** Use of caching (e.g., in-memory caches, CDN) and asynchronous processing helps minimize latency and improve throughput during high demand periods.
 
 ==== Performance Optimization
 * **Resource Monitoring:** Continuous monitoring of system metrics (CPU, memory, network usage) ensures that performance remains within acceptable thresholds.
@@ -81,7 +69,7 @@ A unified user experience is essential for user satisfaction and system usabilit
 
 ==== Accessibility and Internationalization
 * **Accessibility Standards:** The design follows accessibility guidelines (WCAG 2.1) to ensure that the system is usable by individuals with disabilities.
-* **Internationalization:** Support for multiple languages and regional settings is integrated into the application, allowing users from diverse backgrounds to interact with the system effortlessly.
+* **Internationalization:** Support for multiple languages and regional settings is integrated into the application, allowing users from diverse backgrounds to interact with the system effortlessly [**to be done**].
 
 ==== Continuous UX Improvement
 * **Analytics and User Testing:** Ongoing collection of user interaction data and periodic usability tests help refine the user experience.
