@@ -11,7 +11,7 @@ export default function Page() {
 	return (
 		<>
 			<CssBaseline />
-			<Box className="App">
+			<Box className="App" >
 				<Box className="App-header">
 					<HomePage />
 				</Box>
