@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import "../../styles/login/Login.css";
-
+import "../../styles/globals.css"
 const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
