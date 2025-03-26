@@ -6,6 +6,14 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const router = require('./RouterStatistics');
 
+// Modelling the user
+const userSchema = new mongoose.Schema({
+    username: String,
+    password: String,
+    role: String
+});
+mongoose.model('User', userSchema);
+
 let mongoServer;
 let app;
 let server;
@@ -28,6 +36,19 @@ beforeAll(async function() {
 });
 
 beforeEach(async function() {
+    const User = mongoose.model('User');
+    await User.create([
+        {
+            username: 'testuser',
+            password: 'hashedpass1',
+            role: 'USER'
+        },
+        {
+            username: 'otheruser',
+            password: 'hashedpass2',
+            role: 'USER'
+        }
+    ]);
     // Sample game data
     const testGames = [
         {
@@ -130,15 +151,19 @@ describe('Statistics Router', function() {
             expect(response.body.leaderboard).toHaveLength(2);
             expect(response.body.leaderboard[0]).toStrictEqual({
                 _id: 'testuser',
+                username: 'testuser',
                 totalScore: 180,
                 totalGames: 2,
-                avgScore: 90
+                avgScore: 90,
+                rank: 1
             });
             expect(response.body.leaderboard[1]).toStrictEqual({
                 _id: 'otheruser',
+                username: 'otheruser',
                 totalScore: 150,
                 totalGames: 1,
-                avgScore: 150
+                avgScore: 150,
+                rank: 2
             });
 
         });
