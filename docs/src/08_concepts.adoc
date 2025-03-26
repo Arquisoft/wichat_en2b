@@ -36,8 +36,8 @@ Given that images, hints, and questions are generated dynamically, it is crucial
 Ensuring the security of user data and the integrity of system operations is paramount:
 
 ==== Authentication and Authorization
-* **Robust Authentication:** Secure user authentication methods (e.g., OAuth 2.0, multi-factor authentication) are employed to verify user identity.
-* **Fine-grained Authorization:** Role-based access control (RBAC) and attribute-based access control (ABAC) mechanisms ensure that users only have access to permitted functionalities and data.
+* **Robust Authentication:** Secure user authentication methods (multi-factor authentication) are employed to verify user identity.
+* **Fine-grained Authorization:** Role-based access control (RBAC) mechanisms ensure that users only have access to permitted functionalities and data.
 * **Session Management:** Secure session handling is enforced, including session timeout and token revocation policies.
 
 ==== Data Protection and Privacy
@@ -55,7 +55,6 @@ The architectural design of WIChat ensures that the system can handle fluctuatin
 ==== Performance Optimization
 * **Resource Monitoring:** Continuous monitoring of system metrics (CPU, memory, network usage) ensures that performance remains within acceptable thresholds.
 * **Optimized Data Access:** Database queries and data storage mechanisms are optimized to support rapid data retrieval and updates.
-* **Load Testing:** Regular load and stress tests simulate peak usage scenarios to validate performance and identify potential weaknesses.
 
 
 === 5. Consistency in User Experience (UX)
@@ -66,10 +65,6 @@ A unified user experience is essential for user satisfaction and system usabilit
 * **Responsive Design:** The application is designed to function seamlessly across various devices, including desktops, tablets, and smartphones.
 * **User-Centered Design:** Interfaces are crafted based on user feedback and usability testing, ensuring intuitive navigation and interaction.
 * **Real-Time Feedback:** Mechanisms for providing immediate feedback (e.g., progress indicators, confirmation messages) enhance the overall user experience.
-
-==== Accessibility and Internationalization
-* **Accessibility Standards:** The design follows accessibility guidelines (WCAG 2.1) to ensure that the system is usable by individuals with disabilities.
-* **Internationalization:** Support for multiple languages and regional settings is integrated into the application, allowing users from diverse backgrounds to interact with the system effortlessly [**to be done**].
 
 ==== Continuous UX Improvement
 * **Analytics and User Testing:** Ongoing collection of user interaction data and periodic usability tests help refine the user experience.
