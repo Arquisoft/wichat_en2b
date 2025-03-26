@@ -6,9 +6,15 @@ export function middleware(request) {
   const token = request.cookies.get("token")?.value;
   console.log("Token:", token);
 
-  // Redirect to /login if no token, for any matched route
-  if (!token) {
-    console.log("Redirecting to /login");
+  // If user is logged in (has token) and trying to access /login, redirect to home
+  if (token && request.nextUrl.pathname === "/login") {
+    console.log("Logged-in user attempted to access /login, redirecting to /");
+    return NextResponse.redirect(new URL("/", request.url));
+  }
+
+  // If no token and trying to access protected routes, redirect to /login
+  if (!token && request.nextUrl.pathname !== "/login" && request.nextUrl.pathname !== "/addUser") {
+    console.log("No token, redirecting to /login");
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
@@ -16,5 +22,5 @@ export function middleware(request) {
 }
 
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|login|addUser).*)"],
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
 };

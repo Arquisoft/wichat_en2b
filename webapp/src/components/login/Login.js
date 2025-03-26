@@ -2,26 +2,33 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import "../../styles/login/Login.css"
+import "../../styles/login/Login.css";
 import "../../styles/globals.css";
 
 const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [errors, setErrors] = useState({}); // Single object for all field errors
+  const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setErrors({}); // Clear previous errors
+    setErrors({});
     setLoading(true);
 
     try {
+      // Get token from cookies, if it exists
+      const token = document.cookie
+        .split("; ")
+        .find((row) => row.startsWith("token="))
+        ?.split("=")[1];
+
       const response = await fetch("http://localhost:8000/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}), // Send token if present
         },
         body: JSON.stringify({
           user: {
@@ -34,16 +41,19 @@ const Login = () => {
       const data = await response.json();
 
       if (!response.ok) {
-        throw data; // Throw the error object from the backend
+        throw data;
       }
 
       document.cookie = `token=${data.token}; path=/; max-age=3600`;
       router.push("/");
     } catch (err) {
-      if (err.field) {
-        setErrors({ [err.field]: err.error }); // Set error for specific field
+      if (err.error === "You are already logged in") {
+        // Redirect to home if already logged in
+        router.push("/");
+      } else if (err.field) {
+        setErrors({ [err.field]: err.error });
       } else {
-        setErrors({ general: err.error || "Login failed" }); // Fallback for generic errors
+        setErrors({ general: err.error || "Login failed" });
       }
     } finally {
       setLoading(false);

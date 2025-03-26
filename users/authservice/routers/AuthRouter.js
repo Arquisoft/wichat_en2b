@@ -17,6 +17,19 @@ router.post('/login', [
   check('user.username').isLength({ min: 3 }).trim().escape().withMessage('Username must be at least 3 characters'),
   check('user.password').isLength({ min: 3 }).trim().escape().withMessage('Password must be at least 3 characters'),
 ], async (req, res) => {
+  // Check for existing token in Authorization header or cookies
+  const token = req.headers.authorization?.split(" ")[1] || req.cookies?.token;
+  if (token) {
+    try {
+      jwt.verify(token, process.env.JWT_SECRET || 'testing-secret');
+      logger.info("User already logged in, rejecting login attempt");
+      return res.status(403).json({ error: "You are already logged in" });
+    } catch (err) {
+      // Invalid token, proceed with login (treat as not logged in)
+      logger.warn("Invalid token provided, proceeding with login");
+    }
+  }
+  
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
