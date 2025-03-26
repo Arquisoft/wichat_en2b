@@ -5,96 +5,134 @@ ifndef::imagesdir[:imagesdir: ../images]
 
 == Deployment View
 
-ifdef::arc42help[]
-[role="arc42help"]
-****
-.Content
-The deployment view describes:
-
- 1. technical infrastructure used to execute your system, with infrastructure elements like geographical locations, environments, computers, processors, channels and net topologies as well as other infrastructure elements and
-
-2. mapping of (software) building blocks to that infrastructure elements.
-
-Often systems are executed in different environments, e.g. development environment, test environment, production environment. In such cases you should document all relevant environments.
-
-Especially document a deployment view if your software is executed as distributed system with more than one computer, processor, server or container or when you design and construct your own hardware processors and chips.
-
-From a software perspective it is sufficient to capture only those elements of an infrastructure that are needed to show a deployment of your building blocks. Hardware architects can go beyond that and describe an infrastructure to any level of detail they need to capture.
-
-.Motivation
-Software does not run without hardware.
-This underlying infrastructure can and will influence a system and/or some
-cross-cutting concepts. Therefore, there is a need to know the infrastructure.
-
-.Form
-
-Maybe a highest level deployment diagram is already contained in section 3.2. as
-technical context with your own infrastructure as ONE black box. In this section one can
-zoom into this black box using additional deployment diagrams:
-
-* UML offers deployment diagrams to express that view. Use it, probably with nested diagrams,
-when your infrastructure is more complex.
-* When your (hardware) stakeholders prefer other kinds of diagrams rather than a deployment diagram, let them use any kind that is able to show nodes and channels of the infrastructure.
-
-
-.Further Information
-
-See https://docs.arc42.org/section-7/[Deployment View] in the arc42 documentation.
-
-****
-endif::arc42help[]
-
 === Infrastructure Level 1
 
-ifdef::arc42help[]
-[role="arc42help"]
-****
-Describe (usually in a combination of diagrams, tables, and text):
+The application will be deployed on an oracle server, using docker to run the different modules of the application. The application will use the wikidata API to get the different questions and answers of the game and an LLM API to do calls to the llm so that the user can interact with it and, for example ask for hints.
 
-* distribution of a system to multiple locations, environments, computers, processors, .., as well as physical connections between them
-* important justifications or motivations for this deployment structure
-* quality and/or performance features of this infrastructure
-* mapping of software artifacts to elements of this infrastructure
+All of this will be deployed in an oracle server running ubuntu with the help of docker.
+[plantuml,"UML diagram 1",png]
+----
+rectangle "User"  as User
+rectangle "WikiData"  as WikiData
+rectangle "LLM" as LLM
 
-For multiple environments or alternative deployments please copy and adapt this section of arc42 for all relevant environments.
-****
-endif::arc42help[]
+node "Oracle Server"{
+rectangle "WichatEN2B" as WichatEN2B
+}
+User --> WichatEN2B : "Uses"
+WichatEN2B --> WikiData : "Gets information for questions and answers"
+WichatEN2B --> LLM : "Asks for hints"
+----
 
-_**<Overview Diagram>**_
+**Motivation**
 
-Motivation::
+The motivation behind the design of this application is to create a scalable, flexible, and secure system that can efficiently integrate with external APIs (such as Wikidata), while providing seamless user interactions through a web application. The core of the system revolves around managing various API calls, handling data storage, and ensuring a robust system that can keep up with the user demands.
 
-_<explanation in text form>_
+To achieve this, we utilize a containerized microservices architecture, where each service (such as the Game Service, User Management, and API Gateway) is isolated in its own container. This separation allows for efficient scaling, improved fault tolerance, and the ability to update individual services independently. Additionally, the use of MongoDB ensures flexible, high-performance storage, while the API Gateway acts as a single entry point for all external and internal communication, providing load balancing, routing, and security functionalities.
 
-Quality and/or Performance Features::
-
-_<explanation in text form>_
-
-Mapping of Building Blocks to Infrastructure::
-_<description of the mapping>_
-
+The overall design enables the application to handle varying levels of demand, from individual user interactions to large-scale data processing, all while maintaining a high degree of security and performance. This approach not only supports future growth but also ensures that the system is easy to maintain and evolve over time.
 
 === Infrastructure Level 2
 
-ifdef::arc42help[]
-[role="arc42help"]
-****
-Here you can include the internal structure of (some) infrastructure elements from level 1.
+==== Oracle ServerApplication
 
-Please copy the structure from level 1 for each selected element.
-****
-endif::arc42help[]
+[plantuml,"UML diagram 2",png]
+----
+left to right direction
 
-==== _<Infrastructure Element 1>_
+rectangle "Oracle Server\n<size:10>[Wichat EN2B]</size>"  {
+  rectangle "==Game Service\n<size:10>[Container]</size>" as GameService
+  database "==MongoDB Database\n<size:10>[Container]</size>" as MongoDBDatabase
+  rectangle "==Web Application\n<size:10>[Container]</size>"  as WebApplication
+  rectangle "==Gateway Service\n<size:10>[Container]</size>"  as GatewayService
+  rectangle "==LLM Service\n<size:10>[Container]</size>"  as LLMService
+  rectangle "==User Gateway\n<size:10>[Container]</size>"  as UserGateway
+  rectangle "==User CRUD Service\n<size:10>[Container]</size>" as UserCRUDService
+  rectangle "==User Authentication Service\n<size:10>[Container]</size>" as UserAuthenticationService
+}
 
-_<diagram + explanation>_
+WebApplication --> GatewayService
+GatewayService --> LLMService
+GatewayService --> UserGateway
+GatewayService --> GameService
+UserGateway --> UserCRUDService
+UserGateway --> UserAuthenticationService
+UserCRUDService --> MongoDBDatabase
+UserAuthenticationService --> MongoDBDatabase
+----
 
-==== _<Infrastructure Element 2>_
+**Quality and/or Performance Features**
 
-_<diagram + explanation>_
+Our system consists of several key containers that work together to ensure a smooth and scalable user experience. Below are the core features and quality attributes that define the system's architecture:
 
-...
+*Key Features*
 
-==== _<Infrastructure Element n>_
+* **Web Application**: The web app serves as the user interface where users interact with the system. It connects to the Gateway Service to make API calls and process user actions.
 
-_<diagram + explanation>_
+Endpoints
+
+  `GET /signup` - Shows the signup screen to the user
+
+  `POST /signup` - Sends the sign up information to the gateway service
+
+  `GET /login` - Shows the signup screen to the user
+
+  `POST /login` - Sends the sign up information to the gateway service
+
+  `GET /quiz` - Shows the user a question from a quiz whose theme is specified as parameter
+
+  `POST /quiz` - Submits the answer to the gateway service
+
+  `GET /edit`- Shows the user a form in order to edit their data
+
+  `POST /edit` - Sends the updated information to the gateway service
+
+  `GET /stats` - Shows the user their game stats
+
+* **Gateway Service**: The central point for routing all incoming requests. It ensures security, authentication, and routing to the appropriate service, whether it's the LLM Service, User-related services, or the Game Service.
+
+Endpoints
+
+  `GET /health` - Shows health status of the system
+
+  `GET /quiz` - Retrieves quiz questions
+
+  `POST /quiz` - Submits user answers
+
+  `POST /login` - Authenticates user requests
+
+  `POST /adduser` - Registers new users
+
+  `POST /edituser` - Edits user information
+
+  `GET /stats` - Requests a user historical playing data
+
+  `POST /askllm` - Sends a question to the LLM Service
+
+* **LLM Service**: A container dedicated to handling calls to the LLM API for processing user queries.
+
+Endpoints
+
+  `POST /hint` - Provides a hint to the player
+
+* **User Gateway**: Manages user-related API calls, including user authentication and CRUD operations.
+* **User CRUD Service**: Handles the CRUD operations for user data, interacting with the MongoDB database for persistent storage.
+* **User Authentication Service**: Responsible for managing user authentication, ensuring that secure access to the application is maintained.
+
+Endpoints
+
+  `GET /users` - Retrieves a list of all users (admin use)
+
+  `POST /users/search` - Searches for users based on filters (e.g., username, email)
+
+* **Game Service**: Manages the game-related API calls, processing user inputs and interacting with external services like the Wikidata API to answer game-related questions.
+
+Endpoints
+
+  `GET /quiz` - Retrieves a batch of quiz questions from WikiData
+
+  `POST /quiz` - Validates a user's answer
+
+* **MongoDB Database**: Stores user data, including authentication and CRUD-related data, and ensures data integrity and persistence.
+
+By organizing the system into these clear, well-defined containers, we ensure that each component can evolve independently, maintain security, and scale as required while providing a robust user experience.
