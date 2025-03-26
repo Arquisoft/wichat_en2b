@@ -9,16 +9,19 @@ require('dotenv').config();
 const router = express.Router();
 const validRoles = ['USER', 'ADMIN'];
 const gatewayServiceUrl = process.env.GATEWAY_SERVICE_URL || 'http://gatewayservice:8000'; // NOSONAR
+const ERROR_USERNAME_NOT_FOUND = "Username not found";
+const ERROR_WRONG_PASSWORD = "Password is incorrect";
 // Endpoint to login a user and return a JWT token
 router.post('/login', [
   check('user').notEmpty().withMessage('Missing required field: user'),
-  check('user.username').isLength({ min: 3 }).trim().escape().withMessage('Invalid username value'),
-  check('user.password').isLength({ min: 3 }).trim().escape().withMessage('Invalid password value'),
+  check('user.username').isLength({ min: 3 }).trim().escape().withMessage('Username must be at least 3 characters'),
+  check('user.password').isLength({ min: 3 }).trim().escape().withMessage('Password must be at least 3 characters'),
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ error: errors.array().map(err => err.msg).join(', ') });
+      const errorMsg = errors.array().map(err => err.msg).join(', ');
+      return res.status(400).json({ error: errorMsg });
     }
 
     const { user } = req.body;
@@ -28,20 +31,29 @@ router.post('/login', [
     } catch (err) {
       if (err.response && err.response.status === 404) {
         logger.error(`Failure in login: user ${user.username} not found`);
-        return res.status(401).json({ error: 'Not a valid user' });
+        return res.status(401).json({ 
+          error: ERROR_USERNAME_NOT_FOUND, 
+          field: 'username' 
+        });
       }
-      throw err; // Re-throw other errors (e.g., network issues)
+      throw err;
     }
     const userFromDB = userResponse.data;
     if (!userFromDB || userFromDB.length === 0) {
       logger.error(`Failure in login: user ${user.username} not found`);
-      return res.status(401).json({ error: 'Not a valid user' });
+      return res.status(401).json({ 
+        error: ERROR_USERNAME_NOT_FOUND,
+        field: 'username' 
+      });
     }
 
     const passwordMatch = await bcrypt.compare(user.password, userFromDB.password);
     if (!passwordMatch) {
       logger.error(`Failure in login: invalid password for user ${user.username}`);
-      return res.status(401).json({ error: 'Not a valid password' });
+      return res.status(401).json({ 
+        error: ERROR_WRONG_PASSWORD,
+        field: 'password' 
+      });
     }
 
     const token = jwt.sign(

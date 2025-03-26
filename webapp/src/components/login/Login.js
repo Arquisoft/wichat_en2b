@@ -2,18 +2,19 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import "../../styles/login/Login.css";
-import "../../styles/globals.css"
+import "../../styles/login/Login.css"
+import "../../styles/globals.css";
+
 const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [errors, setErrors] = useState({}); // Single object for all field errors
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
+    setErrors({}); // Clear previous errors
     setLoading(true);
 
     try {
@@ -33,14 +34,17 @@ const Login = () => {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Login failed");
+        throw data; // Throw the error object from the backend
       }
 
-      // Set token in cookies instead of localStorage
-      document.cookie = `token=${data.token}; path=/; max-age=3600`; // Expires in 1 hour
-      router.push("/"); // Redirect to home
+      document.cookie = `token=${data.token}; path=/; max-age=3600`;
+      router.push("/");
     } catch (err) {
-      setError(err.message);
+      if (err.field) {
+        setErrors({ [err.field]: err.error }); // Set error for specific field
+      } else {
+        setErrors({ general: err.error || "Login failed" }); // Fallback for generic errors
+      }
     } finally {
       setLoading(false);
     }
@@ -51,7 +55,7 @@ const Login = () => {
       <div className="login-card">
         <h2>Welcome to WIChat</h2>
         <p>Login to start playing!</p>
-        {error && <p className="error-message">{error}</p>}
+        {errors.general && <p className="error-message">{errors.general}</p>}
         <form onSubmit={handleSubmit}>
           <div className="input-group">
             <label htmlFor="username">Username</label>
@@ -64,6 +68,7 @@ const Login = () => {
               required
               disabled={loading}
             />
+            {errors.username && <p className="error-message">{errors.username}</p>}
           </div>
           <div className="input-group">
             <label htmlFor="password">Password</label>
@@ -76,6 +81,7 @@ const Login = () => {
               required
               disabled={loading}
             />
+            {errors.password && <p className="error-message">{errors.password}</p>}
           </div>
           <button type="submit" className="login-button" disabled={loading}>
             {loading ? "Logging in..." : "Login"}
