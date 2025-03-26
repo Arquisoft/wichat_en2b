@@ -6,6 +6,7 @@ import Navbar from "../components/home/ui/Navbar";
 // For mocking the router
 import mockRouter from 'next-router-mock';
 import { MemoryRouterProvider } from 'next-router-mock/MemoryRouterProvider';
+jest.mock('next/navigation', () => require('next-router-mock'));
 
 describe('HomePage Component', () => {
   beforeEach(() => {
@@ -82,7 +83,7 @@ describe('HomePage Component', () => {
       expect(screen.queryByText('Account')).not.toBeInTheDocument();
     });
   });
-  
+
   test("redirects to login page when logout button is clicked", async () => { 
     render(
         <MemoryRouterProvider>
