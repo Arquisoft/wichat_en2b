@@ -144,7 +144,7 @@ body .twofa-option button:hover {
   }
 
   body .MuiTabs-flexContainer {
-    justify-content: center; 
+    justify-content: flex-start; 
     width: 100%; 
   }
 
