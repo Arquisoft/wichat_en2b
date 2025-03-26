@@ -11,7 +11,6 @@ router.post('/setup2fa', async (req, res) => {
   try {
     const secret = otplib.authenticator.generateSecret();
     const otpauth = otplib.authenticator.keyuri("user", "wichat_en2b", secret);
-
     qrcode.toDataURL(otpauth, (err, imageUrl) => {
       if (err) {
         return res.status(500).json({ error: "Error generating QR code" });

@@ -71,7 +71,8 @@ app.post('/adduser', (req, res) => forwardRequest('user', '/adduser', req, res))
 
 // User Management
 app.use('/setup2fa', restrictedCors);
-app.post('/setup2fa', (req, res) => forwardRequest('auth', '/setup2fa', req, res));
+app.post('/setup2fa', (req, res) => forwardRequest('auth', '/auth/setup2fa', req, res));
+
 app.use('/verify2fa', restrictedCors);
 app.post('/verify2fa', (req, res) => forwardRequest('auth', '/verify2fa', req, res));
 

@@ -56,6 +56,16 @@ export default function ProfileForm({ username, onSave }) {
       onSave(profileData);
     };
 
+    const setup2FA = async () => {
+      await fetch('http://localhost:8000/setup2fa', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({})
+      });
+    };
     return (
       <Card className="profile-container">
 
@@ -113,7 +123,7 @@ export default function ProfileForm({ username, onSave }) {
                 <Box className="twofa-option">
                   <VerifiedUser className="twofa-icon" />
                   <Typography variant="subtitle1" className="twofa-option-text">Application</Typography>              
-                  <Button variant="contained" color="primary">Configure</Button>
+                  <Button variant="contained" color="primary" onClick={setup2FA}>Configure</Button>
                 </Box>
               </CardContent>
             </Card>
