@@ -8,47 +8,78 @@ require('dotenv').config();
 
 const router = express.Router();
 const validRoles = ['USER', 'ADMIN'];
-
+const gatewayServiceUrl = process.env.GATEWAY_SERVICE_URL || 'http://gatewayservice:8000'; // NOSONAR
+const ERROR_USERNAME_NOT_FOUND = "Username not found";
+const ERROR_WRONG_PASSWORD = "Password is incorrect";
 // Endpoint to login a user and return a JWT token
 router.post('/login', [
-    check('user').notEmpty().withMessage('Missing required field: user'),
-    check('user.username').isLength({ min: 3 }).trim().escape().withMessage('Invalid username value'),
-    check('user.password').isLength({ min: 3 }).trim().escape().withMessage('Invalid password value'),
-  ],
-  async (req, res) => {
+  check('user').notEmpty().withMessage('Missing required field: user'),
+  check('user.username').isLength({ min: 3 }).trim().escape().withMessage('Username must be at least 3 characters'),
+  check('user.password').isLength({ min: 3 }).trim().escape().withMessage('Password must be at least 3 characters'),
+], async (req, res) => {
+  // Check for existing token in Authorization header or cookies
+  const token = req.headers.authorization?.split(" ")[1] || req.cookies?.token;
+  if (token) {
     try {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-          return res.status(400).json({ error: errors.array().map(err => err.msg).join(', ') });
-        }
-
-        const { user } = req.body; 
-        const userResponse = await axios.get(`http://localhost:8001/users?id=${user.username}`);
-        const userFromDB = userResponse.data;
-
-        if (!userFromDB || userFromDB.length === 0) {
-          logger.error(`Failure in login: user ${user.username} not found`);
-          return res.status(401).json({ error: 'Not a valid user' });
-        }
-
-        const passwordMatch = await bcrypt.compare(user.password, userFromDB.password);
-        if (!passwordMatch) {
-          logger.error(`Failure in login: invalid password for user ${user.username}`);
-          return res.status(401).json({ error: 'Not a valid password' });
-        }
-
-        const token = jwt.sign(
-            { username: userFromDB.username, role: userFromDB.role }, 
-            process.env.JWT_SECRET || 'testing-secret', 
-            { expiresIn: '1h' }
-        );
-
-        res.json({ token: token});
-
-    } catch (error) {
-      logger.error('Error in /login endpoint', error);
-      res.status(500).json({ error: 'Internal Server Error' });
+      jwt.verify(token, process.env.JWT_SECRET || 'testing-secret');
+      logger.info("User already logged in, rejecting login attempt");
+      return res.status(403).json({ error: "You are already logged in" });
+    } catch (err) {
+      // Invalid token, proceed with login (treat as not logged in)
+      logger.warn("Invalid token provided, proceeding with login");
     }
+  }
+  
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      const errorMsg = errors.array().map(err => err.msg).join(', ');
+      return res.status(400).json({ error: errorMsg });
+    }
+
+    const { user } = req.body;
+    let userResponse;
+    try {
+      userResponse = await axios.get(`${gatewayServiceUrl}/users/${user.username}`);
+    } catch (err) {
+      if (err.response && err.response.status === 404) {
+        logger.error(`Failure in login: user ${user.username} not found`);
+        return res.status(401).json({ 
+          error: ERROR_USERNAME_NOT_FOUND, 
+          field: 'username' 
+        });
+      }
+      throw err;
+    }
+    const userFromDB = userResponse.data;
+    if (!userFromDB || userFromDB.length === 0) {
+      logger.error(`Failure in login: user ${user.username} not found`);
+      return res.status(401).json({ 
+        error: ERROR_USERNAME_NOT_FOUND,
+        field: 'username' 
+      });
+    }
+
+    const passwordMatch = await bcrypt.compare(user.password, userFromDB.password);
+    if (!passwordMatch) {
+      logger.error(`Failure in login: invalid password for user ${user.username}`);
+      return res.status(401).json({ 
+        error: ERROR_WRONG_PASSWORD,
+        field: 'password' 
+      });
+    }
+
+    const token = jwt.sign(
+      { username: userFromDB.username, role: userFromDB.role },
+      process.env.JWT_SECRET || 'testing-secret',
+      { expiresIn: '1h' }
+    );
+
+    res.json({ token: token });
+  } catch (error) {
+    logger.error('Error in /login endpoint', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
 });
 
 
@@ -77,7 +108,7 @@ router.post('/register', [
 
       try {
         // Creating a new user by sending a POST request to the user service
-        const newUserResponse = await axios.post('http://localhost:8001/users', { username, password, role });
+        const newUserResponse = await axios.post(`${gatewayServiceUrl}/users`, { username, password, role });
         const newUser = newUserResponse.data;
 
         // Hashing the password before sending it back
