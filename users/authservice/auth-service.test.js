@@ -111,7 +111,7 @@ describe('2FA Service', () => {
         .post('/auth/verify2fa')
         .send({});
 
-      expect(response.status).toBe(401);
+      expect(response.status).toBe(400);
       expect(response.body).toHaveProperty('error', 'Token and Secret are required');
     });
 

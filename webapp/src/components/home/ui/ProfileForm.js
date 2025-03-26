@@ -115,13 +115,6 @@ export default function ProfileForm({ username, onSave }) {
                   <Typography variant="subtitle1" className="twofa-option-text">Application</Typography>              
                   <Button variant="contained" color="primary">Configure</Button>
                 </Box>
-
-                {/* SMS authentication */}
-                <Box className="twofa-option">
-                  <Smartphone className="twofa-icon" />
-                  <Typography variant="subtitle1" className="twofa-option-text">Text message</Typography>
-                  <Button variant="contained" color="primary">Configure</Button>
-                </Box>
               </CardContent>
             </Card>
           )}

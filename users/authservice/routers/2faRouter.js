@@ -32,7 +32,7 @@ router.post('/verify2fa', async (req, res) => {
     const { token, secret } = req.body;
 
     if (!token || !secret) {
-      return res.status(401).json({ error: "Token and Secret are required" });
+      return res.status(400).json({ error: "Token and Secret are required" });
     }
 
     const isValid = otplib.authenticator.verify({ token, secret });
