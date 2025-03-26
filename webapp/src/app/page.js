@@ -13,7 +13,7 @@ export default function Page() {
 			<CssBaseline />
 			<Box className="App">
 				<Box className="App-header">
-					<Register />
+					<HomePage />
 				</Box>
 			</Box>
 		</>

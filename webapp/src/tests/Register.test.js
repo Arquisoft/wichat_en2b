@@ -60,7 +60,10 @@ describe("Register Component", () => {
         fireEvent.click(registerButtonInput);
 
         //Expect the login page to be rendered
-        expect(screen.queryByText("Login")).not.toBeInTheDocument();
+        await waitFor(() => {
+           expect(screen.getByText("Login")).toBeInTheDocument();
+        });
+    
     });
 
     test("Given invalid input, the user can register", async () => {
