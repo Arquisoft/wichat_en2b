@@ -46,15 +46,15 @@ const AddUser = () => {
     }
 
     if (!trimmedPassword) {
-        newErrors.password = "Password is required";
+        newErrors.passwordErrors = "Password is required";
     } else if (trimmedPassword.length < 6) {
-        newErrors.password = "Password must be at least 6 characters";
+        newErrors.passwordErrors = "Password must be at least 6 characters";
     }
 
     if (!trimmedConfirmPassword) {
-        newErrors.confirmPassword = "Please confirm your password";
+        newErrors.confirmPasswordErrors = "Please confirm your password";
     } else if (trimmedPassword !== trimmedConfirmPassword) {
-        newErrors.confirmPassword = "Passwords do not match";
+        newErrors.confirmPasswordErrors = "Passwords do not match";
     }
   
     setValidationErrors(newErrors);
@@ -148,8 +148,8 @@ const AddUser = () => {
               placeholder='Password *'
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              error={!!validationErrors.password}
-              helperText={validationErrors.password}
+              error={!!validationErrors.passwordErrors}
+              helperText={validationErrors.passwordErrors}
             />
 
             <TextField
@@ -163,8 +163,8 @@ const AddUser = () => {
               placeholder='Confirm Password *'
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              error={!!validationErrors.confirmPassword}
-              helperText={validationErrors.confirmPassword}
+              error={!!validationErrors.confirmPasswordErrors}
+              helperText={validationErrors.confirmPasswordErrors}
             />
 
             <div className='register-link'>
