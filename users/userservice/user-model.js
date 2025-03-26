@@ -29,7 +29,8 @@ const userSchema = new mongoose.Schema({
       type: Date,
       default: Date.now,
       immutable: true,
-    }, secret: {
+    },
+    secret: {
       type: String,
       required: false,
       unique: true,

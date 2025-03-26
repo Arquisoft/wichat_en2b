@@ -15,8 +15,8 @@ router.post('/setup2fa', async (req, res) => {
       if (err) {
         return res.status(500).json({ error: "Error generating QR code" });
       }
-      // Send only the QR Code URL, not the secret
-      res.json({ imageUrl });
+      console.log(secret);
+      res.json({ imageUrl, secret });
 
     });
   } catch (error) {
