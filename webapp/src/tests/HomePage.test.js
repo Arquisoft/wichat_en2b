@@ -3,6 +3,10 @@ import {render, screen, fireEvent, waitFor, act } from "@testing-library/react";
 import HomePage from "../components/home/HomeViewPage";
 import Navbar from "../components/home/ui/Navbar";
 
+// For mocking the router
+import mockRouter from 'next-router-mock';
+import { MemoryRouterProvider } from 'next-router-mock/MemoryRouterProvider';
+
 describe("HomePage Component", () => {
     beforeEach(() => {
         jest.useFakeTimers();
@@ -79,12 +83,17 @@ describe("HomePage Component", () => {
     });
 
     test("redirects to login page when logout button is clicked", async () => { 
-        render(<Navbar username="testUser" />);
+        render(
+            <MemoryRouterProvider>
+              <Navbar username="testUser" />
+            </MemoryRouterProvider>
+        );
 
-        act(() => { fireEvent.click(screen.getByLabelText("logout")); });
+        const logoutButton = screen.getByLabelText('logout');  
+        fireEvent.click(logoutButton);
 
         await waitFor(() => {
-            expect(screen.queryByText("Login")).toBeInTheDocument();
+            expect(mockRouter.asPath).toBe('/login');
         });
     });
 });
