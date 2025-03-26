@@ -30,7 +30,7 @@ The key functional requirements of the system are:
 * The LLM should mitigate the generation of incorrect answers or hallucinations when providing hints.
 * Each question will have a correct answer and multiple distractors, all generated automatically.
 * The application must be deployable on the web and allow users to access their information via a documented API.
-* There is a possibility for users to interact with the application in different game modes, such as “Each wise man with his subject,” “Travel with us,” or “The hot question.”
+* There is a possibility for users to interact with the application in different game modes, such as “Each wise man with his subject,” “Travel with us,” or “The hot question.” (not yet implemented)
 
 Optional features include internationalization, mobile version, users' ranking, multiplayer capabilities, and personalized game settings like adjusting time limits and the scope of questions.
 
@@ -61,14 +61,16 @@ endif::arc42help[]
 The quality goals for the architecture are as follows:
 [options="header",cols="1,2"]
 |===
-| Quality Goal | Scenario 
-| **Scalability** | The system must be able to handle a large number of simultaneous users without a noticeable decrease in performance. 
-| **Reliability** | The system must be robust enough to handle failures in the hint generation API and ensure the user experience is minimally impacted. 
-| **Usability** | The application must be intuitive and easy to use, allowing users to quickly understand how to play, answer questions, and interact with hints. 
-| **Performance** | The system should provide fast responses, particularly in generating questions and hints, without delays that impact the user experience. 
-| **Security** | The system must ensure that user data is securely stored and accessible only to authorized users. 
+| Quality Goal | Description
+| *Scalability*  | The system must efficiently handle a high number of concurrent users without performance degradation, ensuring a seamless experience even under peak loads.
+| *Reliability*  | The system must operate consistently under expected conditions, maintaining stability and minimizing downtime or unexpected failures.
+| *Usability*    | The application must be intuitive, easy to learn, and user-friendly, enabling players to navigate, answer questions, and request hints effortlessly.
+| *Performance*  | The system should deliver fast and responsive interactions, ensuring minimal delays when generating questions, processing answers, or providing hints.
+| *Security*     | User data must be securely stored and accessible only to authorized users. The system must protect against unauthorized access, data breaches, and malicious activities.
 |===
 These quality goals will drive architectural decisions, particularly concerning how data is processed, stored, and presented to the user, as well as how external integrations (e.g., LLM API and Wikidata) are handled.
+
+See section 10 (Quality Requirements) for a complete overview of quality scenarios.
 
 === Stakeholders
 ifdef::arc42help[]
