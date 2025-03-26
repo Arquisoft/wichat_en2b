@@ -9,7 +9,7 @@ import {
   CardHeader,
   Typography,
   Box,
-  Container,
+  Link,
   Snackbar,
   CircularProgress,
 } from "@mui/material";
@@ -34,7 +34,7 @@ const AddUser = () => {
     const newErrors = {}
   
     // Validate username
-    if (!username) {
+    if (!username.trim()) {
       newErrors.username = "Username is required"
     } else if (username.length < 3) {
       newErrors.username = "Username must be at least 3 characters"
@@ -78,7 +78,6 @@ const AddUser = () => {
       }
 
       await axios.post(`${apiEndpoint}/adduser`, User).then((response) => {
-        console.log(response);
         router.push('/login');
       });
       setOpenSnackbar(true);
@@ -101,7 +100,7 @@ const AddUser = () => {
 
   return (
     <div component="main" className='register-container'>
-      <Card sx={{ width: "100%", boxShadow: 3 }} className='register-card'>
+      <Card className='register-card'>
         <CardHeader
           title={
             <Typography variant="h5" align="center" fontWeight="bold">
@@ -115,7 +114,7 @@ const AddUser = () => {
           }
         />
         <CardContent>
-          <Box className="input-group" component="form" onSubmit={addUser} sx={{ mt: 1 }}>
+          <Box className="input-group" component="form" onSubmit={addUser}>
             <TextField
               margin="normal"
               required
@@ -162,10 +161,12 @@ const AddUser = () => {
               helperText={validationErrors.confirmPassword}
             />
 
-            <a href="/login" className="login-link">Already have an account? Login here</a>
-
+            <div className='register-link'>
+              <a href="/login">Already have an account? Login here</a>
+            </div>
+                        
             <Button className='register-button' type="submit" fullWidth variant="contained" 
-              sx={{ mt: 3, mb: 2, py: 1.5 }} disabled={isSubmitting}>
+              disabled={isSubmitting}>
               {isSubmitting ? (
                 <>
                   <CircularProgress size={24} sx={{ mr: 1, color: "white" }} />
