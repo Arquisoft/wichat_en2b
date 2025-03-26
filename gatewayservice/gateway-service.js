@@ -2,162 +2,156 @@ const express = require('express');
 const axios = require('axios');
 const cors = require('cors');
 const promBundle = require('express-prom-bundle');
-//libraries required for OpenAPI-Swagger
-const swaggerUi = require('swagger-ui-express'); 
-const fs = require("fs")
-const YAML = require('yaml')
-//libraries for proxy
+const swaggerUi = require('swagger-ui-express');
+const fs = require('fs');
+const YAML = require('yaml');
 const { createProxyMiddleware } = require('http-proxy-middleware');
-const path = require('path');
+const helmet = require('helmet');
 
 const app = express();
 const port = 8000;
 
-const llmServiceUrl = process.env.LLM_SERVICE_URL || 'http://localhost:8003';
-const authServiceUrl = process.env.AUTH_SERVICE_URL || 'http://localhost:8002';
-const userServiceUrl = process.env.USER_SERVICE_URL || 'http://localhost:8001';
-const gameServiceUrl = process.env.GAME_SERVICE_URL || 'http://localhost:8004';
+// Service URLs
+const serviceUrls = {
+  llm: process.env.LLM_SERVICE_URL || 'http://localhost:8003',
+  auth: process.env.AUTH_SERVICE_URL || 'http://localhost:8002',
+  user: process.env.USER_SERVICE_URL || 'http://localhost:8001',
+  game: process.env.GAME_SERVICE_URL || 'http://localhost:8004'
+};
 
-// Function to generalize the handling of statistics requests
-const handleStatisticsRequest = async (endpoint, req, res, errorMessage) => {
+// CORS setup
+const publicCors = cors({ origin: '*', methods: ['GET', 'POST'] });
+const restrictedCors = cors({ origin: 'http://localhost:3000', methods: ['GET', 'POST'] });
+
+app.use(express.json());
+app.use(helmet.hidePoweredBy());
+app.use(promBundle({ includeMethod: true }));
+
+// Health check
+app.get('/health', (req, res) => res.json({ status: 'OK' }));
+
+// Helper function for forwarding requests using fetch
+const forwardRequest = async (service, endpoint, req, res) => {
   try {
-    const response = await fetch(`${gameServiceUrl}${endpoint}`, {
+    const response = await fetch(`${serviceUrls[service]}${endpoint}`, {
+      method: req.method,
       headers: {
-        'Authorization': req.headers.authorization,
-        'Origin': 'http://localhost:8000'
-      }
+        Authorization: req.headers.authorization,
+        'Content-Type': 'application/json',
+        Origin: 'http://localhost:8000', // Assuming the same origin as the previous example
+      },
+      body: req.method !== 'GET' ? JSON.stringify(req.body) : undefined, // Only include body for non-GET requests
     });
 
     if (!response.ok) {
-      throw new Error(`Error fetching ${errorMessage}`);
+      return res.status(response.status === 404 ? 404 : 500).json({
+        error: 'Hubo un problema al procesar la solicitud',
+      });
     }
 
     const data = await response.json();
-    return res.status(200).json(data);
-  } catch (err) {
-    console.error(`Error getting ${errorMessage}:`, err);
-    return res.status(500).json({ error: `Error retrieving ${errorMessage}` });
+    res.json(data);
+  } catch (error) {
+    console.error(`Error forwarding request to ${service}${endpoint}:`, error.message);
+
+    // Handle fetch errors
+    res.status(500).json({
+      error: 'Hubo un problema al procesar la solicitud',
+    });
   }
 };
 
-app.use(cors())
-app.use(express.json());
+// Authentication
+app.use('/login', restrictedCors);
+app.post('/login', (req, res) => forwardRequest('auth', '/login', req, res));
 
-//Prometheus configuration
-const metricsMiddleware = promBundle({includeMethod: true});
-app.use(metricsMiddleware);
+// User Management
+app.use('/adduser', restrictedCors);
+app.post('/adduser', (req, res) => forwardRequest('user', '/adduser', req, res));
 
-// Health check endpoint
-app.get('/health', (req, res) => {
-  res.json({ status: 'OK' });
-});
+// LLM Question Handling
+app.use('/askllm', restrictedCors);
+app.post('/askllm', (req, res) => forwardRequest('llm', '/askllm', req, res));
 
-app.post('/login', async (req, res) => {
-  try {
-    // Forward the login request to the authentication service
-    const authResponse = await axios.post(authServiceUrl+'/login', req.body);
-    res.json(authResponse.data);
-  } catch (error) {
-    res.status(error.response.status).json({ error: error.response.data.error });
-  }
-});
-
-app.post('/adduser', async (req, res) => {
-  try {
-    // Forward the add user request to the user service
-    const userResponse = await axios.post(userServiceUrl+'/adduser', req.body);
-    res.json(userResponse.data);
-  } catch (error) {
-    res.status(error.response.status).json({ error: error.response.data.error });
-  }
-});
-
-app.post('/askllm', async (req, res) => {
-  try {
-    // Forward the question to the llm service
-    const llmResponse = await axios.post(llmServiceUrl+'/askllm', req.body);
-    res.json(llmResponse.data);
-  } catch (error) {
-    res.status(error.response.status).json({ error: error.response.data.error });
-  }
-});
-
+// Game Service Routes
+app.use('/game', publicCors);
 app.get('/game/:subject/:totalQuestions/:numberOptions', async (req, res) => {
-  const { subject, totalQuestions, numberOptions } = req.params;
-
   try {
-    const response = await fetch(`${gameServiceUrl}/game/${subject}/${totalQuestions}/${numberOptions}`, {
-      headers: {
-        'Origin': 'http://localhost:8000'
-      }});
-      
+    const response = await fetch(
+        `${serviceUrls.game}/game/${req.params.subject}/${req.params.totalQuestions}/${req.params.numberOptions}`,
+        {
+          headers: { Origin: 'http://localhost:8000' },
+        }
+    );
+
     if (!response.ok) {
-      throw new Error('Error al hacer la solicitud al backend');
+      return res.status(response.status === 404 ? 404 : 500).json({
+        error: 'Hubo un problema al obtener las preguntas',
+      });
     }
 
     const data = await response.json();
-    return res.status(200).json(data);
-  } catch (err) {
-    console.error('Error al obtener preguntas:', err);
-    return res.status(500).json({ error: 'Hubo un problema al obtener las preguntas' });
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ error: 'Hubo un problema al obtener las preguntas' });
   }
 });
 
-app.get('/statistics/subject/:subject', async (req, res) => {
-  const { subject } = req.params;
-  await handleStatisticsRequest(
-      `/statistics/subject/${subject}`,
-      req,
-      res,
-      'subject statistics'
-  );
+// Statistics Routes
+['/statistics/subject/:subject', '/statistics/global', '/leaderboard'].forEach(route => {
+  app.use(route, restrictedCors);
+  app.get(route, async (req, res) => {
+    // Extract the error message before the try block
+    let errorMessage;
+
+    if (req.path.includes('/statistics/subject/')) {
+      errorMessage = 'Error retrieving subject statistics';
+    } else if (req.path.includes('/statistics/global')) {
+      errorMessage = 'Error retrieving global statistics';
+    } else if (req.path.includes('/leaderboard')) {
+      errorMessage = 'Error retrieving leaderboard';
+    }
+
+    try {
+      const response = await fetch(`${serviceUrls.game}${req.path}`, {
+        headers: {
+          Authorization: req.headers.authorization,
+          Origin: 'http://localhost:8000',
+        },
+      });
+
+      if (!response.ok) {
+        return res.status(500).json({
+          error: errorMessage,
+        });
+      }
+
+      const data = await response.json();
+      res.json(data);
+    } catch (error) {
+      res.status(500).json({
+        error: errorMessage,
+      });
+    }
+  });
 });
 
-app.get('/statistics/global', async (req, res) => {
-  await handleStatisticsRequest(
-      '/statistics/global',
-      req,
-      res,
-      'global statistics'
-  );
-});
-
-app.get('/leaderboard', async (req, res) => {
-  await handleStatisticsRequest(
-      '/leaderboard',
-      req,
-      res,
-      'leaderboard'
-  );
-});
-
-
-// Proxy for images requests
+// Proxy for images
 app.get('/images/:image', createProxyMiddleware({
-  target: gameServiceUrl,
+  target: serviceUrls.game,
   changeOrigin: true
 }));
 
-// Read the OpenAPI YAML file synchronously
-openapiPath='./openapi.yaml'
+// OpenAPI Documentation
+const openapiPath = './openapi.yaml';
 if (fs.existsSync(openapiPath)) {
-  const file = fs.readFileSync(openapiPath, 'utf8');
-
-  // Parse the YAML content into a JavaScript object representing the Swagger document
-  const swaggerDocument = YAML.parse(file);
-
-  // Serve the Swagger UI documentation at the '/api-doc' endpoint
-  // This middleware serves the Swagger UI files and sets up the Swagger UI page
-  // It takes the parsed Swagger document as input
+  const swaggerDocument = YAML.parse(fs.readFileSync(openapiPath, 'utf8'));
   app.use('/api-doc', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 } else {
-  console.log("Not configuring OpenAPI. Configuration file not present.")
+  console.log('OpenAPI documentation not configured. YAML file missing.');
 }
 
+// Start server
+const server = app.listen(port, () => console.log(`Gateway running at http://localhost:${port}`));
 
-// Start the gateway service
-const server = app.listen(port, () => {
-  console.log(`Gateway Service listening at http://localhost:${port}`);
-});
-
-module.exports = server
+module.exports = server;

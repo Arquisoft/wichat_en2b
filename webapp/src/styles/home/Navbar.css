@@ -1,44 +1,44 @@
-.navbar {
+body .navbar {
     background-color: #3f51b5;
     box-shadow: none;
     border-bottom: 2px solid #e0e0e0;
 }
 
-.navbar-toolbar {
+body .navbar-toolbar {
     display: flex;
     justify-content: space-between;
 }
 
-.navbar-left {
+body .navbar-left {
     display: flex;
     align-items: center;
 }
 
-.navbar-avatar {
+body .navbar-avatar {
     background-color: white;
     color: #3f51b5;
     margin-right: 10px;
 }
 
-.navbar-title {
+body .navbar-title {
     font-weight: bold;
 }
 
-.navbar-right {
+body .navbar-right {
     display: flex;
     align-items: center;
 }
 
-.navbar-profile-button {
+body .navbar-profile-button {
     text-transform: none;
     font-weight: bold;
     margin-right: 10px;
 }
 
-.navbar-icon-button {
+body .navbar-icon-button {
     color: white;
 }
 
-.navbar-user-avatar {
+body .navbar-user-avatar {
     background-color: #ff5722;
 }

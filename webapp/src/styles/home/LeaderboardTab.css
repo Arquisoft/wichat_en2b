@@ -1,16 +1,16 @@
-.card-root {
+body .card-root {
     border-radius: 16px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     background-color: #ffffff;
     transition: all 0.3s ease;
 }
 
-.card-root:hover {
+body .card-root:hover {
     transform: translateY(-8px);
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
 }
 
-.card-header {
+body .card-header {
     background-color: #f4f6f8;
     color: #333333;
     border-bottom: 1px solid #e0e0e0;
@@ -18,12 +18,12 @@
     font-size: 1.25rem;
 }
 
-.card-content {
+body .card-content {
     padding: 16px;
     font-size: 1rem;
 }
 
-.leaderboard-entry {
+body .leaderboard-entry {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -32,32 +32,32 @@
     transition: background-color 0.3s ease;
 }
 
-.leaderboard-entry:last-child {
+body .leaderboard-entry:last-child {
     border-bottom: none;
 }
 
-.leaderboard-entry:hover {
+body .leaderboard-entry:hover {
     background-color: #f0f0f0;
 }
 
-.rank {
+body .rank {
     font-weight: bold;
     font-size: 1.2rem;
     color: #3f51b5;
 }
 
-.player-name {
+body .player-name {
     flex-grow: 1;
     padding-left: 16px;
     color: #333333;
 }
 
-.score {
+body .score {
     font-weight: bold;
     color: #4caf50;
 }
 
-.no-rank {
+body .no-rank {
     font-style: italic;
     color: #888888;
 }
