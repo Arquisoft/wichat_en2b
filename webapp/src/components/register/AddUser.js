@@ -45,9 +45,9 @@ const AddUser = () => {
     }
 
     if (!trimmedPassword) {
-        newErrors.passwordErrors = "The password is required";
+        newErrors.passwordErrors = "The password is required"; // NOSONAR
     } else if (trimmedPassword.length < 6) {
-        newErrors.passwordErrors = "The password must be at least 6 characters";
+        newErrors.passwordErrors = "The password must be at least 6 characters"; // NOSONAR
     }
 
     if (!trimmedConfirmPassword) {
