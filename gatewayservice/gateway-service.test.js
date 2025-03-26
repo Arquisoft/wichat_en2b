@@ -204,9 +204,9 @@ describe('Gateway Service', () => {
   it('should forward leaderboard request to game service', async () => {
     const mockLeaderboard = {
       leaderboard: [
-        { _id: 'user1', totalScore: 100, totalGames: 2, avgScore: 50 },
-        { _id: 'user2', totalScore: 90, totalGames: 1, avgScore: 90 },
-        { _id: 'user3', totalScore: 80, totalGames: 1, avgScore: 80 }
+        { _id: 'user1', username: 'user1', totalScore: 100, totalGames: 2, avgScore: 50, rank: 1 },
+        { _id: 'user2', username: 'user2', totalScore: 90, totalGames: 1, avgScore: 90, rank: 2 },
+        { _id: 'user3', username: 'user3', totalScore: 80, totalGames: 1, avgScore: 80, rank: 3 }
       ]
     };
 

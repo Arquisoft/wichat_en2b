@@ -206,11 +206,15 @@ paths:
                       properties:
                         _id:
                           type: string
+                        username:
+                          type: string
                         totalScore:
                           type: integer
                         totalGames:
                           type: integer
                         avgScore:
+                          type: number
+                        rank:
                           type: number
         '500':
           description: Error retrieving leaderboard
