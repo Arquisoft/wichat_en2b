@@ -78,11 +78,13 @@ describe("HomePage Component", () => {
         });
     });
 
-    test("redirects to login page when logout button is clicked", () => { 
+    test("redirects to login page when logout button is clicked", async () => { 
         render(<Navbar username="testUser" />);
 
         act(() => { fireEvent.click(screen.getByLabelText("logout")); });
-        expect(screen.queryByText("Login")).not.toBeInTheDocument();
 
+        await waitFor(() => {
+            expect(screen.queryByText("Login")).toBeInTheDocument();
+        });
     });
 });
