@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import PropTypes from "prop-types";
 import { Save, Edit, Lock, Security, Person, Smartphone, VerifiedUser } from "@mui/icons-material";
 import "../../../styles/home/ProfilePage.css"; 
+import QrCode from "@/components/home/2fa/qrCode";
 
 import {
     Box,
@@ -56,16 +57,28 @@ export default function ProfileForm({ username, onSave }) {
       onSave(profileData);
     };
 
-    const setup2FA = async () => {
-      await fetch('http://localhost:8000/setup2fa', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({})
-      });
-    };
+    const [qrCodeUrl, setQrCodeUrl] = useState(null);
+
+const setup2FA = async () => {
+  try {
+    const response = await fetch("http://localhost:8000/setup2fa", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({}),
+    });
+
+    const data = await response.json();
+    setQrCodeUrl(data.imageUrl);
+    console.log(data.imageUrl);
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+
     return (
       <Card className="profile-container">
 
@@ -112,22 +125,32 @@ export default function ProfileForm({ username, onSave }) {
           )}
 
           {/* Authentication tab */}
-          {tabIndex === 2 && (
-            <Card className="twofa-card">
-              <CardHeader title="2-step authentication" />
+{tabIndex === 2 && (
+  <Card className="twofa-card">
+    <CardHeader title="2-step authentication" />
 
-              <CardContent>
-                <Typography variant="body1">Add an extra layer of security.</Typography>
+    <CardContent>
+      <Typography variant="body1">Add an extra layer of security.</Typography>
 
-                {/* App authentication */}
-                <Box className="twofa-option">
-                  <VerifiedUser className="twofa-icon" />
-                  <Typography variant="subtitle1" className="twofa-option-text">Application</Typography>              
-                  <Button variant="contained" color="primary" onClick={setup2FA}>Configure</Button>
-                </Box>
-              </CardContent>
-            </Card>
-          )}
+      {/* App authentication */}
+      <Box className="twofa-option">
+        <VerifiedUser className="twofa-icon" />
+        <Typography variant="subtitle1" className="twofa-option-text">
+          Application
+        </Typography>
+
+        {qrCodeUrl ? (
+          <QrCode imgUrl={qrCodeUrl} />
+        ) : (
+          <Button variant="contained" color="primary" onClick={setup2FA}>
+            Configure 2FA
+          </Button>
+        )}
+      </Box>
+    </CardContent>
+  </Card>
+)}
+
 
           {/* Save/Edit button */}
           <Box className="save-button">
