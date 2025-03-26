@@ -1,14 +1,12 @@
-import React from 'react';
-import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
-import HomePage from '../components/home/HomeViewPage';
-import Navbar from '../components/home/ui/Navbar';
+import React from "react";
+import {render, screen, fireEvent, waitFor, act } from "@testing-library/react";
+import HomePage from "../components/home/HomeViewPage";
+import Navbar from "../components/home/ui/Navbar";
 
-// Mock Next.js navigation
-jest.mock('next/navigation', () => ({
-  useRouter: () => ({
-    push: jest.fn(),
-  }),
-}));
+// For mocking the router
+import mockRouter from 'next-router-mock';
+import { MemoryRouterProvider } from 'next-router-mock/MemoryRouterProvider';
+jest.mock('next/navigation', () => require('next-router-mock'));
 
 describe('HomePage Component', () => {
   beforeEach(() => {
@@ -86,17 +84,18 @@ describe('HomePage Component', () => {
     });
   });
 
-  test('redirects to login page when logout button is clicked', async () => {
-    const mockPush = jest.fn();
-    jest.spyOn(require('next/navigation'), 'useRouter').mockReturnValue({ push: mockPush });
-    
-    render(<Navbar username="testUser" />);
-    
-    act(() => { fireEvent.click(screen.getByLabelText('logout')); });
-    jest.advanceTimersByTime(0);
-    
+  test("redirects to login page when logout button is clicked", async () => { 
+    render(
+        <MemoryRouterProvider>
+          <Navbar username="testUser" />
+        </MemoryRouterProvider>
+    );
+
+    const logoutButton = screen.getByLabelText('logout');  
+    fireEvent.click(logoutButton);
+
     await waitFor(() => {
-      expect(mockPush).toHaveBeenCalledWith('/login');
+        expect(mockRouter.asPath).toBe('/login');
     });
   });
 });

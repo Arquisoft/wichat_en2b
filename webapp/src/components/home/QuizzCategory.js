@@ -6,8 +6,7 @@ import Link from "next/link";
 import QuestionGame from "../game/QuestionGame"; 
 import "../../styles/home/Categories.css";
 import "@/app/layout";
-import { Button, Container, Box, Typography, Card, CardContent, CardHeader, Badge } from "@mui/material";
-import Grid from '@mui/material/Grid2';
+import { Button, Container, Grid, Box, Typography, Card, CardContent, CardHeader, Badge } from "@mui/material";
 
 /**
  * Renders the quiz categories and handles quiz selection.
