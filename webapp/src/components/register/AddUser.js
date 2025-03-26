@@ -25,7 +25,6 @@ const AddUser = () => {
   const [role, setRole] = useState('USER');
   const [error, setError] = useState('');
   const [validationErrors, setValidationErrors] = useState({});
-  const [openSnackbar, setOpenSnackbar] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const router = useRouter();
@@ -46,9 +45,9 @@ const AddUser = () => {
     }
 
     if (!trimmedPassword) {
-        newErrors.passwordErrors = "Password is required";
+        newErrors.passwordErrors = "The password is required";
     } else if (trimmedPassword.length < 6) {
-        newErrors.passwordErrors = "Password must be at least 6 characters";
+        newErrors.passwordErrors = "The password must be at least 6 characters";
     }
 
     if (!trimmedConfirmPassword) {
@@ -80,9 +79,8 @@ const AddUser = () => {
         role:role,
       }
 
-      await axios.post(`${apiEndpoint}/adduser`, User).then((response) => {
-        router.push('/login');
-      });
+      await axios.post(`${apiEndpoint}/adduser`, User);
+      router.push('/login');
 
     } catch (error) {    
       if (error.response && error.response.status === 400) {
@@ -90,18 +88,12 @@ const AddUser = () => {
           const newErrors = { ...validationErrors };
           newErrors.username = 'Username already exists'; // Set the error message for the username field
           setValidationErrors(newErrors);
-        } else {
-          const newErrors = { ...validationErrors };
-          newErrors.username = 'Username cannot contain white spaces'; // Set the error message for the username field
-          setValidationErrors(newErrors);
-        }
-        setIsSubmitting(false);
-      } 
+        } 
+      } else {
+        setError("An error has occurred. Please try again later.");
+      }
+      setIsSubmitting(false);
     } 
-  };
-
-  const handleCloseSnackbar = () => {
-    setOpenSnackbar(false);
   };
 
   return (
@@ -137,6 +129,7 @@ const AddUser = () => {
               helperText={validationErrors.username}
             />
             
+
             <TextField
               margin="normal"
               required
@@ -182,10 +175,9 @@ const AddUser = () => {
                 "Register"
               )}
             </Button>
-            <Snackbar open={openSnackbar} autoHideDuration={6000} onClose={handleCloseSnackbar} message="User added successfully" />
-              {error && (
-                <Snackbar open={!!error} autoHideDuration={6000} onClose={() => setError('')} message={error} />
-              )}
+              
+            {error && <p className="error-message">{error}</p>}
+
           </Box>
         </CardContent>
       </Card>

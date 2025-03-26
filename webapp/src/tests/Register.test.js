@@ -19,9 +19,6 @@ describe("Register Component", () => {
    
     beforeEach(() => {
         jest.clearAllMocks();
-
-        // Simula una respuesta exitosa de la API
-        axios.post.mockResolvedValueOnce({ data: { success: true } });
     });
 
     test("Renders the Register component correctly", () => {
@@ -212,7 +209,7 @@ describe("Register Component", () => {
 
         
         await waitFor(() => {
-            expect(screen.getByText("Password must be at least 6 characters")).toBeInTheDocument();
+            expect(screen.getByText("The password must be at least 6 characters")).toBeInTheDocument();
         }, { timeout: 2000 });
         
     });
@@ -273,4 +270,81 @@ describe("Register Component", () => {
         }, { timeout: 2000 });
     });
 
+    test("Given repeated username, the error is shown", async () => {
+        jest.spyOn(axios, "post").mockRejectedValueOnce({
+            response: {
+                status: 400,
+                data: { error: "Username already exists" },
+            },
+        });
+        
+
+        render(<Register />);
+    
+        const UserTest = {
+            username: "testUser",
+            password: "testPassword",
+            confirmPassword: "testPassword"
+        };
+    
+        // Obtener los elementos
+        const usernameInput = screen.getByPlaceholderText("Username *");
+        const passwordInput = screen.getByPlaceholderText("Password *");
+        const confirmPasswordInput = screen.getByPlaceholderText("Confirm Password *");
+        const registerButton = screen.getByText("Register");
+    
+        // Llenar el formulario
+        fireEvent.change(usernameInput, { target: { value: UserTest.username } });
+        fireEvent.change(passwordInput, { target: { value: UserTest.password } });
+        fireEvent.change(confirmPasswordInput, { target: { value: UserTest.confirmPassword } });
+    
+        // Simular el click en el botón de registro
+        await act(async () => {
+            fireEvent.click(registerButton);
+        });
+    
+        
+        await waitFor(() => {
+            expect(screen.getByText("Username already exists")).toBeInTheDocument();
+        });
+    });
+    
+    test("Given an unexpected error, the error is shown", async () => {
+        jest.spyOn(axios, "post").mockRejectedValueOnce({
+            response: {
+                status: 500,
+                data: { error: "Internal server error" },
+            },
+        });
+        
+
+        render(<Register />);
+    
+        const UserTest = {
+            username: "newUser",
+            password: "testPassword",
+            confirmPassword: "testPassword"
+        };
+    
+        // Obtener los elementos
+        const usernameInput = screen.getByPlaceholderText("Username *");
+        const passwordInput = screen.getByPlaceholderText("Password *");
+        const confirmPasswordInput = screen.getByPlaceholderText("Confirm Password *");
+        const registerButton = screen.getByText("Register");
+    
+        // Llenar el formulario
+        fireEvent.change(usernameInput, { target: { value: UserTest.username } });
+        fireEvent.change(passwordInput, { target: { value: UserTest.password } });
+        fireEvent.change(confirmPasswordInput, { target: { value: UserTest.confirmPassword } });
+    
+        // Simular el click en el botón de registro
+        await act(async () => {
+            fireEvent.click(registerButton);
+        });
+    
+        
+        await waitFor(() => {
+            expect(screen.getByText("An error has occurred. Please try again later.")).toBeInTheDocument();
+        });
+    });
 });
