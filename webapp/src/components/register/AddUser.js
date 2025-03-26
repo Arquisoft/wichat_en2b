@@ -32,29 +32,32 @@ const AddUser = () => {
 
   const validateForm = () => {
     const newErrors = {}
-  
-    // Validate username
-    if (!username.trim()) {
-      newErrors.username = "Username is required"
-    } else if (username.length < 3) {
-      newErrors.username = "Username must be at least 3 characters"
+    
+    const trimmedUsername = username.trim();
+    const trimmedPassword = password.trim();
+    const trimmedConfirmPassword = confirmPassword.trim();
+
+    if (!trimmedUsername) {
+        newErrors.username = "Username is required";
+    } else if (trimmedUsername.length < 3) {
+        newErrors.username = "Username must be at least 3 characters";
+    } else if (trimmedUsername.includes(" ")){
+        newErrors.username = "Username cannot contain white spaces";
+    }
+
+    if (!trimmedPassword) {
+        newErrors.password = "Password is required";
+    } else if (trimmedPassword.length < 6) {
+        newErrors.password = "Password must be at least 6 characters";
+    }
+
+    if (!trimmedConfirmPassword) {
+        newErrors.confirmPassword = "Please confirm your password";
+    } else if (trimmedPassword !== trimmedConfirmPassword) {
+        newErrors.confirmPassword = "Passwords do not match";
     }
   
-    // Validate password
-    if (!password) {
-      newErrors.password = "Password is required"
-    } else if (password.length < 6) {
-      newErrors.password = "Password must be at least 6 characters"
-    }
-  
-    // Validate confirm password
-    if (!confirmPassword) {
-      newErrors.confirmPassword = "Please confirm your password"
-    } else if (password !== confirmPassword) {
-      newErrors.confirmPassword = "Passwords do not match"
-    }
-  
-    setValidationErrors(newErrors)
+    setValidationErrors(newErrors);
     return Object.keys(newErrors).length === 0
   }
 
@@ -80,18 +83,21 @@ const AddUser = () => {
       await axios.post(`${apiEndpoint}/adduser`, User).then((response) => {
         router.push('/login');
       });
-      setOpenSnackbar(true);
-
 
     } catch (error) {    
-      if (error.response && error.response.status === 400 && error.response.data.error === 'Username already exists') {
-        const newErrors = { ...validationErrors };
-        newErrors.username = 'Username already exists'; // Set the error message for the username field
-        setValidationErrors(newErrors);
+      if (error.response && error.response.status === 400) {
+        if (error.response.data.error === 'Username already exists') {
+          const newErrors = { ...validationErrors };
+          newErrors.username = 'Username already exists'; // Set the error message for the username field
+          setValidationErrors(newErrors);
+        } else {
+          const newErrors = { ...validationErrors };
+          newErrors.username = 'Username cannot contain white spaces'; // Set the error message for the username field
+          setValidationErrors(newErrors);
+        }
+        setIsSubmitting(false);
       } 
-    } finally{
-      setIsSubmitting(false)
-    }
+    } 
   };
 
   const handleCloseSnackbar = () => {
