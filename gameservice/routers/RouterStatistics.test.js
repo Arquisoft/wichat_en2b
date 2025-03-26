@@ -6,6 +6,14 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const router = require('./RouterStatistics');
 
+// Modelling the user
+const userSchema = new mongoose.Schema({
+    username: String,
+    password: String,
+    role: String
+});
+mongoose.model('User', userSchema);
+
 let mongoServer;
 let app;
 let server;
@@ -107,7 +115,7 @@ describe('Statistics Router', function() {
                 .set('Authorization', `Bearer ${validToken}`);
 
             expect(response.status).toBe(200);
-            expect(response.body.stats).toMatchObject({
+            expect(response.body.stats).toStrictEqual({
                 _id: null,
                 totalGames: 2,
                 avgScore: 90,
@@ -121,26 +129,97 @@ describe('Statistics Router', function() {
     });
 
     describe('Leaderboard', function() {
-        it('should return correct leaderboard data', async function() {
+        beforeEach(async function() {
+            await GameInfo.deleteMany({});
+            const User = mongoose.model('User');
+            await User.deleteMany({});
+
+            // Create 11 users
+            const users = Array.from({length: 11}, (_, i) => ({
+                username: `user${i + 1}`,
+                password: 'hashedpass',
+                role: 'USER'
+            }));
+            await User.create(users);
+
+            // Create game results with different scores
+            const games = [
+                // Top 10 users
+                { user_id: 'user1', subject: 'math', points_gain: 1000, number_of_questions: 10, number_correct_answers: 10, total_time: 300 },
+                { user_id: 'user2', subject: 'math', points_gain: 900, number_of_questions: 10, number_correct_answers: 9, total_time: 300 },
+                { user_id: 'user3', subject: 'math', points_gain: 800, number_of_questions: 10, number_correct_answers: 8, total_time: 300 },
+                { user_id: 'user4', subject: 'math', points_gain: 700, number_of_questions: 10, number_correct_answers: 7, total_time: 300 },
+                { user_id: 'user5', subject: 'math', points_gain: 600, number_of_questions: 10, number_correct_answers: 6, total_time: 300 },
+                { user_id: 'user6', subject: 'math', points_gain: 500, number_of_questions: 10, number_correct_answers: 5, total_time: 300 },
+                { user_id: 'user7', subject: 'math', points_gain: 400, number_of_questions: 10, number_correct_answers: 4, total_time: 300 },
+                { user_id: 'user8', subject: 'math', points_gain: 300, number_of_questions: 10, number_correct_answers: 3, total_time: 300 },
+                { user_id: 'user9', subject: 'math', points_gain: 200, number_of_questions: 10, number_correct_answers: 2, total_time: 300 },
+                { user_id: 'user10', subject: 'math', points_gain: 100, number_of_questions: 10, number_correct_answers: 1, total_time: 300 },
+                // User outside top 10
+                { user_id: 'user11', subject: 'math', points_gain: 50, number_of_questions: 10, number_correct_answers: 1, total_time: 300 }
+
+            ];
+            await GameInfo.insertMany(games);
+        });
+        it('should return top 10 players when the user is inside top 10', async function(){
+            const token = jwt.sign( // User is user5
+                { username: 'user5', role: 'USER' },
+                'testing-secret',
+                { expiresIn: '1h' }
+            );
+
             const response = await request(app)
                 .get('/leaderboard')
-                .set('Authorization', `Bearer ${validToken}`);
+                .set('Authorization', `Bearer ${token}`);
 
             expect(response.status).toBe(200);
-            expect(response.body.leaderboard).toHaveLength(2);
+            expect(response.body.leaderboard).toHaveLength(10);
             expect(response.body.leaderboard[0]).toStrictEqual({
-                _id: 'testuser',
-                totalScore: 180,
-                totalGames: 2,
-                avgScore: 90
-            });
-            expect(response.body.leaderboard[1]).toStrictEqual({
-                _id: 'otheruser',
-                totalScore: 150,
+                _id: 'user1',
+                username: 'user1',
+                totalScore: 1000,
                 totalGames: 1,
-                avgScore: 150
+                avgScore: 1000,
+                rank: 1
             });
+            expect(response.body.leaderboard[4]).toStrictEqual({
+                _id: 'user5',
+                username: 'user5',
+                totalScore: 600,
+                totalGames: 1,
+                avgScore: 600,
+                rank: 5
+            });
+        });
+        it('should return top 10 plus user when the user is outside top 10', async function() {
+            const token = jwt.sign(
+                { username: 'user11', role: 'USER' },
+                'testing-secret',
+                { expiresIn: '1h' }
+            );
 
+            const response = await request(app)
+                .get('/leaderboard')
+                .set('Authorization', `Bearer ${token}`);
+
+            expect(response.status).toBe(200);
+            expect(response.body.leaderboard).toHaveLength(11);
+            expect(response.body.leaderboard[0]).toStrictEqual({
+                _id: 'user1',
+                username: 'user1',
+                totalScore: 1000,
+                totalGames: 1,
+                avgScore: 1000,
+                rank: 1
+            });
+            expect(response.body.leaderboard[10]).toStrictEqual({
+                _id: 'user11',
+                username: 'user11',
+                totalScore: 50,
+                totalGames: 1,
+                avgScore: 50,
+                rank: 11
+            });
         });
     });
 
