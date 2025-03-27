@@ -58,13 +58,14 @@ jobs:
       uses: elgohr/Publish-Docker-Github-Action@v5
       env:
         API_URI: http://${{ secrets.DEPOLOY_HOST_ORACLE }}:8000
+        GATEWAY_SERVICE_URL: http://${{ secrets.DEPOLOY_HOST_ORACLE }}:8000
       with:
           name: arquisoft/wichat_en2b/webapp
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
           registry: ghcr.io
           workdir: webapp
-          buildargs: API_URI
+          buildargs: API_URI, GATEWAY_SERVICE_URL
           platforms: linux/arm64
   docker-push-authservice:
     name: Push auth service Docker Image to GitHub Packages
@@ -187,7 +188,6 @@ jobs:
         key: ${{ secrets.DEPLOY_KEY_ORACLE }}
         command: |
           echo "LLM_API_KEY=${{ secrets.LLM_API_KEY }}" > .env
-          echo "GATEWAY_SERVICE_URL=${{ secrets.DEPLOY_HOST_ORACLE }}:8000" >> .env
           wget https://raw.githubusercontent.com/arquisoft/wichat_en2b/master/docker-compose.yml -O docker-compose.yml
           docker compose --profile prod down
           docker compose --profile prod up -d --pull always
