@@ -22,6 +22,8 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { quizCategories } from "../data"
 import "../../../styles/home/StatsTab.css"
 
+const gatewayService = process.env.GATEWAY_SERVICE_URL || "http://localhost:8000";
+
 // TabPanel component for the tabs
 function TabPanel(props) {
 	const { children, value, index, ...other } = props
@@ -58,76 +60,61 @@ export default function StatsTab() {
 	const [tabValue, setTabValue] = useState(0)
 
 	useEffect(() => {
-		// Simulate API fetch with a delay
 		const fetchStatistics = async () => {
-			setLoading(true)
-			setError(null)
+			setLoading(true);
+			setError(null);
 
 			try {
-				// Simulate network delay
-				await new Promise((resolve) => setTimeout(resolve, 1000))
+				const token = document.cookie
+					.split("; ")
+					.find((row) => row.startsWith("token="))
+					?.split("=")[1];
+				if (!token) {
+					throw new Error('No authentication token found');
+				}
+				const endpoint = selectedSubject === "all"
+					? "/statistics/global"
+					: `/statistics/subject/${selectedSubject.toLowerCase()}`
 
-				// Generate demo statistics based on selected subject
-				const demoData = generateDemoStatistics(selectedSubject !== "all" ? selectedSubject : null)
-				setStatistics(demoData)
-			} catch (err) {
-				setError(err instanceof Error ? err.message : "An unknown error occurred")
+				const response = await fetch(`${gatewayService}${endpoint}`, {
+					headers: {
+						'Authorization': `Bearer ${token}`, // review how it is saved
+						'Content-Type': 'application/json'
+					}
+				});
+
+				if (!response.ok) {
+					throw new Error('Failed to fetch statistics');
+				}
+				const data = await response.json();
+				console.log(data);
+				if (!data || !data.stats) {
+					throw new Error('Invalid statistics data');
+				}
+				setStatistics(data.stats);
+			} catch (error) {
+				setError(error.message);
+				setStatistics(null);
 			} finally {
-				setLoading(false)
+				setLoading(false);
 			}
 		}
-
-		fetchStatistics()
-	}, [selectedSubject])
-
-	// Generate different statistics based on the selected subject
-	const generateDemoStatistics = (subject) => {
-		// Base statistics
-		const baseStats = {
-			_id: subject || null,
-			totalGames: 42,
-			avgScore: 78.5,
-			totalScore: 3297,
-			totalCorrectAnswers: 315,
-			totalQuestions: 420,
-			avgTime: 45.2,
-			successRatio: 0.75,
-		}
-
-		// If a subject is selected, modify the stats to make them look different
-		if (subject) {
-			const category = quizCategories.find((c) => c.name === subject)
-			const modifier = category ? category.id / 10 + 0.5 : 1
-
-			return {
-				...baseStats,
-				totalGames: Math.round(baseStats.totalGames * modifier),
-				avgScore: Math.min(100, baseStats.avgScore * modifier),
-				totalScore: Math.round(baseStats.totalScore * modifier),
-				totalCorrectAnswers: Math.round(baseStats.totalCorrectAnswers * modifier),
-				totalQuestions: Math.round(baseStats.totalQuestions * modifier),
-				avgTime: baseStats.avgTime / modifier,
-				successRatio: Math.min(1, baseStats.successRatio * modifier),
-			}
-		}
-
-		return baseStats
-	}
+		fetchStatistics();
+	}, [selectedSubject]);
 
 	const handleSubjectChange = (event) => {
-		setSelectedSubject(event.target.value)
+		setSelectedSubject(event.target.value);
 	}
 
 	const handleTabChange = (event, newValue) => {
-		setTabValue(newValue)
+		setTabValue(newValue);
 	}
 
-	// Prepare chart data for visualization
 	const chartData = statistics
 		? [
-			{ name: "Success Rate", value: Number.parseFloat((statistics.successRatio * 100).toFixed(1)) },
+			{ name: "Success Rate", value: Number.parseFloat(statistics.successRatio.toFixed(1)) },
 			{ name: "Avg Score", value: Number.parseFloat(statistics.avgScore.toFixed(1)) },
-			{ name: "Avg Time (s)", value: Number.parseFloat(statistics.avgTime.toFixed(1)) },
+			{ name: "Avg Time (s)", value: Number.parseFloat(statistics.avgTime.toFixed(1)) }
 		]
 		: []
 
