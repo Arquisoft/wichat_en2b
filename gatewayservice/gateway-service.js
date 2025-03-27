@@ -21,7 +21,6 @@ const serviceUrls = {
 
 // CORS setup
 const publicCors = cors({ origin: '*', methods: ['GET', 'POST'] });
-const restrictedCors = cors({ origin: 'http://localhost:3000', methods: ['GET', 'POST'] });
 
 app.use(express.json());
 app.use(helmet.hidePoweredBy());
@@ -70,14 +69,14 @@ const forwardRequest = async (service, endpoint, req, res) => {
 };
 
 // Authentication
-app.use('/login', restrictedCors);
+app.use('/login', publicCors);
 app.post('/login', (req, res) => forwardRequest('auth', '/auth/login', req, res));
 
 // User Management
-app.use('/adduser', restrictedCors);
+app.use('/adduser', publicCors);
 app.post('/adduser', (req, res) => forwardRequest('auth', '/auth/register', req, res));
 
-app.use('/users', restrictedCors);
+app.use('/users', publicCors);
 app.post('/users', (req, res) => forwardRequest('user', '/users', req, res));
 
 app.get('/users', (req, res) => {
@@ -99,7 +98,7 @@ app.delete('/users/:username', (req, res) => {
 });
 
 // LLM Question Handling
-app.use('/askllm', restrictedCors);
+app.use('/askllm', publicCors);
 app.post('/askllm', (req, res) => forwardRequest('llm', '/askllm', req, res));
 
 // Game Service Routes
@@ -128,7 +127,7 @@ app.get('/game/:subject/:totalQuestions/:numberOptions', async (req, res) => {
 
 // Statistics Routes
 ['/statistics/subject/:subject', '/statistics/global', '/leaderboard'].forEach(route => {
-  app.use(route, restrictedCors);
+  app.use(route, publicCors);
   app.get(route, async (req, res) => {
     // Extract the error message before the try block
     let errorMessage;
