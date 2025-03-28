@@ -20,14 +20,16 @@ const clientSideEmotionCache = createEmotionCache();
  */
 export default function RootLayout({ children }) {
 	return (
-		<CacheProvider value={clientSideEmotionCache}>
-			<ThemeProvider theme={theme}>
-				<CssBaseline />
-				<html lang="en">
-					<body>{children}</body>
-				</html>
-			</ThemeProvider>
-		</CacheProvider>
+		<html lang="en">
+			<body> 
+				<CacheProvider value={clientSideEmotionCache}>
+					<ThemeProvider theme={theme}>
+						<CssBaseline />
+						{children}
+					</ThemeProvider>
+				</CacheProvider>
+			</body>
+		</html>
 	);
 }
 

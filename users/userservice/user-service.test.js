@@ -395,6 +395,20 @@ describe('User Service - PATCH /users/:username', () => {
     await checkUserExistsInDb({ username: editNonExistentUsername }, false);
   });
 
+  it('Should return 400 when registering twice a user', async () => {
+    const newUser = {
+      username: 'newUserDupe',
+      password: 'testpassword1',
+      role: 'USER'
+    };
+    const response1 = await request(app).post('/users').send(newUser);
+    expect(response1.status).toBe(201);
+
+    const response2 = await request(app).post('/users').send(newUser);
+    expect(response2.status).toBe(400);
+    expect(response2.body.error).toBe('Username already exists');
+  });
+
   it('should not update a user with same username on PATCH /users/:username', async () => {
     const response = await request(app).patch(`/users/${testUser1.username}`).send({ username: testUser1.username });
 

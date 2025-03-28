@@ -69,14 +69,50 @@ router.get('/statistics/global', verifyToken, async (req, res) => {
 router.get('/leaderboard', verifyToken, async (req, res) => {
     try {
         const leaderboard = await GameInfo.aggregate([
-            { $group: {
+            { $group: { // Full player database
                     _id: '$user_id',
                     totalScore: { $sum: '$points_gain' },
                     totalGames: { $sum: 1 },
                     avgScore: { $avg: '$points_gain' }
                 }},
-            { $sort: { totalScore: -1 }},
-            { $limit: 15 }
+            { $sort: { totalScore: -1 }}, // Sorted by score
+            {
+                $setWindowFields: { // Adds a rank attribute to every user
+                    sortBy: { totalScore: -1 },
+                    output: {
+                        rank: { $rank: {} }
+                    }
+                }
+            },
+            {
+                $match: { // Gets top 10 and user (11 users if user is not in top 10)
+                    $or: [
+                        { rank: { $lte: 10 } },
+                        { _id: req.user.username }
+                    ]
+                }
+            },
+            {
+                $lookup: { // Gets userDetails for the leaderboard
+                    from: 'users',
+                    localField: '_id',
+                    foreignField: 'username',
+                    as: 'userDetails'
+                }
+            },
+            {
+                $addFields: { // Adds only the username
+                    username: { $first: '$userDetails.username' }
+                }
+            },
+            {
+                $project: { // Removes the rest of the user details
+                    userDetails: 0
+                }
+            },
+            {
+                $sort: { rank: 1 } // Sorts by rank
+            }
         ]);
 
         res.json({ leaderboard });

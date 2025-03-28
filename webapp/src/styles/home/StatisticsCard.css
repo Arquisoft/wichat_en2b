@@ -1,8 +1,8 @@
-.stats-card {
+body .stats-card {
   margin-bottom: 5rem;
 }
 
-.progress-card {
+body .progress-card {
   border-radius: 0.75rem; 
   box-shadow: 0 0.25rem 0.625rem rgba(0, 0, 0, 0.1); 
   background-color: #fff;
@@ -10,44 +10,44 @@
   margin-bottom: 1.5rem;
 }
 
-.progress-card:hover {
+body .progress-card:hover {
   transform: translateY(-0.3125rem); /* -5px */
-  box-shadow: 0 0.5rem 1.25rem rgba(0, 0, 0, 0.15); 
+  box-shadow: 0 0.5rem 1.25rem rgba(0, 0, 0, 0.15);
 }
 
-.progress-content {
+body .progress-content {
   padding: 1.5rem;
 }
 
-.progress-section {
+body .progress-section {
   margin-bottom: 1.25rem;
 }
 
-.progress-header {
+body .progress-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 0.75rem;
 }
 
-.progress-title {
+body .progress-title {
   font-size: 1.3rem;
   font-weight: 600;
   color: #333;
 }
 
-.stats-grid {
+body .stats-grid {
   display: flex;
   justify-content: space-between;
   gap: 1rem;
 }
 
-.stat-item {
+body .stat-item {
   flex: 1;
   padding: 0 0.5rem;
 }
 
-.stat-card {
+body .stat-card {
   border-radius: 0.625rem; 
   text-align: center;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -61,32 +61,32 @@
   animation: fadeInUp 0.5s ease forwards;
 }
 
-.stat-card:hover {
+body .stat-card:hover {
   transform: translateY(-0.25rem);
   box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.12);
 }
 
-.stat-quizzes {
+body .stat-quizzes {
   background: linear-gradient(135deg, #ab47bc, #8e24aa);
 }
 
-.stat-accuracy {
+body .stat-accuracy {
   animation-delay: 0.3s;
   background: linear-gradient(135deg, #ec407a, #d81b60);
 }
 
-.stat-rank {
+body .stat-rank {
   background: linear-gradient(135deg, #42a5f5, #1e88e5);
 }
 
-.stat-value {
+body .stat-value {
   font-size: 1.25rem;
   font-weight: 700;
   margin-bottom: 0.25rem;
   color: white;
 }
 
-.stat-label {
+body .stat-label {
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.05rem;
@@ -107,45 +107,45 @@
 
 /* Responsive adjustments */
 @media (max-width: 960px) {
-  .progress-content {
+  body .progress-content {
     padding: 1.25rem;
   }
-  
-  .stats-grid {
+
+  body .stats-grid {
     flex-direction: column;
   }
-  
-  .stat-value {
+
+  body .stat-value {
     font-size: 1.1rem;
   }
 
-  .stat-label {
+  body .stat-label {
     font-size: 0.7rem;
   }
 }
 
 @media (max-width: 600px) {
-  .progress-content {
+  body .progress-content {
     padding: 1rem;
   }
 
-  .progress-title {
+  body .progress-title {
     font-size: 1.1rem;
   }
 
-  .level-indicator {
+  body .level-indicator {
     font-size: 0.8rem;
   }
 
-  .stat-value {
+  body .stat-value {
     font-size: 1rem;
   }
 
-  .stat-label {
+  body .stat-label {
     font-size: 0.65rem;
   }
 
-  .stat-card {
+  body .stat-card {
     padding: 0.75rem 0.25rem;
   }
 }

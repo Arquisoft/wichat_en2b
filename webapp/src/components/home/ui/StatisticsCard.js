@@ -1,6 +1,5 @@
 import PropTypes from "prop-types";
-import { Card, CardContent, Typography, Paper } from "@mui/material";
-import Grid from '@mui/material/Grid2';
+import { Card, Grid, CardContent, Typography, Paper } from "@mui/material";
 import "../../../styles/home/StatisticsCard.css";
 
 /**

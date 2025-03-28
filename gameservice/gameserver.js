@@ -22,7 +22,15 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(questionRouter); 
 app.use(generateRouter); 
 app.use(gameRouter);
+app.use(statisticsRouter);
 
-app.listen(port, () => {
+const server = app.listen(port, () => {
     console.log(`🚀 Server running on: http://localhost:${port}`);
 });
+
+server.on('close', () => {
+    // Close the Mongoose connection
+    mongoose.connection.close();
+});
+
+module.exports = server;

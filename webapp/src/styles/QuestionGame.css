@@ -199,7 +199,6 @@
   max-width: 400px;
   margin: 20px auto;
   font-family: 'Poppins', sans-serif;
-  max-height: 80vh;
   color: black;
 }
 
@@ -302,6 +301,7 @@
   color: #6b48ff;
   cursor: pointer;
   transition: background 0.3s ease, color 0.3s ease;
+  margin-bottom: 16px;
 }
 
 .play-again-button:hover {
