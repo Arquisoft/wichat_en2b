@@ -3,13 +3,11 @@ const { defineFeature, loadFeature }=require('jest-cucumber');
 const setDefaultOptions = require('expect-puppeteer').setDefaultOptions
 const feature = loadFeature('./e2e/features/home-access.feature');
 const mongoose = require('mongoose');
+const User = require('../../../users/userservice/user-model'); //Import the users model
 
-// Define User model
-const User = mongoose.model('User', {
-    username: String,
-    password: String,
-    role: String
-});
+
+let page;
+let browser;
 
 defineFeature(feature, test => {
     beforeAll(async () => {
@@ -51,6 +49,7 @@ defineFeature(feature, test => {
         when('I fill the data in the login form', async () => {
             await expect(page).toFill('input[name="username"]', username);
             await expect(page).toFill('input[name="password"]', password);
+            await expect(page).toFill('input[name="confirmPassword"]', password);
             await expect(page).toClick('button', { text: 'Login' });
         });
 
@@ -71,6 +70,7 @@ defineFeature(feature, test => {
         when('I fill the data in the login form', async () => {
             await expect(page).toFill('input[name="username"]', username);
             await expect(page).toFill('input[name="password"]', password);
+            await expect(page).toFill('input[name="confirmPassword"]', password);
             await expect(page).toClick('button', { text: 'Login' });
         });
 

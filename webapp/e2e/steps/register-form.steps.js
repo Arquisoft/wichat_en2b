@@ -4,6 +4,7 @@ const setDefaultOptions = require('expect-puppeteer').setDefaultOptions
 const feature = loadFeature('./e2e/features/register-form.feature');
 const mongoose = require('mongoose');
 const User = require('../../../users/userservice/user-model'); //Import the users model
+const { click, writeIntoInput } = require('../test-functions')
 
 let page;
 let browser;
@@ -27,20 +28,18 @@ defineFeature(feature, test => {
 
   test('The user is not registered in the site', ({given,when,then}) => {
     
-    let username;
-    let password;
+    let username= "pablo";
+    let password= "pabloasw";
 
     given('An unregistered user', async () => {
-      username = "pablo"
-      password = "pabloasw"
-      await expect(page).toClick("a", { text: "Don't have an account? Register here." });
+      await click(page, "a[href='/addUser']")
     });
 
     when('I fill the data in the form and press submit', async () => {
-      await expect(page).toFill('input[name="username"]', username);
-      await expect(page).toFill('input[name="password"]', password);
-      await expect(page).toFill('input[name="confirmPassword"]', password);
-      await expect(page).toClick('button', { text: 'Register' })
+      await writeIntoInput(page,'input[name="username"]', username);
+      await writeIntoInput(page,'input[name="password"]', password);
+      await writeIntoInput(page,'input[name="confirmPassword"]', password);
+      await click(page,'button[text="Register"]');
     });
 
     then('A confirmation message should be shown in the screen', async () => {
@@ -62,7 +61,7 @@ defineFeature(feature, test => {
         password: password,
         role: 'USER'
       });
-      await expect(page).toClick("a", { text: "Don't have an account? Register here." });
+      await expect(page).toClick("a", { text: "Register here" });
     });
 
     when('I fill the register data in the form and press submit', async () => {
