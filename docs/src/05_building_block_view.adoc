@@ -87,9 +87,10 @@ The **Important Interfaces** section defines the key interactions between system
 
 * **User to System Interaction**: Users engage with the system via a **web client** interface, which provides a rich UI experience with interactive elements such as forms, buttons, and dynamic feedback mechanisms. This client ensures a seamless user experience throughout the gameplay.
 
-* **System to WikiData API Interaction**: The Wichat EN2B application interfaces with the **WikiData API** using a **question generator module**. This module sends HTTP requests containing **SPARQL queries** to retrieve structured knowledge from WikiData, which is subsequently processed and used to generate game questions.
+* **System to WikiData API Interaction**: The Wichat EN2B application interfaces with the **WikiData API** using a **Game service**. This service is in charge of the management of all the game related modules, such as the question generation and retrieval, the game state, the statistics, etc.
 
-* **System to LLM API Interaction**: The Wichat EN2B application communicates with the **LLM API** by passing the entire chat history of the logged-in user in each request. This ensures that the language model has full context of the ongoing conversation, enabling the generation of hints and responses that are contextually relevant and consistent with previous exchanges.
+* **System to LLM API Interaction**: The Wichat EN2B application requests to the **LLM Service** the communication with the 
+corresponding LLM, and this service is in charge of the propper connection witht the LLM.
 
 * **Internal Services Communication**: Internal services within the Wichat EN2B application communicate over **RESTful APIs**. For example, the **Gateway Service** routes incoming requests to the appropriate internal services, while the **Game Service** ensures game state management and flow control.
 
@@ -236,7 +237,8 @@ The following containers represent the primary services within the Wichat EN2B a
 
 * **Gateway Service**: Serves as the entry point for external API requests. This container is responsible for routing incoming requests to the correct internal services, ensuring that requests are handled efficiently and securely.
 
-* **Game Service**: This service manages the core game logic, including the flow of the game, the presentation of questions, tracking of user progress, and determining the game's end. It also handles the game state, such as the user's score and question set.
+* **Game Service**: This service manages the core game logic, including the flow of the game, the presentation of questions, tracking of user progress, and determining the game's end. It also handles the game state, such as the user's score and question set. It is 
+responsible for generating and retrieving questions, together with retrieving the user statistics.
 
 * **LLM Service**: This container interfaces with a **Large Language Model (LLM)** to provide hints, explanations, and additional content to assist the user during the game. It ensures that users receive context-sensitive content, enhancing the overall gaming experience by offering real-time dynamic information. Communication with the LLM API is conducted conversationally by passing the entire message history in each request to maintain context and coherence.
 
@@ -244,40 +246,26 @@ The following containers represent the primary services within the Wichat EN2B a
 
 * **User Gateway**: A container dedicated to managing user-specific API requests. It handles user authentication, session management, and retrieval of user-related data, ensuring secure and personalized experiences.
 
-* **User Authentication Service**: Manages user authentication processes, validating user credentials and ensuring secure access to the platform. It integrates with third-party authentication mechanisms when required.
-
-* **User CRUD Service**: Manages the **Create, Read, Update, Delete (CRUD)** operations for user data. It ensures that user profiles can be created, updated, or deleted, facilitating efficient user management.
-
-* **WikiData API**: A third-party external API that provides structured data for generating trivia questions and content. The Wichat EN2B application communicates with WikiData to fetch real-time data using SPARQL queries.
-
-* **LLM**: This container represents the external **Large Language Model** service that dynamically generates content such as hints and contextual information based on user interactions. It interacts with an advanced language model, such as GPT or similar technologies, to offer real-time, personalized content.
-
-==== External Communication
-
-* **External API Integration**: The **WikiData API** is a critical external system that provides the data needed to generate game questions. The Wichat EN2B application sends HTTP requests to this API, utilizing SPARQL queries to retrieve relevant content based on predefined game rules.
-
-* **LLM Communication**: The **LLM Service** facilitates interaction with external language models. It generates contextual hints, descriptions, and other textual content dynamically, based on the user’s queries or the state of the game, to guide users through the experience. Communication with the LLM is conversational, where the system passes the entire list of prior messages for each new request to maintain consistency and relevance in responses.
-
 ==== Data Flow
 
 Data flows between containers in a manner that ensures efficient communication and process execution. For example:
 
-* When a user logs in via the Web Application, the system authenticates the request using the **User Authentication Service**.
-* After successful authentication, the user interacts with the Game Service, which may request data from the WikiData API to generate a question.
-* The **LLM Service** is called when the user requests a hint, and the entire conversation history is sent to the LLM API in each request to provide context-sensitive guidance and responses.
+* When a user logs in via the Web Application, the system authenticates the request using the **User Service**.
+* After successful authentication, the user interacts with the **Game Service**.
+* The **LLM Service** is called when the user requests a hint.
 
 This modular design enhances scalability, maintainability, and fault isolation, ensuring that each component is specialized in its task while working seamlessly as part of the larger system.
 
 
 === Component Diagram (C4 Level 3)
 
-==== Container Diagram
+==== Component Diagram
 
 [plantuml]
 ----
 @startuml
 set separator none
-title Wichat EN2B - Components
+title Wichat EN2B - Component Diagram (C4 Level 3)
 
 left to right direction
 
@@ -290,74 +278,187 @@ skinparam {
 
 hide stereotype
 
+' ======== Estilos personalizados =========
+' Servicios principales
+skinparam rectangle<<WichatEN2B.GameService>> {
+  BackgroundColor #ff9933
+  FontColor #ffffff
+  BorderColor #b26b23
+}
+skinparam rectangle<<WichatEN2B.GatewayService>> {
+  BackgroundColor #ff9933
+  FontColor #ffffff
+  BorderColor #b26b23
+}
+skinparam rectangle<<WichatEN2B.LLMService>> {
+  BackgroundColor #ff9933
+  FontColor #ffffff
+  BorderColor #b26b23
+}
+skinparam rectangle<<WichatEN2B.UserService>> {
+  BackgroundColor #ff9933
+  FontColor #ffffff
+  BorderColor #b26b23
+}
+
+' Middleware (Azul)
+skinparam rectangle<<Middleware>> {
+  BackgroundColor #3366cc
+  FontColor #ffffff
+  BorderColor #1a3d7a
+}
+
+' Routers (Verde)
 skinparam rectangle<<Router>> {
-  BackgroundColor #ffcc00
+  BackgroundColor #33cc66
+  FontColor #ffffff
+  BorderColor #1a7a3d
+}
+
+' Modelos (Gris)
+skinparam rectangle<<Model>> {
+  BackgroundColor #cccccc
   FontColor #000000
-  BorderColor #b28f00
-  shadowing false
+  BorderColor #777777
 }
-skinparam rectangle<<Service>> {
+
+' APIs externas
+skinparam rectangle<<LLM>> {
+  BackgroundColor #2d882d
+  FontColor #ffffff
+  BorderColor #1f5f1f
+}
+skinparam rectangle<<WikiData>> {
+  BackgroundColor #2d882d
+  FontColor #ffffff
+  BorderColor #1f5f1f
+}
+
+' Database
+skinparam database<<WichatEN2B.MongoDBDatabase>> {
   BackgroundColor #ff9933
   FontColor #ffffff
   BorderColor #b26b23
   shadowing false
 }
-skinparam rectangle<<Database>> {
-  BackgroundColor #ff9933
-  FontColor #ffffff
-  BorderColor #b26b23
+
+' Main container
+skinparam rectangle<<WichatEN2B>> {
+  BorderColor #1f5f1f
+  FontColor #1f5f1f
   shadowing false
 }
 
-rectangle "Game Service\n<size:10>[Container]</size>" <<Service>> {
-  rectangle "Game Router\n<size:10>[Component]</size>" <<Router>> as GameRouter
-  rectangle "Game Logic\n<size:10>[Component]</size>" <<Service>> as GameLogic
-  rectangle "Game Result Model\n<size:10>[Component]</size>" <<Service>> as GameResultModel
+rectangle "Wichat EN2B\n<size:10>[Software System]</size>" <<WichatEN2B>> {
+  ' ======== Services =========
+  rectangle "Gateway Service\n<size:10>[Service]</size>" <<WichatEN2B.GatewayService>> as GatewayServer
+  rectangle "Game Service\n<size:10>[Service]</size>" <<WichatEN2B.GameService>> as GameServer
+  rectangle "User Service\n<size:10>[Service]</size>" <<WichatEN2B.UserService>> as UserServer
+  rectangle "LLM Service\n<size:10>[Service]</size>" <<WichatEN2B.LLMService>> as LLMServer
+
+  ' ======== Routers =========
+  rectangle "Question Fetcher Router\n<size:10>[Router]</size>" <<Router>> as QuestionFetcherRouter
+  rectangle "Question Retriever Router\n<size:10>[Router]</size>" <<Router>> as QuestionRetrieverRouter
+  rectangle "Game Info Router\n<size:10>[Router]</size>" <<Router>> as GameInfoRouter
+  rectangle "Statistics Router\n<size:10>[Router]</size>" <<Router>> as StatisticsRouter
+  rectangle "Auth Router\n<size:10>[Router]</size>" <<Router>> as AuthRouter
+  rectangle "User CRUD Router\n<size:10>[Router]</size>" <<Router>> as UserCrudRouter
+
+  ' ======== Middleware =========
+  rectangle "Auth Middleware\n<size:10>[Middleware]</size>" <<Middleware>> as AuthMiddleware
+
+  ' ======== Models =========
+  rectangle "Question Model\n<size:10>[Model]</size>" <<Model>> as QuestionModel
+  rectangle "Game Result Model\n<size:10>[Model]</size>" <<Model>> as GameResultModel
+  rectangle "User Model\n<size:10>[Model]</size>" <<Model>> as UserModel
+
+  ' ======== Database ========
+  rectangle "MongoDB Database\n<size:10>[Container]</size>" <<WichatEN2B.MongoDBDatabase>> as MongoDBDatabase
 }
 
-rectangle "User Service\n<size:10>[Container]</size>" <<Service>> {
-  rectangle "Auth Router\n<size:10>[Component]</size>" <<Router>> as AuthRouter
-  rectangle "User CRUD Router\n<size:10>[Component]</size>" <<Router>> as UserCRUDRouter
-  rectangle "Authentication Logic\n<size:10>[Component]</size>" <<Service>> as AuthLogic
-  rectangle "User Model\n<size:10>[Component]</size>" <<Service>> as UserModel
-}
+' ======== APIs =========
+rectangle "WikiData API\n<size:10>[External API]</size>" <<WikiData>> as WikiDataAPI
+rectangle "LLM API\n<size:10>[External API]</size>" <<LLM>> as LLMAPI
 
-rectangle "LLM Service\n<size:10>[Container]</size>" <<Service>> {
-  rectangle "LLM Router\n<size:10>[Component]</size>" <<Router>> as LLMRouter
-  rectangle "LLM Logic\n<size:10>[Component]</size>" <<Service>> as LLMLogic
-}
+' ======== Relations =========
+GatewayServer -[#707070,thickness=2]-> GameServer : "Routes game API calls"
+GatewayServer -[#707070,thickness=2]-> UserServer : "Routes user-related API calls"
+GatewayServer -[#707070,thickness=2]-> LLMServer : "Routes LLM API calls"
 
-GameRouter .[#707070,thickness=2].> GameLogic : "<color:#707070>Handles game requests"
-GameLogic .[#707070,thickness=2].> GameResultModel : "<color:#707070>Processes game results"
+UserServer -[#707070,thickness=2]-> AuthRouter : "Routes user-related API calls"
+AuthRouter -[#707070,thickness=2]-> UserCrudRouter : "Requests user data"
+AuthRouter -[#707070,thickness=2]-> UserModel : "Handles authentication requests"
+UserCrudRouter -[#707070,thickness=2]-> UserModel : "Manages user data"
+UserCrudRouter -[#707070,thickness=2]-> MongoDBDatabase : "Modifies users"
 
-AuthRouter .[#707070,thickness=2].> AuthLogic : "<color:#707070>Handles authentication requests"
-UserCRUDRouter .[#707070,thickness=2].> UserModel : "<color:#707070>Manages user data"
+LLMServer -[#707070,thickness=2]-> LLMAPI : "Processes language model requests"
 
-LLMRouter .[#707070,thickness=2].> LLMLogic : "<color:#707070>Handles LLM requests"
+AuthMiddleware -[#707070,thickness=2]-> GameServer : "Validates user authentication"
+GameServer -[#707070,thickness=2]-> QuestionFetcherRouter : "Fetches new questions"
+GameServer -[#707070,thickness=2]-> QuestionRetrieverRouter : "Retrieves stored questions"
+GameServer -[#707070,thickness=2]-> GameInfoRouter : "Handles game session data"
+GameServer -[#707070,thickness=2]-> StatisticsRouter : "Processes game statistics"
+QuestionFetcherRouter -[#707070,thickness=2]-> QuestionModel : "Models the question schema"
+QuestionRetrieverRouter -[#707070,thickness=2]-> QuestionModel : "Models the question schema"
+GameInfoRouter -[#707070,thickness=2]-> GameResultModel : "Models the question schema"
+StatisticsRouter -[#707070,thickness=2]-> GameResultModel : "Models the question schema"
+GameInfoRouter -[#707070,thickness=2]-> MongoDBDatabase : "Saves game information"
+StatisticsRouter -[#707070,thickness=2]-> MongoDBDatabase : "Retrieves game information"
+QuestionFetcherRouter -[#707070,thickness=2]-> MongoDBDatabase : "Stores questions"
+QuestionRetrieverRouter -[#707070,thickness=2]-> MongoDBDatabase : "Retrieves questions"
+QuestionFetcherRouter -[#707070,thickness=2]-> WikiDataAPI : "Fetches trivia questions"
+
 @enduml
 ----
 
 ==== Motivation
 
-The **Component Diagram** (C4 Level 3) provides a detailed view of the internal structure of each service, focusing on the specific routers and their interactions with the underlying logic and models. This level of detail is essential for developers working on individual services, as it clarifies the responsibilities of each component and their relationships.
+The **Component Diagram** (C4 Level 3) provides a detailed view of the internal structure of each service, focusing on the specific routers, logic components, and models. This level of detail is essential for developers working on individual services, as it clarifies the responsibilities of each component and their relationships.
 
-==== Contained Components
+==== Contained Building Blocks
+
+* **Gateway Service**:
+  - **Gateway Router**: Routes incoming HTTP requests to the appropriate internal services.
+  - **Request Dispatcher**: Handles the logic for delegating requests to the correct service, ensuring communication between components.
+  - **Monitoring**: Ensures the health and performance of the Gateway Service by tracking metrics such as request rates, response times, and error rates. This component provides insights into the system's operational status and helps identify potential issues.
 
 * **Game Service**:
-  - **Game Router**: Handles incoming HTTP requests related to game functionality.
-  - **Game Logic**: Implements the core game mechanics, such as question generation and score calculation.
-  - **Game Result Model**: Manages the data structure for storing and processing game results.
+  - **Middleware**: Ensures only authenticated users can access to these points.
+  - **Game Information Router**: Saves the game information and the game state.
+  - **Game Fetcher Router**: Is in charge of fetching questions from WikiData given the type and amount.
+  - **Game Retriever Router**: Returns questions from our database given the requested parameters.
+  - **Game Statistics Router**: Returns the current user game statistics for a given subject or for 
+  the whole application. It also returns the leaderboard of the application, including the current user.
 
 * **User Service**:
-  - **Auth Router**: Manages authentication-related endpoints (e.g., login, logout).
-  - **User CRUD Router**: Handles user management endpoints (e.g., create, update, delete users).
-  - **Authentication Logic**: Validates user credentials and manages session tokens.
+  - **Auth Service Router**: Manages authentication-related endpoints (login, register). It uses the
+  User CRUD router internally.
+  - **User CRUD Router**: Handles user management endpoints (create, update, delete users).
   - **User Model**: Represents the user data structure and interacts with the database.
 
 * **LLM Service**:
-  - **LLM Router**: Handles requests for hints and other LLM-related functionalities.
-  - **LLM Logic**: Communicates with the external LLM API to generate responses.
+  - **LLM Router**: Handles requests for hints.
+  - **LLM Logic**: Communicates with the external LLM API to generate responses. 
+
+* **External APIs**:
+  - **WikiData API**: Provides structured data for generating questions.
+  - **LLM API**: Offers dynamic content generation, such as hints and contextual information, based on user interactions.
+
+==== External Communication
+
+* **External API Integration**: The **WikiData API** is a critical external system that provides the data needed to generate game questions. The Wichat EN2B application sends HTTP requests to this API, utilizing SPARQL queries to retrieve relevant content based on predefined game rules.
+
+* **LLM Communication**: The **LLM Service** facilitates interaction with external language models. It generates contextual hints, descriptions, and other textual content dynamically, based on the user’s queries or the state of the game, to guide users through the experience. Communication with the LLM is conversational, where the system passes the entire list of prior messages for each new request to maintain consistency and relevance in responses.
 
 ==== Data Flow
 
-Each router acts as the entry point for its respective service, delegating requests to the appropriate logic components. These logic components interact with models or external APIs to fulfill the requests, ensuring a clear separation of concerns and maintainability.
+Each router contains one or several endpoints for its respective service. These router components interact with models or external APIs to fulfill the requests, ensuring a clear separation of concerns and maintainability.
+
+For example:
+- The **Gateway** routes a user request to the **Game Service** for game-related actions.
+- The **Middleware** would check if the user is authenticated previously to any operation.
+- The **Game Service** uses the **Game Fetcher Router** and fetches data from the **WikiData API** 
+- The **Game Service** uses the **Game Retriever Router** and retrieves questions from the **Database** 
+- The **LLM Service** communicates with the **LLM** throught the **LLM API** to generate hints or contextual responses for the user.
+
+This modular design enhances scalability, maintainability, and fault isolation, ensuring that each component is specialized in its task while working seamlessly as part of the larger system.

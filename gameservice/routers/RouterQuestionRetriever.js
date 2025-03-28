@@ -31,7 +31,7 @@ router.get('/game/:subject/:numQuestions?/:numOptions?', async (req, res) => {
             }
 
             // Create a pool of fake answers and select a random subset of them to be used as options
-            const fakeAnswers  = fakeAnswersDocs.sort(() => 0.5 - Math.random()).slice(0, numOptions - 1).map(q => q.answer);
+            const fakeAnswers  = fakeAnswersDocs.toSorted(() => 0.5 - Math.random()).slice(0, numOptions - 1).map(q => q.answer);
 
             // Shuffle the correct answer with the fake answers
             const answers = [q.answer, ...fakeAnswers].sort(() => 0.5 - Math.random());
