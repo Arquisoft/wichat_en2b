@@ -8,10 +8,6 @@ WORKDIR /app
 # Instala las dependencias
 RUN npm install
 
-# Configura las variables de entorno
-ARG API_URI="http://localhost:8000"
-ENV REACT_APP_API_ENDPOINT=$API_URI
-
 # Crea una versión optimizada de la aplicación
 RUN npm run build
 

@@ -3,6 +3,8 @@ import { Box, Paper, Typography, TextField, Button, IconButton, Stack, CircularP
 import '../../styles/InGameChat.css';
 import {FaAngleDown, FaPaperPlane, FaRobot} from "react-icons/fa";
 
+const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://localhost:8000';
+
 export default function InGameChat(params) {
     const { initialMessages, question } = params;
 
@@ -34,7 +36,7 @@ export default function InGameChat(params) {
         setIsThinking(true);
 
         try {
-            const response = await fetch("http://localhost:8000/askllm", {
+            const response = await fetch(`${apiEndpoint}/askllm`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
