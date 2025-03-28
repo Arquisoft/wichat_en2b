@@ -57,8 +57,7 @@ jobs:
     - name: Publish to Registry
       uses: elgohr/Publish-Docker-Github-Action@v5
       env:
-        API_URI: http://${{ secrets.DEPOLOY_HOST_ORACLE }}:8000
-        GATEWAY_SERVICE_URL: http://${{ secrets.DEPOLOY_HOST_ORACLE }}:8000
+          NEXT_PUBLIC_GATEWAY_SERVICE_URL: http://${{ secrets.DEPOLOY_HOST_ORACLE }}:8000
       with:
           name: arquisoft/wichat_en2b/webapp
           username: ${{ github.actor }}

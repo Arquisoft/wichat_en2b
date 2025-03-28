@@ -9,14 +9,13 @@ import {
   CardHeader,
   Typography,
   Box,
-  Snackbar,
   CircularProgress,
 } from "@mui/material";
 import '../../styles/register/Register.css';
 import '../../styles/globals.css';
 import { useRouter } from "next/navigation";
 
-const apiEndpoint = process.env.GATEWAY_SERVICE_URL || 'http://localhost:8000';
+const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://localhost:8000';
 
 const AddUser = () => {
   const [username, setUsername] = useState('');
