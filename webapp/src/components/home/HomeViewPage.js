@@ -76,8 +76,8 @@ function HomePage({ username, stats }) {
                     </Tabs>
 
                     {tabValue === 0 && <PlayTab />}
-                    {tabValue === 1 && <StatsTab recentQuizzes={recentQuizzes} />}
-                    {tabValue === 2 && <LeaderboardTab leaderboardData={leaderboardData} />}
+                    {tabValue === 1 && <StatsTab />}
+                    {tabValue === 2 && <LeaderboardTab />}
             </Container>
 
             {/* Footer */}

@@ -87,7 +87,6 @@ export default function StatsTab() {
 					throw new Error('Failed to fetch statistics');
 				}
 				const data = await response.json();
-				console.log(data);
 				if (!data || !data.stats) {
 					throw new Error('Invalid statistics data');
 				}
@@ -230,8 +229,4 @@ function StatCard({ title, value }) {
 	)
 }
 
-StatCard.propTypes = {
-	title: PropTypes.string.isRequired,
-	value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-}
 
