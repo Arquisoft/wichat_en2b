@@ -75,7 +75,7 @@ const Login = () => {
         <h2>Welcome to WIChat</h2>
         <p>Login to start playing!</p>
         {errors.general && <p className="error-message">{errors.general}</p>}
-        {has2fa && !is2faVerified ? (
+        {has2fa ? (
           <Check2fa />
         ) : (
           <form onSubmit={handleSubmit}>
