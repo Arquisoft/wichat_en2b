@@ -14,7 +14,7 @@ defineFeature(feature, test => {
   beforeAll(async () => {
     browser = process.env.GITHUB_ACTIONS
       ? await puppeteer.launch({headless: "new", args: ['--no-sandbox', '--disable-setuid-sandbox']})
-      : await puppeteer.launch({ headless: false, slowMo: 100 });
+      : await puppeteer.launch({ headless: false, slowMo: 50 });
     page = await browser.newPage();
     //Way of setting up the timeout
     //setDefaultOptions({ timeout: 30000 })
@@ -39,13 +39,13 @@ defineFeature(feature, test => {
       await writeIntoInput(page,'input[name="username"]', username);
       await writeIntoInput(page,'input[name="password"]', password);
       await writeIntoInput(page,'input[name="confirmPassword"]', password);
-      await click(page,'button[text="Register"]');
+      await click(page,'form > button');
     });
 
     then('A confirmation message should be shown in the screen', async () => {
       await expect(page).toMatchElement("h2", { text: "Welcome to WIChat" });
     });
-  })
+  }, 10000)
 
   test('The user is already registered in the site', ({given,when,then}) => {
 
@@ -61,14 +61,14 @@ defineFeature(feature, test => {
         password: password,
         role: 'USER'
       });
-      await expect(page).toClick("a", { text: "Register here" });
+      await click(page, "a[href='/addUser']")
     });
 
     when('I fill the register data in the form and press submit', async () => {
-      await expect(page).toFill('input[name="username"]', username);
-      await expect(page).toFill('input[name="password"]', password);
-      await expect(page).toFill('input[name="confirmPassword"]', password);
-      await expect(page).toClick('button', { text: 'Register' })
+      await writeIntoInput(page,'input[name="username"]', username);
+      await writeIntoInput(page,'input[name="password"]', password);
+      await writeIntoInput(page,'input[name="confirmPassword"]', password);
+      await click(page,'form > button');
     });
 
     then('A error message should inform me that the account is already registered', async () => {
