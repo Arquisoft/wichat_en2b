@@ -70,14 +70,15 @@ router.post('/login', [
     }
     let has2fa = userFromDB.secret;
     if(has2fa){
+      
+      res.json({has2fa : has2fa});
+    }else{
       const token = jwt.sign(
         { username: userFromDB.username, role: userFromDB.role },
         process.env.JWT_SECRET || 'testing-secret',
         { expiresIn: '1h' }
       );
       res.json({ token: token , has2fa : has2fa});
-    }else{
-      res.json({has2fa : has2fa});
     }
     
     
