@@ -22,12 +22,7 @@ router.post('/users', async (req, res) => {
         if (existingUser) {
             return res.status(400).json({ error: 'Username already exists' });
         }
-        if (secret) {
-            const existingSecretUser = await User.findOne({ secret });
-            if (existingSecretUser) {
-              return res.status(400).send({ error: 'Secret must be unique!' });
-            }
-          }
+       
         user.password = bcrypt.hashSync(req.body.password, 10);
 
         await user.save();
@@ -75,8 +70,8 @@ router.patch('/users/:username', async (req, res) => {
     }
 
     let somethingChanged = false;
-    // Handle 'secret' separately to avoid uniqueness conflicts
-    if (req.body.secret && req.body.secret !== user.secret) {
+    if (req.body.secret && req.body.secret === user.secret) {
+
         const existingSecretUser = await User.findOne({ secret: req.body.secret });
         if (existingSecretUser) {
         return res.status(400).send({ error: 'Secret must be unique!' });
