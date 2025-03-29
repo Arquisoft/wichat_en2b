@@ -54,8 +54,21 @@ const StatisticsCard = () => {
 				const statsData = await statsResponse.json();
 				const rankData = await rankResponse.json();
 
+				const getCurrentPlayerId = async (token) => {
+					try {
+						const decoded = JSON.parse(atob(token.split('.')[1]));
+						return decoded.username;
+					} catch (error) {
+						console.error('Error getting current player ID:', error);
+						return null;
+					}
+				};
+
+				const currentPlayerId = await getCurrentPlayerId(token);
+				const playerRank = rankData.leaderboard.find(entry => entry._id === currentPlayerId)?.rank || 'N/A';
+
 				setStatistics(statsData.stats);
-				setRank(rankData.rank);
+				setRank(playerRank);
 			} catch (error) {
 				setError(error.message);
 				setStatistics(null);
