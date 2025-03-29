@@ -83,18 +83,10 @@ async function sendQuestionToLLM(conversation, apiKey, answer, model = 'empathy'
      let retryCount = 0;
      const maxRetries = 3;
 
-     do {
-      if(retryCount>3){
-        break;
-      }
        response = await axios.post(url, requestData, { headers });
        llmAnswer = config.transformResponse(response);
        retryCount++;
-       
-     } while (filterWords.some(word => llmAnswer.toLowerCase().includes(word.toLowerCase())));
-     if (retryCount >= maxRetries) {
-      return "There was an error while returning your answer, please try again.";
-    }
+
 
     return llmAnswer;
 
@@ -110,6 +102,7 @@ app.post('/askllm', async (req, res) => {
     validateRequiredFields(req, ['conversation', 'model', 'possibleAnswers']);
     const {conversation, model, possibleAnswers} = req.body;
     const apiKey=process.env.LLM_API_KEY;
+    console.log(apiKey)
     const llmAnswer = await sendQuestionToLLM(conversation, apiKey, possibleAnswers, model);
     if (llmAnswer) {
       res.json( { role: "assistant", content: llmAnswer });
