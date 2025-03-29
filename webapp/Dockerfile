@@ -5,12 +5,11 @@ FROM node:22
 COPY . /app
 WORKDIR /app
 
+ARG NEXT_PUBLIC_GATEWAY_SERVICE_URL
+ENV NEXT_PUBLIC_GATEWAY_SERVICE_URL=${NEXT_PUBLIC_GATEWAY_SERVICE_URL}
+
 # Instala las dependencias
 RUN npm install
-
-# Configura las variables de entorno
-ARG API_URI="http://localhost:8000"
-ENV REACT_APP_API_ENDPOINT=$API_URI
 
 # Crea una versión optimizada de la aplicación
 RUN npm run build

@@ -13,6 +13,7 @@ router.post('/users', async (req, res) => {
         const errors = user.validateSync();
 
         if (errors) {
+            console.log(errors);
             return res.status(400).send(errors);
         }
 

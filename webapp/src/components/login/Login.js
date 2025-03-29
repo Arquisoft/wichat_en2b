@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import "../../styles/login/Login.css";
 import "../../styles/globals.css";
 
+const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://localhost:8000';
+
 const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -24,7 +26,7 @@ const Login = () => {
         .find((row) => row.startsWith("token="))
         ?.split("=")[1];
 
-      const response = await fetch("http://localhost:8000/login", {
+      const response = await fetch(`${apiEndpoint}/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

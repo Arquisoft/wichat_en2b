@@ -3,7 +3,7 @@ import "../../styles/QuestionGame.css";
 import { Alert, CircularProgress, LinearProgress, Box, Typography } from "@mui/material";
 import InGameChat from "@/components/game/InGameChat";
 
-const gatewayService = process.env.GATEWAY_SERVICE_URL || "http://localhost:8000";
+const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://localhost:8000';
 
 export default function QuestionGame(params) {
     const { topic, totalQuestions, numberOptions, timerDuration, question } = params;
@@ -22,7 +22,7 @@ export default function QuestionGame(params) {
 
     const fetchQuestions = async () => {
         try {
-            const response = await fetch(`${gatewayService}/game/${topic}/${totalQuestions}/${numberOptions}`);
+            const response = await fetch(`${apiEndpoint}/game/${topic}/${totalQuestions}/${numberOptions}`);
             const data = await response.json();
             setQuestions(data);
             resetState();
@@ -165,7 +165,7 @@ export default function QuestionGame(params) {
 
                     <div className="image-box">
                         <img
-                            src={`${gatewayService}${questions[currentQuestion].image_name}`}
+                            src={`${apiEndpoint}${questions[currentQuestion].image_name}`}
                             alt="Question"
                             className="quiz-image"
                         />
