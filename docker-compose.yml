@@ -43,7 +43,7 @@ services:
     image: ghcr.io/arquisoft/wichat_en2b/llmservice:latest
     profiles: ["dev", "prod"]
     env_file:
-      - llmservice/.env
+      - .env
     build:
       context: ./llmservice
     ports:

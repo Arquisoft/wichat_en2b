@@ -186,6 +186,7 @@ jobs:
         key: ${{ secrets.DEPLOY_KEY_ORACLE }}
         command: |
           echo "LLM_API_KEY=${{ secrets.LLM_API_KEY }}" > llmservice/.env
+          echo "NEXT_PUBLIC_GATEWAY_SERVICE_URL=http://${{ secrets.DEPLOY_HOST_ORACLE }}:8000" >> .env
           wget https://raw.githubusercontent.com/arquisoft/wichat_en2b/master/docker-compose.yml -O docker-compose.yml
           docker compose --profile prod down
           docker compose --profile prod up -d --pull always
