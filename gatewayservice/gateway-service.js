@@ -98,10 +98,10 @@ app.delete('/users/:username', (req, res) => {
 });
 
 // User Management
-app.use('/setup2fa', restrictedCors);
+app.use('/setup2fa', publicCors);
 app.post('/setup2fa', (req, res) => forwardRequest('auth', '/auth/setup2fa', req, res));
 
-app.use('/verify2fa', restrictedCors);
+app.use('/verify2fa', publicCors);
 app.post('/verify2fa', (req, res) => forwardRequest('auth', '/verify2fa', req, res));
 
 // LLM Question Handling

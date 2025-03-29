@@ -18,35 +18,36 @@ const Login = () => {
     e.preventDefault();
     setErrors({});
     setLoading(true);
-
+  
     try {
-      // Get token from cookies, if it exists
+      // Fetch token from cookies if it's available
       const token = document.cookie
         .split("; ")
         .find((row) => row.startsWith("token="))
         ?.split("=")[1];
-
+  
       const response = await fetch(`${apiEndpoint}/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}), // Send token if present
+          // Don't send token in Authorization header during login
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify({
-          user: {
-            username,
-            password,
-          },
+          user: { username, password },
         }),
       });
-
+  
       const data = await response.json();
-
+  
       if (!response.ok) {
         throw data;
       }
-
+  
+      // On successful login, set the token in the cookie
       document.cookie = `token=${data.token}; path=/; max-age=3600`;
+  
+      // Redirect to the home page after login
       router.push("/");
     } catch (err) {
       if (err.error === "You are already logged in") {
@@ -61,6 +62,7 @@ const Login = () => {
       setLoading(false);
     }
   };
+  
 
   return (
     <div className="login-container">

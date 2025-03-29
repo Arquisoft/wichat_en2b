@@ -61,10 +61,14 @@ export default function ProfileForm({ username, onSave }) {
 
 const setup2FA = async () => {
   try {
+    const token = document.cookie
+        .split("; ")
+        .find((row) => row.startsWith("token="))
+        ?.split("=")[1];
     const response = await fetch("http://localhost:8000/setup2fa", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
+        Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({}),
@@ -72,7 +76,6 @@ const setup2FA = async () => {
 
     const data = await response.json();
     setQrCodeUrl(data.imageUrl);
-    console.log(data.imageUrl);
   } catch (error) {
     console.error(error);
   }

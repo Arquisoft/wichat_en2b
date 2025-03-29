@@ -1,5 +1,4 @@
 import React from "react";
-import "../../../styles/home/2fa/qrCode.css";
 
 export default function QrCode({ imgUrl }) {
   console.log(imgUrl);
