@@ -74,13 +74,24 @@ router.post('/verify2fa', async (req, res) => {
     const isValid = otplib.authenticator.verify({ token, secret });
 
     if (isValid) {
+      try {
+        userResponse = await axios.get(`${gatewayServiceUrl}/users/${user.username}`);
+      } catch (err) {
+        if (err.response && err.response.status === 404) {
+          logger.error(`Failure in login: user ${user.username} not found`);
+          return res.status(401).json({ 
+            error: ERROR_USERNAME_NOT_FOUND, 
+            field: 'username' 
+          });
+        }
+        throw err;
+      }
+      const userFromDB = userResponse.data;
       const jwtToken = jwt.sign(
           { username: userFromDB.username, role: userFromDB.role },
           process.env.JWT_SECRET || 'testing-secret',
           { expiresIn: '1h' }
         );
-        console.log(jwtToken);
-        res.json({ token: token , has2fa : has2fa});
       res.json({ message: "2FA Verified" , token: jwtToken});
     } else {
       res.status(401).json({ error: "Invalid 2FA Token" });

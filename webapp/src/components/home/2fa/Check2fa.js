@@ -33,7 +33,6 @@ const Check2fa = () => {
           code: twoFactorCode,
         }),
       });
-
       const data = await response.json();
 
       if (!response.ok) {
