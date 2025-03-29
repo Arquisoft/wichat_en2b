@@ -25,14 +25,6 @@ function HomePage({ username, stats }) {
         username = "QuizMaster";
     }
 
-    if (!stats) {
-        stats = {
-            quizzes: 42,     // Ejemplo: número de quizzes
-            accuracy: 78,    // Ejemplo: porcentaje de precisión
-            rank: 12         // Ejemplo: rango del jugador
-        };
-    }
-
     const [tabValue, setTabValue] = useState(0);
     const [currentYear, setCurrentYear] = useState(null);
 
@@ -62,7 +54,7 @@ function HomePage({ username, stats }) {
                     </Typography>
 
                     {/* Pass the stats to the stats component */}
-                    <StatisticsCard stats={stats} />
+                    <StatisticsCard />
 
                     <Tabs 
                         value={tabValue} 

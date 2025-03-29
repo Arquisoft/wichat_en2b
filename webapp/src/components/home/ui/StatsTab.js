@@ -111,7 +111,7 @@ export default function StatsTab() {
 
 	const chartData = statistics
 		? [
-			{ name: "Success Rate", value: Number.parseFloat(statistics.successRatio.toFixed(1)) },
+			{ name: "Success Rate", value: Number.parseFloat(statistics.successRatio.toFixed(2))*100},
 			{ name: "Avg Score", value: Number.parseFloat(statistics.avgScore.toFixed(1)) },
 			{ name: "Avg Time (s)", value: Number.parseFloat(statistics.avgTime.toFixed(1)) }
 		]
