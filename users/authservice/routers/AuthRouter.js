@@ -68,14 +68,19 @@ router.post('/login', [
         field: 'password' 
       });
     }
-
-    const token = jwt.sign(
-      { username: userFromDB.username, role: userFromDB.role },
-      process.env.JWT_SECRET || 'testing-secret',
-      { expiresIn: '1h' }
-    );
     let has2fa = userFromDB.secret;
-    res.json({ token: token , has2fa : has2fa});
+    if(has2fa){
+      const token = jwt.sign(
+        { username: userFromDB.username, role: userFromDB.role },
+        process.env.JWT_SECRET || 'testing-secret',
+        { expiresIn: '1h' }
+      );
+      res.json({ token: token , has2fa : has2fa});
+    }else{
+      res.json({has2fa : has2fa});
+    }
+    
+    
   } catch (error) {
     logger.error('Error in /login endpoint', error);
     res.status(500).json({ error: 'Internal Server Error' });

@@ -46,12 +46,14 @@ const Login = () => {
         throw data;
       }
   
-      // On successful login, set the token in the cookie
-      document.cookie = `token=${data.token}; path=/; max-age=3600`;
+     
       // Redirect to the home page after login
       if(data.has2fa){
         setHas2fa(true);
       }else{
+        // On successful login, set the token in the cookie
+        console.log(data);
+        document.cookie = `token=${data.token}; path=/; max-age=3600`;
         router.push("/");
       }
     } catch (err) {

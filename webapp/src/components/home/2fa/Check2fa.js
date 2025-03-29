@@ -23,7 +23,7 @@ const Check2fa = () => {
         .find((row) => row.startsWith("token="))
         ?.split("=")[1];
 
-      const response = await fetch(`${apiEndpoint}/verify-2fa`, {
+      const response = await fetch(`${apiEndpoint}/verify2fa`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -42,7 +42,6 @@ const Check2fa = () => {
 
       // On successful 2FA verification, update the token in the cookie
       document.cookie = `token=${data.token}; path=/; max-age=3600`;
-
       router.push("/"); // Redirect to home after 2FA success
     } catch (err) {
       setError(err.error || "Verification failed");
