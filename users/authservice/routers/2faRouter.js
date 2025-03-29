@@ -7,7 +7,7 @@ const axios = require('axios');  // Make sure axios is installed
 const router = express.Router();
 
 otplib.authenticator.options = { window: 1 };
-
+const gatewayServiceUrl = process.env.GATEWAY_SERVICE_URL || 'http://gatewayservice:8000'; // NOSONAR
 // Function to decode user from token
 const getUserFromToken = (req) => {
   try {
@@ -47,7 +47,7 @@ router.post('/setup2fa', async (req, res) => {
 
     // Save the secret to the user (make sure the gatewayServiceUrl is defined)
     try {
-      const newUserResponse = await axios.patch(`http://localhost:8000/users/${user.username}`, { secret });
+      const newUserResponse = await axios.patch(`${gatewayServiceUrl}/users/${user.username}`, { secret });
       logger.info('User updated with 2FA secret');
       console.log(newUserResponse.data); // Log the response from the user update request
     } catch (error) {
