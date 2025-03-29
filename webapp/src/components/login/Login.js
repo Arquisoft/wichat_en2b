@@ -1,98 +1,109 @@
-// src/components/Login.js
-import React, { useState } from 'react';
-import axios from 'axios';
-import { Container, Typography, TextField, Button, Snackbar } from '@mui/material';
-import { Typewriter } from "react-simple-typewriter";
+"use client";
+
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
+import "../../styles/login/Login.css";
+import "../../styles/globals.css";
+
+const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://localhost:8000';
 
 const Login = () => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [message, setMessage] = useState('');
-  const [error, setError] = useState('');
-  const [loginSuccess, setLoginSuccess] = useState(false);
-  const [createdAt, setCreatedAt] = useState('');
-  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
-  const apiEndpoint = process.env.REACT_APP_API_ENDPOINT || 'http://localhost:8000';
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setErrors({});
+    setLoading(true);
 
-
-  const possibleAnswers = {"answers":["San José","Lima","Perugia","Panama City"],"right_answer":"Panama City"};
-
-  const loginUser = async () => {
     try {
-      const response = await axios.post(`${apiEndpoint}/login`, { username, password });
-      const model = "empathy"
+      // Get token from cookies, if it exists
+      const token = document.cookie
+        .split("; ")
+        .find((row) => row.startsWith("token="))
+        ?.split("=")[1];
 
-      let conversation = [
-        { 
-          role: "user", 
-          content: "Hello, can you give me a hint for the question?"
-        }];
-        
-      const message = await axios.post(`${apiEndpoint}/askllm`, {conversation, model, possibleAnswers })
-      conversation.push(message.data);
-      setMessage(message.data.content);
-      
-      // Extract data from the response
-      const { createdAt: userCreatedAt } = response.data;
+      const response = await fetch(`${apiEndpoint}/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}), // Send token if present
+        },
+        body: JSON.stringify({
+          user: {
+            username,
+            password,
+          },
+        }),
+      });
 
-      setCreatedAt(userCreatedAt);
-      setLoginSuccess(true);
+      const data = await response.json();
 
-      setOpenSnackbar(true);
-    } catch (error) {
-      setError(error.response.data.error);
+      if (!response.ok) {
+        throw data;
+      }
+
+      document.cookie = `token=${data.token}; path=/; max-age=3600`;
+      router.push("/");
+    } catch (err) {
+      if (err.error === "You are already logged in") {
+        // Redirect to home if already logged in
+        router.push("/");
+      } else if (err.field) {
+        setErrors({ [err.field]: err.error });
+      } else {
+        setErrors({ general: err.error || "Login failed" });
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleCloseSnackbar = () => {
-    setOpenSnackbar(false);
-  };
-
   return (
-    <Container component="main" maxWidth="xs" sx={{ marginTop: 4 }}>
-      {loginSuccess ? (
-        <div>
-          <Typewriter
-            words={[message]} // Pass your message as an array of strings
-            cursor
-            cursorStyle="|"
-            typeSpeed={50} // Typing speed in ms
-          />
-          <Typography component="p" variant="body1" sx={{ textAlign: 'center', marginTop: 2 }}>
-            Your account was created on {new Date(createdAt).toLocaleDateString()}.
-          </Typography>
-        </div>
-      ) : (
-        <div>
-          <Typography component="h1" variant="h5">
-            Login
-          </Typography>
-          <TextField
-            margin="normal"
-            fullWidth
-            label="Username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-          />
-          <TextField
-            margin="normal"
-            fullWidth
-            label="Password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <Button variant="contained" color="primary" onClick={loginUser}>
-            Login
-          </Button>
-          <Snackbar open={openSnackbar} autoHideDuration={6000} onClose={handleCloseSnackbar} message="Login successful" />
-          {error && (
-            <Snackbar open={!!error} autoHideDuration={6000} onClose={() => setError('')} message={`Error: ${error}`} />
-          )}
-        </div>
-      )}
-    </Container>
+    <div className="login-container">
+      <div className="login-card">
+        <h2>Welcome to WIChat</h2>
+        <p>Login to start playing!</p>
+        {errors.general && <p className="error-message">{errors.general}</p>}
+        <form onSubmit={handleSubmit}>
+          <div className="input-group">
+            <label htmlFor="username">Username</label>
+            <input
+              type="text"
+              id="username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="Enter your username"
+              required
+              disabled={loading}
+            />
+            {errors.username && <p className="error-message">{errors.username}</p>}
+          </div>
+          <div className="input-group">
+            <label htmlFor="password">Password</label>
+            <input
+              type="password"
+              id="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Enter your password"
+              required
+              disabled={loading}
+            />
+            {errors.password && <p className="error-message">{errors.password}</p>}
+          </div>
+          <button type="submit" className="login-button" disabled={loading}>
+            {loading ? "Logging in..." : "Login"}
+          </button>
+        </form>
+        <p className="register-link">
+          Don’t have an account? <a href="/addUser">Register here</a>
+        </p>
+      </div>
+    </div>
   );
 };
 

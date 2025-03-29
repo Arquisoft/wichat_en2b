@@ -1,6 +1,5 @@
 import React from "react";
-import { Card, CardHeader, CardContent, Typography, Button } from "@mui/material";
-import Grid from '@mui/material/Grid2';
+import { Card, Grid, CardHeader, CardContent, Typography, Button } from "@mui/material";
 import { quizCategories } from "../data";
 import Link from "next/link";
 import "../../../styles/home/PlayTab.css";

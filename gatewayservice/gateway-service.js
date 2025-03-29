@@ -21,7 +21,6 @@ const serviceUrls = {
 
 // CORS setup
 const publicCors = cors({ origin: '*', methods: ['GET', 'POST'] });
-const restrictedCors = cors({ origin: 'http://localhost:3000', methods: ['GET', 'POST'] });
 
 app.use(express.json());
 app.use(helmet.hidePoweredBy());
@@ -38,36 +37,65 @@ const forwardRequest = async (service, endpoint, req, res) => {
       headers: {
         Authorization: req.headers.authorization,
         'Content-Type': 'application/json',
-        Origin: 'http://localhost:8000', // Assuming the same origin as the previous example
+        Origin: 'http://localhost:8000',
       },
-      body: req.method !== 'GET' ? JSON.stringify(req.body) : undefined, // Only include body for non-GET requests
+      body: req.method !== 'GET' ? JSON.stringify(req.body) : undefined,
     });
-
-    if (!response.ok) {
-      return res.status(response.status === 404 ? 404 : 500).json({
-        error: 'Hubo un problema al procesar la solicitud',
-      });
+    // Get the response body (if any) and content type
+    const contentType = response.headers.get('Content-Type');
+    let responseBody;
+    if (contentType && contentType.includes('application/json')) {
+      responseBody = await response.json();
+    } else {
+      responseBody = await response.text();
     }
-
-    const data = await response.json();
-    res.json(data);
+    
+    // Set the status code from the downstream service response
+    res.status(response.status);
+    // Send the response body as-is
+    if (responseBody) {
+      if (contentType && contentType.includes('application/json')) {
+        res.json(responseBody); // Send JSON (e.g., token or error message)
+      } else {
+        res.send(responseBody); // Send text if not JSON
+      }
+    } else {
+      res.send(); // No body, just send the status
+    }
   } catch (error) {
-    console.error(`Error forwarding request to ${service}${endpoint}:`, error.message);
-
-    // Handle fetch errors
-    res.status(500).json({
-      error: 'Hubo un problema al procesar la solicitud',
-    });
+    console.log(`Error forwarding request to ${service}${endpoint}:`, error.message);
+    res.status(500).json({ error: 'Hubo un problema al procesar la solicitud' });
   }
 };
 
 // Authentication
-app.use('/login', restrictedCors);
-app.post('/login', (req, res) => forwardRequest('auth', '/login', req, res));
+app.use('/login', publicCors);
+app.post('/login', (req, res) => forwardRequest('auth', '/auth/login', req, res));
 
 // User Management
-app.use('/adduser', restrictedCors);
-app.post('/adduser', (req, res) => forwardRequest('user', '/adduser', req, res));
+app.use('/adduser', publicCors);
+app.post('/adduser', (req, res) => forwardRequest('auth', '/auth/register', req, res));
+
+app.use('/users', publicCors);
+app.post('/users', (req, res) => forwardRequest('user', '/users', req, res));
+
+app.get('/users', (req, res) => {
+  const { id } = req.query;
+  const endpoint = id ? `/users?id=${id}` : '/users';
+  forwardRequest('user', endpoint, req, res);
+});
+
+app.get('/users/:username', (req, res) => {
+  forwardRequest('user', `/users/${req.params.username}`, req, res);
+});
+
+app.patch('/users/:username', (req, res) => {
+  forwardRequest('user', `/users/${req.params.username}`, req, res);
+});
+
+app.delete('/users/:username', (req, res) => {
+  forwardRequest('user', `/users/${req.params.username}`, req, res);
+});
 
 // User Management
 app.use('/setup2fa', restrictedCors);
@@ -77,7 +105,7 @@ app.use('/verify2fa', restrictedCors);
 app.post('/verify2fa', (req, res) => forwardRequest('auth', '/verify2fa', req, res));
 
 // LLM Question Handling
-app.use('/askllm', restrictedCors);
+app.use('/askllm', publicCors);
 app.post('/askllm', (req, res) => forwardRequest('llm', '/askllm', req, res));
 
 // Game Service Routes
@@ -106,7 +134,7 @@ app.get('/game/:subject/:totalQuestions/:numberOptions', async (req, res) => {
 
 // Statistics Routes
 ['/statistics/subject/:subject', '/statistics/global', '/leaderboard'].forEach(route => {
-  app.use(route, restrictedCors);
+  app.use(route, publicCors);
   app.get(route, async (req, res) => {
     // Extract the error message before the try block
     let errorMessage;

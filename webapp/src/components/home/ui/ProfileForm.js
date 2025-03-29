@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import PropTypes from "prop-types";
-import { Save, Edit, Lock, Security, Person, Smartphone, VerifiedUser } from "@mui/icons-material";
+import { Save, Edit, Lock, Security, Person, VerifiedUser } from "@mui/icons-material";
 import "../../../styles/home/ProfilePage.css"; 
 import QrCode from "@/components/home/2fa/qrCode";
 
@@ -94,11 +94,19 @@ const setup2FA = async () => {
           </Box>
 
           {/* Tabs */}
-          <Tabs value={tabIndex} onChange={(e, newValue) => setTabIndex(newValue)} centered>
-            <Tab label="Account" icon={<Person />} />
-            <Tab label="Security" icon={<Lock />} />
-            <Tab label="2FA" icon={<Security />} />
-          </Tabs>
+          <div className="tabs-container">
+            <Tabs 
+              value={tabIndex} 
+              onChange={(e, newValue) => setTabIndex(newValue)} 
+              scrollButtons="auto"
+              variant="scrollable"
+            >
+              <Tab label="Account" icon={<Person />} />
+              <Tab label="Security" icon={<Lock />} />
+              <Tab label="2FA" icon={<Security />} />
+            </Tabs>
+          </div>
+
 
           {/* Account tab */}
           {tabIndex === 0 && (
@@ -154,16 +162,21 @@ const setup2FA = async () => {
 
           {/* Save/Edit button */}
           <Box className="save-button">
-            {editing ? (
-              <Button variant="contained" startIcon={<Save />} onClick={handleSave}>
-                Save
-              </Button>
-            ) : (
-              <Button variant="outlined" startIcon={<Edit />} onClick={() => setEditing(true)}>
-                Edit
-              </Button>
+            {(tabIndex !== 2) && (
+              <>
+                {editing ? (
+                  <Button variant="contained" startIcon={<Save />} onClick={handleSave}>
+                    Save
+                  </Button>
+                ) : (
+                  <Button variant="outlined" startIcon={<Edit />} onClick={() => setEditing(true)}>
+                    Edit
+                  </Button>
+                )}
+              </>
             )}
           </Box>
+
 
           {/* Confirmation snackbar */}
           <Snackbar open={openSnackbar} autoHideDuration={3000} 
