@@ -9,7 +9,7 @@ router.post('/users', async (req, res) => {
         const user = new User({
             ...req.body
         });
-
+        let secret = req.body.secret;
         const errors = user.validateSync();
 
         if (errors) {
@@ -22,7 +22,12 @@ router.post('/users', async (req, res) => {
         if (existingUser) {
             return res.status(400).json({ error: 'Username already exists' });
         }
-
+        if (secret) {
+            const existingSecretUser = await User.findOne({ secret });
+            if (existingSecretUser) {
+              return res.status(400).send({ error: 'Secret must be unique!' });
+            }
+          }
         user.password = bcrypt.hashSync(req.body.password, 10);
 
         await user.save();
@@ -58,66 +63,72 @@ router.get('/users/:username', async (req, res) => {
 
 // Update a user by username
 router.patch('/users/:username', async (req, res) => {
-    try {
-      if (Object.keys(req.body).length === 0) {
-        return res.status(400).json({ error: 'Request body is required' });
-      }
-  
-      const user = await User.findOne({ username: req.params.username.toString() });
-  
-      if (!user) {
-        return res.status(404).send();
-      }
-  
-      let somethingChanged = false;
-  
-      for (const key in req.body) {
-        // Check for 'secret' and update it
-        if (key === 'secret') {
-          somethingChanged = true; // If the secret field is present, we mark it as changed
-        } else if (key === 'password') {
-          somethingChanged = !bcrypt.compareSync(req.body.password, user.password);
-        } else if (user[key] === undefined) {
-          return res.status(400).json({ error: `${key} is not a valid user property` });
-        } else if (req.body[key] != user[key]) {
-          somethingChanged = true;
-        }
-      }
-  
-      if (!somethingChanged) {
-        return res.status(400).json({ error: 'No changes detected' });
-      }
-  
-      if (req.body.username && req.body.username !== req.params.username) {
-        const existingUser = await User.findOne({ username: req.body.username.toString() });
-  
-        if (existingUser) {
-          return res.status(400).json({ error: 'Username already exists' });
-        }
-      }
-  
-      Object.assign(user, req.body);
-  
-      const errors = user.validateSync();
-  
-      if (errors) {
-        return res.status(400).send(errors);
-      }
-  
-      if (req.body.password) {
-        user.password = bcrypt.hashSync(req.body.password, 10);
-      }
-  
-      user.__v += 1;
-  
-      // Save the updated user, including the secret
-      await user.save();
-  
-      res.status(200).send(user);
-    } catch (error) {
-      res.status(500).send(error);
+  try {
+    if (Object.keys(req.body).length === 0) {
+      return res.status(400).json({ error: 'Request body is required' });
     }
-  });
+
+    const user = await User.findOne({ username: req.params.username.toString() });
+
+    if (!user) {
+      return res.status(404).send();
+    }
+
+    let somethingChanged = false;
+    // Handle 'secret' separately to avoid uniqueness conflicts
+    if (req.body.secret && req.body.secret !== user.secret) {
+        const existingSecretUser = await User.findOne({ secret: req.body.secret });
+        if (existingSecretUser) {
+        return res.status(400).send({ error: 'Secret must be unique!' });
+        }
+    }
+    for (const key in req.body) {
+      // Check for 'secret' and update it
+      if (key === 'secret') {
+        somethingChanged = true;
+      } else if (key === 'password') {
+        somethingChanged = !bcrypt.compareSync(req.body.password, user.password);
+      } else if (user[key] === undefined) {
+        return res.status(400).json({ error: `${key} is not a valid user property` });
+      } else if (req.body[key] != user[key]) {
+        somethingChanged = true;
+      }
+    }
+
+    if (!somethingChanged) {
+      return res.status(400).json({ error: 'No changes detected' });
+    }
+
+    if (req.body.username && req.body.username !== req.params.username) {
+      const existingUser = await User.findOne({ username: req.body.username.toString() });
+
+      if (existingUser) {
+        return res.status(400).json({ error: 'Username already exists' });
+      }
+    }
+
+    Object.assign(user, req.body);
+
+    const errors = user.validateSync();
+
+    if (errors) {
+      return res.status(400).send(errors);
+    }
+
+    if (req.body.password) {
+      user.password = bcrypt.hashSync(req.body.password, 10);
+    }
+
+    user.__v += 1;
+
+    // Save the updated user, including the secret
+    await user.save();
+
+    res.status(200).send(user);
+  } catch (error) {
+    res.status(500).send(error);
+  }
+});
 
 // Delete a user by username
 router.delete('/users/:username', async (req, res) => {

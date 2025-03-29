@@ -33,7 +33,6 @@ const userSchema = new mongoose.Schema({
     secret: {
       type: String,
       required: false,
-      unique: true,
       validate: [noWhitespaceValidator],
     },
 });
