@@ -84,6 +84,6 @@ defineFeature(feature, test => {
     then('A error message should inform me that the account is already registered', async () => {
       await expect(page).toMatchElement('#username-helper-text', { text: "Username already exists" });
     });
-  }, 50000);
+  }, 20000);
 
 });
