@@ -38,11 +38,11 @@ describe('HomePage Component', () => {
     
     act(() => { fireEvent.click(screen.getByText('Stats')); });
     jest.advanceTimersByTime(0);
-    expect(screen.getByText('Recent Quizzes')).toBeInTheDocument();
+    expect(screen.getByText('Quiz Statistics')).toBeInTheDocument();
     
     act(() => { fireEvent.click(screen.getByText('Leaderboard')); });
     jest.advanceTimersByTime(0);
-    expect(screen.getByText('#1')).toBeInTheDocument();
+    expect(screen.getByText('WiChat Leaderboard')).toBeInTheDocument();
   });
 
   test('renders the footer with the current year', () => {

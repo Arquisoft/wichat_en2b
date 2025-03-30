@@ -36,7 +36,6 @@ export default function LeaderboardTab() {
 
             try {
                 const data = await fetchWithAuth("/leaderboard");
-                console.log(data);
                 if (!data || !data.leaderboard) {
                     throw new Error('Invalid leaderboard data');
                 }
@@ -55,7 +54,7 @@ export default function LeaderboardTab() {
     }, [])
     return (
         <Card className="card-root">
-            <CardHeader className="card-header" title="Leaderboard" />
+            <CardHeader className="card-header" title="WiChat Leaderboard" />
             <LoadingErrorHandler loading={loading} error={error}>
                 <CardContent className="card-content">
                     <CardContent className="card-content">
