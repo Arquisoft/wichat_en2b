@@ -25,6 +25,12 @@ defineFeature(feature, test => {
             })
             .catch(() => {
             });
+        await mongoose.connect(process.env.MONGODB_URI);
+        await User.create({
+            username: "pablo",
+            password: "password",
+            role: 'USER'
+        });
     });
 
     afterAll(async () => {
@@ -34,7 +40,10 @@ defineFeature(feature, test => {
     test('The user wants to see the Profile statistics', ({given, when, then}) => {
 
         given('I am logged in', async () => {
+            await writeIntoInput(page,'input[name="username"]', username);
+            await writeIntoInput(page,'input[name="password"]', password);
 
+            await click(page,'form > button');
         });
 
         when('I navigate to the "Statistics" section', async () => {

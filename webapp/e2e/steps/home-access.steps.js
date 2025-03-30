@@ -4,7 +4,7 @@ const setDefaultOptions = require('expect-puppeteer').setDefaultOptions
 const feature = loadFeature('./e2e/features/home-access.feature');
 const mongoose = require('mongoose');
 const User = require('../../../users/userservice/user-model'); //Import the users model
-
+const { click, writeIntoInput } = require('../test-functions')
 
 let page;
 let browser;
@@ -47,14 +47,14 @@ defineFeature(feature, test => {
         });
 
         when('I fill the data in the login form', async () => {
-            await expect(page).toFill('input[name="username"]', username);
-            await expect(page).toFill('input[name="password"]', password);
-            await expect(page).toFill('input[name="confirmPassword"]', password);
-            await expect(page).toClick('button', { text: 'Login' });
+            await writeIntoInput(page,'input[name="username"]', username);
+            await writeIntoInput(page,'input[name="password"]', password);
+
+            await click(page,'form > button');
         });
 
         then('I can see in the home page that the user profile is mine', async () => {
-            //await expect(page).toMatchElement("h6", { text: username });
+            await expect(page).toMatchElement("h6", { text: username });
         });
     });
 
@@ -68,10 +68,10 @@ defineFeature(feature, test => {
         });
 
         when('I fill the data in the login form', async () => {
-            await expect(page).toFill('input[name="username"]', username);
-            await expect(page).toFill('input[name="password"]', password);
-            await expect(page).toFill('input[name="confirmPassword"]', password);
-            await expect(page).toClick('button', { text: 'Login' });
+            await writeIntoInput(page,'input[name="username"]', username);
+            await writeIntoInput(page,'input[name="password"]', password);
+
+            await click(page,'form > button');
         });
 
         then('I can see a message asking me to create an account to access the application', async () => {
