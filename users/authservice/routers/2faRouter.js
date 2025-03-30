@@ -66,14 +66,11 @@ router.post('/setup2fa', async (req, res) => {
 router.post('/verify2fa', async (req, res) => {
   try {
     const { token, username} = req.body;
+    console.log(token);
     console.log(username);
-    if (!token || !username) {
-      return res.status(400).json({ error: "Token and Username are required" });
+    if (!token) {
+      return res.status(400).json({ error: "Token is required" });
     }
-
-    const isValid = otplib.authenticator.verify({ token, secret });
-
-    if (isValid) {
       try {
         userResponse = await axios.get(`${gatewayServiceUrl}/users/${user.username}`);
       } catch (err) {
@@ -87,16 +84,19 @@ router.post('/verify2fa', async (req, res) => {
         throw err;
       }
       const userFromDB = userResponse.data;
+      let secret = userFromDB.secret;
+      const isValid = otplib.authenticator.verify({ token, secret});
+      if(isValid){
       const jwtToken = jwt.sign(
           { username: userFromDB.username, role: userFromDB.role },
           process.env.JWT_SECRET || 'testing-secret',
           { expiresIn: '1h' }
         );
       res.json({ message: "2FA Verified" , token: jwtToken});
-    } else {
-      res.status(401).json({ error: "Invalid 2FA Token" });
-    }
-  } catch (error) {
+      }else {
+        res.status(401).json({ error: "Invalid 2FA Token" });
+      }
+    }  catch (error) {
     logger.error(`Failure verifying the 2FA token: ${error.message}`);
     res.status(500).json({ error: "Error verifying 2FA token" });
   }

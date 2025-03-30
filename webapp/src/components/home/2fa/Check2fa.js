@@ -30,7 +30,7 @@ const Check2fa = ( username ) => {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          code: twoFactorCode,
+          token: twoFactorCode,
           username: username
         }),
       });
