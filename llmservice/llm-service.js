@@ -90,7 +90,7 @@ async function sendQuestionToLLM(conversation, apiKey, answer, model = 'empathy'
        response = await axios.post(url, requestData, { headers });
        llmAnswer = config.transformResponse(response);
        retryCount++;
-       
+
      } while (filterWords.some(word => llmAnswer.toLowerCase().includes(word.toLowerCase())));
      if (retryCount >= maxRetries) {
       return "There was an error while returning your answer, please try again.";
