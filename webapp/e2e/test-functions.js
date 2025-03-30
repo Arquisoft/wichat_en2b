@@ -27,7 +27,17 @@ async function writeIntoInput(page, selector, text) {
     await page.type(selector, text);
 }
 
+async function addUser(mongoUri, mongoose, User){
+    let data = {username: "mock", password: "123456", role:"USER"}
+    await mongoose.connect(mongoUri);
+
+    await User.insertOne(data);
+
+    return data;
+}
+
 module.exports = {
     click,
-    writeIntoInput
+    writeIntoInput,
+    addUser
 }

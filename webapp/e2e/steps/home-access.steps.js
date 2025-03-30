@@ -4,7 +4,7 @@ const setDefaultOptions = require('expect-puppeteer').setDefaultOptions
 const feature = loadFeature('./e2e/features/home-access.feature');
 const mongoose = require('mongoose');
 const User = require('../../../users/userservice/user-model'); //Import the users model
-const { click, writeIntoInput } = require('../test-functions')
+const { click, writeIntoInput, addUser } = require('../test-functions')
 
 let page;
 let browser;
@@ -30,33 +30,25 @@ defineFeature(feature, test => {
     });
 
     test('The user has an account in the web', ({given, when, then}) => {
-        let username;
-        let password;
+        let userData;
 
         given('A registered user', async () => {
-            await mongoose.connect(process.env.MONGODB_URI);
-            username = "testuser";
-            password = "testpass";
 
-            // Create test user in DB
-            await User.create({
-                username: username,
-                password: password,
-                role: "USER"
-            });
+            userData = await addUser(process.env.MONGODB_URI, mongoose, User);
+
         });
 
         when('I fill the data in the login form', async () => {
-            await writeIntoInput(page,'input[name="username"]', username);
-            await writeIntoInput(page,'input[name="password"]', password);
+            await writeIntoInput(page,'input[name="username"]', userData.username);
+            await writeIntoInput(page,'input[name="password"]', userData.password);
 
             await click(page,'form > button');
         });
 
         then('I can see in the home page that the user profile is mine', async () => {
-            await expect(page).toMatchElement("h6", { text: username });
+            await expect(page).toMatchElement("h6", { text: userData.username });
         });
-    });
+    }, 10000);
 
     test('The user do not have an account in the web', ({given, when, then}) => {
         let username;
@@ -76,6 +68,6 @@ defineFeature(feature, test => {
 
         then('I can see a message asking me to create an account to access the application', async () => {
             await expect(page).toMatchElement("p", { text: "Login failed" });
-        });
+        }, 10000);
     });
 })

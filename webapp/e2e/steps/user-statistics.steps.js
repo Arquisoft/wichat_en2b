@@ -4,10 +4,11 @@ const setDefaultOptions = require('expect-puppeteer').setDefaultOptions
 const feature = loadFeature('./e2e/features/user-statistics.feature');
 const mongoose = require('mongoose');
 const User = require('../../../users/userservice/user-model'); //Import the users model
-const { click, writeIntoInput } = require('../test-functions')
+const { click, writeIntoInput, addUser } = require('../test-functions')
 
 let page;
 let browser;
+let userData;
 
 defineFeature(feature, test => {
 
@@ -25,12 +26,8 @@ defineFeature(feature, test => {
             })
             .catch(() => {
             });
-        await mongoose.connect(process.env.MONGODB_URI);
-        await User.create({
-            username: "pablo",
-            password: "password",
-            role: 'USER'
-        });
+
+        userData = addUser(process.env.MONGODB_URI, mongoose, User);
     });
 
     afterAll(async () => {
@@ -47,7 +44,7 @@ defineFeature(feature, test => {
         });
 
         when('I navigate to the "Statistics" section', async () => {
-
+            await click(page, "div[role='tablist'] > button:nth-child(2)");
         });
 
         then('I should see a list of games I have played, including passed and failed questions, times, and scores', async () => {
