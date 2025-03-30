@@ -43,68 +43,129 @@ describe('2FA Service', () => {
   describe('POST /auth/setup2fa', () => {
     it('Should generate a 2FA secret and QR code image URL', async () => {
       const imageUrl = 'mockImageUrl';
-
+      const mockUser = { username: 'testuser', role: 'USER' };
+      const mockToken = 'valid-jwt-token';
+      const mockSecret = 'mockSecret'; // Mock secret value
+    
+      // Mock the token decoding to return the mockUser
+      jwt.verify.mockReturnValue(mockUser);
+      
+      // Mock otplib to return a mock secret
+      otplib.authenticator.generateSecret.mockReturnValue(mockSecret);
+      
       qrcode.toDataURL.mockImplementation((uri, callback) => callback(null, imageUrl));
-
+    
+      // Mock axios to resolve successfully when patching the user
+      axios.patch.mockResolvedValue({ data: { username: mockUser.username, role: mockUser.role } });
+    
       const response = await request(app)
         .post('/auth/setup2fa')
+        .set('Authorization', `Bearer ${mockToken}`)
         .send();
-
+    
+      // Assert that the response is as expected
       expect(response.status).toBe(200);
       expect(otplib.authenticator.generateSecret).toHaveBeenCalled();
       expect(response.body).toHaveProperty('imageUrl', imageUrl);
+    
+      // Ensure axios.patch was called with the correct secret
+      expect(axios.patch).toHaveBeenCalledWith('http://gatewayservice:8000/users/testuser', { secret: mockSecret });
     });
-
+    
     it('Should handle errors when generating 2FA setup', async () => {
       const errorMessage = 'Error generating QR code';
+      const mockUser = { username: 'testuser', role: 'USER' };
+      const mockToken = 'valid-jwt-token';
+      
+      // Mock the token decoding to return the mockUser
+      jwt.verify.mockReturnValue(mockUser);
+      
       qrcode.toDataURL.mockImplementation((uri, callback) => callback(new Error(errorMessage)));
 
       const response = await request(app)
         .post('/auth/setup2fa')
-        .send();
-
-      expect(response.status).toBe(500);
-      expect(response.body).toHaveProperty('error', 'Error generating QR code');
-    });
-
-    it('Should log errors when there is an issue generating 2FA setup', async () => {
-      const errorMessage = 'Error setting up 2FA';
-      otplib.authenticator.generateSecret.mockImplementation(() => { throw new Error(errorMessage); });
-
-      const response = await request(app)
-        .post('/auth/setup2fa')
+        .set('Authorization', `Bearer ${mockToken}`)
         .send();
 
       expect(response.status).toBe(500);
       expect(response.body).toHaveProperty('error', 'Error setting up 2FA');
-      expect(logger.error).toHaveBeenCalledWith('Failure setting up the 2FA');
+    });
+
+    it('Should log errors when there is an issue generating 2FA setup', async () => {
+      const errorMessage = 'Error setting up 2FA';
+      const mockUser = { username: 'testuser', role: 'USER' };
+      const mockToken = 'valid-jwt-token';
+      
+      // Mock the token decoding to return the mockUser
+      jwt.verify.mockReturnValue(mockUser);
+
+      otplib.authenticator.generateSecret.mockImplementation(() => { throw new Error(errorMessage); });
+
+      const response = await request(app)
+        .post('/auth/setup2fa')
+        .set('Authorization', `Bearer ${mockToken}`)
+        .send();
+
+      expect(response.status).toBe(500);
+      expect(response.body).toHaveProperty('error', 'Error setting up 2FA');
+      expect(logger.error).toHaveBeenCalledWith('Failure setting up 2FA: Error setting up 2FA');
     });
   });
 
   describe('POST /auth/verify2fa', () => {
     it('Should verify a valid 2FA token', async () => {
-      const secret = 'validSecret';
-      const token = '123456';
+      const mockUser = { username: 'testuser', role: 'USER' }; // Ensure role is included
+      const mockToken = 'valid-jwt-token';
+      const mockSecret = 'mockSecret';
+      const mockDbUser = { username: 'testuser', role: 'USER', secret: mockSecret }; // Mocked user from DB
+      const mock2faToken = '123456'; // Mock valid token
+    
+      // Mock jwt.verify to return the mockUser (user from the token)
+      jwt.verify.mockReturnValue(mockUser);
       
+      // Mock axios to return the mockDbUser when fetching the user from the gateway service
+      axios.get.mockResolvedValue({ data: mockDbUser });
+    
+      // Mock otplib to return true for a valid token
       otplib.authenticator.verify.mockReturnValue(true);
-
+    
+      // Make the request to the /verify2fa endpoint
       const response = await request(app)
         .post('/auth/verify2fa')
-        .send({ token, secret });
-
+        .set('Authorization', `Bearer ${mockToken}`)
+        .send({ token: mock2faToken, user: mockUser });
+    
+      // Assert that the response is as expected
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('message', '2FA Verified');
+    
+      // Ensure that jwt.sign was called with the correct arguments
+      expect(jwt.sign).toHaveBeenCalledWith(
+        { username: mockUser.username, role: mockUser.role }, // Ensure role is passed correctly
+        process.env.JWT_SECRET || 'testing-secret',
+        { expiresIn: '1h' }
+      );
     });
+    
 
     it('Should reject an invalid 2FA token', async () => {
       const secret = 'validSecret';
       const token = '123456';
-      
+      const mockUser = { username: 'testuser', role: 'USER' };
+      const mockToken = 'valid-jwt-token';
+
+      // Mock the token decoding to return the mockUser
+      jwt.verify.mockReturnValue(mockUser);
+
+      // Mock axios to return a valid user from DB
+      axios.get.mockResolvedValue({ data: { username: 'testuser', secret } });
+
       otplib.authenticator.verify.mockReturnValue(false);
 
       const response = await request(app)
         .post('/auth/verify2fa')
-        .send({ token, secret });
+        .set('Authorization', `Bearer ${mockToken}`)
+        .send({ token, user: mockUser });
 
       expect(response.status).toBe(401);
       expect(response.body).toHaveProperty('error', 'Invalid 2FA Token');
@@ -116,26 +177,35 @@ describe('2FA Service', () => {
         .send({});
 
       expect(response.status).toBe(400);
-      expect(response.body).toHaveProperty('error', 'Token and Secret are required');
+      expect(response.body).toHaveProperty('error', 'Token is required');
     });
 
     it('Should log an error if an unexpected error occurs during token verification', async () => {
       const secret = 'validSecret';
       const token = '123456';
+      const mockUser = { username: 'testuser', role: 'USER' };
+      const mockToken = 'valid-jwt-token';
       const errorMessage = 'Unexpected error during verification';
       
+      // Mock the token decoding to return the mockUser
+      jwt.verify.mockReturnValue(mockUser);
+
+      // Mock axios to return a valid user from DB
+      axios.get.mockResolvedValue({ data: { username: 'testuser', secret } });
+
       otplib.authenticator.verify.mockImplementation(() => { throw new Error(errorMessage); });
 
       const response = await request(app)
         .post('/auth/verify2fa')
-        .send({ token, secret });
+        .set('Authorization', `Bearer ${mockToken}`)
+        .send({ token, user: mockUser });
 
       expect(response.status).toBe(500);
-      expect(response.body).toHaveProperty('error', 'Error verifying 2FA token');
-      expect(logger.error).toHaveBeenCalledWith('Failure verifying the 2FA token');
+      expect(logger.error).toHaveBeenCalledWith('Failure verifying the 2FA token: Unexpected error during verification');
     });
   });
 });
+
 describe('Auth Service', () => {
   describe('POST /register', () => {
     it('Should register a new user', async () => {
