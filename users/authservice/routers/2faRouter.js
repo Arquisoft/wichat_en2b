@@ -65,10 +65,10 @@ router.post('/setup2fa', async (req, res) => {
 // Endpoint to verify 2FA token
 router.post('/verify2fa', async (req, res) => {
   try {
-    const { token, secret } = req.body;
-
-    if (!token || !secret) {
-      return res.status(400).json({ error: "Token and Secret are required" });
+    const { token, username} = req.body;
+    console.log(username);
+    if (!token || !username) {
+      return res.status(400).json({ error: "Token and Username are required" });
     }
 
     const isValid = otplib.authenticator.verify({ token, secret });

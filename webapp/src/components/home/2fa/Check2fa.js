@@ -6,12 +6,12 @@ import "../../../styles/login/Login.css";
 import "../../../styles/globals.css";
 const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://localhost:8000';
 
-const Check2fa = () => {
+const Check2fa = ( username ) => {
   const [twoFactorCode, setTwoFactorCode] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-
+  console.log(username);
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -31,6 +31,7 @@ const Check2fa = () => {
         },
         body: JSON.stringify({
           code: twoFactorCode,
+          username: username
         }),
       });
       const data = await response.json();

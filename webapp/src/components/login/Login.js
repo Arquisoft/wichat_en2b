@@ -49,6 +49,7 @@ const Login = () => {
      
       // Redirect to the home page after login
       if(data.has2fa){
+        console.log(username)
         setHas2fa(true);
       }else{
         // On successful login, set the token in the cookie
@@ -78,7 +79,7 @@ const Login = () => {
         <p>Login to start playing!</p>
         {errors.general && <p className="error-message">{errors.general}</p>}
         {has2fa ? (
-          <Check2fa />
+          <Check2fa username/>
         ) : (
           <form onSubmit={handleSubmit}>
        
