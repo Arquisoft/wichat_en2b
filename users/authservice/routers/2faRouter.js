@@ -49,7 +49,6 @@ router.post('/setup2fa', async (req, res) => {
     try {
       const newUserResponse = await axios.patch(`${gatewayServiceUrl}/users/${user.username}`, { secret });
       logger.info('User updated with 2FA secret');
-      console.log(newUserResponse.data); // Log the response from the user update request
     } catch (error) {
       logger.error(`Error saving 2FA secret to user: ${error.message}`);
     }
@@ -65,9 +64,7 @@ router.post('/setup2fa', async (req, res) => {
 // Endpoint to verify 2FA token
 router.post('/verify2fa', async (req, res) => {
   try {
-    const { token, username} = req.body;
-    console.log(token);
-    console.log(username);
+    const { token, user} = req.body;
     if (!token) {
       return res.status(400).json({ error: "Token is required" });
     }

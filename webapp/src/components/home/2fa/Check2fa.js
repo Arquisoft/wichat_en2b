@@ -11,7 +11,6 @@ const Check2fa = ( username ) => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  console.log(username);
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -31,7 +30,7 @@ const Check2fa = ( username ) => {
         },
         body: JSON.stringify({
           token: twoFactorCode,
-          username: username
+          user: username
         }),
       });
       const data = await response.json();
