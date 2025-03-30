@@ -6,7 +6,6 @@ import { fetchWithAuth } from "@/utils/api-fetch-auth";
 import LoadingErrorHandler from ".//LoadingErrorHandler";
 import {getAuthToken, getCurrentPlayerId} from "@/utils/auth";
 
-const gatewayService = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || "http://localhost:8000";
 
 /**
  * Displays statistics in a card format.
@@ -26,16 +25,13 @@ const StatisticsCard = () => {
 			setError(null);
 
 			try {
-				const [statsResponse, rankResponse] = await Promise.all([
+				const [statsData, rankData] = await Promise.all([
 					fetchWithAuth("/statistics/global"),
 					fetchWithAuth("/leaderboard")
 				]);
 
 				const token = getAuthToken();
 				const currentPlayerId = await getCurrentPlayerId(token);
-
-				const statsData = await statsResponse.json();
-				const rankData = await rankResponse.json();
 				const playerRank = rankData.leaderboard.find(entry => entry._id === currentPlayerId)?.rank || 'N/A';
 
 				setStatistics(statsData.stats);

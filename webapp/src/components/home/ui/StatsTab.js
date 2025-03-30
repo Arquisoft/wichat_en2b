@@ -69,8 +69,9 @@ export default function StatsTab() {
 				const endpoint = selectedSubject === "all"
 					? "/statistics/global"
 					: `/statistics/subject/${selectedSubject.toLowerCase()}`
-
+				console.log(endpoint);
 				const data = await fetchWithAuth(endpoint);
+				console.log(data)
 				if (!data || !data.stats) {
 					throw new Error('Invalid statistics data');
 				}
@@ -128,7 +129,7 @@ export default function StatsTab() {
 			/>
 			<CardContent>
 				<LoadingErrorHandler loading={loading} error={error}>
-				{ statistics ? (
+				{ statistics && (
 					<>
 						<Box mb={2}>
 							<Typography variant="h6">
@@ -179,7 +180,7 @@ export default function StatsTab() {
 							</Grid>
 						</TabPanel>
 					</>
-				) : null}
+				)}
 			</LoadingErrorHandler>
 			</CardContent>
 
