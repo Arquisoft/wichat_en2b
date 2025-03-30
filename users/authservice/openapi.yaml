@@ -179,9 +179,12 @@ paths:
                 token:
                   type: string
                   example: "123456"
-                secret:
-                  type: string
-                  example: "JBSWY3DPEHPK3PXP"
+                user:
+                  type: object
+                  properties:
+                    username:
+                      type: string
+                      example: "user"
       responses:
         '200':
           description: Successful 2FA verification.
@@ -193,6 +196,9 @@ paths:
                   message:
                     type: string
                     example: "2FA Verified"
+                  token:
+                    type: string
+                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
         '400':
           description: Missing or invalid parameters.
           content:
@@ -202,7 +208,7 @@ paths:
                 properties:
                   error:
                     type: string
-                    example: "Token and Secret are required"
+                    example: "Token and user information are required"
         '401':
           description: Unauthorized. Invalid 2FA token.
           content:

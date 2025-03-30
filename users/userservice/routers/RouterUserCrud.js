@@ -74,7 +74,7 @@ router.patch('/users/:username', async (req, res) => {
 
         const existingSecretUser = await User.findOne({ secret: req.body.secret });
         if (existingSecretUser) {
-        return res.status(400).send({ error: 'Secret must be unique!' });
+        return res.status(400).send({ error: 'Secret must be unique' });
         }
     }
     for (const key in req.body) {
