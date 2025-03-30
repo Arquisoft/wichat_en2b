@@ -18,6 +18,7 @@ defineFeature(feature, test => {
     page = await browser.newPage();
     //Way of setting up the timeout
     //setDefaultOptions({ timeout: 30000 })
+    await mongoose.connect(process.env.MONGODB_URI);
     jest.setTimeout(30000)
     await page
       .goto("http://localhost:3000", {
@@ -25,6 +26,18 @@ defineFeature(feature, test => {
       })
       .catch(() => {});
   });
+
+  afterEach(async () => {
+ //   await User.deleteMany({});
+    await page.goto("http://localhost:3000", {
+      waitUntil: "networkidle0",
+    });
+  });
+
+  afterAll(async ()=>{
+    await mongoose.connection.close();
+    browser.close();
+  })
 
   test('The user is not registered in the site', ({given,when,then}) => {
     
@@ -49,18 +62,15 @@ defineFeature(feature, test => {
 
   test('The user is already registered in the site', ({given,when,then}) => {
 
-    let username= "pablo";
+    let username= "test";
     let password= "pabloasw";
 
-
-
     given('An already registered user', async () => {
-      await mongoose.connect(process.env.MONGODB_URI);
-      await User.create({
-        username: username,
-        password: password,
-        role: 'USER'
-      });
+      await click(page, "a[href='/addUser']")
+      await writeIntoInput(page,'input[name="username"]', username);
+      await writeIntoInput(page,'input[name="password"]', password);
+      await writeIntoInput(page,'input[name="confirmPassword"]', password);
+      await click(page,'form > button');
       await click(page, "a[href='/addUser']")
     });
 
@@ -72,12 +82,8 @@ defineFeature(feature, test => {
     });
 
     then('A error message should inform me that the account is already registered', async () => {
-      await expect(page).toMatchElement("*[id='username']", { text: "Username already exists" });
+      await expect(page).toMatchElement('#username-helper-text', { text: "Username already exists" });
     });
-  })
-
-  afterAll(async ()=>{
-    browser.close()
-  })
+  }, 50000);
 
 });
