@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from "react";
 import { fetchWithAuth } from "@/utils/api-fetch-auth";
-import LoadingErrorHandler from "../LoadingErrorHandler";
+import LoadingErrorHandler from ".//LoadingErrorHandler";
 import {getAuthToken, getCurrentPlayerId} from "@/utils/auth";
 import {
     Card,

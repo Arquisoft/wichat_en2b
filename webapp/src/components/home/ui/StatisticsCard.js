@@ -2,6 +2,9 @@ import PropTypes from "prop-types";
 import { useState, useEffect } from "react";
 import { Card, Grid, CardContent, Typography, Paper, CircularProgress } from "@mui/material";
 import "../../../styles/home/StatisticsCard.css";
+import { fetchWithAuth } from "@/utils/api-fetch-auth";
+import LoadingErrorHandler from ".//LoadingErrorHandler";
+import {getAuthToken, getCurrentPlayerId} from "@/utils/auth";
 
 const gatewayService = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || "http://localhost:8000";
 
@@ -23,48 +26,16 @@ const StatisticsCard = () => {
 			setError(null);
 
 			try {
-				const token = document.cookie
-					.split("; ")
-					.find((row) => row.startsWith("token="))
-					?.split("=")[1];
-
-				if (!token) {
-					throw new Error('No authentication token found');
-				}
-
 				const [statsResponse, rankResponse] = await Promise.all([
-					fetch(`${gatewayService}/statistics/global`, {
-						headers: {
-							'Authorization': `Bearer ${token}`,
-							'Content-Type': 'application/json'
-						}
-					}),
-					fetch(`${gatewayService}/leaderboard`, {
-						headers: {
-							'Authorization': `Bearer ${token}`,
-							'Content-Type': 'application/json'
-						}
-					})
+					fetchWithAuth("/statistics/global"),
+					fetchWithAuth("/leaderboard")
 				]);
 
-				if (!statsResponse.ok || !rankResponse.ok) {
-					throw new Error('Failed to fetch data');
-				}
+				const token = getAuthToken();
+				const currentPlayerId = await getCurrentPlayerId(token);
 
 				const statsData = await statsResponse.json();
 				const rankData = await rankResponse.json();
-
-				const getCurrentPlayerId = async (token) => {
-					try {
-						const decoded = JSON.parse(atob(token.split('.')[1]));
-						return decoded.username;
-					} catch (error) {
-						console.error('Error getting current player ID:', error);
-						return null;
-					}
-				};
-
-				const currentPlayerId = await getCurrentPlayerId(token);
 				const playerRank = rankData.leaderboard.find(entry => entry._id === currentPlayerId)?.rank || 'N/A';
 
 				setStatistics(statsData.stats);
@@ -80,11 +51,10 @@ const StatisticsCard = () => {
 
 		fetchData();
 	}, []);
-	if (loading) return <CircularProgress />;
-	if (error) return <Typography color="error">{error}</Typography>;
 	if (!statistics) return null;
 	return (
 		<Card className="stats-card">
+			<LoadingErrorHandler loading={loading} error={error}>
 			<CardContent className="stats-content">
 				<Grid container spacing={3}>
 					{/* Quizzes */}
@@ -116,6 +86,7 @@ const StatisticsCard = () => {
 					</Grid>
 				</Grid>
 			</CardContent>
+			</LoadingErrorHandler>
 		</Card>
 	);
 };

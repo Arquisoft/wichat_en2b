@@ -21,6 +21,8 @@ import {
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
 import { quizCategories } from "../data"
 import "../../../styles/home/StatsTab.css"
+import { fetchWithAuth } from "@/utils/api-fetch-auth";
+import LoadingErrorHandler from ".//LoadingErrorHandler";
 
 const gatewayService = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || "http://localhost:8000";
 
@@ -63,30 +65,12 @@ export default function StatsTab() {
 		const fetchStatistics = async () => {
 			setLoading(true);
 			setError(null);
-
 			try {
-				const token = document.cookie
-					.split("; ")
-					.find((row) => row.startsWith("token="))
-					?.split("=")[1];
-				if (!token) {
-					throw new Error('No authentication token found');
-				}
 				const endpoint = selectedSubject === "all"
 					? "/statistics/global"
 					: `/statistics/subject/${selectedSubject.toLowerCase()}`
 
-				const response = await fetch(`${gatewayService}${endpoint}`, {
-					headers: {
-						'Authorization': `Bearer ${token}`, // review how it is saved
-						'Content-Type': 'application/json'
-					}
-				});
-
-				if (!response.ok) {
-					throw new Error('Failed to fetch statistics');
-				}
-				const data = await response.json();
+				const data = await fetchWithAuth(endpoint);
 				if (!data || !data.stats) {
 					throw new Error('Invalid statistics data');
 				}
@@ -117,16 +101,6 @@ export default function StatsTab() {
 		]
 		: []
 
-	if (error) {
-		return (
-			<Card>
-				<CardContent>
-					<Typography color="error">{error}</Typography>
-				</CardContent>
-			</Card>
-		)
-	}
-
 	return (
 		<Card>
 			<CardHeader
@@ -153,11 +127,8 @@ export default function StatsTab() {
 				}
 			/>
 			<CardContent>
-				{loading ? (
-					<Box display="flex" justifyContent="center" alignItems="center" height="400px">
-						<CircularProgress />
-					</Box>
-				) : statistics ? (
+				<LoadingErrorHandler loading={loading} error={error}>
+				{ statistics ? (
 					<>
 						<Box mb={2}>
 							<Typography variant="h6">
@@ -209,7 +180,9 @@ export default function StatsTab() {
 						</TabPanel>
 					</>
 				) : null}
+			</LoadingErrorHandler>
 			</CardContent>
+
 		</Card>
 	)
 }
