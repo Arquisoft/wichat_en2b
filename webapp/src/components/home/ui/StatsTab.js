@@ -22,7 +22,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { quizCategories } from "../data"
 import "../../../styles/home/StatsTab.css"
 
-const gatewayService = process.env.GATEWAY_SERVICE_URL || "http://localhost:8000";
+const gatewayService = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || "http://localhost:8000";
 
 // TabPanel component for the tabs
 function TabPanel(props) {

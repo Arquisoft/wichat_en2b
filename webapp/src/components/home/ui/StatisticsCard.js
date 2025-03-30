@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { Card, Grid, CardContent, Typography, Paper, CircularProgress } from "@mui/material";
 import "../../../styles/home/StatisticsCard.css";
 
-const gatewayService = process.env.GATEWAY_SERVICE_URL || "http://localhost:8000";
+const gatewayService = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || "http://localhost:8000";
 
 /**
  * Displays statistics in a card format.
