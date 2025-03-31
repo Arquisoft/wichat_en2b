@@ -216,6 +216,7 @@ WichatEN2B.GatewayService .[#707070,thickness=2].> WichatEN2B.LLMService : "<col
 WichatEN2B.GatewayService .[#707070,thickness=2].> WichatEN2B.UserGateway : "<color:#707070>User related API calls"
 WichatEN2B.GatewayService .[#707070,thickness=2].> WichatEN2B.GameService : "<color:#707070>Question API calls"
 WichatEN2B.GameService .[#707070,thickness=2].> WikiData : "<color:#707070>Question batches API calls"
+WichatEN2B.GameService .[#707070,thickness=2].> WichatEN2B.MongoDBDatabase : "<color:#707070>Stores game information"
 WichatEN2B.UserGateway .[#707070,thickness=2].> WichatEN2B.UserCRUDService : "<color:#707070>CRUD API calls"
 WichatEN2B.UserGateway .[#707070,thickness=2].> WichatEN2B.UserAuthenticationService : "<color:#707070>Authentication API calls"
 WichatEN2B.UserCRUDService .[#707070,thickness=2].> WichatEN2B.MongoDBDatabase : "<color:#707070>User CRUD operations"
