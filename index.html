@@ -479,6 +479,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <ul class="sectlevel2">
 <li><a href="#_whitebox_overall_system_c4_level_1">5.1. Whitebox Overall System (C4 Level 1)</a></li>
 <li><a href="#_container_diagram_c4_level_2">5.2. Container Diagram (C4 Level 2)</a></li>
+<li><a href="#_component_diagram_c4_level_3">5.3. Component Diagram (C4 Level 3)</a></li>
 </ul>
 </li>
 <li><a href="#section-runtime-view">6. Runtime View</a>
@@ -546,59 +547,12 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 See <a href="https://arc42.org" class="bare">https://arc42.org</a>.</p>
 </div>
 <hr>
-<div class="sidebarblock arc42help">
-<div class="content">
-<div class="admonitionblock note">
-<table>
-<tr>
-<td class="icon">
-<div class="title">Note</div>
-</td>
-<td class="content">
-<div class="paragraph">
-<p>This version of the template contains some help and explanations.
-It is used for familiarization with arc42 and the understanding of the concepts.
-For documentation of your own system you use better the <em>plain</em> version.</p>
-</div>
-</td>
-</tr>
-</table>
-</div>
-</div>
-</div>
 <div style="page-break-after: always;"></div>
 </div>
 </div>
 <div class="sect1">
 <h2 id="section-introduction-and-goals">1. Introduction and Goals</h2>
 <div class="sectionbody">
-<div class="sidebarblock arc42help">
-<div class="content">
-<div class="paragraph">
-<p>Describes the relevant requirements and the driving forces that software architects and development team must consider.
-These include</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>underlying business goals,</p>
-</li>
-<li>
-<p>essential features,</p>
-</li>
-<li>
-<p>essential functional requirements,</p>
-</li>
-<li>
-<p>quality goals for the architecture and</p>
-</li>
-<li>
-<p>relevant stakeholders and their expectations</p>
-</li>
-</ul>
-</div>
-</div>
-</div>
 <div class="sect2">
 <h3 id="_requirements_overview">1.1. Requirements Overview</h3>
 <div class="paragraph">
@@ -631,7 +585,7 @@ These include</p>
 <p>The application must be deployable on the web and allow users to access their information via a documented API.</p>
 </li>
 <li>
-<p>There is a possibility for users to interact with the application in different game modes, such as “Each wise man with his subject,” “Travel with us,” or “The hot question.”</p>
+<p>There is a possibility for users to interact with the application in different game modes, such as “Each wise man with his subject,” “Travel with us,” or “The hot question.” (not yet implemented)</p>
 </li>
 </ul>
 </div>
@@ -641,34 +595,6 @@ These include</p>
 </div>
 <div class="sect2">
 <h3 id="_quality_goals">1.2. Quality Goals</h3>
-<div class="sidebarblock arc42help">
-<div class="content">
-<div class="paragraph">
-<div class="title">Contents</div>
-<p>The top three (max five) quality goals for the architecture whose fulfillment is of highest importance to the major stakeholders.
-We really mean quality goals for the architecture. Don&#8217;t confuse them with project goals.
-They are not necessarily identical.</p>
-</div>
-<div class="paragraph">
-<p>Consider this overview of potential topics (based upon the ISO 25010 standard):</p>
-</div>
-<div class="imageblock">
-<div class="content">
-<img src="./images/01_2_iso-25010-topics-EN.drawio.png" alt="Categories of Quality Requirements">
-</div>
-</div>
-<div class="paragraph">
-<div class="title">Motivation</div>
-<p>You should know the quality goals of your most important stakeholders, since they will influence fundamental architectural decisions.
-Make sure to be very concrete about these qualities, avoid buzzwords.
-If you as an architect do not know how the quality of your work will be judged&#8230;&#8203;</p>
-</div>
-<div class="paragraph">
-<div class="title">Form</div>
-<p>A table with quality goals and concrete scenarios, ordered by priorities</p>
-</div>
-</div>
-</div>
 <div class="paragraph">
 <p>The quality goals for the architecture are as follows:</p>
 </div>
@@ -680,75 +606,41 @@ If you as an architect do not know how the quality of your work will be judged&#
 <thead>
 <tr>
 <th class="tableblock halign-left valign-top">Quality Goal</th>
-<th class="tableblock halign-left valign-top">Scenario</th>
+<th class="tableblock halign-left valign-top">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Scalability</strong></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The system must be able to handle a large number of simultaneous users without a noticeable decrease in performance.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The system must efficiently handle a high number of concurrent users without performance degradation, ensuring a seamless experience even under peak loads.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Reliability</strong></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The system must be robust enough to handle failures in the hint generation API and ensure the user experience is minimally impacted.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The system must operate consistently under expected conditions, maintaining stability and minimizing downtime or unexpected failures.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Usability</strong></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The application must be intuitive and easy to use, allowing users to quickly understand how to play, answer questions, and interact with hints.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The application must be intuitive, easy to learn, and user-friendly, enabling players to navigate, answer questions, and request hints effortlessly.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Performance</strong></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The system should provide fast responses, particularly in generating questions and hints, without delays that impact the user experience.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The system should deliver fast and responsive interactions, ensuring minimal delays when generating questions, processing answers, or providing hints.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Security</strong></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The system must ensure that user data is securely stored and accessible only to authorized users.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">User data must be securely stored and accessible only to authorized users. The system must protect against unauthorized access, data breaches, and malicious activities.</p></td>
 </tr>
 </tbody>
 </table>
 <div class="paragraph">
 <p>These quality goals will drive architectural decisions, particularly concerning how data is processed, stored, and presented to the user, as well as how external integrations (e.g., LLM API and Wikidata) are handled.</p>
 </div>
+<div class="paragraph">
+<p>See section 10 (Quality Requirements) for a complete overview of quality scenarios.</p>
+</div>
 </div>
 <div class="sect2">
 <h3 id="_stakeholders">1.3. Stakeholders</h3>
-<div class="sidebarblock arc42help">
-<div class="content">
-<div class="paragraph">
-<div class="title">Contents</div>
-<p>Explicit overview of stakeholders of the system, i.e. all person, roles or organizations that</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>should know the architecture</p>
-</li>
-<li>
-<p>have to be convinced of the architecture</p>
-</li>
-<li>
-<p>have to work with the architecture or with code</p>
-</li>
-<li>
-<p>need the documentation of the architecture for their work</p>
-</li>
-<li>
-<p>have to come up with decisions about the system or its development</p>
-</li>
-</ul>
-</div>
-<div class="paragraph">
-<div class="title">Motivation</div>
-<p>You should know all parties involved in development of the system or affected by the system.
-Otherwise, you may get nasty surprises later in the development process.
-These stakeholders determine the extent and the level of detail of your work and its results.</p>
-</div>
-<div class="paragraph">
-<div class="title">Form</div>
-<p>Table with role names, person names, and their expectations with respect to the architecture and its documentation.</p>
-</div>
-</div>
-</div>
 <table class="tableblock frame-all grid-all stretch">
 <colgroup>
 <col style="width: 20%;">
@@ -778,11 +670,6 @@ These stakeholders determine the extent and the level of detail of your work and
 <td class="tableblock halign-left valign-top"><p class="tableblock">ChattySw team</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">A robust, well-documented, and maintainable system. Clear requirements for integration with LLM and Wikidata, as well as a user-friendly interface.</p></td>
 </tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>HappySw (Previous Developers)</strong></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">HappySw team</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Smooth transition from last year&#8217;s implementation, with the new LLM-based hint system integrating seamlessly with the existing structure.</p></td>
-</tr>
 </tbody>
 </table>
 <div style="page-break-after: always;"></div>
@@ -792,29 +679,6 @@ These stakeholders determine the extent and the level of detail of your work and
 <div class="sect1">
 <h2 id="section-architecture-constraints">2. Architecture Constraints</h2>
 <div class="sectionbody">
-<div class="sidebarblock arc42help">
-<div class="content">
-<div class="paragraph">
-<div class="title">Contents</div>
-<p>Any requirement that constrains software architects in their freedom of design and implementation decisions or decisions about the development process. These constraints sometimes go beyond individual systems and are valid for whole organizations and companies.</p>
-</div>
-<div class="paragraph">
-<div class="title">Motivation</div>
-<p>Architects should know exactly where they are free in their design decisions and where they must adhere to constraints. Constraints must always be dealt with; they may be negotiable, though.</p>
-</div>
-<div class="paragraph">
-<div class="title">Form</div>
-<p>Simple tables of constraints with explanations. If needed you can subdivide them into:
-- Technical constraints
-- Organizational and political constraints
-- Conventions (e.g., programming or versioning guidelines, documentation or naming conventions)</p>
-</div>
-<div class="paragraph">
-<div class="title">Further Information</div>
-<p>See <a href="https://docs.arc42.org/section-2/">Architecture Constraints</a> in the arc42 documentation.</p>
-</div>
-</div>
-</div>
 <div class="sect2">
 <h3 id="_technical_constraints">2.1. Technical Constraints</h3>
 <table class="tableblock frame-all grid-all stretch">
@@ -847,7 +711,7 @@ These stakeholders determine the extent and the level of detail of your work and
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Cloud Deployment</strong></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The application must be deployed on a cloud-based infrastructure (e.g., AWS, Azure, or Google Cloud) to ensure availability and scalability.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The application must be deployed on a cloud-based infrastructure (e.g., AWS, Azure, Google Cloud or Oracle) to ensure availability and scalability.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><strong>External API Integration</strong></p></td>
@@ -913,11 +777,11 @@ These stakeholders determine the extent and the level of detail of your work and
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Coding Standards</strong></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The team must adhere to best coding practices, including style guides (e.g., PEP 8 for Python, Airbnb Style Guide for JavaScript).</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The team must adhere to best coding practices, including style guides.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Testing Requirements</strong></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The project must include unit tests, integration tests, and end-to-end tests to ensure software reliability.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The project must include unit tests, integration tests, end-to-end tests and load tests to ensure software reliability.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Documentation Standards</strong></p></td>
@@ -995,8 +859,10 @@ These stakeholders determine the extent and the level of detail of your work and
 <div class="paragraph">
 <p><strong>Business Context Diagram</strong></p>
 </div>
-<div class="paragraph">
-<p><span class="image"><img src="./images/05_system_context_diagram.png" alt="Business context diagram"></span></p>
+<div class="imageblock">
+<div class="content">
+<img src="./images/diag-plantuml-md5-9ea75ac55f307c962435cf2901f524aa.png" alt="Diagram" width="538" height="197">
+</div>
 </div>
 </div>
 <div class="sect2">
@@ -1007,7 +873,7 @@ These stakeholders determine the extent and the level of detail of your work and
 <div class="ulist">
 <ul>
 <li>
-<p><strong>Frontend-Backend Communication</strong>: The client uses React.js to communicate with the Node.js backend through RESTful API calls.</p>
+<p><strong>Frontend-Backend Communication</strong>: The client uses a React-based UI to communicate with the Node.js backend through RESTful API calls.</p>
 </li>
 <li>
 <p><strong>Backend-Database Communication</strong>: The backend of the system interacts with a database through MongoDB using Mongoose ODM.</p>
@@ -1016,13 +882,13 @@ These stakeholders determine the extent and the level of detail of your work and
 <p><strong>External APIs</strong>: Some external APIs are used for taking advantage of services such as data retrieval (WikiData) and hint generation (LLM).</p>
 </li>
 <li>
-<p><strong>Security Considerations</strong>: User passwords are hashed using Bcrypt, and authentication is managed through a Gateway service.</p>
+<p><strong>Security Considerations</strong>: User passwords are hashed using Bcrypt, and authentication is managed through a Gateway service and a backend authorization service.</p>
 </li>
 <li>
-<p><strong>User Gateway</strong>: Handles user-related API requests, routing authentication and CRUD operations to their respective services.</p>
+<p><strong>User Gateway</strong>: Handles user-related API requests, routing authentication, CRUD and game operations to their respective services.</p>
 </li>
 <li>
-<p><strong>Game Service</strong>: Manages game logic and caches question batches to reduce WikiData API overhead.</p>
+<p><strong>Game Service</strong>: Generates questions from WikiData and stores them in a database, ensuring access to questions is fast and reliable when playing. It is also in charge of retrieving batches of questions for the game to the frontend application and storing the game results associated to a logged in user.</p>
 </li>
 </ul>
 </div>
@@ -1049,16 +915,16 @@ These stakeholders determine the extent and the level of detail of your work and
 <tbody>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Frontend</strong></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">React.js</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">React</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">REST API Calls</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">HTTPS</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">HTTP</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">JSON</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Backend</strong></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Node.js + Express</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">REST API Calls</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">HTTPS</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">HTTP</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">JSON</p></td>
 </tr>
 <tr>
@@ -1073,7 +939,7 @@ These stakeholders determine the extent and the level of detail of your work and
 <td class="tableblock halign-left valign-top"><p class="tableblock">External API</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">REST API, SPARQL queries</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">HTTPS</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">JSON/XML</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">JSON</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><strong>AI (via LLMService)</strong></p></td>
@@ -1083,24 +949,17 @@ These stakeholders determine the extent and the level of detail of your work and
 <td class="tableblock halign-left valign-top"><p class="tableblock">JSON</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>User Gateway</strong></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Express.js</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">REST API Calls</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">HTTPS</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">JSON</p></td>
-</tr>
-<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><strong>User CRUD Service</strong></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Express.js</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">REST API Calls</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">HTTPS</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">HTTP</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">JSON</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><strong>User Authentication Service</strong></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Express.js + Bcrypt</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">REST API Calls</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">HTTPS (OAuth2)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">HTTP</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">JSON</p></td>
 </tr>
 <tr>
@@ -1117,7 +976,7 @@ These stakeholders determine the extent and the level of detail of your work and
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="./images/diag-plantuml-md5-99ed14fd2557bd6fca73cf139b118e6c.png" alt="Diagram" width="895" height="593">
+<img src="./images/diag-plantuml-md5-5d7fbc0c315e1a0382bc0b9f9e94bc56.png" alt="Diagram" width="1549" height="536">
 </div>
 </div>
 <div style="page-break-after: always;"></div>
@@ -1167,9 +1026,9 @@ These stakeholders determine the extent and the level of detail of your work and
 <td class="tableblock halign-left valign-top"><p class="tableblock">Express is straightforward to understand and leverages familiar concepts like functional programming, delegate functions, and a request/response HTTP controller structure.</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><strong><a href="https://empathy.co/">Empathy API</a></strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong><a href="https://www.groq.com">Groq API (Not yet decided)</a></strong></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">LLM service to provide the chatbot experience. Currently under evaluation with consideration for alternatives (e.g., Empathy).</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Empathy.co is a privacy-first search and discovery platform designed for eCommerce. With AI-driven search capabilities, intuitive interfaces, and a focus on trust, Empathy.co helps brands enhance customer engagement while respecting privacy. The platform supports seamless integrations, real-time insights, and customizable search solutions, empowering retailers to build meaningful shopping journeys. The demo project showcased good response times and appropriate latency, with unlimited API calls.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Groq API is a flexible service that uses interchangeable LLM models. It allows for the underlying model to be swapped by simply changing the API URL and key. The demo project showcased efficient response times and appropriate latency, with support for up to 1,000 API calls daily.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><strong><a href="https://www.wikidata.org">WikiData API</a></strong></p></td>
@@ -1195,11 +1054,6 @@ These stakeholders determine the extent and the level of detail of your work and
 <td class="tableblock halign-left valign-top"><p class="tableblock"><strong><a href="https://www.oracle.com/cloud/">Oracle Cloud Infrastructure (OCI)</a></strong></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Hosts the application in the production stage</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Selected due to our ability to obtain a free, sufficiently powerful server instance from Oracle’s infrastructure.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><strong><a href="https://gatling.io/">Gatling</a> (Not yed decided)</strong></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Load testing tool for performance evaluation</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Chosen for its ability to simulate multiple users and analyze application performance under load. It provides detailed reports and metrics, helping identify bottlenecks and optimize the system.</p></td>
 </tr>
 </tbody>
 </table>
@@ -1334,9 +1188,9 @@ We have considered an optional requirement that include game different modes. Th
 <td class="tableblock halign-left valign-top"><p class="tableblock">By choosing Express, we dismiss the use of Spring Boot or JEE libraries for implementing web event controllers, along with their annotation-based approach, which simplifies application logic and functionality distribution.</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Empathy API</strong></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Grok LLM, Gemini LLM, and Deepseek LLM</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">By using this API, we take the opportunity to participate in the Empathy challenge. Additionally, rejecting Google&#8217;s Gemini LLM and Deepseek LLM may reduce chatbot performance, as these models are evolving faster than Empathy&#8217;s.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Groq API</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Empathy LLM, Gemini LLM, and Deepseek LLM</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">By using only the Meta API, we miss the opportunity to participate in the Empathy challenge. Additionally, rejecting Google&#8217;s Gemini LLM and Deepseek LLM may reduce chatbot performance, as these models are evolving faster than Meta&#8217;s.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><strong>WikiData API</strong></p></td>
@@ -1363,11 +1217,6 @@ We have considered an optional requirement that include game different modes. Th
 <td class="tableblock halign-left valign-top"><p class="tableblock">Microsoft Azure, Amazon Web Services (AWS)</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">By choosing Oracle Cloud Infrastructure as our deployment platform, we opt against Azure, which provides student licenses but may have higher costs for long-term use. Additionally, we reject AWS, which offers better scalability and a more flexible pricing.</p></td>
 </tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Gatling (Not yed decided)</strong></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Apache Jmeter and Locust.io (among others)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">By using Gatling, we reject ache Jmeter and Locust.io, which where also presented load testing tools. Gatling is known for its high performance and scalability, making it suitable for simulating large user loads. It provides detailed reports and metrics, helping identify bottlenecks and optimize the system.</p></td>
-</tr>
 </tbody>
 </table>
 </div>
@@ -1387,7 +1236,7 @@ We have considered an optional requirement that include game different modes. Th
 <tbody>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Scalability</strong></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Using Gherkin with tools to test the performance and behaviour of the application in users load scenarios. The tool used to test the user load is yet to be confirmed, but we chose Gatling.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Using Gherkin with tools to test the performance and behaviour of the application in users load scenarios. The tool used to test the user load is yet to decide, perhaps K6 or a Python script.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Reliability</strong></p></td>
@@ -1485,7 +1334,7 @@ We have considered an optional requirement that include game different modes. Th
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="./images/diag-plantuml-md5-9ea75ac55f307c962435cf2901f524aa.png" alt="Diagram" width="493" height="185">
+<img src="./images/diag-plantuml-md5-9ea75ac55f307c962435cf2901f524aa.png" alt="Diagram" width="538" height="197">
 </div>
 </div>
 </div>
@@ -1531,10 +1380,11 @@ We have considered an optional requirement that include game different modes. Th
 <p><strong>User to System Interaction</strong>: Users engage with the system via a <strong>web client</strong> interface, which provides a rich UI experience with interactive elements such as forms, buttons, and dynamic feedback mechanisms. This client ensures a seamless user experience throughout the gameplay.</p>
 </li>
 <li>
-<p><strong>System to WikiData API Interaction</strong>: The Wichat EN2B application interfaces with the <strong>WikiData API</strong> using a <strong>question generator module</strong>. This module sends HTTP requests containing <strong>SPARQL queries</strong> to retrieve structured knowledge from WikiData, which is subsequently processed and used to generate game questions.</p>
+<p><strong>System to WikiData API Interaction</strong>: The Wichat EN2B application interfaces with the <strong>WikiData API</strong> using a <strong>Game service</strong>. This service is in charge of the management of all the game related modules, such as the question generation and retrieval, the game state, the statistics, etc.</p>
 </li>
 <li>
-<p><strong>System to LLM API Interaction</strong>: The Wichat EN2B application communicates with the <strong>LLM API</strong> by passing the entire chat history of the logged-in user in each request. This ensures that the language model has full context of the ongoing conversation, enabling the generation of hints and responses that are contextually relevant and consistent with previous exchanges.</p>
+<p><strong>System to LLM API Interaction</strong>: The Wichat EN2B application requests to the <strong>LLM Service</strong> the communication with the
+corresponding LLM, and this service is in charge of the propper connection witht the LLM.</p>
 </li>
 <li>
 <p><strong>Internal Services Communication</strong>: Internal services within the Wichat EN2B application communicate over <strong>RESTful APIs</strong>. For example, the <strong>Gateway Service</strong> routes incoming requests to the appropriate internal services, while the <strong>Game Service</strong> ensures game state management and flow control.</p>
@@ -1549,7 +1399,7 @@ We have considered an optional requirement that include game different modes. Th
 <h4 id="_container_diagram">5.2.1. Container Diagram</h4>
 <div class="imageblock">
 <div class="content">
-<img src="./images/diag-plantuml-md5-a0419155f4f0b172791e6452a369862d.png" alt="Diagram" width="1500" height="446">
+<img src="./images/diag-plantuml-md5-e43447f2487a693a7f270a4b1145462d.png" alt="Diagram" width="1669" height="559">
 </div>
 </div>
 </div>
@@ -1570,13 +1420,14 @@ We have considered an optional requirement that include game different modes. Th
 <div class="ulist">
 <ul>
 <li>
-<p><strong>Web Application</strong>: The front-end interface between the user and the system. This container is responsible for rendering the user interface (UI) and handling user interactions. Developed using <strong>React</strong>, the Web Application ensures a responsive and dynamic experience. It communicates with internal services via API calls.</p>
+<p><strong>Web Application</strong>: The front-end interface between the user and the system. This container is responsible for rendering the user interface (UI) and handling user interactions. Developed using <strong>NextJS</strong> (a React framework), the Web Application ensures a responsive and dynamic experience. It communicates with internal services via API calls.</p>
 </li>
 <li>
 <p><strong>Gateway Service</strong>: Serves as the entry point for external API requests. This container is responsible for routing incoming requests to the correct internal services, ensuring that requests are handled efficiently and securely.</p>
 </li>
 <li>
-<p><strong>Game Service</strong>: This service manages the core game logic, including the flow of the game, the presentation of questions, tracking of user progress, and determining the game&#8217;s end. It also handles the game state, such as the user&#8217;s score and question set.</p>
+<p><strong>Game Service</strong>: This service manages the core game logic, including the flow of the game, the presentation of questions, tracking of user progress, and determining the game&#8217;s end. It also handles the game state, such as the user&#8217;s score and question set. It is
+responsible for generating and retrieving questions, together with retrieving the user statistics.</p>
 </li>
 <li>
 <p><strong>LLM Service</strong>: This container interfaces with a <strong>Large Language Model (LLM)</strong> to provide hints, explanations, and additional content to assist the user during the game. It ensures that users receive context-sensitive content, enhancing the overall gaming experience by offering real-time dynamic information. Communication with the LLM API is conducted conversationally by passing the entire message history in each request to maintain context and coherence.</p>
@@ -1587,23 +1438,139 @@ We have considered an optional requirement that include game different modes. Th
 <li>
 <p><strong>User Gateway</strong>: A container dedicated to managing user-specific API requests. It handles user authentication, session management, and retrieval of user-related data, ensuring secure and personalized experiences.</p>
 </li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_data_flow">5.2.4. Data Flow</h4>
+<div class="paragraph">
+<p>Data flows between containers in a manner that ensures efficient communication and process execution. For example:</p>
+</div>
+<div class="ulist">
+<ul>
 <li>
-<p><strong>User Authentication Service</strong>: Manages user authentication processes, validating user credentials and ensuring secure access to the platform. It integrates with third-party authentication mechanisms when required.</p>
+<p>When a user logs in via the Web Application, the system authenticates the request using the <strong>User Service</strong>.</p>
 </li>
 <li>
-<p><strong>User CRUD Service</strong>: Manages the <strong>Create, Read, Update, Delete (CRUD)</strong> operations for user data. It ensures that user profiles can be created, updated, or deleted, facilitating efficient user management.</p>
+<p>After successful authentication, the user interacts with the <strong>Game Service</strong>.</p>
 </li>
 <li>
-<p><strong>WikiData API</strong>: A third-party external API that provides structured data for generating trivia questions and content. The Wichat EN2B application communicates with WikiData to fetch real-time data using SPARQL queries.</p>
+<p>The <strong>LLM Service</strong> is called when the user requests a hint.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>This modular design enhances scalability, maintainability, and fault isolation, ensuring that each component is specialized in its task while working seamlessly as part of the larger system.</p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_component_diagram_c4_level_3">5.3. Component Diagram (C4 Level 3)</h3>
+<div class="sect3">
+<h4 id="_component_diagram">5.3.1. Component Diagram</h4>
+<div class="imageblock">
+<div class="content">
+<img src="./images/diag-plantuml-md5-6c981ea1a6d9deb6325032e2fbd4671d.png" alt="Diagram" width="1379" height="824">
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_motivation_3">5.3.2. Motivation</h4>
+<div class="paragraph">
+<p>The <strong>Component Diagram</strong> (C4 Level 3) provides a detailed view of the internal structure of each service, focusing on the specific routers, logic components, and models. This level of detail is essential for developers working on individual services, as it clarifies the responsibilities of each component and their relationships.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_contained_building_blocks_3">5.3.3. Contained Building Blocks</h4>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Gateway Service</strong>:</p>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Gateway Router</strong>: Routes incoming HTTP requests to the appropriate internal services.</p>
 </li>
 <li>
-<p><strong>LLM</strong>: This container represents the external <strong>Large Language Model</strong> service that dynamically generates content such as hints and contextual information based on user interactions. It interacts with an advanced language model, such as GPT or similar technologies, to offer real-time, personalized content.</p>
+<p><strong>Request Dispatcher</strong>: Handles the logic for delegating requests to the correct service, ensuring communication between components.</p>
+</li>
+<li>
+<p><strong>Monitoring</strong>: Ensures the health and performance of the Gateway Service by tracking metrics such as request rates, response times, and error rates. This component provides insights into the system&#8217;s operational status and helps identify potential issues.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Game Service</strong>:</p>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Middleware</strong>: Ensures only authenticated users can access to these points.</p>
+</li>
+<li>
+<p><strong>Game Information Router</strong>: Saves the game information and the game state.</p>
+</li>
+<li>
+<p><strong>Game Fetcher Router</strong>: Is in charge of fetching questions from WikiData given the type and amount.</p>
+</li>
+<li>
+<p><strong>Game Retriever Router</strong>: Returns questions from our database given the requested parameters.</p>
+</li>
+<li>
+<p><strong>Game Statistics Router</strong>: Returns the current user game statistics for a given subject or for
+the whole application. It also returns the leaderboard of the application, including the current user.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>User Service</strong>:</p>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Auth Service Router</strong>: Manages authentication-related endpoints (login, register). It uses the
+User CRUD router internally.</p>
+</li>
+<li>
+<p><strong>User CRUD Router</strong>: Handles user management endpoints (create, update, delete users).</p>
+</li>
+<li>
+<p><strong>User Model</strong>: Represents the user data structure and interacts with the database.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>LLM Service</strong>:</p>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>LLM Router</strong>: Handles requests for hints.</p>
+</li>
+<li>
+<p><strong>LLM Logic</strong>: Communicates with the external LLM API to generate responses.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>External APIs</strong>:</p>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>WikiData API</strong>: Provides structured data for generating questions.</p>
+</li>
+<li>
+<p><strong>LLM API</strong>: Offers dynamic content generation, such as hints and contextual information, based on user interactions.</p>
+</li>
+</ul>
+</div>
 </li>
 </ul>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_external_communication">5.2.4. External Communication</h4>
+<h4 id="_external_communication">5.3.4. External Communication</h4>
 <div class="ulist">
 <ul>
 <li>
@@ -1616,22 +1583,17 @@ We have considered an optional requirement that include game different modes. Th
 </div>
 </div>
 <div class="sect3">
-<h4 id="_data_flow">5.2.5. Data Flow</h4>
+<h4 id="_data_flow_2">5.3.5. Data Flow</h4>
 <div class="paragraph">
-<p>Data flows between containers in a manner that ensures efficient communication and process execution. For example:</p>
+<p>Each router contains one or several endpoints for its respective service. These router components interact with models or external APIs to fulfill the requests, ensuring a clear separation of concerns and maintainability.</p>
 </div>
-<div class="ulist">
-<ul>
-<li>
-<p>When a user logs in via the Web Application, the system authenticates the request using the <strong>User Authentication Service</strong>.</p>
-</li>
-<li>
-<p>After successful authentication, the user interacts with the Game Service, which may request data from the WikiData API to generate a question.</p>
-</li>
-<li>
-<p>The <strong>LLM Service</strong> is called when the user requests a hint, and the entire conversation history is sent to the LLM API in each request to provide context-sensitive guidance and responses.</p>
-</li>
-</ul>
+<div class="paragraph">
+<p>For example:
+- The <strong>Gateway</strong> routes a user request to the <strong>Game Service</strong> for game-related actions.
+- The <strong>Middleware</strong> would check if the user is authenticated previously to any operation.
+- The <strong>Game Service</strong> uses the <strong>Game Fetcher Router</strong> and fetches data from the <strong>WikiData API</strong>
+- The <strong>Game Service</strong> uses the <strong>Game Retriever Router</strong> and retrieves questions from the <strong>Database</strong>
+- The <strong>LLM Service</strong> communicates with the <strong>LLM</strong> throught the <strong>LLM API</strong> to generate hints or contextual responses for the user.</p>
 </div>
 <div class="paragraph">
 <p>This modular design enhances scalability, maintainability, and fault isolation, ensuring that each component is specialized in its task while working seamlessly as part of the larger system.</p>
@@ -1884,7 +1846,7 @@ We have considered an optional requirement that include game different modes. Th
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="./images/UML%20diagram%201.png" alt="UML diagram 1" width="424" height="273">
+<img src="./images/UML%20diagram%201.png" alt="UML diagram 1" width="423" height="318">
 </div>
 </div>
 <div class="paragraph">
@@ -1906,7 +1868,7 @@ We have considered an optional requirement that include game different modes. Th
 <h4 id="_oracle_serverapplication">7.2.1. Oracle ServerApplication</h4>
 <div class="imageblock">
 <div class="content">
-<img src="./images/UML%20diagram%202.png" alt="UML diagram 2" width="1034" height="262">
+<img src="./images/UML%20diagram%202.png" alt="UML diagram 2" width="1137" height="315">
 </div>
 </div>
 <div class="paragraph">
@@ -1930,32 +1892,47 @@ We have considered an optional requirement that include game different modes. Th
 </div>
 <div class="literalblock">
 <div class="content">
-<pre>`GET /adduser` - Shows the registration form</pre>
+<pre>`GET /signup` - Shows the signup screen to the user</pre>
 </div>
 </div>
 <div class="literalblock">
 <div class="content">
-<pre>`POST /adduser` - Sends the sign up information to the gateway service</pre>
+<pre>`POST /signup` - Sends the sign up information to the gateway service</pre>
 </div>
 </div>
 <div class="literalblock">
 <div class="content">
-<pre>`GET /login` - Shows the login form</pre>
+<pre>`GET /login` - Shows the signup screen to the user</pre>
 </div>
 </div>
 <div class="literalblock">
 <div class="content">
-<pre>`POST /login` - Sends the login information to the gateway service</pre>
+<pre>`POST /login` - Sends the sign up information to the gateway service</pre>
 </div>
 </div>
 <div class="literalblock">
 <div class="content">
-<pre>'GET /' - Shows homepage with categories, stats and leaderboard.</pre>
+<pre>`GET /quiz` - Shows the user a question from a quiz whose theme is specified as parameter</pre>
 </div>
 </div>
 <div class="literalblock">
 <div class="content">
-<pre>'GET /quiz/category/:id' - Shows quizzes for a category and starts gameplay</pre>
+<pre>`POST /quiz` - Submits the answer to the gateway service</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>`GET /edit`- Shows the user a form in order to edit their data</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>`POST /edit` - Sends the updated information to the gateway service</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>`GET /stats` - Shows the user their game stats</pre>
 </div>
 </div>
 <div class="ulist">
@@ -1975,67 +1952,37 @@ We have considered an optional requirement that include game different modes. Th
 </div>
 <div class="literalblock">
 <div class="content">
-<pre>`POST /login` - Forwards to Authentication Service to authenticate login</pre>
+<pre>`GET /quiz` - Retrieves quiz questions</pre>
 </div>
 </div>
 <div class="literalblock">
 <div class="content">
-<pre>`POST /adduser` - Forwards to Authentication Service for registration</pre>
+<pre>`POST /quiz` - Submits user answers</pre>
 </div>
 </div>
 <div class="literalblock">
 <div class="content">
-<pre>'GET /users' - Proxies to User Service to get all users</pre>
+<pre>`POST /login` - Authenticates user requests</pre>
 </div>
 </div>
 <div class="literalblock">
 <div class="content">
-<pre>'GET /users/:username' - Proxies to User Service for user details</pre>
+<pre>`POST /adduser` - Registers new users</pre>
 </div>
 </div>
 <div class="literalblock">
 <div class="content">
-<pre>'POST /users' - Proxies to User Service for user creation</pre>
+<pre>`POST /edituser` - Edits user information</pre>
 </div>
 </div>
 <div class="literalblock">
 <div class="content">
-<pre>'PATCH /users/:username' - Proxies to User Service for user edits</pre>
+<pre>`GET /stats` - Requests a user historical playing data</pre>
 </div>
 </div>
 <div class="literalblock">
 <div class="content">
-<pre>'DELETE /users/:username' - Proxies to User Service for deletion</pre>
-</div>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>'GET /game/:subject/:totalQuestions/:numberOptions' - Proxies to Game Service to get a given number of questions, with a given number of options for a given subject</pre>
-</div>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>'POST /askllm` - Proxies to LLM Service for hints</pre>
-</div>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>`GET /statistics/subject/:subject` - Proxies to Game Service for global stats</pre>
-</div>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>`GET /statistics/global` - Proxies to Game Service for leaderboard</pre>
-</div>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>'GET /leaderboard' - Gets leaderboard with top 10 players plus user</pre>
-</div>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>'GET /image/:images' - Proxies to get image from Game Service</pre>
+<pre>`POST /askllm` - Sends a question to the LLM Service</pre>
 </div>
 </div>
 <div class="ulist">
@@ -2061,38 +2008,6 @@ We have considered an optional requirement that include game different modes. Th
 <li>
 <p><strong>User CRUD Service</strong>: Handles the CRUD operations for user data, interacting with the MongoDB database for persistent storage.</p>
 </li>
-</ul>
-</div>
-<div class="paragraph">
-<p>Endpoints</p>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>'POST /users' - Creates a user with hashed password (bcrypt).</pre>
-</div>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>'GET /users' - Rerieves all users</pre>
-</div>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>'GET /users/:username' - Retrieves a specific user</pre>
-</div>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>'PATCH /users/:username' - Updates user data</pre>
-</div>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>`DELETE /users/:username` - Deletes a user</pre>
-</div>
-</div>
-<div class="ulist">
-<ul>
 <li>
 <p><strong>User Authentication Service</strong>: Responsible for managing user authentication, ensuring that secure access to the application is maintained.</p>
 </li>
@@ -2103,12 +2018,12 @@ We have considered an optional requirement that include game different modes. Th
 </div>
 <div class="literalblock">
 <div class="content">
-<pre>`POST /login` - Validates credentials and returns a JWT</pre>
+<pre>`GET /users` - Retrieves a list of all users (admin use)</pre>
 </div>
 </div>
 <div class="literalblock">
 <div class="content">
-<pre>`POST /register` - Registers user via User Service and returns a JWT</pre>
+<pre>`POST /users/search` - Searches for users based on filters (e.g., username, email)</pre>
 </div>
 </div>
 <div class="ulist">
@@ -2123,32 +2038,12 @@ We have considered an optional requirement that include game different modes. Th
 </div>
 <div class="literalblock">
 <div class="content">
-<pre>'POST /game' - Saves games results</pre>
+<pre>`GET /quiz` - Retrieves a batch of quiz questions from WikiData</pre>
 </div>
 </div>
 <div class="literalblock">
 <div class="content">
-<pre>'GET /generate/:type/:amount' - Fetches/stores Wikidata questions</pre>
-</div>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>'GET /game/:subject/:numQuestions?/:numOptions?' - Generates a given number of quiz questions for a given subject</pre>
-</div>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>'GET /statistics/subject/:subject' - Gives statistics for a given subject</pre>
-</div>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>'GET /statistics/global' - Gives global statistics</pre>
-</div>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>'GET /leaderboard' - Gives the top 10 players plus user</pre>
+<pre>`POST /quiz` - Validates a user's answer</pre>
 </div>
 </div>
 <div class="ulist">
@@ -2716,7 +2611,7 @@ in the <a href="https://github.com/Arquisoft/wichat_en2b/discussions/79">discuss
 <div id="footer">
 <div id="footer-text">
 Version 8.2 EN<br>
-Last updated 2025-03-18 19:33:54 +0100
+Last updated 2025-03-31 23:27:54 +0200
 </div>
 </div>
 </body>
