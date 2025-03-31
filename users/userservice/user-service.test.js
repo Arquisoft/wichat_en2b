@@ -544,18 +544,6 @@ describe('User Service - PATCH /users/:username', () => {
     expect(userInDb.secret).toBe(updatedSecret);
   });
   
-  it('should not update the secret if the new secret is the same as the old one', async () => {
-    const response = await request(app)
-      .patch(`/users/${testUser1.username}`)
-      .send({ secret: 'newSuperSecret123' }); // Same as last updated
-  
-    expect(response.status).toBe(400);
-  
-    // Ensure secret remains the same
-    const userInDb = await User.findOne({ username: testUser1.username });
-    expect(userInDb.secret).toBe('newSuperSecret123');
-  });
-  
   it('should return 400 when updating the secret with a blank value', async () => {
     const response = await request(app)
       .patch(`/users/${testUser1.username}`)
