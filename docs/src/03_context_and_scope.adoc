@@ -23,30 +23,80 @@ The system interacts with several external entities:
 
 **Business Context Diagram**
 
-image:05_system_context_diagram.png[Business context diagram]
+[plantuml]
+----
+@startuml
+set separator none
+title Wichat EN2B - System Context
+
+left to right direction
+
+skinparam {
+  arrowFontSize 10
+  defaultTextAlignment center
+  wrapWidth 200
+  maxMessageSize 100
+}
+
+hide stereotype
+
+skinparam rectangle<<LLM>> {
+  BackgroundColor #2d882d
+  FontColor #ffffff
+  BorderColor #1f5f1f
+  shadowing false
+}
+skinparam person<<User>> {
+  BackgroundColor #116611
+  FontColor #ffffff
+  BorderColor #0b470b
+  shadowing false
+}
+skinparam rectangle<<WichatEN2B>> {
+  BackgroundColor #2d882d
+  FontColor #ffffff
+  BorderColor #1f5f1f
+  shadowing false
+}
+skinparam rectangle<<WikiData>> {
+  BackgroundColor #2d882d
+  FontColor #ffffff
+  BorderColor #1f5f1f
+  shadowing false
+}
+
+person "==User\n<size:10>[Person]</size>" <<User>> as User
+rectangle "==WikiData\n<size:10>[Software System]</size>" <<WikiData>> as WikiData
+rectangle "==LLM\n<size:10>[Software System]</size>" <<LLM>> as LLM
+rectangle "==Wichat EN2B\n<size:10>[Software System]</size>" <<WichatEN2B>> as WichatEN2B
+
+User .[#707070,thickness=2].> WichatEN2B : "<color:#707070>Uses"
+WichatEN2B .[#707070,thickness=2].> WikiData : "<color:#707070>Gets information for questions"
+WichatEN2B .[#707070,thickness=2].> LLM : "<color:#707070>Asks for hints"
+@enduml
+----
 
 === Technical Context
 The system is linked to several technical interfaces:
 
-* **Frontend-Backend Communication**: The client uses React.js to communicate with the Node.js backend through RESTful API calls.
+* **Frontend-Backend Communication**: The client uses a React-based UI to communicate with the Node.js backend through RESTful API calls.
 * **Backend-Database Communication**: The backend of the system interacts with a database through MongoDB using Mongoose ODM.
 * **External APIs**: Some external APIs are used for taking advantage of services such as data retrieval (WikiData) and hint generation (LLM).
-* **Security Considerations**: User passwords are hashed using Bcrypt, and authentication is managed through a Gateway service.
-* **User Gateway**: Handles user-related API requests, routing authentication and CRUD operations to their respective services.
-* **Game Service**: Manages game logic and caches question batches to reduce WikiData API overhead.
+* **Security Considerations**: User passwords are hashed using Bcrypt, and authentication is managed through a Gateway service and a backend authorization service.
+* **User Gateway**: Handles user-related API requests, routing authentication, CRUD and game operations to their respective services.
+* **Game Service**: Generates questions from WikiData and stores them in a database, ensuring access to questions is fast and reliable when playing. It is also in charge of retrieving batches of questions for the game to the frontend application and storing the game results associated to a logged in user.
 
 Quiz Game System - Technical Context Table
 [cols="1,2,3,4,5", options="header"]
 |===
 | **Component** | Technology | Communication Method | Protocol | Format
-| **Frontend** | React.js | REST API Calls | HTTPS | JSON
-| **Backend** | Node.js + Express | REST API Calls | HTTPS | JSON
+| **Frontend** | React | REST API Calls | HTTP | JSON
+| **Backend** | Node.js + Express | REST API Calls | HTTP | JSON
 | **Database** | Mongoose (MongoDB) | Queries | TCP/IP | JSON
-| **WikiData** (via GameService) | External API | REST API, SPARQL queries | HTTPS | JSON/XML
+| **WikiData** (via GameService) | External API | REST API, SPARQL queries | HTTPS | JSON
 | **AI (via LLMService)** | External API | REST API Calls | HTTPS | JSON
-| **User Gateway** | Express.js | REST API Calls | HTTPS | JSON
-| **User CRUD Service** | Express.js | REST API Calls | HTTPS | JSON
-| **User Authentication Service** | Express.js + Bcrypt | REST API Calls | HTTPS (OAuth2) | JSON
+| **User CRUD Service** | Express.js | REST API Calls | HTTP | JSON
+| **User Authentication Service** | Express.js + Bcrypt | REST API Calls | HTTP | JSON
 | **Security (Bcrypt)** | Password Hashing | Internal Authentication | N/A | N/A
 |===
 
@@ -60,9 +110,9 @@ skinparam BackgroundColor transparent
 skinparam sequenceMessageAlign center
 
 skinparam sequence {
-    ArrowColor #2C3E50
-    LifeLineBorderColor #95A5A6
-    LifeLineBackgroundColor #ECF0F1
+ArrowColor #2C3E50
+LifeLineBorderColor #95A5A6
+LifeLineBackgroundColor #ECF0F1
 
     ParticipantBorderColor #0d3375
     ParticipantBackgroundColor #E8F6FF
@@ -80,23 +130,24 @@ skinparam sequence {
 
 actor User
 participant "Frontend" as Frontend
+participant "Gateway" as Gateway
 participant "Backend" as Backend
 database "Database" as DB
 participant "WikiData API" as WikiData
 participant "LLM API" as AI
-participant "Gateway" as Gateway
 
-User -> Frontend : Login, Answers, Hint Requests
-Frontend -> Gateway : REST API Calls (JSON)
+User -> Frontend : Login, Register, Request Game, Retrieve Stats, Submit Answers, Request Hint
+Frontend -> Gateway : Forward User Requests (JSON)
 
 Gateway -> Backend : Authenticated Requests (JSON)
-Backend -> DB : Store/Retrieve User Data\n(MongoDB JSON)
-Backend -> WikiData : Fetch Quiz Data\n(HTTP GET, JSON)
-Backend -> AI : Request Hints\n(HTTP POST, JSON)
+Backend -> DB : Store/Retrieve User Data (MongoDB JSON)
+Backend -> WikiData : Fetch Quiz Data (HTTP GET, JSON)
+Backend -> AI : Request Hints (HTTP POST, JSON)
 
 AI --> Backend : AI-generated Hint (JSON)
 WikiData --> Backend : Quiz Data (JSON)
-Backend --> Frontend : Send Quiz, Hints,\nScores (JSON)
-Frontend --> User : Display Questions,\nFeedback, Leaderboard
+Backend --> Gateway : Processed Data (JSON)
+Gateway --> Frontend : Send Quiz, Hints, Scores, User Data (JSON)
+Frontend --> User : Display Questions, Feedback, Leaderboard, Stats
 @enduml
 ----
