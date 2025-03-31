@@ -197,7 +197,7 @@ useEffect(() => {
         {qrCodeUrl ? (
           <QrCode imgUrl={qrCodeUrl} />
         ) : (
-          <Button variant="contained" color="primary" onClick={setup2FA}>
+          <Button name="Configure 2FA" variant="contained" color="primary" onClick={setup2FA}>
             {already2fa ? "Reset 2FA" : "Configure 2FA"}
           </Button>
         )}
