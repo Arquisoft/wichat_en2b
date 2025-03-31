@@ -1,21 +1,5 @@
-ifndef::imagesdir[:imagesdir: ../images]
-
 [[section-introduction-and-goals]]
 == Introduction and Goals
-
-ifdef::arc42help[]
-[role="arc42help"]
-****
-Describes the relevant requirements and the driving forces that software architects and development team must consider. 
-These include
-
-* underlying business goals, 
-* essential features, 
-* essential functional requirements, 
-* quality goals for the architecture and
-* relevant stakeholders and their expectations
-****
-endif::arc42help[]
 
 === Requirements Overview
 
@@ -35,29 +19,6 @@ The key functional requirements of the system are:
 Optional features include internationalization, mobile version, users' ranking, multiplayer capabilities, and personalized game settings like adjusting time limits and the scope of questions.
 
 === Quality Goals
-
-ifdef::arc42help[]
-[role="arc42help"]
-****
-.Contents
-The top three (max five) quality goals for the architecture whose fulfillment is of highest importance to the major stakeholders. 
-We really mean quality goals for the architecture. Don't confuse them with project goals.
-They are not necessarily identical.
-
-Consider this overview of potential topics (based upon the ISO 25010 standard):
-
-image::01_2_iso-25010-topics-EN.drawio.png["Categories of Quality Requirements"]
-
-.Motivation
-You should know the quality goals of your most important stakeholders, since they will influence fundamental architectural decisions. 
-Make sure to be very concrete about these qualities, avoid buzzwords.
-If you as an architect do not know how the quality of your work will be judged...
-
-.Form
-A table with quality goals and concrete scenarios, ordered by priorities
-****
-endif::arc42help[]
-
 The quality goals for the architecture are as follows:
 [options="header",cols="1,2"]
 |===
@@ -73,33 +34,11 @@ These quality goals will drive architectural decisions, particularly concerning 
 See section 10 (Quality Requirements) for a complete overview of quality scenarios.
 
 === Stakeholders
-ifdef::arc42help[]
-[role="arc42help"]
-****
-.Contents
-Explicit overview of stakeholders of the system, i.e. all person, roles or organizations that
-
-* should know the architecture
-* have to be convinced of the architecture
-* have to work with the architecture or with code
-* need the documentation of the architecture for their work
-* have to come up with decisions about the system or its development
-
-.Motivation
-You should know all parties involved in development of the system or affected by the system.
-Otherwise, you may get nasty surprises later in the development process.
-These stakeholders determine the extent and the level of detail of your work and its results.
-
-.Form
-Table with role names, person names, and their expectations with respect to the architecture and its documentation.
-****
-endif::arc42help[]
 [options="header",cols="1,2,2"]
 |===
 | Role/Name           | Contact         | Expectations 
 
 | **End Users**       | Users of the game | Enjoyable and engaging experience, with an easy-to-use interface and fun, dynamic gameplay. 
-| **RTVE**            | RTVE management | High-quality user experience, with an emphasis on scalability, performance, and security. 
-| **Development Team**| ChattySw team   | A robust, well-documented, and maintainable system. Clear requirements for integration with LLM and Wikidata, as well as a user-friendly interface. 
-| **HappySw (Previous Developers)** | HappySw team   | Smooth transition from last year's implementation, with the new LLM-based hint system integrating seamlessly with the existing structure. 
+| **RTVE**            | RTVE management | High-quality user experience, with an emphasis on scalability, performance, and security.
+| **Development Team**| ChattySw team   | A robust, well-documented, and maintainable system. Clear requirements for integration with LLM and Wikidata, as well as a user-friendly interface.
 |===
