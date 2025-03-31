@@ -50,12 +50,46 @@ export default function ProfileForm({ username, onSave }) {
       setProfileData((prev) => ({ ...prev, [name]: value }));
     };
 
-    const handleSave = () => {
-      setEditing(false);
-      setOpenSnackbar(true);
-      onSave(profileData);
-    };
-
+    const handleSave = async () => {
+      try {
+          const token = localStorage.getItem("token");
+          const payload = {};
+  
+          // Solo agregar campos si fueron modificados
+          if (profileData.username !== currentUsername) {
+              payload.username = profileData.username;
+          }
+  
+          if (profileData.newPassword) {
+              payload.password = profileData.newPassword;
+          }
+  
+          if (Object.keys(payload).length === 0) {
+              alert("No changes detected.");
+              return;
+          }
+  
+          const response = await fetch(`http://gatewayservice:8000/users/${currentUsername}`, {
+              method: "PATCH",
+              headers: {
+                  "Content-Type": "application/json",
+                  "Authorization": `Bearer ${token}`
+              },
+              body: JSON.stringify(payload)
+          });
+  
+          if (!response.ok) {
+              const errorData = await response.json();
+              throw new Error(errorData.error || "Error updating profile");
+          }
+  
+          setEditing(false);
+          setOpenSnackbar(true);
+      } catch (error) {
+          console.error("Failed to update profile:", error);
+      }
+    };  
+  
     return (
       <Card className="profile-container">
 

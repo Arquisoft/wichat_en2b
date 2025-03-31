@@ -44,7 +44,7 @@ const forwardRequest = async (service, endpoint, req, res) => {
     // Get the response body (if any) and content type
     const contentType = response.headers.get('Content-Type');
     let responseBody;
-    if (contentType && contentType.includes('application/json')) {
+    if (contentType?.includes('application/json')) {
       responseBody = await response.json();
     } else {
       responseBody = await response.text();
@@ -54,7 +54,7 @@ const forwardRequest = async (service, endpoint, req, res) => {
     res.status(response.status);
     // Send the response body as-is
     if (responseBody) {
-      if (contentType && contentType.includes('application/json')) {
+      if (contentType?.includes('application/json')) {
         res.json(responseBody); // Send JSON (e.g., token or error message)
       } else {
         res.send(responseBody); // Send text if not JSON
@@ -162,6 +162,36 @@ app.get('/game/:subject/:totalQuestions/:numberOptions', async (req, res) => {
       });
     }
   });
+});
+
+app.patch('/users/:username', async (req, res) => {
+  try {
+      const token = req.headers.authorization?.split(" ")[1];
+      if (!token) return res.status(401).json({ error: "Unauthorized" });
+
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'testing-secret');
+      if (decoded.username !== req.params.username) {
+          return res.status(403).json(
+            { error: "Forbidden: You can only update your own account" }
+          );
+      }
+
+      if (Object.keys(req.body).length === 0) {
+          return res.status(400).json(
+            { error: "Request body is required" }
+          );
+      }
+
+      const response = await axios.patch(`${userServiceUrl}/users/${req.params.username}`, req.body, {
+          headers: { Authorization: `Bearer ${token}` }
+      });
+
+      res.status(response.status).json(response.data);
+  } catch (error) {
+      res.status(error.response?.status || 500).json({ 
+        error: error.response?.data || "Internal Server Error" 
+      });
+  }
 });
 
 // Proxy for images
