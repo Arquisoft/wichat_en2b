@@ -71,18 +71,7 @@ router.post('/verify2fa', async (req, res) => {
       return res.status(400).json({ error: "Token is required" });
     }
     
-      try {
-        userResponse = await axios.get(`${gatewayServiceUrl}/users/${user.username}`);
-      } catch (err) {
-        if (err.response && err.response.status === 404) {
-          logger.error(`Failure in login: user ${user.username} not found`);
-          return res.status(401).json({ 
-            error: ERROR_USERNAME_NOT_FOUND, 
-            field: 'username' 
-          });
-        }
-        throw err;
-      }
+      userResponse = await axios.get(`${gatewayServiceUrl}/users/${user.username}`);
       const userFromDB = userResponse.data;
       let secret = userFromDB.secret;
       const isValid = otplib.authenticator.verify({ token, secret});
