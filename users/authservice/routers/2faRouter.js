@@ -4,6 +4,7 @@ const qrcode = require("qrcode");
 const logger = require('../logger');
 const jwt = require('jsonwebtoken');
 const axios = require('axios');  // Make sure axios is installed
+const { route } = require('./AuthRouter');
 const router = express.Router();
 
 otplib.authenticator.options = { window: 1 };
@@ -100,5 +101,30 @@ router.post('/verify2fa', async (req, res) => {
     res.status(500).json({ error: "Error verifying 2FA token" });
   }
 });
+router.get('/check2fa', async (req, res) => {
+  try {
+    // Get the user from the token
+    const user = getUserFromToken(req);
+    if (!user) {
+      return res.status(401).json({ error: 'Unauthorized. Invalid or expired token.' });
+    }
 
+    // Check if the user exists and retrieve their 2FA status
+    const foundUser = await User.findOne({ username: user.username });
+
+    if (!foundUser) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Check if 2FA is enabled (assuming `secret` holds the 2FA secret)
+    const is2faEnabled = !!foundUser.secret; // If `secret` exists, 2FA is enabled
+
+    // Respond with the 2FA status
+    return res.status(200).json({ twoFactorEnabled: is2faEnabled , username : user.username});
+
+  } catch (error) {
+    logger.error("Error checking 2FA status:", error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
 module.exports = router;

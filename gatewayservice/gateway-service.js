@@ -104,6 +104,9 @@ app.post('/setup2fa', (req, res) => forwardRequest('auth', '/auth/setup2fa', req
 app.use('/verify2fa', publicCors);
 app.post('/verify2fa', (req, res) => forwardRequest('auth', '/auth/verify2fa', req, res));
 
+app.use('/check2fa', publicCors);
+app.get('/check2fa', (req, res) => forwardRequest('auth', '/auth/check2fa', req, res));
+
 // LLM Question Handling
 app.use('/askllm', publicCors);
 app.post('/askllm', (req, res) => forwardRequest('llm', '/askllm', req, res));
