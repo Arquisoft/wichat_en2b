@@ -4,7 +4,7 @@ const setDefaultOptions = require('expect-puppeteer').setDefaultOptions
 const feature = loadFeature('./e2e/features/home-access.feature');
 const mongoose = require('mongoose');
 const User = require('../../../users/userservice/user-model'); //Import the users model
-const { click, writeIntoInput, addUser } = require('../test-functions')
+const { click, writeIntoInput, addUser, goToInitialPage} = require('../test-functions')
 
 let page;
 let browser;
@@ -15,18 +15,14 @@ defineFeature(feature, test => {
             ? await puppeteer.launch({headless: "new", args: ['--no-sandbox', '--disable-setuid-sandbox']})
             : await puppeteer.launch({ headless: false, slowMo: 100 });
         page = await browser.newPage();
-        //Way of setting up the timeout
-        //setDefaultOptions({ timeout: 30000 })
+
         jest.setTimeout(30000)
-        await page
-            .goto("http://localhost:3000", {
-                waitUntil: "networkidle0",
-            })
-            .catch(() => {});
+        await goToInitialPage(page);
     });
 
     afterAll(async ()=>{
-        browser.close()
+        browser.close();
+        await mongoose.connection.close();
     });
 
     test('The user has an account in the web', ({given, when, then}) => {

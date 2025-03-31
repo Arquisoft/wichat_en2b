@@ -4,7 +4,7 @@ const setDefaultOptions = require('expect-puppeteer').setDefaultOptions
 const feature = loadFeature('./e2e/features/register-form.feature');
 const mongoose = require('mongoose');
 const User = require('../../../users/userservice/user-model'); //Import the users model
-const { click, writeIntoInput } = require('../test-functions')
+const { click, writeIntoInput, goToInitialPage } = require('../test-functions')
 
 let page;
 let browser;
@@ -16,27 +16,19 @@ defineFeature(feature, test => {
       ? await puppeteer.launch({headless: "new", args: ['--no-sandbox', '--disable-setuid-sandbox']})
       : await puppeteer.launch({ headless: false, slowMo: 50 });
     page = await browser.newPage();
-    //Way of setting up the timeout
-    //setDefaultOptions({ timeout: 30000 })
+
     await mongoose.connect(process.env.MONGODB_URI);
     jest.setTimeout(30000)
-    await page
-      .goto("http://localhost:3000", {
-        waitUntil: "networkidle0",
-      })
-      .catch(() => {});
+    await goToInitialPage(page);
   });
 
   afterEach(async () => {
- //   await User.deleteMany({});
-    await page.goto("http://localhost:3000", {
-      waitUntil: "networkidle0",
-    });
+    await goToInitialPage(page);
   });
 
   afterAll(async ()=>{
-    await mongoose.connection.close();
     browser.close();
+    await mongoose.connection.close();
   })
 
   test('The user is not registered in the site', ({given,when,then}) => {

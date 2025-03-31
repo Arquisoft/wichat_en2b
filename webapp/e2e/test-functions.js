@@ -36,8 +36,31 @@ async function addUser(mongoUri, mongoose, User){
     return data;
 }
 
+async function login(page, username, password){
+    await writeIntoInput(page,'input[name="username"]', username);
+    await writeIntoInput(page,'input[name="password"]', password);
+    await click(page,'form > button');
+}
+
+async function accessQuiz(page, expect){
+    await click(page, "a[href='/quiz/category/1']");
+    await expect(page).toMatchElement("* > header > div > a", { text: "Back to Dashboard"});
+    await click(page, "#__next > div > div > button:first-child");
+}
+
+async function goToInitialPage(page){
+    await page
+        .goto("http://localhost:3000", {
+            waitUntil: "networkidle0",
+        })
+        .catch(() => {});
+}
+
 module.exports = {
     click,
     writeIntoInput,
-    addUser
+    addUser,
+    login,
+    accessQuiz,
+    goToInitialPage
 }
