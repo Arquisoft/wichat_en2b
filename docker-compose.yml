@@ -42,8 +42,6 @@ services:
     container_name: llmservice-wichat_en2b
     image: ghcr.io/arquisoft/wichat_en2b/llmservice:latest
     profiles: ["dev", "prod"]
-    env_file:
-      - .env
     build:
       context: ./llmservice
     ports:
