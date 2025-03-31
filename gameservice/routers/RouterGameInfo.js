@@ -1,5 +1,4 @@
 const express = require('express')
-const jwt = require('jsonwebtoken');
 const GameInfo = require('../game-result-model')
 // Middleware to verify JWT token
 const verifyToken = require('./middleware/auth');
@@ -25,7 +24,6 @@ function validateGameInfo(body) {
 
 router.post('/game', verifyToken, async (req, res) => {
     try {
-
         validateGameInfo(req.body);
 
         const gameInfo = new GameInfo({

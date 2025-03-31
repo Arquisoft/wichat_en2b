@@ -7,6 +7,7 @@ const gameRouter = require('./routers/RouterGameInfo');
 const statisticsRouter = require('./routers/RouterStatistics');
 
 const app = express();
+app.use(express.json());
 const port = 8004;
 
 // Connection to MongoDB game database

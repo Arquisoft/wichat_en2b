@@ -2,11 +2,12 @@ import React, { useEffect, useState } from "react";
 import "../../styles/QuestionGame.css";
 import { Alert, CircularProgress, LinearProgress, Box, Typography } from "@mui/material";
 import InGameChat from "@/components/game/InGameChat";
+import FinishGame from "@/components/game/FinishGame";
 
 const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://localhost:8000';
 
 export default function QuestionGame(params) {
-    const { topic, totalQuestions, numberOptions, timerDuration, question } = params;
+    const { topic, subject, totalQuestions, numberOptions, timerDuration, question } = params;
 
     const [currentQuestion, setCurrentQuestion] = useState(0);
     const [questions, setQuestions] = useState([]);
@@ -22,7 +23,7 @@ export default function QuestionGame(params) {
 
     const fetchQuestions = async () => {
         try {
-            const response = await fetch(`${apiEndpoint}/game/${topic}/${totalQuestions}/${numberOptions}`);
+            const response = await fetch(`${apiEndpoint}/game/${subject}/${totalQuestions}/${numberOptions}`);
             const data = await response.json();
             setQuestions(data);
             resetState();
@@ -31,6 +32,8 @@ export default function QuestionGame(params) {
             console.error("Error fetching questions:", err);
         }
     };
+
+    const finishParams = {answers: answers, callback: fetchQuestions, subject: topic};
 
     const resetState = () => {
         setAnswers([]);
@@ -79,8 +82,9 @@ export default function QuestionGame(params) {
             {
                 answer: option,
                 right_answer: questions[currentQuestion].right_answer,
-                isCorrect,
+                isCorrect: isCorrect,
                 points: calculatePoints(isCorrect),
+                timeSpent: timerDuration - timeLeft,
             },
         ]);
 
@@ -130,6 +134,10 @@ export default function QuestionGame(params) {
             clearInterval(timerIntervalRef.current);
         };
     }, []);
+
+    function finishGame() {
+
+    }
 
     return currentQuestion < totalQuestions ? (
         <div className="quiz-wrapper">
@@ -191,45 +199,6 @@ export default function QuestionGame(params) {
             <div className="divider"></div>
         </div>
     ) : (
-        <div className="quiz-results-container">
-            <div className="quiz-header">Quiz Completed!</div>
-            <div className="score">
-                <span className="score-fraction">
-                    {answers.filter((a) => a.isCorrect).length}/{totalQuestions}
-                </span>
-                <span className="score-percentage">
-                    {(answers.filter((a) => a.isCorrect).length / totalQuestions) * 100}% Correct
-                </span>
-                <span className="score-points">
-                    {answers.reduce((acc, a) => acc + a.points, 0)} points
-                </span>
-            </div>
-            <div className="answers-header">Your Answers:</div>
-            <div className="answers-list">
-                {answers.map((answer, index) => (
-                    <div key={index + 1} className="answer-item">
-                        <h4 className="answer-number">Question {index + 1}:</h4>
-                        {answer.isCorrect ? (
-                            <Alert severity="success" className="result-box alert-success">
-                                You answered: {answer.answer}
-                            </Alert>
-                        ) : (
-                            <>
-                                <Alert severity="error" className="result-box alert-error">
-                                    You answered: {answer.answer}
-                                </Alert>
-                                <Alert severity="success" className="result-box alert-correct">
-                                    Right answer: {answer.right_answer}
-                                </Alert>
-                            </>
-                        )}
-                    </div>
-                ))}
-            </div>
-            <div className="buttons">
-                <button className="back-button" onClick={() => location.href = '/'}>Back to home</button>
-                <button className="play-again-button" onClick={fetchQuestions}>Play again</button>
-            </div>
-        </div>
+        <FinishGame {...finishParams}/>
     );
 }

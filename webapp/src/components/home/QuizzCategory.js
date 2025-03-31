@@ -82,11 +82,12 @@ function CategoryComponent() {
 
     const handleStartQuiz = (quiz) => {
       setQuizData({
-        topic: quiz.wikidataCode, 
-        totalQuestions: quiz.questions,
-        numberOptions: quiz.options,  
-        timerDuration: quiz.timeEstimate,
-        question: quiz.question,  
+          topic: quiz.title,
+          subject: quiz.wikidataCode,
+          totalQuestions: quiz.questions,
+          numberOptions: quiz.options,
+          timerDuration: quiz.timeEstimate,
+          question: quiz.question,
       });
 
       setShowQuiz(true);  
