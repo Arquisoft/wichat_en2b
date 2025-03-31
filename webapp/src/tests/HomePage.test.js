@@ -110,41 +110,52 @@ describe('HomePage Component', () => {
     jest.clearAllMocks();
   });
 
-  test('renders the HomePage component correctly', () => {
-    render(<HomePage />);
-    
-    expect(screen.getByText('WiChat', { selector: 'h1' })).toBeInTheDocument();
+  test('renders the HomePage component correctly', async () => {
+    await act(async () => {
+      render(<HomePage/>);
+    });
+    expect(screen.getByText('WiChat', {selector: 'h1'})).toBeInTheDocument();
     expect(screen.getByText('Connect, Learn, and Play with WiChat')).toBeInTheDocument();
     expect(screen.getByText('Play')).toBeInTheDocument();
     expect(screen.getByText('Stats')).toBeInTheDocument();
     expect(screen.getByText('Leaderboard')).toBeInTheDocument();
   });
 
-  test('changes tabs when clicked', () => {
-    render(<HomePage />);
-    
+  test('changes tabs when clicked', async () => {
+    await act(async () => {
+      render(<HomePage/>);
+    });
+
     expect(screen.getByText('Play')).toBeInTheDocument();
     expect(screen.queryByText('Stats')).toBeInTheDocument();
     expect(screen.queryByText('Leaderboard')).toBeInTheDocument();
-    
-    act(() => { fireEvent.click(screen.getByText('Stats')); });
+
+    await act(async () => {
+      fireEvent.click(screen.getByText('Stats'));
+    });
     jest.advanceTimersByTime(0);
-    expect(screen.getByText('Recent Quizzes')).toBeInTheDocument();
-    
-    act(() => { fireEvent.click(screen.getByText('Leaderboard')); });
+    expect(screen.getByText('Quiz Statistics')).toBeInTheDocument();
+
+    await act(async () => {
+      fireEvent.click(screen.getByText('Leaderboard'));
+    });
     jest.advanceTimersByTime(0);
-    expect(screen.getByText('#1')).toBeInTheDocument();
+    expect(screen.getByText('WiChat Leaderboard')).toBeInTheDocument();
   });
 
-  test('renders the footer with the current year', () => {
-    render(<HomePage />);
-    
+  test('renders the footer with the current year', async () => {
+    await act(async () => {
+      render(<HomePage/>);
+    });
+
     const currentYear = new Date().getFullYear();
     expect(screen.getByText(`© ${currentYear} WiChat. All rights reserved.`)).toBeInTheDocument();
   });
 
-  test('navbar renders correctly', () => {
-    render(<HomePage />);
+  test('navbar renders correctly', async () => {
+    await act(async () => {
+      render(<HomePage/>);
+    });
     expect(screen.getByText('Profile')).toBeInTheDocument();
   });
 
