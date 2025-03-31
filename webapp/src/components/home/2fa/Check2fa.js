@@ -21,7 +21,9 @@ const Check2fa = ( username ) => {
         .split("; ")
         .find((row) => row.startsWith("token="))
         ?.split("=")[1];
-
+      if(token !== null && token !== undefined){
+        router.push("/");
+      }
       const response = await fetch(`${apiEndpoint}/verify2fa`, {
         method: "POST",
         headers: {
@@ -47,10 +49,6 @@ const Check2fa = ( username ) => {
       if (err.error === "You are already logged in") {
         // Redirect to home if already logged in
         router.push("/");
-      } else if (err.field) {
-        setErrors({ [err.field]: err.error });
-      } else {
-        setErrors({ general: err.error || "Login failed" });
       }
     } finally {
       setLoading(false);

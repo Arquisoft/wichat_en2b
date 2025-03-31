@@ -68,17 +68,8 @@ router.post('/verify2fa', async (req, res) => {
     let userResponse;
     if (!token) {
       return res.status(400).json({ error: "Token is required" });
-    }else{
-      try {
-        jwt.verify(token, process.env.JWT_SECRET || 'testing-secret');
-        logger.info("User already logged in, rejecting login attempt");
-        return res.status(403).json({ error: "You are already logged in" });
-      } catch (err) {
-        // Invalid token, proceed with login (treat as not logged in)
-        logger.warn("Invalid token provided, proceeding with login");
-      }
-      
     }
+    
       try {
         userResponse = await axios.get(`${gatewayServiceUrl}/users/${user.username}`);
       } catch (err) {
