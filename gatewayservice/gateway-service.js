@@ -164,6 +164,10 @@ app.get('/game/:subject/:totalQuestions/:numberOptions', async (req, res) => {
   });
 });
 
+// Username handling
+app.use('/user/me', publicCors);
+app.use('/users/:username', publicCors);
+
 app.get('/user/me', async (req, res) => {
   try {
       const token = req.headers.authorization;

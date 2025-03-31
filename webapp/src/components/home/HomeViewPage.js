@@ -45,7 +45,7 @@ function HomePage({ stats }) {
             if (!token) return;
 
             try {
-                const response = await axios.get("http://gatewayservice:8000/users/me", {
+                const response = await axios.get("http://localhost:8000/user/me", {
                     headers: {
                         Authorization: `Bearer ${token}`
                     }
