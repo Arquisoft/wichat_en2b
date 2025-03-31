@@ -82,7 +82,7 @@ function CategoryComponent() {
 
     const handleStartQuiz = (quiz) => {
       setQuizData({
-          topic: quiz.title,
+          topic: quiz.id,
           subject: quiz.wikidataCode,
           totalQuestions: quiz.questions,
           numberOptions: quiz.options,

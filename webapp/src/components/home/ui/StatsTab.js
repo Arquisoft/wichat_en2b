@@ -70,12 +70,11 @@ export default function StatsTab() {
 					: `/statistics/subject/${selectedSubject.toLowerCase()}`
 				const data = await fetchWithAuth(endpoint);
 				if (!data || !data.stats) {
-					throw new Error('Invalid statistics data');
+					setError("You have not played any quizzes on this category yet.");
+					setStatistics(null);
 				}
 				setStatistics(data.stats);
 			} catch (error) {
-				setError(error.message);
-				setStatistics(null);
 			} finally {
 				setLoading(false);
 			}
@@ -93,9 +92,9 @@ export default function StatsTab() {
 
 	const chartData = statistics
 		? [
-			{ name: "Success Rate", value: Number.parseFloat(statistics.successRatio.toFixed(2))*100},
-			{ name: "Avg Score", value: Number.parseFloat(statistics.avgScore.toFixed(1)) },
-			{ name: "Avg Time (s)", value: Number.parseFloat(statistics.avgTime.toFixed(1)) }
+			{ name: "Success Rate", value: Math.round(Number.parseFloat(statistics.successRatio.toFixed(2))*100)},
+			{ name: "Avg Score", value: Math.round(Number.parseFloat(statistics.avgScore.toFixed(1))) },
+			{ name: "Avg Time (s)", value: Math.round(Number.parseFloat(statistics.avgTime.toFixed(1))) }
 		]
 		: []
 	return (
@@ -167,8 +166,8 @@ export default function StatsTab() {
 						<TabPanel value={tabValue} index={1}>
 							<Grid container spacing={2}>
 								<StatCard title="Total Games" value={statistics.totalGames} />
-								<StatCard title="Avg Score" value={`${statistics.avgScore.toFixed(1)}%`} />
-								<StatCard title="Total Score" value={statistics.totalScore} />
+								<StatCard title="Avg Score" value={`${statistics.avgScore.toFixed(1)} points`} />
+								<StatCard title="Total Score" value={`${statistics.totalScore} points`} />
 								<StatCard title="Correct Answers" value={statistics.totalCorrectAnswers} />
 								<StatCard title="Total Questions" value={statistics.totalQuestions} />
 								<StatCard title="Success Ratio" value={`${(statistics.successRatio * 100).toFixed(1)}%`} />
