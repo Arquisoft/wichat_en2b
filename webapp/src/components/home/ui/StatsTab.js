@@ -13,7 +13,6 @@ import {
 	InputLabel,
 	Select,
 	MenuItem,
-	CircularProgress,
 	Tabs,
 	Tab,
 	Box,
@@ -69,9 +68,7 @@ export default function StatsTab() {
 				const endpoint = selectedSubject === "all"
 					? "/statistics/global"
 					: `/statistics/subject/${selectedSubject.toLowerCase()}`
-				console.log(endpoint);
 				const data = await fetchWithAuth(endpoint);
-				console.log(data)
 				if (!data || !data.stats) {
 					throw new Error('Invalid statistics data');
 				}
@@ -101,7 +98,6 @@ export default function StatsTab() {
 			{ name: "Avg Time (s)", value: Number.parseFloat(statistics.avgTime.toFixed(1)) }
 		]
 		: []
-
 	return (
 		<Card>
 			<CardHeader
