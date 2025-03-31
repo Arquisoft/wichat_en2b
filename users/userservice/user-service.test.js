@@ -71,7 +71,28 @@ describe('User Service - POST /users', () => {
     // Check if the user is inserted into the database
     await checkUserExistsInDb(testUser1, true);
   });
-
+  it('should add a new user with a secret on POST /users', async () => {
+    const userWithSecret = {
+      username: 'testuserWithSecret',
+      password: 'testpassword',
+      role: 'USER',
+      secret: 'uniqueSecretKey123'
+    };
+  
+    const response = await request(app).post('/users').send(userWithSecret);
+    expect(response.status).toBe(201);
+  
+    // Check if the response contains the user with the encrypted password and secret
+    expect(response.body).toHaveProperty('username', userWithSecret.username);
+    expect(await bcrypt.compare(userWithSecret.password, response.body.password)).toBe(true);
+    expect(response.body).toHaveProperty('role', userWithSecret.role);
+    expect(response.body).toHaveProperty('createdAt');
+    expect(response.body).toHaveProperty('secret', userWithSecret.secret);
+  
+    // Check if the user is inserted into the database
+    await checkUserExistsInDb(userWithSecret, true);
+  });
+  
   it('should not add a user with missing username on POST /users', async () => {
     const noUsernameUser = {
       // Missing username
@@ -309,7 +330,7 @@ describe('User Service - PATCH /users/:username', () => {
 
     expect(response.body.__v).toBe(1);
   });
-
+ 
   it('should update a user by password on PATCH /users/:username', async () => {
     const updatedUser = {
       username: 'updateduser',
@@ -504,6 +525,45 @@ describe('User Service - PATCH /users/:username', () => {
     expect((await request(app).get(`/users/${testUser1.username}`)).body).toHaveProperty('__v', 4);
 
   });
+  it('should update the secret of a user on PATCH /users/:username', async () => {
+    const updatedSecret = 'newSuperSecret123';
+    const userExists = await User.findOne({ username: testUser1.username });
+
+    expect(userExists).not.toBeNull(); // Ensure user exists before patching
+    
+    const response = await request(app)
+      .patch(`/users/${testUser1.username}`)
+      .send({ secret: updatedSecret });
+  
+    expect(response.status).toBe(200);
+    expect(response.body).toHaveProperty('secret', updatedSecret);
+  
+    // Verify in the database
+    const userInDb = await User.findOne({ username: testUser1.username });
+    expect(userInDb).not.toBeNull();
+    expect(userInDb.secret).toBe(updatedSecret);
+  });
+  
+  it('should return 400 when updating the secret with a blank value', async () => {
+    const response = await request(app)
+      .patch(`/users/${testUser1.username}`)
+      .send({ secret: '    ' });
+  
+    expect(response.status).toBe(400);
+  
+    const userInDb = await User.findOne({ username: testUser1.username });
+    expect(userInDb.secret).toBe('newSuperSecret123'); // Should remain unchanged
+  });
+  
+  it('should return 404 when updating the secret for a non-existent user', async () => {
+    const response = await request(app)
+      .patch('/users/nonexistentuser')
+      .send({ secret: 'anotherSecretKey' });
+  
+    expect(response.status).toBe(404);
+  });
+  
+  
 });
 
 describe('User Service - DELETE /users/:username', () => {

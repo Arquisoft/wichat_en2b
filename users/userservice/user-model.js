@@ -30,6 +30,11 @@ const userSchema = new mongoose.Schema({
       default: Date.now,
       immutable: true,
     },
+    secret: {
+      type: String,
+      required: false,
+      validate: [noWhitespaceValidator],
+    },
 });
 
 const User = mongoose.model('User', userSchema);
