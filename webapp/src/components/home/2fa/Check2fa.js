@@ -43,7 +43,15 @@ const Check2fa = ( username ) => {
       document.cookie = `token=${data.token}; path=/; max-age=3600`;
       router.push("/"); // Redirect to home after 2FA success
     } catch (err) {
-      setError(err.error || "Verification failed");
+      console.log(err.error);
+      if (err.error === "You are already logged in") {
+        // Redirect to home if already logged in
+        router.push("/");
+      } else if (err.field) {
+        setErrors({ [err.field]: err.error });
+      } else {
+        setErrors({ general: err.error || "Login failed" });
+      }
     } finally {
       setLoading(false);
     }

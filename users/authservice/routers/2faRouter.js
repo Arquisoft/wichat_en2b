@@ -38,7 +38,7 @@ router.post('/setup2fa', async (req, res) => {
     const imageUrl = await new Promise((resolve, reject) => {
       qrcode.toDataURL(otpauth, (err, url) => {
         if (err) {
-          reject("Error generating QR code");
+          reject(new Error("Error generating QR code"));
         } else {
           resolve(url);
         }
@@ -47,7 +47,7 @@ router.post('/setup2fa', async (req, res) => {
 
     // Save the secret to the user (make sure the gatewayServiceUrl is defined)
     try {
-      const newUserResponse = await axios.patch(`${gatewayServiceUrl}/users/${user.username}`, { secret });
+      await axios.patch(`${gatewayServiceUrl}/users/${user.username}`, { secret });
       logger.info('User updated with 2FA secret');
     } catch (error) {
       logger.error(`Error saving 2FA secret to user: ${error.message}`);
@@ -65,8 +65,19 @@ router.post('/setup2fa', async (req, res) => {
 router.post('/verify2fa', async (req, res) => {
   try {
     const { token, user} = req.body;
+    let userResponse;
     if (!token) {
       return res.status(400).json({ error: "Token is required" });
+    }else{
+      try {
+        jwt.verify(token, process.env.JWT_SECRET || 'testing-secret');
+        logger.info("User already logged in, rejecting login attempt");
+        return res.status(403).json({ error: "You are already logged in" });
+      } catch (err) {
+        // Invalid token, proceed with login (treat as not logged in)
+        logger.warn("Invalid token provided, proceeding with login");
+      }
+      
     }
       try {
         userResponse = await axios.get(`${gatewayServiceUrl}/users/${user.username}`);

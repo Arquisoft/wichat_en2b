@@ -9,7 +9,6 @@ router.post('/users', async (req, res) => {
         const user = new User({
             ...req.body
         });
-        let secret = req.body.secret;
         const errors = user.validateSync();
 
         if (errors) {

@@ -52,7 +52,6 @@ const Login = () => {
         setHas2fa(true);
       }else{
         // On successful login, set the token in the cookie
-        console.log(data);
         document.cookie = `token=${data.token}; path=/; max-age=3600`;
         router.push("/");
       }

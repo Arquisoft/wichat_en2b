@@ -1,7 +1,7 @@
 import React from "react";
 
 export default function QrCode({ imgUrl }) {
-  console.log(imgUrl);
+ 
   return (
     <div className="qrcode-container">
       {imgUrl ? (
