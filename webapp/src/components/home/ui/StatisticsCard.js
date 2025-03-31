@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
 import { useState, useEffect } from "react";
-import { Card, Grid, CardContent, Typography, Paper, CircularProgress } from "@mui/material";
+import { Card, Grid, CardContent, Typography, Paper } from "@mui/material";
 import "../../../styles/home/StatisticsCard.css";
 import { fetchWithAuth } from "@/utils/api-fetch-auth";
 import LoadingErrorHandler from ".//LoadingErrorHandler";
@@ -33,7 +33,6 @@ const StatisticsCard = () => {
 				const token = getAuthToken();
 				const currentPlayerId = await getCurrentPlayerId(token);
 				const playerRank = rankData.leaderboard.find(entry => entry._id === currentPlayerId)?.rank || 'N/A';
-
 				setStatistics(statsData.stats);
 				setRank(playerRank);
 			} catch (error) {
@@ -47,10 +46,10 @@ const StatisticsCard = () => {
 
 		fetchData();
 	}, []);
-	if (!statistics) return null;
 	return (
 		<Card className="stats-card">
 			<LoadingErrorHandler loading={loading} error={error}>
+				{statistics && (
 			<CardContent className="stats-content">
 				<Grid container spacing={3}>
 					{/* Quizzes */}
@@ -72,7 +71,7 @@ const StatisticsCard = () => {
 							</Grid>
 
 							{/* Rank */}
-							<Grid size={{ xs: 12, sm: 4 }}>
+							<Grid item xs={12} sm={4}>
 								<Paper className="stat-card stat-rank">
 								<Typography className="stat-value">#{rank}</Typography>
 								<Typography className="stat-label">Rank</Typography>
@@ -82,18 +81,10 @@ const StatisticsCard = () => {
 					</Grid>
 				</Grid>
 			</CardContent>
+					)}
 			</LoadingErrorHandler>
 		</Card>
 	);
-};
-
-// Add PropTypes validation
-StatisticsCard.propTypes = {
-  stats: PropTypes.shape({
-    quizzes: PropTypes.number.isRequired,
-    accuracy: PropTypes.number.isRequired,
-    rank: PropTypes.number.isRequired,
-  }).isRequired, // Ensure 'stats' contains quizzes, accuracy, and rank as numbers
 };
 
 export default StatisticsCard;

@@ -5,7 +5,7 @@ export default function LoadingErrorHandler({ loading, error, children }) {
         return (
             <Card>
                 <CardContent style={{ display: "flex", justifyContent: "center" }}>
-                    <CircularProgress />
+                    <CircularProgress/>
                 </CardContent>
             </Card>
         );

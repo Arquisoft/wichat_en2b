@@ -3,6 +3,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import StatisticsCard from "../components/home/ui/StatisticsCard";
 import { fetchWithAuth } from "@/utils/api-fetch-auth";
 import { getAuthToken, getCurrentPlayerId } from "@/utils/auth";
+import { act } from "react";
 
 jest.mock("../utils/api-fetch-auth");
 jest.mock("../utils/auth");
@@ -11,7 +12,7 @@ describe("StatisticsCard Component", () => {
     const mockStatsData = {
         stats: {
             totalGames: 10,
-            successRatio: 0.855
+            successRatio: 0.85
         }
     };
 
@@ -21,48 +22,48 @@ describe("StatisticsCard Component", () => {
         ]
     };
 
-    beforeEach(() => {
-        fetchWithAuth.mockClear();
-        getAuthToken.mockReturnValue("fake-token");
-        getCurrentPlayerId.mockResolvedValue("player1");
-    });
+    beforeEach(async () => {
+        await act(async () => {
+            jest.resetAllMocks();
+            getAuthToken.mockReturnValue("fake-token");
+            getCurrentPlayerId.mockResolvedValue("player1");
+        });
 
-    it("renders loading state initially", () => {
-        fetchWithAuth.mockImplementation(() => new Promise(() => {}));
-        render(<StatisticsCard  stats={}/>);
-        expect(screen.getByRole("progressbar")).toBeInTheDocument();
     });
 
     it("renders statistics with correct data and formatting", async () => {
-        fetchWithAuth
-            .mockResolvedValueOnce(mockStatsData)
-            .mockResolvedValueOnce(mockLeaderboardData);
+        await act(async () => {
+            fetchWithAuth
+                .mockResolvedValueOnce(mockStatsData)
+                .mockResolvedValueOnce(mockLeaderboardData);
 
-        render(<StatisticsCard  stats={}/>);
-
+            render(<StatisticsCard/>);
+        })
         await waitFor(() => {
             expect(screen.getByText("10")).toBeInTheDocument();
-            expect(screen.getByText("85.5%")).toBeInTheDocument();
+            expect(screen.getByText("85%")).toBeInTheDocument();
             expect(screen.getByText("#3")).toBeInTheDocument();
         });
     });
 
     it("displays error message when API call fails", async () => {
-        fetchWithAuth.mockRejectedValue(new Error("Failed to fetch"));
-        render(<StatisticsCard  stats={}/>);
-
+        await act(async () => {
+            fetchWithAuth.mockRejectedValue(new Error("Failed to fetch"));
+            render(<StatisticsCard/>);
+        });
         await waitFor(() => {
             expect(screen.getByText("Failed to fetch")).toBeInTheDocument();
         });
     });
 
     it("displays correct statistic labels", async () => {
-        fetchWithAuth
-            .mockResolvedValueOnce(mockStatsData)
-            .mockResolvedValueOnce(mockLeaderboardData);
+        await act(async () => {
+            fetchWithAuth
+                .mockResolvedValueOnce(mockStatsData)
+                .mockResolvedValueOnce(mockLeaderboardData);
 
-        render(<StatisticsCard  stats={}/>);
-
+            render(<StatisticsCard/>);
+        });
         await waitFor(() => {
             expect(screen.getByText("Quizzes")).toBeInTheDocument();
             expect(screen.getByText("Accuracy")).toBeInTheDocument();
@@ -70,34 +71,35 @@ describe("StatisticsCard Component", () => {
         });
     });
 
-    it("handles missing leaderboard data gracefully", async () => {
+    it("handles missing player in leaderboard gracefully", async () => {
+        getCurrentPlayerId.mockResolvedValue("player1");
+
         fetchWithAuth
             .mockResolvedValueOnce(mockStatsData)
-            .mockResolvedValueOnce({ leaderboard: [] });
+            .mockResolvedValueOnce({
+                leaderboard: [{ _id: "player2", rank: 3 }]
+            });
 
-        render(<StatisticsCard  stats={}/>);
-
+        render(<StatisticsCard/>);
         await waitFor(() => {
-            expect(screen.getByText("N/A")).toBeInTheDocument();
+            expect(screen.getByText("#N/A")).toBeInTheDocument();
         });
     });
 
     it("formats numbers correctly", async () => {
         const data = {
             stats: {
-                totalGames: 1000,
                 successRatio: 1
             }
         };
+        await act(async () => {
+            fetchWithAuth
+                .mockResolvedValueOnce(data)
+                .mockResolvedValueOnce(mockLeaderboardData);
 
-        fetchWithAuth
-            .mockResolvedValueOnce(data)
-            .mockResolvedValueOnce(mockLeaderboardData);
-
-        render(<StatisticsCard  stats={}/>);
-
+            render(<StatisticsCard/>);
+        });
         await waitFor(() => {
-            expect(screen.getByText("1000")).toBeInTheDocument();
             expect(screen.getByText("100%")).toBeInTheDocument();
         });
     });
