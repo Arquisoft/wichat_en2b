@@ -171,13 +171,13 @@ app.get('/user/me', async (req, res) => {
           return res.status(401).json({ error: "Unauthorized" });
       }
 
-      const response = await fetch(`${serviceUrls.user}/users/me`, {
+      console.log(`${serviceUrls.auth}/auth/me`);
+
+      const response = await fetch(`${serviceUrls.auth}/auth/me`, {
           headers: { 
             Authorization: token,
-            'Content-Type': 'application/json',
             Origin: 'http://localhost:8000',
           },
-          mode: 'cors',
       });
 
       if (!response.ok) {
@@ -210,13 +210,11 @@ app.patch('/users/:username', async (req, res) => {
           );
       }
 
-      const response = await axios.patch(`${userServiceUrl}/users/${req.params.username}`, req.body, {
+      const response = await fetch(`${serviceUrls.user}/users/${req.params.username}`, req.body, {
           headers: { 
             Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
             Origin: 'http://localhost:8000',
           },
-          mode: 'cors',
       });
 
       res.status(response.status).json(response.data);
