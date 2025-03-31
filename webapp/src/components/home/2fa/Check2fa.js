@@ -71,7 +71,7 @@ const Check2fa = ( username ) => {
             required
           />
         </div>
-        {error && <p className="error-message">{error}</p>}
+        {error && <p id="error" className="error-message">{error}</p>}
         <button type="submit" disabled={loading}>
           {loading ? "Verifying..." : "Verify Code"}
         </button>

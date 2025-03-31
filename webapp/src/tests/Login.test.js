@@ -203,6 +203,10 @@ describe("Check2fa Component", () => {
     await waitFor(() => {
       expect(mockPush).toHaveBeenCalledWith("/");
     });
+
+    // Ensure the cookie was set with the token
+    expect(document.cookie).toContain('token=fake-token');
   });
+  
 
 });

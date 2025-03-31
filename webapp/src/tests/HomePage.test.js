@@ -3,6 +3,112 @@ import {render, screen, fireEvent, waitFor, act } from "@testing-library/react";
 import HomePage from "../components/home/HomeViewPage";
 import Navbar from "../components/home/ui/Navbar";
 import QrCode from "../components/home/2fa/qrCode";
+import ProfileForm from "../components/home/ui/ProfileForm";
+
+global.fetch = jest.fn();
+import "@testing-library/jest-dom";
+import { act } from "react-dom/test-utils"; //NOSONAR
+
+// Mock fetch and document.cookie
+global.fetch = jest.fn();
+Object.defineProperty(document, 'cookie', {
+  writable: true,
+  value: 'token=mock-token', // You can change this to test different scenarios
+});
+
+describe('ProfileForm', () => {
+  const mockOnSave = jest.fn();
+
+  beforeEach(() => {
+    fetch.mockClear();
+  });
+
+  test('should handle setup2FA when clicking the button', async () => {
+    const mockQrCodeUrl = "http://example.com/qrcode.png";
+    fetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ imageUrl: mockQrCodeUrl }),
+    });
+
+    render(<ProfileForm username="testuser" onSave={mockOnSave} />);
+
+    // Click the 2FA button to trigger setup2FA
+    fireEvent.click(screen.getByText('Configure 2FA'));
+
+    // Wait for the QR code to be displayed
+    await waitFor(() => screen.getByAltText('QR Code'));
+
+    expect(screen.getByAltText('QR Code')).toHaveAttribute('src', mockQrCodeUrl);
+    expect(fetch).toHaveBeenCalledWith('http://localhost:8000/setup2fa', expect.objectContaining({
+      method: 'POST',
+      headers: expect.objectContaining({
+        'Authorization': 'Bearer mock-token',
+        'Content-Type': 'application/json',
+      }),
+    }));
+  });
+
+  test('should check 2FA status on component mount', async () => {
+    const mockApiResponse = { twoFactorEnabled: true };
+    fetch.mockResolvedValueOnce({
+      ok: true,
+      text: async () => JSON.stringify(mockApiResponse),
+    });
+
+    render(<ProfileForm username="testuser" onSave={mockOnSave} />);
+
+    // Wait for the component to make the check2FA request
+    await waitFor(() => expect(fetch).toHaveBeenCalledWith('http://localhost:8000/check2fa', expect.objectContaining({
+      method: 'GET',
+      headers: expect.objectContaining({
+        'Authorization': 'Bearer mock-token',
+        'Content-Type': 'application/json',
+      }),
+    })));
+
+    // Check that the `already2fa` state is set correctly
+    await waitFor(() => {
+      expect(screen.getByText('Reset 2FA')).toBeInTheDocument();
+    });
+  });
+
+  test('should handle failed 2FA setup', async () => {
+    fetch.mockRejectedValueOnce(new Error('Failed to fetch'));
+
+    render(<ProfileForm username="testuser" onSave={mockOnSave} />);
+
+    fireEvent.click(screen.getByText('Configure 2FA'));
+
+    await waitFor(() => {
+      expect(fetch).toHaveBeenCalled();
+      expect(console.error).toHaveBeenCalledWith(expect.stringContaining('Failed to fetch'));
+    });
+  });
+});
+
+test("fetches and displays QR code", async () => {
+  fetch.mockResolvedValueOnce({
+    json: async () => ({ imageUrl: "https://example.com/qrcode.png" }),
+  });
+
+  render(<ProfileForm username="testUser" onSave={jest.fn()} />);
+
+  // Click on the "2FA" tab first
+  const twoFaTab = screen.getByRole("tab", { name: /2FA/i });
+  await act(async () => {
+    twoFaTab.click();
+  });
+
+  // Find and click the "Configure 2FA" button
+  const configureButton = await screen.findByRole("button", { name: /2FA|Configure/i });
+  await act(async () => {
+    configureButton.click();
+  });
+
+
+});
+
+
 
 // For mocking the router
 import mockRouter from 'next-router-mock';
