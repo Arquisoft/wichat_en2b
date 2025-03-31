@@ -51,7 +51,7 @@ endif::arc42help[]
 |===
 | Constraint | Justification
 | **Version Control** | Git and a well-defined branching strategy (e.g., GitFlow) must be used for source code management.
-| **Coding Standards** | The team must adhere to best coding practices, including style guides (e.g., PEP 8 for Python, Airbnb Style Guide for JavaScript).
+| **Coding Standards** | The team must adhere to best coding practices, including style guides.
 | **Testing Requirements** | The project must include unit tests, integration tests, and end-to-end tests to ensure software reliability.
 | **Documentation Standards** | All architecture decisions and API endpoints must be documented using tools like OpenAPI and Markdown.
 |===
