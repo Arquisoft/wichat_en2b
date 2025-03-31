@@ -204,6 +204,131 @@ describe('2FA Service', () => {
       expect(logger.error).toHaveBeenCalledWith('Failure verifying the 2FA token: Unexpected error during verification');
     });
   });
+  
+  it('Should return correct 2FA status for a user in /check2fa', async () => {
+    const mockToken = 'valid-jwt-token';
+    const mockUser = { username: 'testuser' };
+    
+    // Mock the token decoding to return the mockUser
+    jwt.verify.mockReturnValue(mockUser);
+    
+    // Mock axios to return the user data with secret (indicating 2FA is enabled)
+    axios.get.mockResolvedValue({ data: { username: 'testuser', secret: 'mockSecret' } });
+  
+    const response = await request(app)
+      .get('/auth/check2fa')
+      .set('Authorization', `Bearer ${mockToken}`)
+      .send();
+  
+    expect(response.status).toBe(200);
+    expect(response.body).toHaveProperty('twoFactorEnabled', true);
+  });
+
+  it('Should return an error if 2FA secret is missing in /verify2fa', async () => {
+    const mockToken = 'valid-jwt-token';
+    const mockUser = { username: 'testuser', role: 'USER' };
+    const mock2faToken = '123456'; // Mock valid token
+   
+    // Mock jwt.verify to return the mockUser (user from the token)
+    jwt.verify.mockReturnValue(mockUser);
+    
+    // Mock axios to return a user without secret
+    axios.get.mockResolvedValue({ data: { username: 'testuser' } });
+  
+    const response = await request(app)
+      .post('/auth/verify2fa')
+      .set('Authorization', `Bearer ${mockToken}`)
+      .send({ token: mock2faToken, user: mockUser });
+  
+    expect(response.status).toBe(500);
+    expect(response.body).toHaveProperty('error', 'Error verifying 2FA token');
+  });
+  it('Should return 2FA disabled status for a user when 2FA is not enabled', async () => {
+    const mockToken = 'valid-jwt-token';
+    const mockUser = { username: 'testuser' };
+    
+    // Mock jwt.verify to return the mockUser
+    jwt.verify.mockReturnValue(mockUser);
+    
+    // Mock axios to return the user data without secret (indicating 2FA is not enabled)
+    axios.get.mockResolvedValue({ data: { username: 'testuser' } });
+  
+    const response = await request(app)
+      .get('/auth/check2fa')
+      .set('Authorization', `Bearer ${mockToken}`)
+      .send();
+  
+    expect(response.status).toBe(200);
+    expect(response.body).toHaveProperty('twoFactorEnabled', false);
+    expect(response.body).toHaveProperty('username', 'testuser');
+  });
+  it('Should return unauthorized if no token is provided', async () => {
+    const response = await request(app)
+      .get('/auth/check2fa')
+      .send();
+  
+    expect(response.status).toBe(401);
+    expect(response.body).toHaveProperty('error', 'Unauthorized. Invalid or expired token.');
+  });
+  it('Should return internal server error if there is an issue retrieving 2FA status', async () => {
+    const mockToken = 'valid-jwt-token';
+    const mockUser = { username: 'testuser' };
+    
+    // Mock jwt.verify to return the mockUser
+    jwt.verify.mockReturnValue(mockUser);
+    
+    // Mock axios to simulate an internal error (e.g., database error)
+    axios.get.mockRejectedValue(new Error('Internal server error'));
+  
+    const response = await request(app)
+      .get('/auth/check2fa')
+      .set('Authorization', `Bearer ${mockToken}`)
+      .send();
+  
+    expect(response.status).toBe(500);
+    expect(response.body).toHaveProperty('error', 'Internal server error');
+  });
+  
+  it('Should return 2FA enabled status for a user when 2FA is enabled', async () => {
+    const mockToken = 'valid-jwt-token';
+    const mockUser = { username: 'testuser' };
+    
+    // Mock jwt.verify to return the mockUser
+    jwt.verify.mockReturnValue(mockUser);
+    
+    // Mock axios to return the user data with secret (indicating 2FA is enabled)
+    axios.get.mockResolvedValue({ data: { username: 'testuser', secret: 'mockSecret' } });
+  
+    const response = await request(app)
+      .get('/auth/check2fa')
+      .set('Authorization', `Bearer ${mockToken}`)
+      .send();
+  
+    expect(response.status).toBe(200);
+    expect(response.body).toHaveProperty('twoFactorEnabled', true);
+    expect(response.body).toHaveProperty('username', 'testuser');
+  });
+  
+  
+  it('Should handle case when 2FA is not enabled for a user in /check2fa', async () => {
+    const mockToken = 'valid-jwt-token';
+    const mockUser = { username: 'testuser' };
+    
+    // Mock the token decoding to return the mockUser
+    jwt.verify.mockReturnValue(mockUser);
+    
+    // Mock axios to return the user data without secret (indicating 2FA is not enabled)
+    axios.get.mockResolvedValue({ data: { username: 'testuser' } });
+  
+    const response = await request(app)
+      .get('/auth/check2fa')
+      .set('Authorization', `Bearer ${mockToken}`)
+      .send();
+  
+    expect(response.status).toBe(200);
+    expect(response.body).toHaveProperty('twoFactorEnabled', false);
+  });
+      
 });
 
 describe('Auth Service', () => {

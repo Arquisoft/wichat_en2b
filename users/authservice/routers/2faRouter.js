@@ -110,10 +110,18 @@ router.get('/check2fa', async (req, res) => {
     }
 
     // Check if the user exists and retrieve their 2FA status
-    const foundUser = await axios.get(`${gatewayServiceUrl}/users/${user.username}`);
-
-    if (!foundUser) {
-      return res.status(404).json({ error: 'User not found' });
+    let foundUser;
+    try{
+      foundUser = await axios.get(`${gatewayServiceUrl}/users/${user.username}`);
+    }catch (err) {
+      if (err.response && err.response.status === 404) {
+        logger.error(`Failure in login: user ${user.username} not found`);
+        return res.status(401).json({ 
+          error: ERROR_USERNAME_NOT_FOUND, 
+          field: 'username' 
+        });
+      }
+      throw err;
     }
     // Check if 2FA is enabled (assuming `secret` holds the 2FA secret)
     const is2faEnabled = !!foundUser.data.secret; // If `secret` exists, 2FA is enabled
