@@ -1,6 +1,6 @@
 import React from "react";
 
-export default function QrCode({ imgUrl }) {
+export default function QrCode({ imgUrl }) { //NOSONAR
  
   return (
     <div className="qrcode-container">

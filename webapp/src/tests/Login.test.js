@@ -2,6 +2,7 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import Login from '../components/login/Login'; 
 import Check2fa from '../components/home/2fa/Check2fa'
+import { useRouter } from "next/navigation";
 import 'jest-fetch-mock';
 
 // Mock Next.js navigation
@@ -163,7 +164,12 @@ describe('Login Component', () => {
 });
 
 describe("Check2fa Component", () => {
-
+  let mockPush;
+  
+  beforeEach(() => {
+    mockPush = jest.fn();
+    useRouter.mockReturnValue({ push: mockPush });
+  });
 
   it("renders correctly", () => {
     render(<Check2fa username="testuser" />);
@@ -176,6 +182,50 @@ describe("Check2fa Component", () => {
     const input = screen.getByLabelText(/Enter 2FA Code/i);
     fireEvent.change(input, { target: { value: "123456" } });
     expect(input.value).toBe("123456");
+  });
+  it("shows an error message on failed verification", async () => {
+    global.fetch = jest.fn(() =>
+      Promise.resolve({
+        ok: false,
+        json: () => Promise.resolve({ error: "Invalid 2FA Token" }),
+      })
+    );
+  
+    render(<Check2fa username="testuser" />);
+  
+    fireEvent.change(screen.getByLabelText(/Enter 2FA Code/i), {
+      target: { value: "000000" },
+    });
+  
+    fireEvent.click(screen.getByText(/Verify Code/i));
+  
+    // Wait for the error message container to appear
+    await waitFor(() => {
+      expect(screen.getByText((content, element) => {
+        return element?.classList.contains("error-message");
+      })).toBeInTheDocument();
+    });
+  });
+
+  it("redirects to home on successful verification", async () => {
+    global.fetch = jest.fn(() =>
+      Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({ token: "mockToken" }),
+      })
+    );
+
+    render(<Check2fa username="testuser" />);
+
+    fireEvent.change(screen.getByLabelText(/Enter 2FA Code/i), {
+      target: { value: "123456" },
+    });
+
+    fireEvent.click(screen.getByText(/Verify Code/i));
+
+    await waitFor(() => {
+      expect(mockPush).toHaveBeenCalledWith("/");
+    });
   });
 
 });

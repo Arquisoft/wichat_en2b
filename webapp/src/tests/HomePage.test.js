@@ -2,6 +2,7 @@ import React from "react";
 import {render, screen, fireEvent, waitFor, act } from "@testing-library/react";
 import HomePage from "../components/home/HomeViewPage";
 import Navbar from "../components/home/ui/Navbar";
+import QrCode from "../components/home/2fa/qrCode";
 
 // For mocking the router
 import mockRouter from 'next-router-mock';
@@ -98,4 +99,23 @@ describe('HomePage Component', () => {
         expect(mockRouter.asPath).toBe('/login');
     });
   });
+
+describe("QrCode Component", () => {
+  test("renders QR Code image when imgUrl is provided", () => {
+    const testUrl = "https://example.com/qrcode.png";
+    render(<QrCode imgUrl={testUrl} />);
+    
+    const imgElement = screen.getByAltText("QR Code for 2FA");
+    expect(imgElement).toBeInTheDocument();
+    expect(imgElement).toHaveAttribute("src", testUrl);
+  });
+
+  test("renders fallback text when imgUrl is not provided", () => {
+    render(<QrCode imgUrl={null} />);
+    
+    const fallbackText = screen.getByText("QR Code is not available.");
+    expect(fallbackText).toBeInTheDocument();
+  });
+});
+
 });
