@@ -9,6 +9,7 @@ import { recentQuizzes, leaderboardData } from "./data";
 import "../../styles/home/HomePage.css";
 import Navbar from "./ui/Navbar";
 import "../../styles/Footer.css";
+import axios from "axios"; 
 import PropTypes from "prop-types";
 
 
