@@ -13,17 +13,12 @@ import {
 	InputLabel,
 	Select,
 	MenuItem,
-	Tabs,
-	Tab,
 	Box,
 } from "@mui/material"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
 import { quizCategories } from "../data"
 import "../../../styles/home/StatsTab.css"
 import { fetchWithAuth } from "@/utils/api-fetch-auth";
 import LoadingErrorHandler from ".//LoadingErrorHandler";
-
-const gatewayService = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || "http://localhost:8000";
 
 // TabPanel component for the tabs
 function TabPanel(props) {
@@ -58,8 +53,7 @@ export default function StatsTab() {
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState(null)
 	const [selectedSubject, setSelectedSubject] = useState("all")
-	const [tabValue, setTabValue] = useState(0)
-
+	
 	useEffect(() => {
 		const fetchStatistics = async () => {
 			setLoading(true);
@@ -70,12 +64,11 @@ export default function StatsTab() {
 					: `/statistics/subject/${selectedSubject.toLowerCase()}`
 				const data = await fetchWithAuth(endpoint);
 				if (!data || !data.stats) {
-					throw new Error('Invalid statistics data');
+					setError("You have not played any quizzes on this category yet.");
+					setStatistics(null);
 				}
 				setStatistics(data.stats);
 			} catch (error) {
-				setError(error.message);
-				setStatistics(null);
 			} finally {
 				setLoading(false);
 			}
@@ -87,23 +80,15 @@ export default function StatsTab() {
 		setSelectedSubject(event.target.value);
 	}
 
-	const handleTabChange = (event, newValue) => {
-		setTabValue(newValue);
-	}
-
-	const chartData = statistics
-		? [
-			{ name: "Success Rate", value: Number.parseFloat(statistics.successRatio.toFixed(2))*100},
-			{ name: "Avg Score", value: Number.parseFloat(statistics.avgScore.toFixed(1)) },
-			{ name: "Avg Time (s)", value: Number.parseFloat(statistics.avgTime.toFixed(1)) }
-		]
-		: []
 	return (
 		<Card>
 			<CardHeader
 				title={
 					<Box display="flex" justifyContent="space-between" alignItems="center">
-						<Typography variant="h6">Quiz Statistics</Typography>
+						<Typography variant="h5">Quiz Statistics</Typography>
+						<Typography variant="body2" color="textSecondary">
+							Based on {statistics ? statistics.totalGames : 0} completed quizzes
+						</Typography>
 						<FormControl variant="outlined" size="small" sx={{ minWidth: 180 }}>
 							<InputLabel id="subject-select-label">Filter by subject</InputLabel>
 							<Select
@@ -111,7 +96,7 @@ export default function StatsTab() {
 								value={selectedSubject}
 								onChange={handleSubjectChange}
 								label="Filter by subject"
-							>
+							 variant={"outlined"}>
 								<MenuItem value="all">All Subjects</MenuItem>
 								{quizCategories.map((category) => (
 									<MenuItem key={category.id} value={category.name}>
@@ -127,54 +112,15 @@ export default function StatsTab() {
 				<LoadingErrorHandler loading={loading} error={error}>
 				{ statistics && (
 					<>
-						<Box mb={2}>
-							<Typography variant="h6">
-								{selectedSubject !== "all" ? `${selectedSubject} Statistics` : "Global Statistics"}
-							</Typography>
-							<Typography variant="body2" color="textSecondary">
-								Based on {statistics.totalGames} completed quizzes
-							</Typography>
-						</Box>
-
-						<Box sx={{ borderBottom: 1, borderColor: "divider" }}>
-							<Tabs value={tabValue} onChange={handleTabChange} aria-label="statistics tabs">
-								<Tab label="Overview" id="stats-tab-0" aria-controls="stats-tabpanel-0" />
-								<Tab label="Detailed Stats" id="stats-tab-1" aria-controls="stats-tabpanel-1" />
-							</Tabs>
-						</Box>
-
-						<TabPanel value={tabValue} index={0}>
-							<Box height="300px" width="100%">
-								<ResponsiveContainer width="100%" height="100%">
-									<BarChart data={chartData}>
-										<CartesianGrid strokeDasharray="3 3" />
-										<XAxis dataKey="name" />
-										<YAxis />
-										<Tooltip />
-										<Bar
-											dataKey="value"
-											fill={
-												selectedSubject !== "all"
-													? quizCategories.find((c) => c.name === selectedSubject)?.color || "#8884d8"
-													: "#8884d8"
-											}
-										/>
-									</BarChart>
-								</ResponsiveContainer>
-							</Box>
-						</TabPanel>
-
-						<TabPanel value={tabValue} index={1}>
-							<Grid container spacing={2}>
-								<StatCard title="Total Games" value={statistics.totalGames} />
-								<StatCard title="Avg Score" value={`${statistics.avgScore.toFixed(1)}%`} />
-								<StatCard title="Total Score" value={statistics.totalScore} />
-								<StatCard title="Correct Answers" value={statistics.totalCorrectAnswers} />
-								<StatCard title="Total Questions" value={statistics.totalQuestions} />
-								<StatCard title="Success Ratio" value={`${(statistics.successRatio * 100).toFixed(1)}%`} />
-								<StatCard title="Avg Time per Quiz" value={`${statistics.avgTime.toFixed(1)}s`} />
-							</Grid>
-						</TabPanel>
+						<Grid container spacing={2} className={"detailed-stats"}>
+							<StatCard title="Total Games" value={statistics.totalGames} />
+							<StatCard title="Avg Score per Quiz" value={`${statistics.avgScore} points`} />
+							<StatCard title="Total Score" value={`${statistics.totalScore} points`} />
+							<StatCard title="Correct Answers" value={statistics.totalCorrectAnswers} />
+							<StatCard title="Total Questions" value={statistics.totalQuestions} />
+							<StatCard title="Accuracy" value={`${(statistics.successRatio * 100).toFixed(1)}%`} />
+							<StatCard title="Avg Time per Quiz" value={`${statistics.avgTime.toFixed(1)} s`} />
+						</Grid>
 					</>
 				)}
 			</LoadingErrorHandler>

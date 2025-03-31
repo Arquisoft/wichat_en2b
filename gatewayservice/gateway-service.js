@@ -180,6 +180,10 @@ app.get('/images/:image', createProxyMiddleware({
   changeOrigin: true
 }));
 
+app.post('/game', (req, res) => {
+  forwardRequest('game', '/game', req, res);
+});
+
 // OpenAPI Documentation
 const openapiPath = './openapi.yaml';
 if (fs.existsSync(openapiPath)) {

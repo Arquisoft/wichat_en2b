@@ -14,11 +14,9 @@ import {
     TableHead,
     TableRow,
     Paper,
-    CircularProgress,
-    Alert,
 } from "@mui/material"
 import "../../../styles/home/LeaderboardTab.css";
-const gatewayService = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || "http://localhost:8000";
+
 /**
  * Displays a leaderboard of players.
  *
@@ -37,7 +35,7 @@ export default function LeaderboardTab() {
             try {
                 const data = await fetchWithAuth("/leaderboard");
                 if (!data || !data.leaderboard) {
-                    throw new Error('Invalid leaderboard data');
+                    setError("No leaderboard data available.");
                 }
                 const token = getAuthToken();
                 const currentPlayerId = await getCurrentPlayerId(token);
@@ -45,7 +43,7 @@ export default function LeaderboardTab() {
                 setPlayer(currentPlayerId);
                 setLeaderboard(data.leaderboard);
             } catch (error) {
-                setError(error.message);
+                setError(error.message || "Failed to fetch leaderboard data.");
             } finally {
                 setLoading(false);
             }
@@ -53,8 +51,8 @@ export default function LeaderboardTab() {
         fetchLeaderboard();
     }, [])
     return (
-        <Card className="card-root">
-            <CardHeader className="card-header" title="WiChat Leaderboard" />
+        <Card>
+            <CardHeader title="WiChat Leaderboard" />
             <LoadingErrorHandler loading={loading} error={error}>
                 <CardContent className="card-content">
                     <CardContent className="card-content">
@@ -96,9 +94,9 @@ export default function LeaderboardTab() {
                                                             entry._id
                                                         )}
                                                     </TableCell>
-                                                    <TableCell align="right">{entry.totalScore.toLocaleString()}</TableCell>
+                                                    <TableCell align="right">{`${entry.totalScore.toLocaleString()} points`}</TableCell>
                                                     <TableCell align="right">{entry.totalGames}</TableCell>
-                                                    <TableCell align="right">{entry.avgScore.toFixed(2)}</TableCell>
+                                                    <TableCell align="right">{`${entry.avgScore.toFixed(1)} points`}</TableCell>
                                                 </TableRow>
                                             )
                                         })}

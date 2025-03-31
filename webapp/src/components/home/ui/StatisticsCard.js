@@ -65,7 +65,7 @@ const StatisticsCard = () => {
 							{/* Accuracy (in %) */}
 							<Grid size={{ xs: 12, sm: 4 }}>
 								<Paper className="stat-card stat-accuracy">
-								<Typography className="stat-value">{(Number.parseFloat(statistics.successRatio.toFixed(2))*100)}%</Typography>
+								<Typography className="stat-value">{Math.round(Number.parseFloat(statistics.successRatio.toFixed(2))*100)}%</Typography>
 								<Typography className="stat-label">Accuracy</Typography>
 								</Paper>
 							</Grid>
