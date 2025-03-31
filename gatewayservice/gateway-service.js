@@ -172,7 +172,12 @@ app.get('/user/me', async (req, res) => {
       }
 
       const response = await fetch(`${serviceUrls.user}/users/me`, {
-          headers: { Authorization: token }
+          headers: { 
+            Authorization: token,
+            'Content-Type': 'application/json',
+            Origin: 'http://localhost:8000',
+          },
+          mode: 'cors',
       });
 
       if (!response.ok) {
@@ -206,7 +211,12 @@ app.patch('/users/:username', async (req, res) => {
       }
 
       const response = await axios.patch(`${userServiceUrl}/users/${req.params.username}`, req.body, {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { 
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            Origin: 'http://localhost:8000',
+          },
+          mode: 'cors',
       });
 
       res.status(response.status).json(response.data);
