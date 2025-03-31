@@ -1,6 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import Login from '../components/login/Login'; 
+import Check2fa from '../components/home/2fa/Check2fa'
 import 'jest-fetch-mock';
 
 // Mock Next.js navigation
@@ -54,7 +55,7 @@ describe('Login Component', () => {
   test('displays loading state when form is submitted', async () => {
     fetch.mockImplementationOnce(() => 
       new Promise(resolve => 
-        setTimeout(() => 
+        setTimeout(() => //NOSONAR
           resolve({
             ok: true,
             json: () => Promise.resolve({ token: 'fake-token' })
@@ -159,4 +160,22 @@ describe('Login Component', () => {
       expect(screen.getByRole('button', { name: 'Login' })).not.toBeDisabled();
     });
   });
+});
+
+describe("Check2fa Component", () => {
+
+
+  it("renders correctly", () => {
+    render(<Check2fa username="testuser" />);
+    expect(screen.getByText(/Two Factor Authentication/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Enter 2FA Code/i)).toBeInTheDocument();
+  });
+
+  it("updates input value on change", () => {
+    render(<Check2fa username="testuser" />);
+    const input = screen.getByLabelText(/Enter 2FA Code/i);
+    fireEvent.change(input, { target: { value: "123456" } });
+    expect(input.value).toBe("123456");
+  });
+
 });

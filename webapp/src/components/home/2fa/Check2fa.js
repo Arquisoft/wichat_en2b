@@ -13,17 +13,20 @@ const Check2fa = ( username ) => {
   const router = useRouter();
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
+    setError(""); 
     setLoading(true);
-
+  
     try {
       const token = document.cookie
         .split("; ")
         .find((row) => row.startsWith("token="))
         ?.split("=")[1];
-      if(token !== null && token !== undefined){
+  
+      if (token) {
         router.push("/");
+        return;
       }
+  
       const response = await fetch(`${apiEndpoint}/verify2fa`, {
         method: "POST",
         headers: {
@@ -32,28 +35,26 @@ const Check2fa = ( username ) => {
         },
         body: JSON.stringify({
           token: twoFactorCode,
-          user: username
+          user: username,
         }),
       });
+  
       const data = await response.json();
-
+  
       if (!response.ok) {
-        throw data;
+        throw new Error(data.error || "An error occurred");
       }
-
-      // On successful 2FA verification, update the token in the cookie
+  
       document.cookie = `token=${data.token}; path=/; max-age=3600`;
-      router.push("/"); // Redirect to home after 2FA success
+      router.push("/"); 
     } catch (err) {
-      console.log(err.error);
-      if (err.error === "You are already logged in") {
-        // Redirect to home if already logged in
-        router.push("/");
-      }
+      console.error("2FA Error:", err.message);
+      setError(err.message); // Update state to show error on UI
     } finally {
       setLoading(false);
     }
   };
+  
 
   return (
     <div className="two-factor-container">
