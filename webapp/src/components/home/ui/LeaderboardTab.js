@@ -43,6 +43,7 @@ export default function LeaderboardTab() {
                 setPlayer(currentPlayerId);
                 setLeaderboard(data.leaderboard);
             } catch (error) {
+                setError(error.message || "Failed to fetch leaderboard data.");
             } finally {
                 setLoading(false);
             }

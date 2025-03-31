@@ -114,7 +114,7 @@ export default function StatsTab() {
 					<>
 						<Grid container spacing={2} className={"detailed-stats"}>
 							<StatCard title="Total Games" value={statistics.totalGames} />
-							<StatCard title="Avg Score per Quiz" value={`${statistics.avgScore.toFixed(1)} points`} />
+							<StatCard title="Avg Score per Quiz" value={`${statistics.avgScore} points`} />
 							<StatCard title="Total Score" value={`${statistics.totalScore} points`} />
 							<StatCard title="Correct Answers" value={statistics.totalCorrectAnswers} />
 							<StatCard title="Total Questions" value={statistics.totalQuestions} />

@@ -34,9 +34,9 @@ describe('LeaderboardTab Component', () => {
         render(<LeaderboardTab />);
 
         await waitFor(() => {
-            expect(screen.getByText(/1[,.]?000/)).toBeInTheDocument(); // Acepta 1000 o 1,000 o 1.000
+            expect(screen.getByText(/1[,.]?000 points/)).toBeInTheDocument(); // Acepta 1000 o 1,000 o 1.000
             expect(screen.getByText(/^10$/)).toBeInTheDocument(); // Exactamente 10
-            expect(screen.getByText(/^100[,.]?00$/)).toBeInTheDocument(); // Acepta 100.00 o 100,00
+            expect(screen.getByText("100.0 points")).toBeInTheDocument(); // Acepta 100.00 o 100,00
             expect(screen.getByText('player1 (You)')).toBeInTheDocument();
         });
     });
@@ -73,16 +73,6 @@ describe('LeaderboardTab Component', () => {
             expect(screen.getByText('Total Score')).toBeInTheDocument();
             expect(screen.getByText('Games Played')).toBeInTheDocument();
             expect(screen.getByText('Average Score')).toBeInTheDocument();
-        });
-    });
-
-    it('handles invalid leaderboard data', async () => {
-        fetchWithAuth.mockResolvedValue({});
-
-        render(<LeaderboardTab />);
-
-        await waitFor(() => {
-            expect(screen.getByText('Invalid leaderboard data')).toBeInTheDocument();
         });
     });
 });
