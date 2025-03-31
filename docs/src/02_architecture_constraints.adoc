@@ -10,7 +10,7 @@ ifndef::imagesdir[:imagesdir: ../images]
 | **Frontend Technologies** | The frontend must be developed using modern web technologies (e.g., React, Vue, or Angular) to ensure responsiveness and maintainability.
 | **Backend Framework** | The backend should use a scalable framework such as Node.js, Django, or Spring Boot to support API interactions and user management.
 | **Database** | A relational or NoSQL database (e.g., PostgreSQL, MongoDB) must be used to store user data, game progress, and question history efficiently.
-| **Cloud Deployment** | The application must be deployed on a cloud-based infrastructure (e.g., AWS, Azure, or Google Cloud) to ensure availability and scalability.
+| **Cloud Deployment** | The application must be deployed on a cloud-based infrastructure (e.g., AWS, Azure, Google Cloud or Oracle) to ensure availability and scalability.
 | **External API Integration** | The system must integrate with Wikidata and an LLM API for question and hint generation. API rate limits and response times should be considered.
 | **Performance Constraints** | The application must provide real-time interaction with the LLM for hints and ensure fast response times (<1s for hints, <3s for question generation).
 |===
@@ -31,7 +31,7 @@ ifndef::imagesdir[:imagesdir: ../images]
 | Constraint | Justification
 | **Version Control** | Git and a well-defined branching strategy (e.g., GitFlow) must be used for source code management.
 | **Coding Standards** | The team must adhere to best coding practices, including style guides.
-| **Testing Requirements** | The project must include unit tests, integration tests, and end-to-end tests to ensure software reliability.
+| **Testing Requirements** | The project must include unit tests, integration tests, end-to-end tests and load tests to ensure software reliability.
 | **Documentation Standards** | All architecture decisions and API endpoints must be documented using tools like OpenAPI and Markdown.
 |===
 
