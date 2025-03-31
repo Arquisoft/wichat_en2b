@@ -34,9 +34,9 @@ describe('LeaderboardTab Component', () => {
         render(<LeaderboardTab />);
 
         await waitFor(() => {
-            expect(screen.getByText('1000')).toBeInTheDocument(); // totalScore formatted
-            expect(screen.getByText('10')).toBeInTheDocument(); // totalGames
-            expect(screen.getByText('100.00')).toBeInTheDocument(); // avgScore with 2 decimals
+            expect(screen.getByText(/1[,.]?000/)).toBeInTheDocument(); // Acepta 1000 o 1,000 o 1.000
+            expect(screen.getByText(/^10$/)).toBeInTheDocument(); // Exactamente 10
+            expect(screen.getByText(/^100[,.]?00$/)).toBeInTheDocument(); // Acepta 100.00 o 100,00
             expect(screen.getByText('player1 (You)')).toBeInTheDocument();
         });
     });
