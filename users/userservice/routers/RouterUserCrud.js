@@ -9,7 +9,6 @@ router.post('/users', async (req, res) => {
         const user = new User({
             ...req.body
         });
-
         const errors = user.validateSync();
 
         if (errors) {
@@ -22,7 +21,7 @@ router.post('/users', async (req, res) => {
         if (existingUser) {
             return res.status(400).json({ error: 'Username already exists' });
         }
-
+       
         user.password = bcrypt.hashSync(req.body.password, 10);
 
         await user.save();
@@ -56,8 +55,7 @@ router.get('/users/:username', async (req, res) => {
     }
 });
 
-// Update a user by username
-router.patch('/users/:username', async (req, res) => {
+router.patch('/users/:username', async (req, res) => { //NOSONAR
     try {
         if (Object.keys(req.body).length === 0) {
             return res.status(400).
@@ -73,7 +71,9 @@ router.patch('/users/:username', async (req, res) => {
         let somethingchanged = false;
 
         for (const key in req.body) {
-            if (key === 'password') {
+            if (key === 'secret') {
+                somethingchanged = true;
+            }else if (key === 'password') {
                 somethingchanged = !bcrypt.compareSync(req.body.password, user.password);
             } else if (user[key] === undefined) {
                 return res.status(400).json({ error: `${key} is not a valid user property` });

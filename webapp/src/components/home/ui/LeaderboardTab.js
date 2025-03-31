@@ -1,42 +1,113 @@
-import React from "react";
-import PropTypes from "prop-types";
-import { Card, CardHeader, CardContent, Typography } from "@mui/material";
-import "../../../styles/home/LeaderboardTab.css"; 
-
+import React, {useEffect, useState} from "react";
+import { fetchWithAuth } from "@/utils/api-fetch-auth";
+import LoadingErrorHandler from ".//LoadingErrorHandler";
+import {getAuthToken, getCurrentPlayerId} from "@/utils/auth";
+import {
+    Card,
+    CardHeader,
+    CardContent,
+    Typography,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
+    Paper,
+    CircularProgress,
+    Alert,
+} from "@mui/material"
+import "../../../styles/home/LeaderboardTab.css";
+const gatewayService = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || "http://localhost:8000";
 /**
  * Displays a leaderboard of players.
- * 
- * @param {Array} leaderboardData - The data for the leaderboard.
+ *
  * @returns {JSX.Element} The rendered component.
  */
-export default function LeaderboardTab({ leaderboardData }) {
-    if (!leaderboardData) {
-      throw new Error("Invalid props for LeaderboardTab component.");
-    }
+export default function LeaderboardTab() {
+    const [leaderboard, setLeaderboard] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [player, setPlayer] = useState(null);
 
+    useEffect(() => {
+        const fetchLeaderboard = async () => {
+            setLoading(true);
+
+            try {
+                const data = await fetchWithAuth("/leaderboard");
+                if (!data || !data.leaderboard) {
+                    throw new Error('Invalid leaderboard data');
+                }
+                const token = getAuthToken();
+                const currentPlayerId = await getCurrentPlayerId(token);
+
+                setPlayer(currentPlayerId);
+                setLeaderboard(data.leaderboard);
+            } catch (error) {
+                setError(error.message);
+            } finally {
+                setLoading(false);
+            }
+        }
+        fetchLeaderboard();
+    }, [])
     return (
-      <Card className="card-root">
-          <CardHeader className="card-header" title="Leaderboard" />
-          
-          <CardContent className="card-content">
-              {leaderboardData.map((player) => (
-                  <div key={player.rank} className="leaderboard-entry">
-                      <Typography className="rank">#{player.rank}</Typography>
-                      <Typography className="player-name">{player.name}</Typography>
-                      <Typography className="score">{player.score.toLocaleString()}</Typography>
-                  </div>
-              ))}
-          </CardContent>
-      </Card>
-    );
-}
+        <Card className="card-root">
+            <CardHeader className="card-header" title="WiChat Leaderboard" />
+            <LoadingErrorHandler loading={loading} error={error}>
+                <CardContent className="card-content">
+                    <CardContent className="card-content">
+                        <TableContainer component={Paper}>
+                            <Table aria-label="leaderboard table">
+                                <TableHead>
+                                    <TableRow>
+                                        <TableCell>Rank</TableCell>
+                                        <TableCell>Username</TableCell>
+                                        <TableCell align="right">Total Score</TableCell>
+                                        <TableCell align="right">Games Played</TableCell>
+                                        <TableCell align="right">Average Score</TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {leaderboard &&
+                                        leaderboard.map((entry) => {
+                                            const isCurrentPlayer =
+                                                player && (player === entry._id || (typeof player === "object" && player._id === entry._id))
 
-LeaderboardTab.propTypes = {
-  leaderboardData: PropTypes.arrayOf(
-    PropTypes.shape({
-      rank: PropTypes.number.isRequired,
-      name: PropTypes.string.isRequired,
-      score: PropTypes.number.isRequired,
-    })
-  ).isRequired,
-};
+                                            return (
+                                                <TableRow
+                                                    key={entry._id}
+                                                    className={isCurrentPlayer ? "current-player" : ""}
+                                                    sx={{
+                                                        backgroundColor: isCurrentPlayer ? "rgba(144, 202, 249, 0.2)" : "inherit",
+                                                        "&:hover": {
+                                                            backgroundColor: isCurrentPlayer ? "rgba(144, 202, 249, 0.3)" : "rgba(0, 0, 0, 0.04)",
+                                                        },
+                                                    }}
+                                                >
+                                                    <TableCell>#{entry.rank}</TableCell>
+                                                    <TableCell>
+                                                        {isCurrentPlayer ? (
+                                                            <Typography component="span" fontWeight="bold">
+                                                                {entry._id} (You)
+                                                            </Typography>
+                                                        ) : (
+                                                            entry._id
+                                                        )}
+                                                    </TableCell>
+                                                    <TableCell align="right">{entry.totalScore.toLocaleString()}</TableCell>
+                                                    <TableCell align="right">{entry.totalGames}</TableCell>
+                                                    <TableCell align="right">{entry.avgScore.toFixed(2)}</TableCell>
+                                                </TableRow>
+                                            )
+                                        })}
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+                    </CardContent>
+                </CardContent>
+            </LoadingErrorHandler>
+        </Card>
+    )
+}
