@@ -164,6 +164,29 @@ app.get('/game/:subject/:totalQuestions/:numberOptions', async (req, res) => {
   });
 });
 
+app.get('/user/me', async (req, res) => {
+  try {
+      const token = req.headers.authorization;
+      if (!token) {
+          return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      const response = await fetch(`${serviceUrls.user}/users/me`, {
+          headers: { Authorization: token }
+      });
+
+      if (!response.ok) {
+          return res.status(response.status).json(await response.json());
+      }
+
+      const userData = await response.json();
+      res.json(userData);
+  } catch (error) {
+      console.error("Error fetching user data:", error);
+      res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
 app.patch('/users/:username', async (req, res) => {
   try {
       const token = req.headers.authorization?.split(" ")[1];

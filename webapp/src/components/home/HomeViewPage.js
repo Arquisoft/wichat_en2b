@@ -20,10 +20,8 @@ import PropTypes from "prop-types";
  * 
  * @returns {JSX.Element} The rendered component.
  */
-function HomePage({ username, stats }) {
-    if (!username) {
-        username = "QuizMaster";
-    }
+function HomePage({ stats }) {
+    const [username, setUsername] = useState("QuizMaster");    
 
     if (!stats) {
         stats = {
@@ -37,6 +35,29 @@ function HomePage({ username, stats }) {
     const [currentYear, setCurrentYear] = useState(null);
 
     useEffect(() => {
+        const fetchUserData = async () => {
+            const token = document.cookie
+                .split("; ")
+                .find((row) => row.startsWith("token="))
+                ?.split("=")[1];
+
+            if (!token) return;
+
+            try {
+                const response = await axios.get("http://gatewayservice:8000/users/me", {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+
+                setUsername(response.data.username);
+                
+            } catch (error) {
+                console.error("Error fetching user data:", error);
+            }
+        };
+
+        fetchUserData();
         setCurrentYear(new Date().getFullYear()); // For footer
         return () => clearTimeout(10); // Cleanup
     }, []);
@@ -97,7 +118,6 @@ function HomePage({ username, stats }) {
 
 // Validation with PropTypes for the username prop
 HomePage.propTypes = {
-    username: PropTypes.string.isRequired,
     stats: PropTypes.object.isRequired
 };
 

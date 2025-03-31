@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import HomePage from "../home/HomePage"; // Import HomePage component
+import { useRouter } from "next/navigation";
 import "../../styles/login/Login.css";
 import "../../styles/globals.css";
 
@@ -9,10 +9,10 @@ const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://local
 
 const Login = () => {
   const [username, setUsername] = useState("");
-  const [password, setPassword] =useState("");
+  const [password, setPassword] = useState("");
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false); // New state for authentication
+  const router = useRouter();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -47,9 +47,12 @@ const Login = () => {
       }
 
       document.cookie = `token=${data.token}; path=/; max-age=3600`;
-      setIsAuthenticated(true); // Set authenticated state to true
+      router.push("/");
     } catch (err) {
-      if (err.field) {
+      if (err.error === "You are already logged in") {
+        // Redirect to home if already logged in
+        router.push("/");
+      } else if (err.field) {
         setErrors({ [err.field]: err.error });
       } else {
         setErrors({ general: err.error || "Login failed" });
@@ -58,11 +61,6 @@ const Login = () => {
       setLoading(false);
     }
   };
-
-  // Render HomePage if authenticated
-  if (isAuthenticated) {
-    return <HomePage username={username} />;
-  }
 
   return (
     <div className="login-container">
