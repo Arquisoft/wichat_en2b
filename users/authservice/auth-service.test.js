@@ -329,7 +329,7 @@ describe('Auth Service', () => {
     it('Should not log in with invalid credentials', async () => {
       const userToCheck = {
         username: validUser.username,
-        password: 'invalidpassword',
+        password: 'invalidpassword', //NOSONAR
       };
 
       axios.get.mockResolvedValue({ data: validUser });
@@ -348,7 +348,7 @@ describe('Auth Service', () => {
 
       const response = await request(app)
         .post('/auth/login')
-        .send({ user: { username: 'testuser', password: 'testpassword' } });
+        .send({ user: { username: 'testuser', password: 'testpassword' } });//NOSONAR
 
       expect(response.status).toBe(500);
       expect(response.body).toHaveProperty('error', 'Internal Server Error');
