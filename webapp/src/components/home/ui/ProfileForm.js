@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import { Save, Edit, Lock, Security, Person, VerifiedUser } from "@mui/icons-material";
 import "../../../styles/home/ProfilePage.css"; 
@@ -18,7 +18,7 @@ import {
     Snackbar,
 } from "@mui/material";
 
-
+const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://localhost:8000';
 /**
  * This component renders a form to edit the user profile.
  * 
@@ -35,7 +35,7 @@ export default function ProfileForm({ username, onSave }) {
     const [editing, setEditing] = useState(false);
     const [tabIndex, setTabIndex] = useState(0);
     const [openSnackbar, setOpenSnackbar] = useState(false);
-
+    const [already2fa, setAlready2fa] = useState(false);
     /**
      * REMARK: To be decided how the password change is managed.
      */
@@ -65,7 +65,7 @@ const setup2FA = async () => {
         .split("; ")
         .find((row) => row.startsWith("token="))
         ?.split("=")[1];
-    const response = await fetch("http://localhost:8000/setup2fa", {
+    const response = await fetch(`${apiEndpoint}/setup2fa`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -81,6 +81,50 @@ const setup2FA = async () => {
   }
 };
 
+const check2FAStatus = async () => {
+  try {
+    const token = document.cookie
+      .split("; ")
+      .find((row) => row.startsWith("token="))
+      ?.split("=")[1];
+    console.log(token);
+    const response = await fetch(`${apiEndpoint}/check2fa`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    // Check if the response is okay (status 200)
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
+    // Read the response text first, and then try parsing JSON
+    const responseText = await response.text();
+
+    // Check if the response body is empty
+    if (!responseText) {
+      throw new Error("Empty response body received.");
+    }
+
+    // Parse the response text into JSON
+    const data = JSON.parse(responseText);
+
+    // Check if the secret exists (indicating 2FA is enabled)
+    setAlready2fa(!!data.twoFactorEnabled);
+
+  } catch (error) {
+    console.error("Error checking 2FA status:", error);
+  }
+};
+
+
+// Call check2FAStatus when component mounts
+useEffect(() => {
+  check2FAStatus();
+}, [username]);
 
     return (
       <Card className="profile-container">
@@ -154,7 +198,7 @@ const setup2FA = async () => {
           <QrCode imgUrl={qrCodeUrl} />
         ) : (
           <Button variant="contained" color="primary" onClick={setup2FA}>
-            Configure 2FA
+            {already2fa ? "Reset 2FA" : "Configure 2FA"}
           </Button>
         )}
       </Box>

@@ -18,7 +18,7 @@ const getUserFromToken = (req) => {
       return jwt.verify(token, process.env.JWT_SECRET || 'testing-secret');
   } catch (error) {
       logger.error("Invalid or expired token");
-      return null;
+      return error;
   }
 };
 
@@ -110,14 +110,13 @@ router.get('/check2fa', async (req, res) => {
     }
 
     // Check if the user exists and retrieve their 2FA status
-    const foundUser = await User.findOne({ username: user.username });
+    const foundUser = await axios.get(`${gatewayServiceUrl}/users/${user.username}`);
 
     if (!foundUser) {
       return res.status(404).json({ error: 'User not found' });
     }
-
     // Check if 2FA is enabled (assuming `secret` holds the 2FA secret)
-    const is2faEnabled = !!foundUser.secret; // If `secret` exists, 2FA is enabled
+    const is2faEnabled = !!foundUser.data.secret; // If `secret` exists, 2FA is enabled
 
     // Respond with the 2FA status
     return res.status(200).json({ twoFactorEnabled: is2faEnabled , username : user.username});
