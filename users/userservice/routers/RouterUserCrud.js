@@ -133,6 +133,10 @@ router.patch('/users/:username/password', async (req, res) => {
         const { username } = req.params;
         const { newPassword } = req.body;
 
+        if (!username) {
+            return res.status(400).json({ error: "Username is required" });
+        }
+
         if (!newPassword || newPassword.length < 6) {
             return res.status(400).json({ error: "Password must be at least 6 characters" });
         }

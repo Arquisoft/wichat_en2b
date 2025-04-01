@@ -252,17 +252,13 @@ app.patch('/users/:username',  async (req, res) => {
 // Change password
 app.patch('/users/:username/password',  async (req, res) => {
     const { username } = req.params;
-    const { currentPassword, newPassword } = req.body;
-
-    if (req.user.username !== username) {
-      return res.status(403).json({ error: 'You can only change your own password' });
-    }
+    const { token, currentPassword, newPassword } = req.body;
 
     try {
       const authResponse = await fetch(`${serviceUrls.auth}/auth/validatePassword`, {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${req.headers.authorization.split(' ')[1]}`,
+          Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
           Origin: 'http://localhost:8000'
         },
@@ -278,11 +274,10 @@ app.patch('/users/:username/password',  async (req, res) => {
       const userResponse = await fetch(`${serviceUrls.user}/users/${username}/password`, {
         method: 'PATCH',
         headers: {
-          Authorization: `Bearer ${req.headers.authorization.split(' ')[1]}`,
           'Content-Type': 'application/json',
           Origin: 'http://localhost:8000'
         },
-        body: JSON.stringify({ newPassword }),
+        body: JSON.stringify({ newPassword : newPassword }),
       });
 
       if (!userResponse.ok) {

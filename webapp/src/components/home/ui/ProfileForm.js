@@ -132,8 +132,9 @@ export default function ProfileForm({ username, onSave }) {
             const token = getToken();
 
             const payload = { 
-                password: profileData.newPassword, 
-                currentPassword: profileData.currentPassword 
+                token: token,                
+                currentPassword: profileData.currentPassword,
+                newPassword: profileData.newPassword, 
             };
 
             const response = await fetch(`${apiEndpoint}/users/${username}/password`, {
