@@ -100,6 +100,7 @@ router.patch('/users/:username', async (req, res) => {
             method: "PATCH",
             headers: {
                 "Content-Type": "application/json",
+                Origin: process.env.USER_SERVICE_URL || 'http://localhost:8001',
             },
             body: JSON.stringify(payload),
         });

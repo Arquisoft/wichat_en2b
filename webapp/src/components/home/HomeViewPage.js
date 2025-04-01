@@ -11,6 +11,7 @@ import "../../styles/Footer.css";
 import axios from "axios"; 
 import PropTypes from "prop-types";
 
+const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://localhost:8000';
 
 /**
  * Displays the home view of the application.
@@ -36,7 +37,7 @@ function HomePage({ stats }) {
             if (!token) return;
 
             try {
-                const response = await axios.get("http://localhost:8000/user/me", {
+                const response = await axios.get(`${apiEndpoint}/token/username`, {
                     headers: {
                         Authorization: `Bearer ${token}`
                     }

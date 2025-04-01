@@ -1,5 +1,4 @@
 const express = require('express');
-const axios = require('axios');
 const cors = require('cors');
 const promBundle = require('express-prom-bundle');
 const swaggerUi = require('swagger-ui-express');
@@ -175,17 +174,16 @@ app.get('/game/:subject/:totalQuestions/:numberOptions', async (req, res) => {
 });
 
 // Username handling
-app.use('/user/me', publicCors);
-app.use('/users/:username', publicCors);
+app.use('/token/username', publicCors);
 
-app.get('/user/me', async (req, res) => {
+app.get('/token/username', async (req, res) => {
   try {
       const token = req.headers.authorization;
       if (!token) {
           return res.status(401).json({ error: "Unauthorized" });
       }
 
-      const response = await fetch(`${serviceUrls.auth}/auth/me`, {
+      const response = await fetch(`${serviceUrls.auth}/auth/token/username`, {
           headers: { 
             Authorization: token,
             Origin: 'http://localhost:8000',
@@ -203,8 +201,6 @@ app.get('/user/me', async (req, res) => {
       res.status(500).json({ error: "Internal Server Error" });
   }
 });
-
-/* ################# Username & password change handling ################# */
 
 // Middleware to handle CORS for the user and password change endpoint
 app.use('/users/:username', publicCors);
@@ -293,7 +289,13 @@ app.patch('/users/:username/password',  async (req, res) => {
 );
 
 // Update game history when username changes
-app.use('/game/update/:oldUsername', publicCors);
+const corsOptions = {
+  origin: serviceUrls.user,
+  methods: ['PATCH'], 
+  allowedHeaders: ['Content-Type', 'Origin'] 
+};
+
+app.use('/game/update/:oldUsername', cors(corsOptions));
 
 app.patch('/game/update/:oldUsername', async (req, res) => {
   const { oldUsername } = req.params;
