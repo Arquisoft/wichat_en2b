@@ -55,67 +55,6 @@ router.get('/users/:username', async (req, res) => {
     }
 });
 
-router.patch('/users/:username', async (req, res) => { //NOSONAR
-    try {
-        if (Object.keys(req.body).length === 0) {
-            return res.status(400).
-                json({ error: 'Request body is required' });
-        }
-
-        const user = await User.findOne({ username: req.params.username.toString() });
-
-        if (!user) {
-            return res.status(404).send();
-        }
-
-        let somethingchanged = false;
-
-        for (const key in req.body) {
-            if (key === 'secret') {
-                somethingchanged = true;
-            }else if (key === 'password') {
-                somethingchanged = !bcrypt.compareSync(req.body.password, user.password);
-            } else if (user[key] === undefined) {
-                return res.status(400).json({ error: `${key} is not a valid user property` });
-            } else if (req.body[key] != user[key]) {
-                somethingchanged = true;
-            }
-        }
-
-        if (!somethingchanged) {
-            return res.status(400).json({ error: 'No changes detected' });
-        }
-
-        if (req.body.username && req.body.username !== req.params.username) {
-            const existingUser = await User.findOne({ username: req.body.username.toString() });
-
-            if (existingUser) {
-                return res.status(400).json({ error: 'Username already exists' });
-            }
-        }
-
-        Object.assign(user, req.body);
-
-        const errors = user.validateSync();
-
-        if (errors) {
-            return res.status(400).send(errors);
-        }
-
-        if (req.body.password) {
-            user.password = bcrypt.hashSync(req.body.password, 10);
-        }
-
-        user.__v += 1;
-
-        await user.save();
-
-        res.status(200).send(user);
-    } catch (error) {
-        res.status(500).send(error);
-    }
-});
-
 // Delete a user by username
 router.delete('/users/:username', async (req, res) => {
     try {
@@ -128,5 +67,75 @@ router.delete('/users/:username', async (req, res) => {
         res.status(500).send(error);
     }
 });
+
+// Update a user's username, update game records, and generate a new JWT
+router.patch('/users/:username', async (req, res) => {
+    try {
+        const { username } = req.params; // Old username
+        const { newUsername } = req.body;
+
+        if (!newUsername || newUsername.length < 3) {
+            return res.status(400).json({ error: "Username must be at least 3 characters" });
+        }
+
+        if(!username) {
+            return res.status(400).json({ error: "Username is required" });
+        }
+
+        const user = await User.findOne({ username: username.toString() });
+        if (!user) return res.status(404).json({ error: "User not found" });
+
+        // Verify if the new username is available
+        const existingUser = await User.findOne({ username: newUsername.toString() });
+        if (existingUser) return res.status(400).json({ error: "Username already taken" });
+
+        const oldUsername = user.username;
+
+        // Update the username in the users table
+        user.username = newUsername;
+        await user.save();
+
+        // Update all game records: change user_id from oldUsername to newUsername
+        await GameInfo.updateMany({ user_id: oldUsername }, { $set: { user_id: newUsername } });
+
+        // Generate a new JWT with the updated username
+        const newToken = jwt.sign(
+            { username: user.username, role: user.role },
+            process.env.JWT_SECRET || 'testing-secret',
+            { expiresIn: '1h' }
+        );
+
+        res.status(200).json({ message: "Username updated successfully", token: newToken });
+    } catch (error) {
+        console.error("Error updating username:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+
+// Update a user's password
+router.patch('/users/:username/password', async (req, res) => {
+    try {
+        const { username } = req.params;
+        const { newPassword } = req.body;
+
+        if (!newPassword || newPassword.length < 6) {
+            return res.status(400).json({ error: "Password must be at least 6 characters" });
+        }
+
+        const user = await User.findOne({ username: username.toString() });
+        if (!user) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        user.password = bcrypt.hashSync(newPassword, 10);
+        await user.save();
+
+        res.status(200).json({ message: "Password updated successfully" });
+
+    } catch (error) {
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+
 
 module.exports = router;

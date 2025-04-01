@@ -166,6 +166,34 @@ router.get('/me', async (req, res) => {
   }
 });
 
+// Endpoint to validate the user password
+router.post('/validatePassword', async (req, res) => {
+    let { username, password } = req.body;
+
+    if (!username || !password) {
+        return res.status(400).json({ error: 'Username and password are required' });
+    }
+
+    try {
+        const userResponse = await axios.get(`${gatewayServiceUrl}/users/${username}`);
+        const userFromDB = userResponse.data;
+        
+        if (!userFromDB) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        const passwordMatch = await bcrypt.compare(password, userFromDB.password);
+        if (!passwordMatch) {
+            return res.status(401).json({ error: 'Invalid password' });
+        }
+
+        res.status(200).json({ message: 'Password is valid' });
+    } catch (error) {
+        console.error('Error validating password:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
 
 
 module.exports = router;

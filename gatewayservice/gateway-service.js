@@ -206,38 +206,95 @@ app.get('/user/me', async (req, res) => {
   }
 });
 
-app.patch('/users/:username', async (req, res) => {
-  try {
-      const token = req.headers.authorization?.split(" ")[1];
-      if (!token) return res.status(401).json({ error: "Unauthorized" });
+/* ################# Username & password change handling ################# */
 
-      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'testing-secret');
-      if (decoded.username !== req.params.username) {
-          return res.status(403).json(
-            { error: "Forbidden: You can only update your own account" }
-          );
-      }
+// Middleware to handle CORS for the user and password change endpoint
+app.use('/users/:username', publicCors);
+app.use('/users/:username/password', publicCors);
 
-      if (Object.keys(req.body).length === 0) {
-          return res.status(400).json(
-            { error: "Request body is required" }
-          );
-      }
+// Change username
+app.patch('/users/:username',  async (req, res) => {
+    const { username } = req.params;
+    const { newUsername } = req.body;
 
-      const response = await fetch(`${serviceUrls.user}/users/${req.params.username}`, req.body, {
-          headers: { 
-            Authorization: `Bearer ${token}`,
-            Origin: 'http://localhost:8000',
-          },
+    if (req.user.username !== username) {
+      return res.status(403).json({ error: 'You can only change your own username' });
+    }
+
+    try {
+      const response = await fetch(`${serviceUrls.user}/users/${username}`, {
+        method: 'PATCH',
+        headers: {
+          Authorization: `Bearer ${req.headers.authorization.split(' ')[1]}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ newUsername }),
       });
 
-      res.status(response.status).json(response.data);
-  } catch (error) {
-      res.status(error.response?.status || 500).json({ 
-        error: error.response?.data || "Internal Server Error" 
-      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to update username');
+      }
+
+      const data = await response.json();
+      const newToken = data.token;
+
+      // Configure cookie with updated token (1h expiration)
+      res.cookie('token', newToken, { httpOnly: true, path: '/', maxAge: 3600000 });
+
+      // Send response with updated token
+      res.json({ message: 'Username updated successfully' });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
   }
-});
+);
+
+// Change password
+app.patch('/users/:username/password',  async (req, res) => {
+    const { username } = req.params;
+    const { currentPassword, newPassword } = req.body;
+
+    if (req.user.username !== username) {
+      return res.status(403).json({ error: 'You can only change your own password' });
+    }
+
+    try {
+      const authResponse = await fetch(`${serviceUrls.auth}/auth/validatePassword`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${req.headers.authorization.split(' ')[1]}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username: username, password: currentPassword }),
+      });
+
+      if (!authResponse.ok) {
+        const errorData = await authResponse.json();
+        throw new Error(errorData.error || 'Invalid current password');
+      }
+
+      // Proceed to update the password in the user service if the current password is valid
+      const userResponse = await fetch(`${serviceUrls.user}/users/${username}/password`, {
+        method: 'PATCH',
+        headers: {
+          Authorization: `Bearer ${req.headers.authorization.split(' ')[1]}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ newPassword }),
+      });
+
+      if (!userResponse.ok) {
+        const errorData = await userResponse.json();
+        throw new Error(errorData.error || 'Failed to update password');
+      }
+
+      res.json({ message: 'Password updated successfully' });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+);
 
 // Proxy for images
 app.get('/images/:image', createProxyMiddleware({
