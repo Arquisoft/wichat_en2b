@@ -296,6 +296,34 @@ app.patch('/users/:username/password',  async (req, res) => {
   }
 );
 
+// Update game history when username changes
+app.use('/game/update/:oldUsername', publicCors);
+
+app.patch('/game/update/:oldUsername', async (req, res) => {
+  const { oldUsername } = req.params;
+  const { newUsername } = req.body;
+
+  try {
+    const response = await fetch(`${serviceUrls.game}/game/update/${oldUsername}`, {
+      method: 'PATCH',
+      headers: {
+        Authorization: req.headers.authorization,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ newUsername : newUsername }),
+    });
+
+    if (!response.ok) {
+      return res.status(500).json({ error: 'Error updating game history' });
+    }
+
+    res.json({ message: 'Game history updated successfully' });
+  } catch (error) {
+    console.error('Error updating game history:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 // Proxy for images
 app.get('/images/:image', createProxyMiddleware({
   target: serviceUrls.game,

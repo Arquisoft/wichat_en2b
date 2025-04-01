@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const User = require('../user-model');
 const bcrypt = require('bcrypt');
-const GameInfo = require('../../../gameservice/game-result-model');
+const gatewayServiceUrl = process.env.GATEWAY_SERVICE_URL || 'http://gatewayservice:8000'; // NOSONAR
 
 // Create a new user
 router.post('/users', async (req, res) => {
@@ -97,7 +97,20 @@ router.patch('/users/:username', async (req, res) => {
         await user.save();
 
         // Update all game records: change user_id from oldUsername to newUsername
-        await GameInfo.updateMany({ user_id: oldUsername }, { $set: { user_id: newUsername } });
+        const payload = { newUsername: user.username };
+
+        const gameResponse = await fetch(`${gatewayServiceUrl}/game/update/${oldUsername}`, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`,
+            },
+            body: JSON.stringify(payload),
+        });
+        
+        if (!gameResponse.ok) {
+            return res.status(404).json({ error: "Error updating the game history to the new username" });
+        }
 
         // Generate a new JWT with the updated username
         const newToken = jwt.sign(
