@@ -28,7 +28,8 @@ body .profile-container {
   padding: 1rem;
   margin: 0rem auto;
   width: 100%;
-  height: 100vh; 
+  height: 100vh;
+  overflow-y: auto;
 }
 
 body .tabs-container {
@@ -37,6 +38,10 @@ body .tabs-container {
   -webkit-overflow-scrolling: touch; 
   border-bottom: 2px solid #ccc; 
   margin-top: 1rem;
+}
+
+body .tabs-header>div:nth-child(2)>div {
+  justify-content: center;
 }
 
 body .profile-header {

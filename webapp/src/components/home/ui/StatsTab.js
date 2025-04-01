@@ -84,7 +84,7 @@ export default function StatsTab() {
 		<Card>
 			<CardHeader
 				title={
-					<Box display="flex" justifyContent="space-between" alignItems="center">
+					<Box className={"stats-header"} display="flex" justifyContent="space-between" alignItems="center">
 						<Typography variant="h5">Quiz Statistics</Typography>
 						<Typography variant="body2" color="textSecondary">
 							Based on {statistics ? statistics.totalGames : 0} completed quizzes
