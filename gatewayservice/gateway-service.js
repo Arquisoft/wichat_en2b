@@ -185,8 +185,6 @@ app.get('/user/me', async (req, res) => {
           return res.status(401).json({ error: "Unauthorized" });
       }
 
-      console.log(`${serviceUrls.auth}/auth/me`);
-
       const response = await fetch(`${serviceUrls.auth}/auth/me`, {
           headers: { 
             Authorization: token,
