@@ -20,6 +20,8 @@
 }
 
 .login-card {
+    max-height: 100vh;
+    overflow-y: auto;
     background: rgba(255, 255, 255, 0.95);
     padding: 2.5rem;
     border-radius: 16px;
@@ -28,7 +30,6 @@
     max-width: 420px;
     text-align: center;
     position: relative;
-    overflow: hidden;
     backdrop-filter: blur(10px); /* Glassmorphism effect */
     border: 1px solid rgba(255, 255, 255, 0.2);
     animation: fadeIn 0.8s ease-out;
@@ -47,7 +48,6 @@
 
 .login-card h2 {
     margin-bottom: 0.75rem;
-    color: #1a1a2e;
     font-family: 'Poppins', sans-serif;
     font-weight: 600;
     letter-spacing: -0.5px;
@@ -204,4 +204,11 @@
 @keyframes glowPulse {
     0%, 100% { opacity: 0.3; transform: scale(1); }
     50% { opacity: 0.5; transform: scale(1.05); }
+}
+
+@media screen and (max-width: 450px) {
+    .login-card {
+        height: 95vh;
+        width: 100%;
+    }
 }

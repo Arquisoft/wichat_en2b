@@ -1,187 +1,148 @@
-// src/components/AddUser.js
-import React, { useState } from 'react';
-import axios from 'axios';
-import {
-  Button,
-  TextField,
-  Card,
-  CardContent,
-  CardHeader,
-  Typography,
-  Box,
-  CircularProgress,
-} from "@mui/material";
-import '../../styles/register/Register.css';
-import '../../styles/globals.css';
+"use client";
+
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import axios from "axios";
+import "../../styles/globals.css";
+import "../../styles/register/Register.css";
 
 const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://localhost:8000';
 
 const AddUser = () => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [role, setRole] = useState('USER');
-  const [error, setError] = useState('');
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState("");
   const [validationErrors, setValidationErrors] = useState({});
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const router = useRouter();
 
   const validateForm = () => {
-    const newErrors = {}
-    
+    const newErrors = {};
+
     const trimmedUsername = username.trim();
     const trimmedPassword = password.trim();
     const trimmedConfirmPassword = confirmPassword.trim();
 
     if (!trimmedUsername) {
-        newErrors.username = "Username is required";
+      newErrors.username = "Username is required";
     } else if (trimmedUsername.length < 3) {
-        newErrors.username = "Username must be at least 3 characters";
-    } else if (trimmedUsername.includes(" ")){
-        newErrors.username = "Username cannot contain white spaces";
+      newErrors.username = "Username must be at least 3 characters";
+    } else if (trimmedUsername.includes(" ")) {
+      newErrors.username = "Username cannot contain white spaces";
     }
 
     if (!trimmedPassword) {
-        newErrors.passwordErrors = "The password is required"; // NOSONAR
+      newErrors.password = "Password is required";
     } else if (trimmedPassword.length < 6) {
-        newErrors.passwordErrors = "The password must be at least 6 characters"; // NOSONAR
+      newErrors.password = "Password must be at least 6 characters";
     }
 
     if (!trimmedConfirmPassword) {
-        newErrors.confirmPasswordErrors = "Please confirm your password";
+      newErrors.confirmPassword = "Please confirm your password";
     } else if (trimmedPassword !== trimmedConfirmPassword) {
-        newErrors.confirmPasswordErrors = "Passwords do not match";
+      newErrors.confirmPassword = "Passwords do not match";
     }
-  
+
     setValidationErrors(newErrors);
-    return Object.keys(newErrors).length === 0
-  }
+    return Object.keys(newErrors).length === 0;
+  };
 
   const addUser = async (e) => {
-    // For anyone reading, the default behavior of a form submit is to reload the page  
-    e.preventDefault(); // Prevent the default form submit so that errors can be shown (if any)
+    e.preventDefault();
+    if (!validateForm()) return;
 
-    if (!validateForm()) { // If there are errors, do not submit the form
-      return
-    }
-
-    setIsSubmitting(true)
+    setIsSubmitting(true);
 
     try {
-      setRole('USER');
-      const User =
-      {
-        username:username,
-        password:password,
-        role:role,
-      }
+      const user = {
+        username,
+        password,
+        role: "USER",
+      };
 
-      await axios.post(`${apiEndpoint}/adduser`, User);
-      router.push('/login');
-
-    } catch (error) {    
+      await axios.post(`${apiEndpoint}/adduser`, user);
+      router.push("/login");
+    } catch (error) {
       if (error.response && error.response.status === 400) {
-        if (error.response.data.error === 'Username already exists') {
-          const newErrors = { ...validationErrors };
-          newErrors.username = 'Username already exists'; // Set the error message for the username field
-          setValidationErrors(newErrors);
-        } 
+        if (error.response.data.error === "Username already exists") {
+          setValidationErrors({ username: "Username already exists" });
+        }
       } else {
         setError("An error has occurred. Please try again later.");
       }
       setIsSubmitting(false);
-    } 
+    }
   };
 
   return (
-    <div component="main" className='register-container'>
-      <Card className='register-card'>
-        <CardHeader
-          title={
-            <Typography variant="h5" align="center" fontWeight="bold">
-              Create an account
-            </Typography>
-          }
-          subheader={
-            <Typography variant="body2" align="center" color="textSecondary">
-              Enter your details below to create your account
-            </Typography>
-          }
-        />
-        <CardContent>
-          <Box className="input-group" component="form" onSubmit={addUser}>
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              id="username"
-              name="username"
-              variant="standard"
-              autoComplete="username"
-              placeholder='Username *'
-              autoFocus
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              error={!!validationErrors.username}
-              helperText={validationErrors.username}
-            />
-            
+      <div className="register-container">
+        <div className="register-card">
+          <h2>Create an Account</h2>
+          <p>Enter your details below to sign up!</p>
 
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              name="password"
-              type="password"
-              id="password"
-              variant="standard"
-              placeholder='Password *'
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              error={!!validationErrors.passwordErrors}
-              helperText={validationErrors.passwordErrors}
-            />
+          {error && <p className="error-message">{error}</p>}
 
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              name="confirmPassword"
-              type="password"
-              id="confirmPassword"
-              variant="standard"
-              placeholder='Confirm Password *'
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              error={!!validationErrors.confirmPasswordErrors}
-              helperText={validationErrors.confirmPasswordErrors}
-            />
-
-            <div className='register-link'>
-              <a href="/login">Already have an account? Login here</a>
-            </div>
-                        
-            <Button className='register-button' type="submit" fullWidth variant="contained" 
-              disabled={isSubmitting}>
-              {isSubmitting ? (
-                <>
-                  <CircularProgress size={24} sx={{ mr: 1, color: "white" }} />
-                  Registering...
-                </>
-              ) : (
-                "Register"
+          <form onSubmit={addUser}>
+            <div className="input-group">
+              <label htmlFor="username">Username</label>
+              <input
+                  type="text"
+                  id="username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="Enter your username"
+                  required
+                  disabled={isSubmitting}
+              />
+              {validationErrors.username && (
+                  <p className="error-message">{validationErrors.username}</p>
               )}
-            </Button>
-              
-            {error && <p className="error-message">{error}</p>}
+            </div>
 
-          </Box>
-        </CardContent>
-      </Card>
+            <div className="input-group">
+              <label htmlFor="password">Password</label>
+              <input
+                  type="password"
+                  id="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter your password"
+                  required
+                  disabled={isSubmitting}
+              />
+              {validationErrors.password && (
+                  <p className="error-message">{validationErrors.password}</p>
+              )}
+            </div>
 
-    </div>
+            <div className="input-group">
+              <label htmlFor="confirmPassword">Confirm Password</label>
+              <input
+                  type="password"
+                  id="confirmPassword"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Confirm your password"
+                  required
+                  disabled={isSubmitting}
+              />
+              {validationErrors.confirmPassword && (
+                  <p className="error-message">{validationErrors.confirmPassword}</p>
+              )}
+            </div>
+
+            <button type="submit" className="register-button" disabled={isSubmitting}>
+              {isSubmitting ? "Registering..." : "Register"}
+            </button>
+          </form>
+
+          <p className="register-link">
+            Already have an account? <a href="/login">Login here</a>
+          </p>
+        </div>
+      </div>
   );
 };
 
