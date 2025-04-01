@@ -72,7 +72,7 @@ export default function ProfileForm({ username, onSave }) {
 
         try {
             const token = getToken();
-            const payload = { username: profileData.username };
+            const payload = { newUsername: profileData.username };
 
             const response = await fetch(`${apiEndpoint}/users/${username}`, {
                 method: "PATCH",
