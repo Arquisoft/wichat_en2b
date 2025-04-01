@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const User = require('../user-model');
 const bcrypt = require('bcrypt');
+const GameInfo = require('../../../gameservice/game-result-model');
 
 // Create a new user
 router.post('/users', async (req, res) => {
