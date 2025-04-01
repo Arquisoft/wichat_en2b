@@ -1026,9 +1026,9 @@ See <a href="https://arc42.org" class="bare">https://arc42.org</a>.</p>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Express is straightforward to understand and leverages familiar concepts like functional programming, delegate functions, and a request/response HTTP controller structure.</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><strong><a href="https://www.groq.com">Groq API (Not yet decided)</a></strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong><a href="https://empathy.co/">Empathy API</a></strong></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">LLM service to provide the chatbot experience. Currently under evaluation with consideration for alternatives (e.g., Empathy).</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Groq API is a flexible service that uses interchangeable LLM models. It allows for the underlying model to be swapped by simply changing the API URL and key. The demo project showcased efficient response times and appropriate latency, with support for up to 1,000 API calls daily.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Empathy.co is a privacy-first search and discovery platform designed for eCommerce. With AI-driven search capabilities, intuitive interfaces, and a focus on trust, Empathy.co helps brands enhance customer engagement while respecting privacy. The platform supports seamless integrations, real-time insights, and customizable search solutions, empowering retailers to build meaningful shopping journeys. The demo project showcased good response times and appropriate latency, with unlimited API calls.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><strong><a href="https://www.wikidata.org">WikiData API</a></strong></p></td>
@@ -1054,6 +1054,11 @@ See <a href="https://arc42.org" class="bare">https://arc42.org</a>.</p>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><strong><a href="https://www.oracle.com/cloud/">Oracle Cloud Infrastructure (OCI)</a></strong></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Hosts the application in the production stage</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Selected due to our ability to obtain a free, sufficiently powerful server instance from Oracle’s infrastructure.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong><a href="https://gatling.io/">Gatling</a> (Not yed decided)</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Load testing tool for performance evaluation</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Chosen for its ability to simulate multiple users and analyze application performance under load. It provides detailed reports and metrics, helping identify bottlenecks and optimize the system.</p></td>
 </tr>
 </tbody>
 </table>
@@ -1188,9 +1193,9 @@ We have considered an optional requirement that include game different modes. Th
 <td class="tableblock halign-left valign-top"><p class="tableblock">By choosing Express, we dismiss the use of Spring Boot or JEE libraries for implementing web event controllers, along with their annotation-based approach, which simplifies application logic and functionality distribution.</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Groq API</strong></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Empathy LLM, Gemini LLM, and Deepseek LLM</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">By using only the Meta API, we miss the opportunity to participate in the Empathy challenge. Additionally, rejecting Google&#8217;s Gemini LLM and Deepseek LLM may reduce chatbot performance, as these models are evolving faster than Meta&#8217;s.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Empathy API</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Grok LLM, Gemini LLM, and Deepseek LLM</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">By using this API, we take the opportunity to participate in the Empathy challenge. Additionally, rejecting Google&#8217;s Gemini LLM and Deepseek LLM may reduce chatbot performance, as these models are evolving faster than Empathy&#8217;s.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><strong>WikiData API</strong></p></td>
@@ -1217,6 +1222,11 @@ We have considered an optional requirement that include game different modes. Th
 <td class="tableblock halign-left valign-top"><p class="tableblock">Microsoft Azure, Amazon Web Services (AWS)</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">By choosing Oracle Cloud Infrastructure as our deployment platform, we opt against Azure, which provides student licenses but may have higher costs for long-term use. Additionally, we reject AWS, which offers better scalability and a more flexible pricing.</p></td>
 </tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Gatling (Not yed decided)</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Apache Jmeter and Locust.io (among others)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">By using Gatling, we reject ache Jmeter and Locust.io, which where also presented load testing tools. Gatling is known for its high performance and scalability, making it suitable for simulating large user loads. It provides detailed reports and metrics, helping identify bottlenecks and optimize the system.</p></td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -1236,7 +1246,7 @@ We have considered an optional requirement that include game different modes. Th
 <tbody>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Scalability</strong></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Using Gherkin with tools to test the performance and behaviour of the application in users load scenarios. The tool used to test the user load is yet to decide, perhaps K6 or a Python script.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Using Gherkin with tools to test the performance and behaviour of the application in users load scenarios. The tool used to test the user load is yet to be confirmed, but we chose Gatling.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Reliability</strong></p></td>
@@ -1616,7 +1626,7 @@ User CRUD router internally.</p>
 </div>
 <div class="imageblock text-center">
 <div class="content">
-<img src="./images/Register%20diagram.png" alt="Register diagram" width="502" height="787">
+<img src="./images/Register%20diagram.png" alt="Register diagram" width="498" height="505">
 </div>
 </div>
 <div class="paragraph">
@@ -1628,16 +1638,10 @@ User CRUD router internally.</p>
 <p>The new user types the required information to create an account.</p>
 </li>
 <li>
-<p>Them, AddUser.js (from package webapp) collects this information and sends it via post to the "/addUser" url.</p>
+<p>Then, this information is verified (in the frontend in order not to overload the server with unnecessary requests). If the user manages to bypass this validation, the backend also verifies the data so that invalid data cannot reach the database.</p>
 </li>
 <li>
-<p>The Gateway Service will answer to this petition by forwarding the petition to the User Service and saving the user data to the response (if any error happened, it would be saved here).</p>
-</li>
-<li>
-<p>The User Service then verifies that all the necessary credentials are stored in the request.</p>
-</li>
-<li>
-<p>It encrypts the password and creates a new User object with the username and the encrypted password.</p>
+<p>After that, the password is encrypted and a new user with the username, the encrypted password, its role and date of creation is made.</p>
 </li>
 <li>
 <p>This new user is then saved into the database.</p>
@@ -1655,7 +1659,7 @@ User CRUD router internally.</p>
 </div>
 <div class="imageblock text-center">
 <div class="content">
-<img src="./images/Login%20diagram.png" alt="Login diagram" width="499" height="672">
+<img src="./images/Login%20diagram.png" alt="Login diagram" width="508" height="449">
 </div>
 </div>
 <div class="paragraph">
@@ -1667,22 +1671,16 @@ User CRUD router internally.</p>
 <p>The user types an username and a password.</p>
 </li>
 <li>
-<p>Then the Login.js (from the webapp package) collects this data and sends it via post to the "/login".</p>
-</li>
-<li>
-<p>In the gateway service, a function answers to this request: forwards the petition to the User Authentication Service and saves the user data to the res, or when an error occurs, the error is saved to that variable.</p>
-</li>
-<li>
-<p>After that, the User Authentication Service checks and validates the given data, and asks the database to find the user for the given username.</p>
+<p>After that, the credentials are checked and validated, and asks the database to find the user for the given username.</p>
 </li>
 <li>
 <p>The database returns the user.</p>
 </li>
 <li>
-<p>The User Authentication Service verifies that the encrypted password given by the user and the encrypted password stored in the database match. If this happens, a JWT Token is generated and saved to the response.</p>
+<p>The Authentication Router verifies that the encrypted password given by the user and the encrypted password stored in the database match. If this happens, a JWT Token that expires in 1 hour is generated and sent.</p>
 </li>
 <li>
-<p>Shows visual confirmation of the login.</p>
+<p>User logs in.</p>
 </li>
 </ol>
 </div>
@@ -1694,46 +1692,25 @@ User CRUD router internally.</p>
 </div>
 <div class="imageblock text-center">
 <div class="content">
-<img src="./images/Game%20diagram.png" alt="Game diagram" width="472" height="1611">
+<img src="./images/Game%20diagram.png" alt="Game diagram" width="417" height="653">
 </div>
 </div>
 <div class="olist arabic">
 <ol class="arabic">
 <li>
-<p>The application requests the questions to show the user.</p>
+<p>The user plays a game.</p>
 </li>
 <li>
-<p>Gateway Service answers this request and forwards the petition to the Game Service.</p>
+<p>The application retrieves questions for that game from the database.</p>
 </li>
 <li>
-<p>Game Service then uses RouterQuestionRetriever.</p>
+<p>Then, the questions are shown to the user one by one.</p>
 </li>
 <li>
-<p>This class retrieves the number of questions desired from the database.</p>
+<p>When the game finishes, the app then saves all the information needed about the game to the desired format.</p>
 </li>
 <li>
-<p>RouterQuestionRetriever returns the list of questions with answers in a .json file.</p>
-</li>
-<li>
-<p>Game Service recieves these questions and forwards the data to the Gateway Service.</p>
-</li>
-<li>
-<p>Then, the Gateway Service forwards them to the application which shows them to the user one by one.</p>
-</li>
-<li>
-<p>When the game finishes, the app then requests to save the game results.</p>
-</li>
-<li>
-<p>This request is answered and then forwarded by the Gateway Service and then, Game Service.</p>
-</li>
-<li>
-<p>Game Service parses the game information to a valid format so it can be saved to de database.</p>
-</li>
-<li>
-<p>Then this version of the game is sent back to the Game Service to be forwarded to the User Service. This is to reduce workload of the Game Service.</p>
-</li>
-<li>
-<p>The User Service asks the User CRUD Service to save the game.</p>
+<p>The game is then saved in the database.</p>
 </li>
 </ol>
 </div>
@@ -1746,22 +1723,13 @@ User CRUD router internally.</p>
 <p>The player types a question for the LLM.</p>
 </li>
 <li>
-<p>The application collects the prompt and forwards it to Gateway Service.</p>
+<p>The application collects the prompt and sends it to the LLM.</p>
 </li>
 <li>
-<p>The aforementioned service then forwards it to the Game Service which then sends it to the LLM Service.</p>
+<p>The LLM makes the answer and returns it.</p>
 </li>
 <li>
-<p>This service then validates the fields making sure the needed information needed is passed in the request and then sends the question to the LLM.</p>
-</li>
-<li>
-<p>The LLM makes the answer and returns it to the LLM Service.</p>
-</li>
-<li>
-<p>After that, the LLM Service parses the answer to json and sends it as the response of the petition.</p>
-</li>
-<li>
-<p>The Game Service recieves it and forwards it to the Gateway Service and then to the Application, which shows the generated answer to the user.</p>
+<p>The chat recieves it and shows the generated answer to the user.</p>
 </li>
 </ol>
 </div>
@@ -1779,6 +1747,12 @@ User CRUD router internally.</p>
 <ul>
 <li>
 <p>Invalid credentials (empty / blank).</p>
+</li>
+<li>
+<p>Passwords do not match.</p>
+</li>
+<li>
+<p>Username and passwords doo not meet the minimum numer of characters.</p>
 </li>
 <li>
 <p>Using credentials from an already existing user: usernames must be different.</p>
@@ -1892,47 +1866,32 @@ User CRUD router internally.</p>
 </div>
 <div class="literalblock">
 <div class="content">
-<pre>`GET /signup` - Shows the signup screen to the user</pre>
+<pre>`GET /adduser` - Shows the registration form</pre>
 </div>
 </div>
 <div class="literalblock">
 <div class="content">
-<pre>`POST /signup` - Sends the sign up information to the gateway service</pre>
+<pre>`POST /adduser` - Sends the sign up information to the gateway service</pre>
 </div>
 </div>
 <div class="literalblock">
 <div class="content">
-<pre>`GET /login` - Shows the signup screen to the user</pre>
+<pre>`GET /login` - Shows the login form</pre>
 </div>
 </div>
 <div class="literalblock">
 <div class="content">
-<pre>`POST /login` - Sends the sign up information to the gateway service</pre>
+<pre>`POST /login` - Sends the login information to the gateway service</pre>
 </div>
 </div>
 <div class="literalblock">
 <div class="content">
-<pre>`GET /quiz` - Shows the user a question from a quiz whose theme is specified as parameter</pre>
+<pre>'GET /' - Shows homepage with categories, stats and leaderboard.</pre>
 </div>
 </div>
 <div class="literalblock">
 <div class="content">
-<pre>`POST /quiz` - Submits the answer to the gateway service</pre>
-</div>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>`GET /edit`- Shows the user a form in order to edit their data</pre>
-</div>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>`POST /edit` - Sends the updated information to the gateway service</pre>
-</div>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>`GET /stats` - Shows the user their game stats</pre>
+<pre>'GET /quiz/category/:id' - Shows quizzes for a category and starts gameplay</pre>
 </div>
 </div>
 <div class="ulist">
@@ -1952,37 +1911,67 @@ User CRUD router internally.</p>
 </div>
 <div class="literalblock">
 <div class="content">
-<pre>`GET /quiz` - Retrieves quiz questions</pre>
+<pre>`POST /login` - Forwards to Authentication Service to authenticate login</pre>
 </div>
 </div>
 <div class="literalblock">
 <div class="content">
-<pre>`POST /quiz` - Submits user answers</pre>
+<pre>`POST /adduser` - Forwards to Authentication Service for registration</pre>
 </div>
 </div>
 <div class="literalblock">
 <div class="content">
-<pre>`POST /login` - Authenticates user requests</pre>
+<pre>'GET /users' - Proxies to User Service to get all users</pre>
 </div>
 </div>
 <div class="literalblock">
 <div class="content">
-<pre>`POST /adduser` - Registers new users</pre>
+<pre>'GET /users/:username' - Proxies to User Service for user details</pre>
 </div>
 </div>
 <div class="literalblock">
 <div class="content">
-<pre>`POST /edituser` - Edits user information</pre>
+<pre>'POST /users' - Proxies to User Service for user creation</pre>
 </div>
 </div>
 <div class="literalblock">
 <div class="content">
-<pre>`GET /stats` - Requests a user historical playing data</pre>
+<pre>'PATCH /users/:username' - Proxies to User Service for user edits</pre>
 </div>
 </div>
 <div class="literalblock">
 <div class="content">
-<pre>`POST /askllm` - Sends a question to the LLM Service</pre>
+<pre>'DELETE /users/:username' - Proxies to User Service for deletion</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>'GET /game/:subject/:totalQuestions/:numberOptions' - Proxies to Game Service to get a given number of questions, with a given number of options for a given subject</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>'POST /askllm` - Proxies to LLM Service for hints</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>`GET /statistics/subject/:subject` - Proxies to Game Service for global stats</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>`GET /statistics/global` - Proxies to Game Service for leaderboard</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>'GET /leaderboard' - Gets leaderboard with top 10 players plus user</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>'GET /image/:images' - Proxies to get image from Game Service</pre>
 </div>
 </div>
 <div class="ulist">
@@ -2008,6 +1997,38 @@ User CRUD router internally.</p>
 <li>
 <p><strong>User CRUD Service</strong>: Handles the CRUD operations for user data, interacting with the MongoDB database for persistent storage.</p>
 </li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Endpoints</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>'POST /users' - Creates a user with hashed password (bcrypt).</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>'GET /users' - Rerieves all users</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>'GET /users/:username' - Retrieves a specific user</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>'PATCH /users/:username' - Updates user data</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>`DELETE /users/:username` - Deletes a user</pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
 <li>
 <p><strong>User Authentication Service</strong>: Responsible for managing user authentication, ensuring that secure access to the application is maintained.</p>
 </li>
@@ -2018,12 +2039,12 @@ User CRUD router internally.</p>
 </div>
 <div class="literalblock">
 <div class="content">
-<pre>`GET /users` - Retrieves a list of all users (admin use)</pre>
+<pre>`POST /login` - Validates credentials and returns a JWT</pre>
 </div>
 </div>
 <div class="literalblock">
 <div class="content">
-<pre>`POST /users/search` - Searches for users based on filters (e.g., username, email)</pre>
+<pre>`POST /register` - Registers user via User Service and returns a JWT</pre>
 </div>
 </div>
 <div class="ulist">
@@ -2038,12 +2059,32 @@ User CRUD router internally.</p>
 </div>
 <div class="literalblock">
 <div class="content">
-<pre>`GET /quiz` - Retrieves a batch of quiz questions from WikiData</pre>
+<pre>'POST /game' - Saves games results</pre>
 </div>
 </div>
 <div class="literalblock">
 <div class="content">
-<pre>`POST /quiz` - Validates a user's answer</pre>
+<pre>'GET /generate/:type/:amount' - Fetches/stores Wikidata questions</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>'GET /game/:subject/:numQuestions?/:numOptions?' - Generates a given number of quiz questions for a given subject</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>'GET /statistics/subject/:subject' - Gives statistics for a given subject</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>'GET /statistics/global' - Gives global statistics</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>'GET /leaderboard' - Gives the top 10 players plus user</pre>
 </div>
 </div>
 <div class="ulist">
@@ -2611,7 +2652,7 @@ in the <a href="https://github.com/Arquisoft/wichat_en2b/discussions/79">discuss
 <div id="footer">
 <div id="footer-text">
 Version 8.2 EN<br>
-Last updated 2025-03-31 23:27:54 +0200
+Last updated 2025-04-01 11:02:49 +0200
 </div>
 </div>
 </body>
