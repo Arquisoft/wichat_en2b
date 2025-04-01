@@ -11,10 +11,10 @@
     z-index: 1000; /* Make sure it's on top */
     transition: all 0.3s ease-in-out; /* Smooth transition when toggling minimize */
     padding: 12px; /* Added padding for better spacing */
-    max-height: 80%; /* Limit height to prevent overflow */
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    margin-right: 1rem;
 }
 
 /* Header Text */
@@ -133,4 +133,19 @@
     font-weight: bold;
     text-align: center;
     margin-top: 15px;
+}
+
+@media screen and (max-width: 450px) {
+    /* Responsive adjustments for smaller screens */
+    .chatWindow {
+        width: 90%; /* Full width on smaller screens */
+        bottom: 5px; /* Adjusted position */
+        right: 5px; /* Adjusted position */
+        margin-left: 3%;
+        margin-right: 3%;
+    }
+    .chatWindow>.messageArea .userMessage,
+    .chatWindow>.messageArea .llmMessage {
+        max-width: 80%; /* Limit message width on smaller screens */
+    }
 }
