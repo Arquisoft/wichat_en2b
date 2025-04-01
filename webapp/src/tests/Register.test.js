@@ -34,6 +34,11 @@ describe("Register Component", () => {
     });
 
     test("Given valid input, the user can register", async () => {
+        const mockPush = jest.fn();
+        jest.spyOn(require('next/navigation'), 'useRouter').mockReturnValue({ push: mockPush });
+        
+        fetch.mockResponseOnce(JSON.stringify({ token: 'fake-token' }), { status: 200 });
+
         render(<Register />);
 
         const UserTest = {
@@ -59,14 +64,16 @@ describe("Register Component", () => {
         expect(confirmPasswordInput).toHaveValue(UserTest.confirmPassword);
 
         //Click the register button
-        fireEvent.click(registerButtonInput);
-
-        await new Promise(r => setTimeout(r, 500)); // Pequeña espera
-
-        //Expect the login page to be rendered
+        //Expect the home page to be rendered
+        await act(async () => {
+            fireEvent.click(registerButtonInput);
+            jest.advanceTimersByTime(1000);
+        });
+        
         await waitFor(() => {
-            expect(mockPush).toHaveBeenCalledWith("/login");
-        }, { timeout: 5000 }); 
+            expect(document.cookie).toContain('token=fake-token');
+            expect(mockPush).toHaveBeenCalledWith('/');
+        });
     });
 
     test("Given an empty username, the error is shown", async () => {

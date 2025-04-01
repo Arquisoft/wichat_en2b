@@ -79,7 +79,35 @@ const AddUser = () => {
       }
 
       await axios.post(`${apiEndpoint}/adduser`, User);
-      router.push('/login');
+
+      // Fetch token from cookies if it's available
+      const token = document.cookie
+        .split("; ")
+        .find((row) => row.startsWith("token="))
+        ?.split("=")[1];
+  
+      const response = await fetch(`${apiEndpoint}/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          // Don't send token in Authorization header during login
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          user: { username, password },
+        }),
+      });
+  
+      const data = await response.json();
+  
+      if (!response.ok) {
+        throw data;
+      }
+  
+      // Redirect to the home page after login
+      // On successful login, set the token in the cookie
+      document.cookie = `token=${data.token}; path=/; max-age=3600`;
+      router.push("/");
 
     } catch (error) {    
       if (error.response && error.response.status === 400) {
