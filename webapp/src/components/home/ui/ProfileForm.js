@@ -100,7 +100,10 @@ export default function ProfileForm({ username, onSave }) {
             setEditingAccount(false);
 
             onSave({ ...profileData, username: profileData.username });
-            
+
+            // Reload the page to reflect the new username
+            window.location.reload(); 
+
         } catch (error) {
             console.error("Error al actualizar el nombre de usuario:", error);
             setSnackbarMessage(`Error: ${error.message}`);
