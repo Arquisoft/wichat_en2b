@@ -20,7 +20,7 @@ const serviceUrls = {
 };
 
 // CORS setup
-const publicCors = cors({ origin: '*', methods: ['GET', 'POST'] });
+const publicCors = cors({ origin: '*', methods: ['GET', 'POST', 'PATCH', 'OPTIONS', 'DELETE', 'PUT'] });
 
 app.use(express.json());
 app.use(helmet.hidePoweredBy());
@@ -228,7 +228,7 @@ app.patch('/users/:username',  async (req, res) => {
           Authorization: `Bearer ${req.headers.authorization.split(' ')[1]}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ newUsername }),
+        body: JSON.stringify({ newUsername: newUsername }),
       });
 
       if (!response.ok) {
