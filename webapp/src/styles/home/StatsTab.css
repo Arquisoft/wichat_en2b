@@ -57,3 +57,7 @@ body .typography {
 body .typography span {
     color: #ff9800;
 }
+
+body .detailed-stats {
+    justify-content: center;
+}

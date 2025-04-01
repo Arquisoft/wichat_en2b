@@ -1,6 +1,8 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import Login from '../components/login/Login'; 
+import Check2fa from '../components/home/2fa/Check2fa'
+import { useRouter } from "next/navigation";
 import 'jest-fetch-mock';
 
 // Mock Next.js navigation
@@ -54,7 +56,7 @@ describe('Login Component', () => {
   test('displays loading state when form is submitted', async () => {
     fetch.mockImplementationOnce(() => 
       new Promise(resolve => 
-        setTimeout(() => 
+        setTimeout(() => //NOSONAR
           resolve({
             ok: true,
             json: () => Promise.resolve({ token: 'fake-token' })
@@ -159,4 +161,52 @@ describe('Login Component', () => {
       expect(screen.getByRole('button', { name: 'Login' })).not.toBeDisabled();
     });
   });
+});
+
+describe("Check2fa Component", () => {
+  let mockPush;
+  
+  beforeEach(() => {
+    mockPush = jest.fn();
+    useRouter.mockReturnValue({ push: mockPush });
+  });
+
+  it("renders correctly", () => {
+    render(<Check2fa username="testuser" />);
+    expect(screen.getByText(/Two Factor Authentication/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Enter 2FA Code/i)).toBeInTheDocument();
+  });
+
+  it("updates input value on change", () => {
+    render(<Check2fa username="testuser" />);
+    const input = screen.getByLabelText(/Enter 2FA Code/i);
+    fireEvent.change(input, { target: { value: "123456" } });
+    expect(input.value).toBe("123456");
+  });
+
+  it("redirects to home on successful verification", async () => {
+    global.fetch = jest.fn(() =>
+      Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({ token: "mockToken" }),
+      })
+    );
+
+    render(<Check2fa username="testuser" />);
+
+    fireEvent.change(screen.getByLabelText(/Enter 2FA Code/i), {
+      target: { value: "123456" },
+    });
+
+    fireEvent.click(screen.getByText(/Verify Code/i));
+
+    await waitFor(() => {
+      expect(mockPush).toHaveBeenCalledWith("/");
+    });
+
+    // Ensure the cookie was set with the token
+    expect(document.cookie).toContain('token=fake-token');
+  });
+  
+
 });

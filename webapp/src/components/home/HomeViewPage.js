@@ -24,14 +24,6 @@ import PropTypes from "prop-types";
 function HomePage({ stats }) {
     const [username, setUsername] = useState("QuizMaster");    
 
-    if (!stats) {
-        stats = {
-            quizzes: 42,     // Ejemplo: número de quizzes
-            accuracy: 78,    // Ejemplo: porcentaje de precisión
-            rank: 12         // Ejemplo: rango del jugador
-        };
-    }
-
     const [tabValue, setTabValue] = useState(0);
     const [currentYear, setCurrentYear] = useState(null);
 
@@ -84,7 +76,7 @@ function HomePage({ stats }) {
                     </Typography>
 
                     {/* Pass the stats to the stats component */}
-                    <StatisticsCard stats={stats} />
+                    <StatisticsCard />
 
                     <Tabs 
                         value={tabValue} 
@@ -98,8 +90,8 @@ function HomePage({ stats }) {
                     </Tabs>
 
                     {tabValue === 0 && <PlayTab />}
-                    {tabValue === 1 && <StatsTab recentQuizzes={recentQuizzes} />}
-                    {tabValue === 2 && <LeaderboardTab leaderboardData={leaderboardData} />}
+                    {tabValue === 1 && <StatsTab />}
+                    {tabValue === 2 && <LeaderboardTab />}
             </Container>
 
             {/* Footer */}
