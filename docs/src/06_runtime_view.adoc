@@ -11,9 +11,6 @@ Users must create an account if they do not have one. The behaviour of the appli
 [plantuml,"Register diagram",png]
 ----
 :User sends data;
-:Send data to Web Application;
-:Forward data to Gateway;
-:Send user addition request to User Service;
 :Verify credentials;
 
 if (Credentials correct?) then (Yes)
@@ -21,19 +18,15 @@ if (Credentials correct?) then (Yes)
     :Return user;
 
     if (User exists?) then (Yes)
-        :Respond with error;
         :Show error to User;
         stop
     else (No)
         :Encrypt password and save;
         :Add user to the database;
         :Respond with new user;
-        :Forward data to Web App;
-        :Show confirmation to User;
         stop
     endif
 else (No)
-    :Respond with error;
     :Show error to User;
     stop
 endif
@@ -44,13 +37,9 @@ The errorless behaviour will be:
 
 . The new user types the required information to create an account.
 
-. Them, AddUser.js (from package webapp) collects this information and sends it via post to the "/addUser" url.
+. Then, this information is verified (in the frontend in order not to overload the server with unnecessary requests). If the user manages to bypass this validation, the backend also verifies the data so that invalid data cannot reach the database.
 
-. The Gateway Service will answer to this petition by forwarding the petition to the User Service and saving the user data to the response (if any error happened, it would be saved here).
-
-. The User Service then verifies that all the necessary credentials are stored in the request.
-
-. It encrypts the password and creates a new User object with the username and the encrypted password.
+. After that, the password is encrypted and a new user with the username, the encrypted password, its role and date of creation is made.
 
 . This new user is then saved into the database.
 
@@ -65,8 +54,6 @@ Users must have an account to use the application. The following sequence diagra
 [plantuml,"Login diagram",png]
 ----
 :User enters credentials;
-:Send credentials to Web Application;
-:Send authentication request to UAS;
 :Verify credentials;
 
 if (Credentials verified?) then (Yes)
@@ -74,42 +61,31 @@ if (Credentials verified?) then (Yes)
     :Return user;
 
     if (Passwords match?) then (Yes)
-        :Send token to Gateway;
-        :Forward token to Web App;
+        :Creates jsp token to Gateway;
         :User logs in;
         stop
     else (No)
-        :Respond with error;
         :Show error to User;
         stop
     endif
 else (No)
-    :Respond with error;
     :Show error to User;
     stop
 endif
-
-legend
-UAS = User Authentication Service
-end legend
 ----
 
 
 This is the behaviour of the flawless execution of the login:
 
-. The user types an username and a password.
+. The user types an username and a password. 
 
-. Then the Login.js (from the webapp package) collects this data and sends it via post to the "/login". 
-
-. In the gateway service, a function answers to this request: forwards the petition to the User Authentication Service and saves the user data to the res, or when an error occurs, the error is saved to that variable.
-
-. After that, the User Authentication Service checks and validates the given data, and asks the database to find the user for the given username.
+. After that, the credentials are checked and validated, and asks the database to find the user for the given username.
 
 . The database returns the user.
 
-. The User Authentication Service verifies that the encrypted password given by the user and the encrypted password stored in the database match. If this happens, a JWT Token is generated and saved to the response.
+. The Authentication Router verifies that the encrypted password given by the user and the encrypted password stored in the database match. If this happens, a JWT Token that expires in 1 hour is generated and sent.
 
-. Shows visual confirmation of the login.
+. User logs in.
 
 
 === Game example
@@ -121,26 +97,14 @@ Here is the sequence diagram when playing the game.
 ----
 start
 
-:User requests questions;
-:Send request to Web Application;
-:Forward petition to Gateway;
-:QuestionRetriever retrieves questions from database;
-:Forward questions to Game Service;
-:Forward questions to Web Application;
+:User selects a game;
+:Question are retrieved database;
 :Show questions to User;
 
 repeat :For each question;
     
     if (User asks for hint?) then (Yes)
-        :User types question;
-        :Forward question to Gateway;
-        :Forward question to LLM Service;
-        :Validate fields;
         :Ask LLM for hint;
-        :Return answer;
-        :Parse answer to JSON;
-        :Send answer to Gateway;
-        :Forward answer to Web Application;
         :Show LLM answer to User;
     else (No)
         :User gives an answer;
@@ -148,56 +112,31 @@ repeat :For each question;
     endif
 repeat while (more questions?)
 
-:Send saving petition;
-:Forward petition to Gateway;
-:Parse game data;
-:Send parsed game back;
-:Forward parsed game to User Service;
-:Request adding game to DB;
+:Parse game to a valid format;
 :Add game to MongoDB;
 
 stop
 ----
 
-. The application requests the questions to show the user. 
+. The user plays a game. 
 
-. Gateway Service answers this request and forwards the petition to the Game Service.
+. The application retrieves questions for that game from the database.
 
-. Game Service then uses RouterQuestionRetriever.
+. Then, the questions are shown to the user one by one.
 
-. This class retrieves the number of questions desired from the database.
+. When the game finishes, the app then saves all the information needed about the game to the desired format.
 
-. RouterQuestionRetriever returns the list of questions with answers in a .json file.
-
-. Game Service recieves these questions and forwards the data to the Gateway Service.
-
-. Then, the Gateway Service forwards them to the application which shows them to the user one by one.
-
-. When the game finishes, the app then requests to save the game results.
-
-. This request is answered and then forwarded by the Gateway Service and then, Game Service.
-
-. Game Service parses the game information to a valid format so it can be saved to de database.
-
-. Then this version of the game is sent back to the Game Service to be forwarded to the User Service. This is to reduce workload of the Game Service.
-
-. The User Service asks the User CRUD Service to save the game.
+. The game is then saved in the database.
 
 *In the case user asks for hints:*
 
 . The player types a question for the LLM.
 
-. The application collects the prompt and forwards it to Gateway Service.
+. The application collects the prompt and sends it to the LLM.
 
-. The aforementioned service then forwards it to the Game Service which then sends it to the LLM Service.
+. The LLM makes the answer and returns it.
 
-. This service then validates the fields making sure the needed information needed is passed in the request and then sends the question to the LLM.
-
-. The LLM makes the answer and returns it to the LLM Service.
-
-. After that, the LLM Service parses the answer to json and sends it as the response of the petition.
-
-. The Game Service recieves it and forwards it to the Gateway Service and then to the Application, which shows the generated answer to the user.
+. The chat recieves it and shows the generated answer to the user.
 
 === Exceptions and Errors Scenarios
 
@@ -205,6 +144,8 @@ Possible errors regarding:
 
 * Registering:
     - Invalid credentials (empty / blank).
+    - Passwords do not match.
+    - Username and passwords doo not meet the minimum numer of characters.
     - Using credentials from an already existing user: usernames must be different.
     - Database exception: connection lost, data loss.
 
