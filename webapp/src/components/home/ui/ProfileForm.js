@@ -88,10 +88,19 @@ export default function ProfileForm({ username, onSave }) {
                 throw new Error(errorData.error || "Error actualizando el nombre de usuario");
             }
 
+            const responseData = await response.json();
+            const updatedToken = responseData.token;
+
+            // Update the cookie with the new token 
+            document.cookie = `token=${updatedToken}; path=/; max-age=3600`; 
+            setProfileData((prev) => ({ ...prev, username: profileData.username })); 
+
             setSnackbarMessage("Nombre de usuario actualizado correctamente.");
             setOpenSnackbar(true);
             setEditingAccount(false);
+
             onSave({ ...profileData, username: profileData.username });
+            
         } catch (error) {
             console.error("Error al actualizar el nombre de usuario:", error);
             setSnackbarMessage(`Error: ${error.message}`);

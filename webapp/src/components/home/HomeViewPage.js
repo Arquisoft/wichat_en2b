@@ -5,7 +5,6 @@ import PlayTab from "./ui/PlayTab";
 import StatsTab from "./ui/StatsTab";
 import LeaderboardTab from "./ui/LeaderboardTab";
 import StatisticsCard from "./ui/StatisticsCard";
-import { recentQuizzes, leaderboardData } from "./data";
 import "../../styles/home/HomePage.css";
 import Navbar from "./ui/Navbar";
 import "../../styles/Footer.css";
