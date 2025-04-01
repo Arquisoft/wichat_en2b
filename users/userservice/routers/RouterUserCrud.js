@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const User = require('../user-model');
 const bcrypt = require('bcrypt');
+
 const gatewayServiceUrl = process.env.GATEWAY_SERVICE_URL || 'http://gatewayservice:8000'; // NOSONAR
 
 // Create a new user
@@ -112,6 +113,7 @@ router.patch('/users/:username', async (req, res) => {
         await user.save();
 
         // Generate a new JWT with the updated username
+        const jwt = require('jsonwebtoken');
         const newToken = jwt.sign(
             { username: user.username, role: user.role },
             process.env.JWT_SECRET || 'testing-secret',

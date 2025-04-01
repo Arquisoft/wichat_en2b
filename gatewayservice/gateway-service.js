@@ -225,6 +225,7 @@ app.patch('/users/:username',  async (req, res) => {
         headers: {
           Authorization: `Bearer ${req.headers.authorization.split(' ')[1]}`,
           'Content-Type': 'application/json',
+          Origin: 'http://localhost:8000'
         },
         body: JSON.stringify({ newUsername: newUsername }),
       });
@@ -263,6 +264,7 @@ app.patch('/users/:username/password',  async (req, res) => {
         headers: {
           Authorization: `Bearer ${req.headers.authorization.split(' ')[1]}`,
           'Content-Type': 'application/json',
+          Origin: 'http://localhost:8000'
         },
         body: JSON.stringify({ username: username, password: currentPassword }),
       });
@@ -278,6 +280,7 @@ app.patch('/users/:username/password',  async (req, res) => {
         headers: {
           Authorization: `Bearer ${req.headers.authorization.split(' ')[1]}`,
           'Content-Type': 'application/json',
+          Origin: 'http://localhost:8000'
         },
         body: JSON.stringify({ newPassword }),
       });
@@ -305,8 +308,8 @@ app.patch('/game/update/:oldUsername', async (req, res) => {
     const response = await fetch(`${serviceUrls.game}/game/update/${oldUsername}`, {
       method: 'PATCH',
       headers: {
-        Authorization: req.headers.authorization,
         'Content-Type': 'application/json',
+        Origin: 'http://localhost:8000'
       },
       body: JSON.stringify({ newUsername : newUsername }),
     });
@@ -315,7 +318,9 @@ app.patch('/game/update/:oldUsername', async (req, res) => {
       return res.status(500).json({ error: 'Error updating game history' });
     }
 
-    res.json({ message: 'Game history updated successfully' });
+    const data = await response.json();
+    console.log(data);
+    res.json(data);
   } catch (error) {
     console.error('Error updating game history:', error);
     res.status(500).json({ error: 'Internal Server Error' });

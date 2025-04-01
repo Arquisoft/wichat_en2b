@@ -44,17 +44,20 @@ router.post('/game', verifyToken, async (req, res) => {
 });
 
 // Update game info history of user by username
-router.patch('/game/update/:oldUsername', verifyToken, async (req, res) => {
+router.patch('/game/update/:oldUsername', async (req, res) => {
     try {
         const { oldUsername } = req.params;
-        const { newUsername } = req.body;
+        const { newUsername } = req.body;    
 
         const gameInfo = await GameInfo.updateMany(
             { user_id: oldUsername }, 
             { $set: { user_id: newUsername } });
 
         if (gameInfo.matchedCount === 0) {
-            return res.status(404).json({ error: 'Game info not found' });
+            return res.status(200).json({ 
+                gameInfo: gameInfo,
+                message: "No game history found for the user" 
+            });
         }
 
         res.status(200).json({ 
