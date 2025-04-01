@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import "../../styles/login/Login.css";
 import "../../styles/globals.css";
 import Check2fa from "@/components/home/2fa/Check2fa";
+import { loginUser } from "@/utils/LoginUtil";
 
 const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://localhost:8000';
 
@@ -28,24 +29,13 @@ const Login = () => {
         .find((row) => row.startsWith("token="))
         ?.split("=")[1];
   
-      const response = await fetch(`${apiEndpoint}/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          // Don't send token in Authorization header during login
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({
-          user: { username, password },
-        }),
-      });
-  
-      const data = await response.json();
-  
-      if (!response.ok) {
-        throw data;
-      }
-  
+   
+      const data = await loginUser(
+        username,
+        password,
+        apiEndpoint,
+        token
+      );
      
       // Redirect to the home page after login
       if(data.has2fa){

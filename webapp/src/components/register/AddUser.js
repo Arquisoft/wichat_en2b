@@ -14,6 +14,7 @@ import {
 import '../../styles/register/Register.css';
 import '../../styles/globals.css';
 import { useRouter } from "next/navigation";
+import { loginUser } from '@/utils/LoginUtil';
 
 const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://localhost:8000';
 
@@ -80,29 +81,18 @@ const AddUser = () => {
 
       await axios.post(`${apiEndpoint}/adduser`, User);
 
-      // Fetch token from cookies if it's available
       const token = document.cookie
-        .split("; ")
-        .find((row) => row.startsWith("token="))
-        ?.split("=")[1];
+      .split("; ")
+      .find((row) => row.startsWith("token="))
+      ?.split("=")[1];
   
-      const response = await fetch(`${apiEndpoint}/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          // Don't send token in Authorization header during login
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({
-          user: { username, password },
-        }),
-      });
-  
-      const data = await response.json();
-  
-      if (!response.ok) {
-        throw data;
-      }
+    
+      const data = await loginUser(
+        username,
+        password,
+        apiEndpoint,
+        token
+      );
   
       // Redirect to the home page after login
       // On successful login, set the token in the cookie
