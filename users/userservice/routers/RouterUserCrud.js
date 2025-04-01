@@ -92,12 +92,8 @@ router.patch('/users/:username', async (req, res) => {
 
         const oldUsername = user.username;
 
-        // Update the username in the users table
-        user.username = newUsername;
-        await user.save();
-
         // Update all game records: change user_id from oldUsername to newUsername
-        const payload = { newUsername: user.username };
+        const payload = { newUsername: newUsername };
 
         const gameResponse = await fetch(`${gatewayServiceUrl}/game/update/${oldUsername}`, {
             method: "PATCH",
@@ -111,6 +107,10 @@ router.patch('/users/:username', async (req, res) => {
         if (!gameResponse.ok) {
             return res.status(404).json({ error: "Error updating the game history to the new username" });
         }
+
+        // Update the username in the users table
+        user.username = newUsername;
+        await user.save();
 
         // Generate a new JWT with the updated username
         const newToken = jwt.sign(
