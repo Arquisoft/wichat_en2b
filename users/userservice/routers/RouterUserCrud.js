@@ -198,11 +198,29 @@ router.post('/user/profile/picture', upload.single('file'), async (req, res) => 
     } catch (error) {
         console.error("Error uploading profile picture:", error);
         res.status(500).json({ error: "Internal Server Error" });
-    }
-
-
-    
+    }    
 });
 
+
+router.get('/user/profile/picture/:username', async (req, res) => {
+    const { username } = req.params;
+
+    if (!username) {
+        return res.status(400).json({ error: "Username required" });
+    }
+
+    try {
+        const user = await User.findOne({ username: username.toString() });
+        if (!user) return res.status(404).json({ error: "User not found" });
+
+        const profilePictureUrl = user.profilePicture; 
+
+        res.status(200).json({ profilePicture: profilePictureUrl });
+
+    } catch (error) {
+        console.error("Error getting profile picture:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }    
+});
 
 module.exports = router;
