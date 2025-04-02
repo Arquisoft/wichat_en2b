@@ -7,7 +7,7 @@ export function middleware(request) {
   console.log("Token:", token);
 
   // If user is logged in (has token) and trying to access /login, redirect to home
-  if (token && request.nextUrl.pathname === "/login") {
+  if (token && (request.nextUrl.pathname === "/login" || request.nextUrl.pathname === "/addUser")) {
     console.log("Logged-in user attempted to access /login, redirecting to /");
     return NextResponse.redirect(new URL("/", request.url));
   }
