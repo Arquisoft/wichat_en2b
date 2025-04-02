@@ -1,7 +1,6 @@
-// src/app/components/home/Navbar.js
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import PropTypes from "prop-types";
 import { AppBar, Toolbar, Avatar, IconButton, Button, Box, Typography, Dialog } from "@mui/material";
 import { Logout as LogoutIcon, Person as PersonIcon } from "@mui/icons-material";
@@ -18,34 +17,13 @@ const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://local
  *
  * @returns {JSX.Element} The rendered Navbar component.
  */
-const Navbar = ({ username }) => {
+const Navbar = ({ username = "Guest", profilePicture }) => {
   if (!username) {
     throw new Error("Invalid props for Navbar component.");
   }
 
-  const [profilePicture, setProfilePicture] = useState(null);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const router = useRouter(); // Use Next.js router for navigation
-
-  const fetchProfilePicture = async () => {
-    try {
-      const response = await fetch(`${apiEndpoint}/user/profile/picture/${username}`);
-
-      if (response.ok) {
-        const data = await response.json();
-        setProfilePicture(data.profilePicture);
-      } else {
-        console.error("Failed to fetch profile picture.");
-      }
-
-    } catch (error) {
-      console.error("Error fetching profile picture:", error);
-    }
-  };
-
-  useEffect(() => {
-    fetchProfilePicture();
-  }, [username]);
 
   const handleLogoClick = () => {
     window.location.reload();
@@ -106,7 +84,7 @@ const Navbar = ({ username }) => {
 
       {/* Dialog for profile form */}
       <Dialog open={isProfileOpen} onClose={handleCloseProfile} maxWidth="sm" fullWidth>
-        <ProfileForm username={username} onSave={handleSaveProfile} />
+        <ProfileForm username={username} profilePicture={profilePicture} onSave={handleSaveProfile} />
       </Dialog>
     </>
   );
@@ -115,6 +93,7 @@ const Navbar = ({ username }) => {
 // Validation with PropTypes for the username prop
 Navbar.propTypes = {
   username: PropTypes.string.isRequired,
+  profilePicture: PropTypes.string,
 };
 
 export default Navbar;

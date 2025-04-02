@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import { Save, Edit, Lock, Security, Person, VerifiedUser, CloudUpload } from "@mui/icons-material";
 import "../../../styles/home/ProfilePage.css"; 
+import "../../../styles/globals.css";
 import QrCode from "@/components/home/2fa/qrCode";
 
 import {
@@ -29,7 +30,7 @@ const FILE_SIZE_LIMIT = 2 * 1024 * 1024; // 2MB
  * 
  * @returns {JSX.Element} 
  */
-export default function ProfileForm({ username, onSave }) {
+export default function ProfileForm({ username, profilePicture, onSave }) {
     if (!username || typeof onSave !== "function") {
         throw new Error("Invalid props for ProfileForm component.");
     }
@@ -50,7 +51,7 @@ export default function ProfileForm({ username, onSave }) {
         currentPassword: "",
         newPassword: "",
         confirmPassword: "",
-        profilePicture: null,
+        profilePicture: profilePicture,
     });
 
     const handleChange = (e) => {
@@ -289,6 +290,7 @@ export default function ProfileForm({ username, onSave }) {
         };
 
         reader.readAsDataURL(file);
+        window.location.reload();
     };
 
     return (
@@ -302,7 +304,7 @@ export default function ProfileForm({ username, onSave }) {
                     >
                         {(!profileData.profilePicture) && (typeof username === "string" && username.length > 0 ? username.charAt(0) : "?")}
                     </Avatar>
-                    <Typography variant="h6">
+                    <Typography variant="h6" className="profile-username">
                         {typeof username === "string" ? username : "Unknown User"}
                     </Typography>
                 </Box>
@@ -465,5 +467,6 @@ export default function ProfileForm({ username, onSave }) {
 
 ProfileForm.propTypes = {
     username: PropTypes.string.isRequired,
+    profilePicture: PropTypes.string,
     onSave: PropTypes.func.isRequired,
 };
