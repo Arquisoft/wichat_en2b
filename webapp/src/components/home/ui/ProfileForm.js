@@ -19,6 +19,7 @@ import {
 } from "@mui/material";
 
 const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://localhost:8000';
+const FILE_SIZE_LIMIT = 2 * 1024 * 1024; // 2MB
 
 /**
  * This component renders a form to edit the user profile.
@@ -38,6 +39,7 @@ export default function ProfileForm({ username, onSave }) {
     const [tabIndex, setTabIndex] = useState(0);
     const [openSnackbar, setOpenSnackbar] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
+    const [profilePictureError, setProfilePictureError] = useState(null);
 
     // 2FA
     const [already2fa, setAlready2fa] = useState(false);
@@ -48,6 +50,7 @@ export default function ProfileForm({ username, onSave }) {
         currentPassword: "",
         newPassword: "",
         confirmPassword: "",
+        profilePicture: null,
     });
 
     const handleChange = (e) => {
@@ -160,6 +163,8 @@ export default function ProfileForm({ username, onSave }) {
                 currentPassword: "",
                 newPassword: "",
                 confirmPassword: "",
+                profilePicture: prev.profilePicture,
+
             }));
 
             onSave({ ...profileData });
@@ -224,6 +229,63 @@ export default function ProfileForm({ username, onSave }) {
         check2FAStatus();
     }, [username]);
 
+    const handleProfilePictureChange = async (e) => {
+        const file = e.target.files[0];
+
+        if (!file) {
+            setProfilePictureError("No file selected.");
+            setProfilePicture(null);
+            return;
+        }         
+        if (!file.type.startsWith("image/")) {
+            setProfilePictureError("Invalid file type. Please select an image.");
+            setProfilePicture(null);
+            return;
+        }         
+        if (file && file.size > FILE_SIZE_LIMIT) {
+            setProfilePictureError("This file is too large. Maximum size is 2MB.");
+            setProfilePicture(null);
+            return;
+        } 
+
+        try {
+            const token = getToken();
+            setProfilePictureError(null);
+            setProfilePicture(file);      
+
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('username', username);
+
+            const response = await fetch(`${apiEndpoint}/user/profile/picture`, {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+                body: formData,
+            });
+
+            if (!response.ok) {
+                throw new Error(`Error HTTP! Estado: ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            setSnackbarMessage("Profile picture updated successfully.");
+            setOpenSnackbar(true);
+
+            setProfileData((prev) => ({
+                ...prev,
+                profilePicture: data.profilePicture,
+            }));        
+
+        } catch (error) {
+            console.error("Error uploading profile picture:", error);
+            setSnackbarMessage(`Error: ${error.message}`);
+            setOpenSnackbar(true);
+        }       
+    };
+
     return (
         <Card className="profile-container">
             <CardContent>
@@ -254,6 +316,29 @@ export default function ProfileForm({ username, onSave }) {
                 {/* Account */}
                 {tabIndex === 0 && (
                     <Box component="form" className="form-section">
+                        {/* Profile Picture */}
+                        <Box className="profile-picture-section" sx={{ mb: 2 }}>
+                            <Typography variant="subtitle1">
+                                Profile Picture
+                            </Typography>
+
+                            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                                <Avatar
+                                    src={profileData.profilePicture || ""}
+                                    alt="Profile Picture"
+                                    sx={{ width: 64, height: 64 }}
+                                />
+                                <label htmlFor="profile-picture-input">Upload profile picture </label>
+                                <input id="profile-picture-input" name="profile-picture" type="file" 
+                                        accept="image/*" hidden onChange={handleProfilePictureChange} />
+                            </Box>
+                            {profilePictureError && (
+                                <Typography color="error" variant="body2">
+                                    {profilePictureError}
+                                </Typography>
+                            )}
+                        </Box>
+
                         <TextField
                             fullWidth
                             label="Username"
@@ -272,7 +357,7 @@ export default function ProfileForm({ username, onSave }) {
                                     Edit Username
                                 </Button>
                             )}
-                        </Box>
+                        </Box>                
                     </Box>
                 )}
 

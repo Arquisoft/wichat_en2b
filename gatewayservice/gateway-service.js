@@ -324,6 +324,12 @@ app.patch('/game/update/:oldUsername', async (req, res) => {
   }
 });
 
+// Profile picture upload
+app.use('/user/profile/picture', publicCors);
+app.post('/user/profile/picture', (req, res) => {
+    forwardRequest('user', '/user/profile/picture', req, res);
+});
+
 // Proxy for images
 app.get('/images/:image', createProxyMiddleware({
   target: serviceUrls.game,

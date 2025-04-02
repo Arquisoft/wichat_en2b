@@ -25,6 +25,11 @@ const userSchema = new mongoose.Schema({
       enum: ['USER', 'ADMIN'],
       validate: [noWhitespaceValidator],
     },
+    profilePicture: {
+      type: String,
+      required: false,
+      validate: [noWhitespaceValidator],
+    },
     createdAt: {
       type: Date,
       default: Date.now,
