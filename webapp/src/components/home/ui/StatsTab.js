@@ -132,7 +132,7 @@ export default function StatsTab() {
 
 function StatCard({ title, value }) {
 	return (
-		<Grid item xs={12} sm={6} md={4}>
+		<Grid xs={12} sm={6} md={4}>
 			<Paper elevation={2} sx={{ p: 2 }}>
 				<Typography variant="h5" component="div">
 					{value}
