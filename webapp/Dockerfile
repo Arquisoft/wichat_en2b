@@ -1,5 +1,5 @@
 # Usa la imagen oficial de Node.js
-FROM node:22
+FROM node:23
 
 # Copia los archivos del proyecto en el contenedor
 COPY . /app

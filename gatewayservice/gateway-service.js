@@ -325,46 +325,56 @@ app.patch('/game/update/:oldUsername', async (req, res) => {
 });
 
 // Profile picture upload
-const multer = require('multer');
-const storage = multer.memoryStorage();
-const upload = multer({ storage: storage });
 app.use('/user/profile/picture', publicCors);
 
-app.post('/user/profile/picture', upload.single('file'), async (req, res) => {
-  if (!req.file) {
-    return res.status(400).json({ error: "No file uploaded." });
+app.post('/user/profile/picture', async (req, res) => {
+  const { image, username } = req.body; 
+
+  if (!image || !username) {
+    return res.status(400).json({ error: "No image or username provided." });
   }
 
-  const headers = {
-    ...req.headers,
-    'Content-Type': `multipart/form-data; boundary=${req.file.boundary}`,
-    'Origin': 'http://localhost:8000',
-  };
-
-  const url = `${serviceUrls.user}/user/profile/picture`;
-
   try {
-    const proxyRequest = fetch(url, {
-        method: 'POST',
-        headers: headers,
-        body: req.file.stream, 
+    const backendUrl =  `${serviceUrls.user}/user/profile/picture`;
+
+    const response = await fetch(backendUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ image, username }), 
     });
 
-      const response = await proxyRequest;
-      const responseBody = await response.json();
+    if (!response.ok) {
+      return res.status(response.status).json({ error: 'Error forwarding profile picture upload request' });
+    }
 
-      res.status(response.status).json(responseBody);
+    const responseBody = await response.json();
+    res.status(response.status).json(responseBody);
+
   } catch (error) {
-      console.error('Error uploading profile picture:', error);
-      res.status(500).json({ error: 'Error uploading profile picture' });
+    console.error('Error forwarding profile picture upload request:', error);
+    res.status(500).json({ error: 'Error forwarding profile picture upload request' });
   }
 });
 
 // Proxy for images
-app.get('/images/:image', createProxyMiddleware({
-  target: serviceUrls.game,
-  changeOrigin: true
-}));
+app.get('/images/:image', (req, res, next) => {
+  const { image } = req.params;
+
+  if (image.includes('_profile_picture')) {
+    createProxyMiddleware({
+      target: serviceUrls.user,
+      changeOrigin: true,
+    })(req, res, next);
+
+  } else {
+    createProxyMiddleware({
+      target: serviceUrls.game,
+      changeOrigin: true,
+    })(req, res, next);
+  }
+});
 
 app.post('/game', (req, res) => {
   forwardRequest('game', '/game', req, res);

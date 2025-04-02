@@ -2,9 +2,10 @@ const express = require('express');
 const router = express.Router();
 const User = require('../user-model');
 const bcrypt = require('bcrypt');
-const Busboy = require('busboy');
 const fs = require('fs');
+const path = require('path');
 
+router.use(express.json());
 const gatewayServiceUrl = process.env.GATEWAY_SERVICE_URL || 'http://gatewayservice:8000'; // NOSONAR
 
 // Create a new user
@@ -159,44 +160,35 @@ router.patch('/users/:username/password', async (req, res) => {
     }
 });
 
-router.post('/user/profile/picture', (req, res) => {
-    const busboy = Busboy({ headers: req.headers });
-    
-    console.log("Uploading profile picture...");
-    console.log("Busboy: ", busboy);
+router.post('/user/profile/picture', async (req, res) => {
+    const { image, username } = req.body;
+  
+    if (!image || !username) {
+      return res.status(400).json({ error: "No image or username provided." });
+    }
+  
+    try {
+        const user = await User.findOne({ username: username.toString() });
+        if (!user) return res.status(404).json({ error: "User not found" });
 
-    let username;
-    let profilePicture;
+        const imagesDir = './public/images';
+        await fs.promises.mkdir(imagesDir, { recursive: true });
 
-    busboy.on('field', (fieldname, val) => {
-        if (fieldname === 'username') username = val;
-    });
+        const filePath = path.join(imagesDir, `${username}_profile_picture.png`);
+        const buffer = Buffer.from(image, 'base64');
+   
+        await fs.promises.writeFile(filePath, buffer);
+        const imageUrl = `/images/${username}_profile_picture.png`;
 
-    busboy.on('file', (fieldname, file, filename, encoding, mimetype) => {
-        const saveTo = `./uploads/${filename}`;
-        file.pipe(fs.createWriteStream(saveTo));
-        profilePicture = saveTo;
-    });
+        user.profilePicture = imageUrl;
+        await user.save();
 
-    busboy.on('finish', async () => {
-        if (!username) {
-            return res.status(400).json({ error: "Username required" });
-        }
-
-        if (!profilePicture) {
-            return res.status(400).json({ error: "Picture required" });
-        }
-
-        console.log(`Archivo recibido: ${profilePicture}, tamaño: ${fs.statSync(profilePicture).size} bytes`);
-        // Actualizar la foto del perfil de un usuario en la base de datos
-
-        res.status(200).json({
-            message: "Profile picture uploaded successfully",
-            profilePicture: profilePicture 
-        });
-    });
-
-    req.pipe(busboy);
+        res.status(200).json({ profilePicture: imageUrl });
+  
+    } catch (error) {
+        console.error('Error uploading profile picture:', error);
+        res.status(500).json({ error: 'Error uploading profile picture' });
+    }
 });
 
 router.get('/user/profile/picture/:username', async (req, res) => {

@@ -245,44 +245,50 @@ export default function ProfileForm({ username, onSave }) {
             return;
         } 
 
-        try {
-            const token = getToken();
-            setProfilePictureError(null);    
-            
-            console.log("Uploading profile picture...");
-            console.log("File:", file);
+        const reader = new FileReader();
 
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('username', username);
+        reader.onloadend = async () => {
+            const base64Image = reader.result.split(',')[1]; 
 
-            const response = await fetch(`${apiEndpoint}/user/profile/picture`, {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-                body: formData,
-            });
+            try {
+                const token = getToken();
+                setProfilePictureError(null);
 
-            if (!response.ok) {
-                throw new Error(`Error HTTP! Estado: ${response.status}`);
+                console.log("Uploading profile picture...");
+                console.log("Base64 Image:", base64Image);
+
+                const response = await fetch(`${apiEndpoint}/user/profile/picture`, {
+                    method: "POST",
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        "Content-Type": "application/json", 
+                    },
+                    body: JSON.stringify({ image: base64Image, username: username }), 
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Error HTTP! Estado: ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log("Profile picture uploaded successfully:", data);
+
+                setSnackbarMessage("Profile picture updated successfully.");
+                setOpenSnackbar(true);
+
+                setProfileData((prev) => ({
+                    ...prev,
+                    profilePicture: data.profilePicture, 
+                }));
+
+            } catch (error) {
+                console.error("Error uploading profile picture:", error);
+                setSnackbarMessage(`Error: ${error.message}`);
+                setOpenSnackbar(true);
             }
+        };
 
-            const data = await response.json();
-
-            setSnackbarMessage("Profile picture updated successfully.");
-            setOpenSnackbar(true);
-
-            setProfileData((prev) => ({
-                ...prev,
-                profilePicture: data.profilePicture,
-            }));        
-
-        } catch (error) {
-            console.error("Error uploading profile picture:", error);
-            setSnackbarMessage(`Error: ${error.message}`);
-            setOpenSnackbar(true);
-        }       
+        reader.readAsDataURL(file);
     };
 
     return (
