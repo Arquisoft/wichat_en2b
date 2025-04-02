@@ -55,7 +55,7 @@ router.get('/groups/:name', async (req, res) => {
 router.delete('/groups/:name', async (req, res) => {
     try {
         const group = await Group.findOneAndDelete({name: req.params.name.toString() });
-        if (!user) {
+        if (!group) {
             return res.status(404).send();
         }
         res.status(200).send(group);
