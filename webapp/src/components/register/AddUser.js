@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, {useEffect, useState} from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import "../../styles/globals.css";
@@ -19,6 +19,16 @@ const AddUser = () => {
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const router = useRouter();
+
+  useEffect(() => {
+    setUsername("");
+    setPassword("");
+    setConfirmPassword("");
+    setRole("USER");
+    setError("");
+    setValidationErrors({});
+    setIsSubmitting(false);
+  }, []);
 
   const validateForm = () => {
     const newErrors = {}
@@ -48,6 +58,15 @@ const AddUser = () => {
     }
   
     setValidationErrors(newErrors);
+
+    if (newErrors.username || newErrors.passwordErrors || newErrors.confirmPasswordErrors) {
+      setUsername("");
+      setPassword("");
+      setConfirmPassword("");
+      setRole("USER");
+      setIsSubmitting(false);
+    }
+
     return Object.keys(newErrors).length === 0
   }
 
@@ -95,6 +114,15 @@ const AddUser = () => {
         if (error.response.data.error === 'Username already exists') {
           const newErrors = { ...validationErrors };
           newErrors.username = 'Username already exists'; // Set the error message for the username field
+
+          if (newErrors.username || newErrors.passwordErrors || newErrors.confirmPasswordErrors) {
+            setUsername("");
+            setPassword("");
+            setConfirmPassword("");
+            setRole("USER");
+            setIsSubmitting(false);
+          }
+
           setValidationErrors(newErrors);
         } 
       } else {
@@ -140,8 +168,8 @@ const AddUser = () => {
                   required
                   disabled={isSubmitting}
               />
-              {validationErrors.password && (
-                  <p className="error-message">{validationErrors.password}</p>
+              {validationErrors.passwordErrors && (
+                  <p className="error-message">{validationErrors.passwordErrors}</p>
               )}
             </div>
 
@@ -156,8 +184,8 @@ const AddUser = () => {
                   required
                   disabled={isSubmitting}
               />
-              {validationErrors.confirmPassword && (
-                  <p className="error-message">{validationErrors.confirmPassword}</p>
+              {validationErrors.confirmPasswordErrors && (
+                  <p className="error-message">{validationErrors.confirmPasswordErrors}</p>
               )}
             </div>
 
