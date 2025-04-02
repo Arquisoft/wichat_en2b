@@ -1,0 +1,92 @@
+openapi: 1.0.0
+info:
+  title: User Group Service API
+  version: 1.0.0
+  description: API for managing user groups in the User Service
+servers:
+  - url: http://localhost:8006
+    description: Local server
+paths:
+  /usergroups:
+    post:
+      summary: Create a new user group
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserGroup'
+      responses:
+        '201':
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserGroup'
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+    get:
+      summary: Get all groups
+      responses:
+        '200':
+          description: A list of groups
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserGroup'
+        '500':
+          description: Internal server error
+  /users/{username}:
+    get:
+      summary: Get a group by name
+      parameters:
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Group found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserGroup'
+        '404':
+          description: Group not found
+        '500':
+          description: Internal server error
+    delete:
+      summary: Delete a group by name
+      parameters:
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Group deleted successfully
+        '404':
+          description: Group not found
+        '500':
+          description: Internal server error
+components:
+  schemas:
+    UserGroup:
+      type: object
+      properties:
+        name:
+          type: string
+        owner:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - name
+        - owner
