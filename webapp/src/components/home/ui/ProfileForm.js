@@ -327,49 +327,31 @@ export default function ProfileForm({ username, onSave }) {
                     <Box component="form" className="form-section">
                         {/* Sección de foto de perfil mejorada */}
                         <Box 
-                        sx={{ 
-                            mb: 4, 
-                            display: "flex", 
-                            flexDirection: "column", 
-                            alignItems: "center", 
-                            border: "1px solid #e0e0e0", 
-                            borderRadius: 2, 
-                            p: 2 
-                        }}
-                        >
-                        <Typography variant="subtitle1" sx={{ mb: 1 }}>
-                            Profile Picture
-                        </Typography>
-                        
-                        {/* Avatar grande para la foto actual */}
-                        <Avatar
-                            src={profileData.profilePicture || ""}
-                            alt="Profile Picture"
-                            sx={{ width: 100, height: 100, mb: 2 }}
-                        />
-                        
-                        {/* Botón estilizado para cambiar la foto */}
-                        <Button 
-                            variant="contained" 
-                            color="primary"
-                            component="label" 
-                            startIcon={<CloudUpload />}
-                            sx={{ textTransform: "none" }}
-                        >
-                            Change Photo
-                            <input 
-                            type="file" 
-                            accept="image/*" 
-                            hidden 
-                            onChange={handleProfilePictureChange} 
-                            />
-                        </Button>
-                        
-                        {profilePictureError && (
-                            <Typography variant="body2" color="error" sx={{ mt: 1 }}>
-                            {profilePictureError}
-                            </Typography>
-                        )}
+                            sx={{ 
+                                mb: 4, 
+                                display: "flex", 
+                                flexDirection: "column", 
+                                alignItems: "center", 
+                                border: "1px solid #e0e0e0", 
+                                borderRadius: 2, 
+                                p: 2 
+                            }}
+                        >                        
+                            {/* Button for uploading the photo */}
+                            <label htmlFor="profile-picture-input">
+                                <Button variant="contained" color="primary"
+                                        startIcon={<CloudUpload />} sx={{ textTransform: "none" }}>
+                                    Change profile picture
+                                </Button>
+                                <input id="profile-picture-input" type="file" accept="image/*" 
+                                        hidden onChange={handleProfilePictureChange} />
+                            </label>
+                            
+                            {profilePictureError && (
+                                <Typography variant="body2" color="error" sx={{ mt: 1 }}>
+                                    {profilePictureError}
+                                </Typography>
+                            )}
                         </Box>
 
                         {/* Campo para cambiar el nombre de usuario */}
