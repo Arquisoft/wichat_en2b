@@ -5,75 +5,103 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import "../../styles/globals.css";
 import "../../styles/register/Register.css";
+import { loginUser } from '@/utils/LoginUtil';
 
 const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://localhost:8000';
 
 const AddUser = () => {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [error, setError] = useState("");
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [role, setRole] = useState('USER');
+  const [error, setError] = useState('');
   const [validationErrors, setValidationErrors] = useState({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const router = useRouter();
 
   const validateForm = () => {
-    const newErrors = {};
-
+    const newErrors = {}
+    
     const trimmedUsername = username.trim();
     const trimmedPassword = password.trim();
     const trimmedConfirmPassword = confirmPassword.trim();
 
     if (!trimmedUsername) {
-      newErrors.username = "Username is required";
+        newErrors.username = "Username is required";
     } else if (trimmedUsername.length < 3) {
-      newErrors.username = "Username must be at least 3 characters";
-    } else if (trimmedUsername.includes(" ")) {
-      newErrors.username = "Username cannot contain white spaces";
+        newErrors.username = "Username must be at least 3 characters";
+    } else if (trimmedUsername.includes(" ")){
+        newErrors.username = "Username cannot contain white spaces";
     }
 
     if (!trimmedPassword) {
-      newErrors.password = "Password is required";
+        newErrors.passwordErrors = "The password is required"; // NOSONAR
     } else if (trimmedPassword.length < 6) {
-      newErrors.password = "Password must be at least 6 characters";
+        newErrors.passwordErrors = "The password must be at least 6 characters"; // NOSONAR
     }
 
     if (!trimmedConfirmPassword) {
-      newErrors.confirmPassword = "Please confirm your password";
+        newErrors.confirmPasswordErrors = "Please confirm your password";
     } else if (trimmedPassword !== trimmedConfirmPassword) {
-      newErrors.confirmPassword = "Passwords do not match";
+        newErrors.confirmPasswordErrors = "Passwords do not match";
     }
-
+  
     setValidationErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+    return Object.keys(newErrors).length === 0
+  }
 
   const addUser = async (e) => {
-    e.preventDefault();
-    if (!validateForm()) return;
+    // For anyone reading, the default behavior of a form submit is to reload the page  
+    e.preventDefault(); // Prevent the default form submit so that errors can be shown (if any)
 
-    setIsSubmitting(true);
+    if (!validateForm()) { // If there are errors, do not submit the form
+      return
+    }
+
+    setIsSubmitting(true)
 
     try {
-      const user = {
+      setRole('USER');
+      const User =
+      {
+        username:username,
+        password:password,
+        role:role,
+      }
+
+      await axios.post(`${apiEndpoint}/adduser`, User);
+
+      const token = document.cookie
+      .split("; ")
+      .find((row) => row.startsWith("token="))
+      ?.split("=")[1];
+
+
+      const data = await loginUser(
         username,
         password,
-        role: "USER",
-      };
+        apiEndpoint,
+        token
+      );
 
-      await axios.post(`${apiEndpoint}/adduser`, user);
-      router.push("/login");
-    } catch (error) {
+      // Redirect to the home page after login
+      // On successful login, set the token in the cookie
+      document.cookie = `token=${data.token}; path=/; max-age=3600`;
+      router.push("/");
+
+    } catch (error) {    
       if (error.response && error.response.status === 400) {
-        if (error.response.data.error === "Username already exists") {
-          setValidationErrors({ username: "Username already exists" });
-        }
+        if (error.response.data.error === 'Username already exists') {
+          const newErrors = { ...validationErrors };
+          newErrors.username = 'Username already exists'; // Set the error message for the username field
+          setValidationErrors(newErrors);
+        } 
       } else {
         setError("An error has occurred. Please try again later.");
       }
       setIsSubmitting(false);
-    }
+    } 
   };
 
   return (
