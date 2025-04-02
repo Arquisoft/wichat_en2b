@@ -113,6 +113,20 @@ router.patch('/users/:username', async (req, res) => {
             return res.status(404).json({ error: "Error updating the game history to the new username" });
         }
 
+        // Update the profile picture file and URL
+        const imagesDir = './public/images';
+        const oldFilePath = path.join(imagesDir, `${oldUsername}_profile_picture.png`);
+        const newFilePath = path.join(imagesDir, `${newUsername}_profile_picture.png`);
+
+        try {
+            await fs.promises.rename(oldFilePath, newFilePath);
+        } catch (err) {
+            console.warn(`Profile picture for ${oldUsername} not found or could not be renamed.`);
+        }
+
+        const newProfilePictureUrl = `${userServiceUrl}/images/${newUsername}_profile_picture.png`;
+        user.profilePicture = newProfilePictureUrl
+
         // Update the username in the users table
         user.username = newUsername;
         await user.save();

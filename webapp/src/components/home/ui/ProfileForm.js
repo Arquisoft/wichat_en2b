@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
-import { Save, Edit, Lock, Security, Person, VerifiedUser } from "@mui/icons-material";
+import { Save, Edit, Lock, Security, Person, VerifiedUser, CloudUpload } from "@mui/icons-material";
 import "../../../styles/home/ProfilePage.css"; 
 import QrCode from "@/components/home/2fa/qrCode";
 
@@ -296,10 +296,14 @@ export default function ProfileForm({ username, onSave }) {
             <CardContent>
                 {/* Header with Avatar and Name */}
                 <Box className="profile-header">
-                    <Avatar className="profile-avatar">
-                        {typeof username === "string" && username.length > 0 ? username.charAt(0) : "?"}
+                    <Avatar
+                        className="profile-avatar"
+                        src={profileData.profilePicture || ""}
+                        sx={{ width: 80, height: 80, margin: "0 auto" }}
+                    >
+                        {(!profileData.profilePicture) && (typeof username === "string" && username.length > 0 ? username.charAt(0) : "?")}
                     </Avatar>
-                    <Typography variant="h6">
+                    <Typography variant="h6" sx={{ mt: 1 }}>
                         {typeof username === "string" ? username : "Unknown User"}
                     </Typography>
                 </Box>
@@ -321,29 +325,54 @@ export default function ProfileForm({ username, onSave }) {
                 {/* Account */}
                 {tabIndex === 0 && (
                     <Box component="form" className="form-section">
-                        {/* Profile Picture */}
-                        <Box className="profile-picture-section" sx={{ mb: 2 }}>
-                            <Typography variant="subtitle1">
-                                Profile Picture
+                        {/* Sección de foto de perfil mejorada */}
+                        <Box 
+                        sx={{ 
+                            mb: 4, 
+                            display: "flex", 
+                            flexDirection: "column", 
+                            alignItems: "center", 
+                            border: "1px solid #e0e0e0", 
+                            borderRadius: 2, 
+                            p: 2 
+                        }}
+                        >
+                        <Typography variant="subtitle1" sx={{ mb: 1 }}>
+                            Profile Picture
+                        </Typography>
+                        
+                        {/* Avatar grande para la foto actual */}
+                        <Avatar
+                            src={profileData.profilePicture || ""}
+                            alt="Profile Picture"
+                            sx={{ width: 100, height: 100, mb: 2 }}
+                        />
+                        
+                        {/* Botón estilizado para cambiar la foto */}
+                        <Button 
+                            variant="contained" 
+                            color="primary"
+                            component="label" 
+                            startIcon={<CloudUpload />}
+                            sx={{ textTransform: "none" }}
+                        >
+                            Change Photo
+                            <input 
+                            type="file" 
+                            accept="image/*" 
+                            hidden 
+                            onChange={handleProfilePictureChange} 
+                            />
+                        </Button>
+                        
+                        {profilePictureError && (
+                            <Typography variant="body2" color="error" sx={{ mt: 1 }}>
+                            {profilePictureError}
                             </Typography>
-
-                            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                                <Avatar
-                                    src={profileData.profilePicture || ""}
-                                    alt="Profile Picture"
-                                    sx={{ width: 64, height: 64 }}
-                                />
-                                <label htmlFor="profile-picture-input">Upload profile picture </label>
-                                <input id="profile-picture-input" name="profile-picture" type="file" 
-                                        accept="image/*" hidden onChange={handleProfilePictureChange} />
-                            </Box>
-                            {profilePictureError && (
-                                <Typography color="error" variant="body2">
-                                    {profilePictureError}
-                                </Typography>
-                            )}
+                        )}
                         </Box>
 
+                        {/* Campo para cambiar el nombre de usuario */}
                         <TextField
                             fullWidth
                             label="Username"
@@ -352,6 +381,8 @@ export default function ProfileForm({ username, onSave }) {
                             onChange={handleChange}
                             disabled={!editingAccount}
                         />
+                        
+                        {/* Botones para editar o guardar el nombre de usuario */}
                         <Box className="action-button" sx={{ mt: 2 }}>
                             {editingAccount ? (
                                 <Button variant="contained" startIcon={<Save />} onClick={handleSaveUsername}>
@@ -365,6 +396,7 @@ export default function ProfileForm({ username, onSave }) {
                         </Box>                
                     </Box>
                 )}
+
 
                 {/* Pestaña Security */}
                 {tabIndex === 1 && (
