@@ -9,6 +9,8 @@ import { useRouter } from "next/navigation"; // Import useRouter for navigation
 import "../../../styles/home/Navbar.css";
 import ProfileForm from "./ProfileForm";
 
+const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://localhost:8000';
+
 /**
  * Navigation bar for the application.
  *
@@ -21,8 +23,29 @@ const Navbar = ({ username }) => {
     throw new Error("Invalid props for Navbar component.");
   }
 
+  const [profilePicture, setProfilePicture] = useState(null);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const router = useRouter(); // Use Next.js router for navigation
+
+  const fetchProfilePicture = async () => {
+    try {
+      const response = await fetch(`${apiEndpoint}/user/profile/picture/${username}`);
+
+      if (response.ok) {
+        const data = await response.json();
+        setProfilePicture(data.profilePicture);
+      } else {
+        console.error("Failed to fetch profile picture.");
+      }
+
+    } catch (error) {
+      console.error("Error fetching profile picture:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchProfilePicture();
+  }, [username]);
 
   const handleLogoClick = () => {
     window.location.reload();
@@ -52,8 +75,11 @@ const Navbar = ({ username }) => {
       <AppBar position="sticky" className="app-bar">
         <Toolbar className="toolbar">
           <Box className="navbar-left" onClick={handleLogoClick}>
-            <Avatar className="logo-avatar">Wi</Avatar>
-            <Typography variant="h6" className="app-title">WiChat</Typography>
+            {/* Displaying the profile picture in the Avatar */}
+            <Avatar className="logo-avatar" src={profilePicture || ""}>
+              {!profilePicture && "Wi"} 
+            </Avatar>
+            <Typography variant="h6" className="app-title">WiChat - {username}</Typography>
           </Box>
 
           <Box className="spacer" />

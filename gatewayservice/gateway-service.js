@@ -358,6 +358,36 @@ app.post('/user/profile/picture', async (req, res) => {
   }
 });
 
+// Profile picture retrieval
+app.use('/user/profile/picture/:username', publicCors);
+app.get('/user/profile/picture/:username', async (req, res) => {
+  const { username } = req.params;
+
+  try {
+    if(!username) {
+      return res.status(400).json({ error: 'Username is required' });
+    }
+
+    const response = await fetch(`${serviceUrls.user}/user/profile/picture/${username}`, {
+      method: 'GET',
+      headers: {
+        Origin: 'http://localhost:8000',
+      },
+    });
+
+    if (!response.ok) {
+      return res.status(response.status).json({ error: 'Error retrieving profile picture' });
+    }
+
+    const responseBody = await response.json();
+    res.status(response.status).json(responseBody);
+
+  } catch (error) {
+    console.error('Error retrieving profile picture:', error);
+    res.status(500).json({ error: 'Error retrieving profile picture' });
+  }
+});
+
 // Proxy for images
 app.get('/images/:image', (req, res, next) => {
   const { image } = req.params;

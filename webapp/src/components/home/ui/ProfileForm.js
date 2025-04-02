@@ -299,11 +299,10 @@ export default function ProfileForm({ username, onSave }) {
                     <Avatar
                         className="profile-avatar"
                         src={profileData.profilePicture || ""}
-                        sx={{ width: 80, height: 80, margin: "0 auto" }}
                     >
                         {(!profileData.profilePicture) && (typeof username === "string" && username.length > 0 ? username.charAt(0) : "?")}
                     </Avatar>
-                    <Typography variant="h6" sx={{ mt: 1 }}>
+                    <Typography variant="h6">
                         {typeof username === "string" ? username : "Unknown User"}
                     </Typography>
                 </Box>
