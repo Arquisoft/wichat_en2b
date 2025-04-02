@@ -234,24 +234,20 @@ export default function ProfileForm({ username, onSave }) {
 
         if (!file) {
             setProfilePictureError("No file selected.");
-            setProfilePicture(null);
             return;
         }         
         if (!file.type.startsWith("image/")) {
             setProfilePictureError("Invalid file type. Please select an image.");
-            setProfilePicture(null);
             return;
         }         
         if (file && file.size > FILE_SIZE_LIMIT) {
             setProfilePictureError("This file is too large. Maximum size is 2MB.");
-            setProfilePicture(null);
             return;
         } 
 
         try {
             const token = getToken();
-            setProfilePictureError(null);
-            setProfilePicture(file);      
+            setProfilePictureError(null);     
 
             const formData = new FormData();
             formData.append('file', file);

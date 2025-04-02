@@ -82,7 +82,6 @@ router.post('/login', [
       res.json({ token: token , has2fa : has2fa});
     }
     
-    
   } catch (error) {
     logger.error('Error in /login endpoint', error);
     res.status(500).json({ error: 'Internal Server Error' });
