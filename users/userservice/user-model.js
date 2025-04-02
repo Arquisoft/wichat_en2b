@@ -25,6 +25,10 @@ const userSchema = new mongoose.Schema({
       enum: ['USER', 'ADMIN'],
       validate: [noWhitespaceValidator],
     },
+    userGroup: {
+      type: String,
+      required: false
+    },
     createdAt: {
       type: Date,
       default: Date.now,
