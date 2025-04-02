@@ -7,6 +7,7 @@ const path = require('path');
 
 router.use(express.json());
 const gatewayServiceUrl = process.env.GATEWAY_SERVICE_URL || 'http://gatewayservice:8000'; // NOSONAR
+const userServiceUrl = process.env.USER_SERVICE_URL || 'http://localhost:8001'// NOSONAR
 
 // Create a new user
 router.post('/users', async (req, res) => {
@@ -178,7 +179,7 @@ router.post('/user/profile/picture', async (req, res) => {
         const buffer = Buffer.from(image, 'base64');
    
         await fs.promises.writeFile(filePath, buffer);
-        const imageUrl = `/images/${username}_profile_picture.png`;
+        const imageUrl = `${userServiceUrl}/images/${username}_profile_picture.png`;
 
         user.profilePicture = imageUrl;
         await user.save();
