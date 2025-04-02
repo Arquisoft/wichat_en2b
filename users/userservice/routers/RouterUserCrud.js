@@ -2,7 +2,8 @@ const express = require('express');
 const router = express.Router();
 const User = require('../user-model');
 const bcrypt = require('bcrypt');
-const multer = require('multer');
+const Busboy = require('busboy');
+const fs = require('fs');
 
 const gatewayServiceUrl = process.env.GATEWAY_SERVICE_URL || 'http://gatewayservice:8000'; // NOSONAR
 
@@ -158,49 +159,45 @@ router.patch('/users/:username/password', async (req, res) => {
     }
 });
 
-// Configure multer for file uploads
-const storage = multer.memoryStorage();
-const upload = multer({ storage: storage });
+router.post('/user/profile/picture', (req, res) => {
+    const busboy = Busboy({ headers: req.headers });
+    
+    console.log("Uploading profile picture...");
+    console.log("Busboy: ", busboy);
 
-router.post('/user/profile/picture', upload.single('file'), async (req, res) => {
-    const { username } = req.body;
-    const picture = req.file;
+    let username;
+    let profilePicture;
 
-    if (!username) {
-        return res.status(400).json({ error: "Username required" });
-    }
+    busboy.on('field', (fieldname, val) => {
+        if (fieldname === 'username') username = val;
+    });
 
-    if (!picture) {
-        return res.status(400).json({ error: "Picture required" });
-    }
+    busboy.on('file', (fieldname, file, filename, encoding, mimetype) => {
+        const saveTo = `./uploads/${filename}`;
+        file.pipe(fs.createWriteStream(saveTo));
+        profilePicture = saveTo;
+    });
 
-    try {
-        // Aquí puedes guardar el archivo en un sistema de almacenamiento (por ejemplo, S3, disco local, etc.)
-        // Por ahora, simplemente devolvemos el archivo como respuesta para verificar que se recibió correctamente.
-        console.log(`Archivo recibido: ${file.originalname}, tamaño: ${file.size} bytes`);
-/*
-        // Simular guardar la imagen en la base de datos o almacenamiento
-        const profilePictureUrl = `/uploads/${file.originalname}`; // Ruta simulada
+    busboy.on('finish', async () => {
+        if (!username) {
+            return res.status(400).json({ error: "Username required" });
+        }
 
-        // Update the user's profile picture in the database
-        const user = await User.findOne({ username: username.toString() });
-        if (!user) return res.status(404).json({ error: "User not found" });
+        if (!profilePicture) {
+            return res.status(400).json({ error: "Picture required" });
+        }
 
-        // Save the image URL in the user
-        user.profilePicture = profilePictureUrl; 
-        await user.save();
-*/
-        res.status(200).json({ 
-            message: "Profile picture uploaded successfully", 
-            profilePicture: profilePictureUrl 
+        console.log(`Archivo recibido: ${profilePicture}, tamaño: ${fs.statSync(profilePicture).size} bytes`);
+        // Actualizar la foto del perfil de un usuario en la base de datos
+
+        res.status(200).json({
+            message: "Profile picture uploaded successfully",
+            profilePicture: profilePicture 
         });
+    });
 
-    } catch (error) {
-        console.error("Error uploading profile picture:", error);
-        res.status(500).json({ error: "Internal Server Error" });
-    }    
+    req.pipe(busboy);
 });
-
 
 router.get('/user/profile/picture/:username', async (req, res) => {
     const { username } = req.params;

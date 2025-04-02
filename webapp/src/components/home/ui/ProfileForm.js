@@ -247,7 +247,10 @@ export default function ProfileForm({ username, onSave }) {
 
         try {
             const token = getToken();
-            setProfilePictureError(null);     
+            setProfilePictureError(null);    
+            
+            console.log("Uploading profile picture...");
+            console.log("File:", file);
 
             const formData = new FormData();
             formData.append('file', file);
