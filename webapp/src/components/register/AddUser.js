@@ -80,7 +80,7 @@ const AddUser = () => {
       <div className="register-container">
         <div className="register-card">
           <h2>Create an Account</h2>
-          <p>Enter your details below to sign up!</p>
+          <p>Enter your username and password below to sign up!</p>
 
           {error && <p className="error-message">{error}</p>}
 

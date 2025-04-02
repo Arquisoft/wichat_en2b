@@ -142,6 +142,10 @@ body .twofa-option button:hover {
   background-color: #1257a3;
 }
 
+.qrcode-img {
+  max-width: 100%;
+}
+
 @media (max-width: 600px) {
   body .MuiTabs-root {
     overflow-x: auto; 
