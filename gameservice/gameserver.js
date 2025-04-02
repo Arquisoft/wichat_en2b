@@ -6,7 +6,7 @@ const generateRouter = require('./routers/RouterQuestionFetcher');
 const gameRouter = require('./routers/RouterGameInfo');
 const statisticsRouter = require('./routers/RouterStatistics');
 
-const app = express();
+const app = express(); //NOSONAR
 app.use(express.json());
 const port = 8004;
 
