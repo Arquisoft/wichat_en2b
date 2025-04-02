@@ -1,0 +1,30 @@
+{
+  "name": "groupservice",
+  "version": "1.0.0",
+  "description": "User group service, in charge of handling user groups in the application",
+  "main": "service.js",
+  "scripts": {
+    "start": "node group-service.js",
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/arquisoft/wichat_en2b.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/arquisoft/wichat_en2b/issues"
+  },
+  "homepage": "https://github.com/arquisoft/wichat_en2b#readme",
+  "dependencies": {
+    "express": "^4.21.2",
+    "helmet": "^8.0.0",
+    "mongoose": "^8.9.3"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "mongodb-memory-server": "^10.1.3",
+    "supertest": "^7.0.0"
+  }
+}
