@@ -136,10 +136,6 @@ export default function QuestionGame(params) {
         };
     }, []);
 
-    function finishGame() {
-
-    }
-
     return currentQuestion < totalQuestions ? (
         <div className="quiz-wrapper">
             {/* Timer and progress bar */}

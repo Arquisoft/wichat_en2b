@@ -83,6 +83,13 @@
     min-width: 50px; /* Prevents the message box from becoming too small */
 }
 
+.content-box{
+    width: 100%;
+    text-align: center;
+    position: relative;
+    overflow-y: auto;
+}
+
 /* Input and Send Button */
 .content-box>.chatWindow>.inputArea>.inputField {
     margin-right: 12px;
