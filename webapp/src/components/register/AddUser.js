@@ -14,6 +14,7 @@ import {
 import '../../styles/register/Register.css';
 import '../../styles/globals.css';
 import { useRouter } from "next/navigation";
+import { loginUser } from '@/utils/LoginUtil';
 
 const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://localhost:8000';
 
@@ -79,7 +80,24 @@ const AddUser = () => {
       }
 
       await axios.post(`${apiEndpoint}/adduser`, User);
-      router.push('/login');
+
+      const token = document.cookie
+      .split("; ")
+      .find((row) => row.startsWith("token="))
+      ?.split("=")[1];
+  
+    
+      const data = await loginUser(
+        username,
+        password,
+        apiEndpoint,
+        token
+      );
+  
+      // Redirect to the home page after login
+      // On successful login, set the token in the cookie
+      document.cookie = `token=${data.token}; path=/; max-age=3600`;
+      router.push("/");
 
     } catch (error) {    
       if (error.response && error.response.status === 400) {
