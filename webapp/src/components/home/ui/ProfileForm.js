@@ -147,6 +147,7 @@ useEffect(() => {
               onChange={(e, newValue) => setTabIndex(newValue)} 
               scrollButtons="auto"
               variant="scrollable"
+              className={"tabs-header"}
             >
               <Tab label="Account" icon={<Person />} />
               <Tab label="Security" icon={<Lock />} />
