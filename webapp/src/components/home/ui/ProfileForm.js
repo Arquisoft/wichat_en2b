@@ -338,7 +338,7 @@ export default function ProfileForm({ username, onSave }) {
                         >                        
                             {/* Button for uploading the photo */}
                             <label htmlFor="profile-picture-input">
-                                <Button variant="contained" color="primary"
+                                <Button variant="contained" color="primary" component="span"
                                         startIcon={<CloudUpload />} sx={{ textTransform: "none" }}>
                                     Change profile picture
                                 </Button>

@@ -1,7 +1,7 @@
 // src/app/components/home/Navbar.js
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import { AppBar, Toolbar, Avatar, IconButton, Button, Box, Typography, Dialog } from "@mui/material";
 import { Logout as LogoutIcon, Person as PersonIcon } from "@mui/icons-material";

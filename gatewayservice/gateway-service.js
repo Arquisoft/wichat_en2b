@@ -80,7 +80,7 @@ app.post('/users', (req, res) => forwardRequest('user', '/users', req, res));
 
 app.get('/users', (req, res) => {
   const { id } = req.query;
-  const endpoint = id ? `/users?id=${id}` : '/users';
+  const endpoint = id && typeof id === 'string' ? `/users?id=${id}` : '/users';
   forwardRequest('user', endpoint, req, res);
 });
 
