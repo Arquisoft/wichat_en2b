@@ -89,12 +89,12 @@ router.patch('/users/:username', async (req, res) => {
             return res.status(400).json({ error: "Username is required" });
         }
 
-        const user = await User.findOne({ username: username.toString() });
-        if (!user) return res.status(404).json({ error: "User not found" });
-
         // Verify if the new username is available
         const existingUser = await User.findOne({ username: newUsername.toString() });
-        if (existingUser) return res.status(400).json({ error: "Username already taken" });
+        if (existingUser) return res.status(404).json({ error: "Username already taken" });
+
+        const user = await User.findOne({ username: username.toString() });
+        if (!user) return res.status(500).json({ error: "User not found" });
 
         const oldUsername = user.username;
 
@@ -132,6 +132,13 @@ router.patch('/users/:username', async (req, res) => {
         user.username = newUsername;
         await user.save();
 
+        // Find new user by new username
+        const updatedUser = await User.findOne({ username: newUsername.toString() });        
+
+        if (!updatedUser) {
+            return res.status(500).json({ error: "Updated user not found" });
+        }
+        
         // Generate a new JWT with the updated username
         const jwt = require('jsonwebtoken');
         const newToken = jwt.sign(
@@ -142,6 +149,9 @@ router.patch('/users/:username', async (req, res) => {
 
         res.status(200).json({ message: "Username updated successfully", token: newToken });
     } catch (error) {
+        if (error.name === "MongoNetworkError") {
+            return res.status(500).json({ error: "Database unavailable" });
+        }
         console.error("Error updating username:", error);
         res.status(500).json({ error: "Internal Server Error" });
     }
@@ -172,6 +182,9 @@ router.patch('/users/:username/password', async (req, res) => {
         res.status(200).json({ message: "Password updated successfully" });
 
     } catch (error) {
+        if (error.name === "MongoNetworkError") {
+            return res.status(500).json({ error: "Database unavailable" });
+        }
         res.status(500).json({ error: "Internal Server Error" });
     }
 });

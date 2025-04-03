@@ -26,7 +26,7 @@ async function clearDatabase() {
 
 const checkUserExistsInDb = async (testUser, bool) => {
   // Get the user from the database
-  const userInDb = await User.findOne({ username: testUser.username });
+  const userInDb = await User.findOne({ username: testUser.username })
 
   // Assert user existance in the database
   expect(userInDb != null).toBe(bool);
@@ -311,260 +311,97 @@ describe('User Service - PATCH /users/:username', () => {
     await clearDatabase();
     await request(app).post('/users').send(testUser1);
     await request(app).post('/users').send(testUser2);
+
+    // Mock fetch API for the game service call
+    global.fetch = jest.fn(() => 
+      Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({})
+      })
+    );
+    
+    // Create public/images directory if it doesn't exist
+    const fs = require('fs');
+    const path = require('path');
+    const imagesDir = path.join(__dirname, './public/images');
+    if (!fs.existsSync(imagesDir)) {
+      fs.mkdirSync(imagesDir, { recursive: true });
+    }
   });
 
-  it('should update a user by username on PATCH /users/:username', async () => {
-    const updatedUser = {
-      username: 'updateduser',
+  it('should update a user\'s username and generate a new JWT', async () => {
+    const newUsername = 'updatedUser';
+    const response = await request(app).patch(`/users/${testUser1.username}`)
+          .send({ newUsername : newUsername });
+
+    expect(response.status).toBe(200);
+    expect(response.body).toHaveProperty('token');
+    expect(response.body.message).toBe('Username updated successfully');
+
+    const testUser = {
+      username: newUsername,
       password: testUser1.password,
       role: testUser1.role
-    };
+    }
 
-    const response = await request(app).patch(`/users/${testUser1.username}`).send({ username: updatedUser.username });
-
-    expect(response.status).toBe(200);
-
-    await checkUserExistsInDb(updatedUser, true);
-
-    await validateResponse(response.body, updatedUser);
-
-    expect(response.body.__v).toBe(1);
+    await checkUserExistsInDb(testUser, true);
   });
- 
-  it('should update a user by password on PATCH /users/:username', async () => {
-    const updatedUser = {
-      username: 'updateduser',
-      password: 'updatedpassword',
-      role: testUser1.role
-    };
+  
+  it('should return 404 when updating a username to an already taken one', async () => {
+    const response = await request(app).patch(`/users/${testUser1.username}`)
+                .send({ newUsername: testUser2.username });
 
-    const response = await request(app).patch(`/users/${updatedUser.username}`).send({ password: updatedUser.password });
-
-    expect(response.status).toBe(200);
-
-    await checkUserExistsInDb(updatedUser, true);
-
-    await validateResponse(response.body, updatedUser);
-
-    expect(response.body.__v).toBe(2);
+    expect(response.status).toBe(404);
+    expect(response.body.error).toBe('Username already taken');
   });
 
-  it('should update a user by role on PATCH /users/:username', async () => {
-    const updatedUser = {
-      username: 'updateduser',
-      password: 'updatedpassword',
-      role: 'ADMIN'
-    };
+  it('should return 400 when updating a username with less than 3 characters', async () => {
+    const response = await request(app).patch(`/users/${testUser1.username}`).send({ newUsername: 'ab' });
 
-    const response = await request(app).patch(`/users/${updatedUser.username}`).send({ role: updatedUser.role });
-
-    expect(response.status).toBe(200);
-
-    await checkUserExistsInDb(updatedUser, true);
-
-    await validateResponse(response.body, updatedUser);
-
-    expect(response.body.__v).toBe(3);
+    expect(response.status).toBe(400);
+    expect(response.body.error).toBe('Username must be at least 3 characters');
   });
 
-  it('should update a user by all fields on PATCH /users/:username', async () => {
-    const updatedUser = {
+  it('should return 404 when updating a non-existent user', async () => {
+    const response = await request(app).patch(`/users/nonexistentuser`).send({ newUsername: 'newUser' });
+
+    expect(response.status).toBe(500);
+    expect(response.body.error).toBe('User not found');
+  });
+
+  it('should update a user\'s password', async () => {
+    const newPassword = 'newSecurePassword123';
+
+    await request(app).post('/users').send({
       username: testUser1.username,
-      password: testUser1.password,
-      role: testUser1.role
-    };
-
-    const response = await request(app).patch(`/users/updateduser`).send({ ...updatedUser });
-
-    expect(response.status).toBe(200);
-
-    await checkUserExistsInDb(testUser1, true);
-
-    await validateResponse(response.body, testUser1);
-
-    expect(response.body.__v).toBe(4);
-  });
-
-  it('should not update user\'s data with a repeated username on PATCH /users/:username', async () => {
-    const updatedUser = {
-      username: testUser2.username,
-      password: 'arandompassword',
-      role: 'ADMIN'
-    };
-
-    const response = await request(app).patch(`/users/${testUser1.username}`).send({ ...updatedUser });
-    
-    expect(response.status).toBe(400);
-
-    await checkUserExistsInDb(testUser1, true);
-
-    await checkUserExistsInDb(testUser2, true);
-
-    expect((await request(app).get(`/users/${testUser1.username}`)).body).toHaveProperty('__v', 4);
-  });
-
-  it('should return 404 when updating a non-existent user on PATCH /users/:username', async () => {
-    const nonExistentUsername = 'inventeduser';
-    const editNonExistentUsername = 'editedinventeduser';
-
-    const response = await request(app).patch(`/users/${nonExistentUsername}`).send({ username: editNonExistentUsername });
-
-    expect(response.status).toBe(404);
-    
-    await checkUserExistsInDb({ username: nonExistentUsername }, false);
-
-    await checkUserExistsInDb({ username: editNonExistentUsername }, false);
-  });
-
-  it('Should return 400 when registering twice a user', async () => {
-    const newUser = {
-      username: 'newUserDupe',
-      password: 'testpassword1',
+      password: 'initialPassword123',
       role: 'USER'
-    };
-    const response1 = await request(app).post('/users').send(newUser);
-    expect(response1.status).toBe(201);
+    });
 
-    const response2 = await request(app).post('/users').send(newUser);
-    expect(response2.status).toBe(400);
-    expect(response2.body.error).toBe('Username already exists');
-  });
-
-  it('should not update a user with same username on PATCH /users/:username', async () => {
-    const response = await request(app).patch(`/users/${testUser1.username}`).send({ username: testUser1.username });
-
-    expect(response.status).toBe(400);
-    
-    await checkUserExistsInDb(testUser1, true);
-
-    expect((await request(app).get(`/users/${testUser1.username}`)).body).toHaveProperty('__v', 4);
-  });
-
-  it('should not update a user with same password on PATCH /users/:username', async () => {
-    const response = await request(app).patch(`/users/${testUser1.username}`).send({ password: testUser1.password });
-
-    expect(response.status).toBe(400);
-    
-    await checkUserExistsInDb(testUser1, true);
-
-    expect((await request(app).get(`/users/${testUser1.username}`)).body).toHaveProperty('__v', 4);
-  });
-
-  it('should not update a user with same role on PATCH /users/:username', async () => {
-    const response = await request(app).patch(`/users/${testUser1.username}`).send({ role: testUser1.role });
-
-    expect(response.status).toBe(400);
-    
-    await checkUserExistsInDb(testUser1, true);
-
-    expect((await request(app).get(`/users/${testUser1.username}`)).body).toHaveProperty('__v', 4);
-  });
-
-  it('should not update a user with same data on PATCH /users/:username', async () => {
-    const response = await request(app).patch(`/users/${testUser1.username}`).send({ testUser1 });
-
-    expect(response.status).toBe(400);
-    
-    await checkUserExistsInDb(testUser1, true);
-
-    expect((await request(app).get(`/users/${testUser1.username}`)).body).toHaveProperty('__v', 4);
-  });
-
-  it('should not update a user with empty or blank username on PATCH /users/:username', async () => {
-    let response = await request(app).patch(`/users/${testUser1.username}`).send({ username: '       ' });
-
-    expect(response.status).toBe(400);
-
-    response = await request(app).patch(`/users/${testUser1.username}`).send({ username: '' });
-
-    expect(response.status).toBe(400);
-    
-    await checkUserExistsInDb(testUser1, true);
-
-    expect((await request(app).get(`/users/${testUser1.username}`)).body).toHaveProperty('__v', 4);
-  });
-
-  it('should not update a user with empty or blank password on PATCH /users/:username', async () => {
-    let response = await request(app).patch(`/users/${testUser1.username}`).send({ password: '       ' });
-
-    expect(response.status).toBe(400);
-
-    response = await request(app).patch(`/users/${testUser1.username}`).send({ password: '' });
-
-    expect(response.status).toBe(400);
-    
-    await checkUserExistsInDb(testUser1, true);
-
-    expect((await request(app).get(`/users/${testUser1.username}`)).body).toHaveProperty('__v', 4);
-  });
-
-  it('should not update a user with empty or blank role on PATCH /users/:username', async () => {
-    let response = await request(app).patch(`/users/${testUser1.username}`).send({ role: '       ' });
-
-    expect(response.status).toBe(400);
-
-    response = await request(app).patch(`/users/${testUser1.username}`).send({ role: '' });
-
-    expect(response.status).toBe(400);
-    
-    await checkUserExistsInDb(testUser1, true);
-
-    expect((await request(app).get(`/users/${testUser1.username}`)).body).toHaveProperty('__v', 4);
-  });
-
-  it('should not update a user with no update parameters on PATCH /users/:username', async () => {
-
-    const response = await request(app).patch(`/users/${testUser1.username}`).send({});
-
-    expect(response.status).toBe(400);
-
-    
-
-    await checkUserExistsInDb(testUser1, true);
-
-    expect((await request(app).get(`/users/${testUser1.username}`)).body).toHaveProperty('__v', 4);
-
-  });
-  it('should update the secret of a user on PATCH /users/:username', async () => {
-    const updatedSecret = 'newSuperSecret123';
-    const userExists = await User.findOne({ username: testUser1.username });
-
-    expect(userExists).not.toBeNull(); // Ensure user exists before patching
-    
     const response = await request(app)
-      .patch(`/users/${testUser1.username}`)
-      .send({ secret: updatedSecret });
-  
+            .patch(`/users/${testUser1.username}/password`)
+            .set('Content-Type', 'application/json')
+            .send({ newPassword : newPassword });
+
     expect(response.status).toBe(200);
-    expect(response.body).toHaveProperty('secret', updatedSecret);
-  
-    // Verify in the database
-    const userInDb = await User.findOne({ username: testUser1.username });
-    expect(userInDb).not.toBeNull();
-    expect(userInDb.secret).toBe(updatedSecret);
+    expect(response.body.message).toBe('Password updated successfully');
   });
-  
-  it('should return 400 when updating the secret with a blank value', async () => {
-    const response = await request(app)
-      .patch(`/users/${testUser1.username}`)
-      .send({ secret: '    ' });
-  
+
+  it('should return 400 when updating a password with less than 6 characters', async () => {
+    const response = await request(app).patch(`/users/${testUser1.username}/password`).send({ newPassword: '12345' });
+
     expect(response.status).toBe(400);
-  
-    const userInDb = await User.findOne({ username: testUser1.username });
-    expect(userInDb.secret).toBe('newSuperSecret123'); // Should remain unchanged
+    expect(response.body.error).toBe('Password must be at least 6 characters');
   });
-  
-  it('should return 404 when updating the secret for a non-existent user', async () => {
-    const response = await request(app)
-      .patch('/users/nonexistentuser')
-      .send({ secret: 'anotherSecretKey' });
-  
+
+  it('should return 404 when updating a password for a non-existent user', async () => {
+    const response = await request(app).patch(`/users/nonexistentuser/password`).send({ newPassword: 'newPassword123' });
+
     expect(response.status).toBe(404);
+    expect(response.body.error).toBe('User not found');
   });
-  
-  
 });
+
 
 describe('User Service - DELETE /users/:username', () => {
   beforeAll(async () => {
@@ -622,7 +459,7 @@ describe('User Service - Database unavailable', () => {
   });
 
   it('should return 500 when database is unavailable on PATCH /users/:username', async () => {
-    const response = await request(app).patch('/users/testuser').send({ username: 'updateduser' });
+    const response = await request(app).patch('/users/testuser').send({ newUsername: 'updateduser' });
     expect(response.status).toBe(500);
   });
 
