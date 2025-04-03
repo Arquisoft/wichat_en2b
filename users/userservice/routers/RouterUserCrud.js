@@ -116,13 +116,28 @@ router.patch('/users/:username', async (req, res) => {
 
         // Update the profile picture file and URL
         const imagesDir = './public/images';
-        const oldFilePath = path.join(imagesDir, `${oldUsername}_profile_picture.png`);
-        const newFilePath = path.join(imagesDir, `${newUsername}_profile_picture.png`);
+        const sanitizeFilename = (filename) => {
+            return filename.replace(/[^a-zA-Z0-9_-]/g, '').replace(/\.\./g, '');
+        };        
+
+        const sanitizedOldUsername = sanitizeFilename(oldUsername);
+        const sanitizedNewUsername = sanitizeFilename(newUsername);
+
+        const oldFilePath = path.join(imagesDir, `${sanitizedOldUsername}_profile_picture.png`);
+        const newFilePath = path.join(imagesDir, `${sanitizedNewUsername}_profile_picture.png`);
+
+        if (!oldFilePath.startsWith(path.resolve(imagesDir))) {
+            throw new Error("Acceso no autorizado a archivos fuera de la carpeta de imágenes");
+        }
+        
+        if (!newFilePath.startsWith(path.resolve(imagesDir))) {
+            throw new Error("Acceso no autorizado a archivos fuera de la carpeta de imágenes");
+        }
 
         try {
             await fs.promises.rename(oldFilePath, newFilePath);
         } catch (err) {
-            console.warn(`Profile picture for ${oldUsername} not found or could not be renamed.`);
+            console.warn(`Profile picture for ${sanitizedOldUsername} not found or could not be renamed.`);
         }
 
         const newProfilePictureUrl = `${userServiceUrl}/images/${newUsername}_profile_picture.png`;
@@ -226,7 +241,9 @@ router.post('/user/profile/picture', async (req, res) => {
             .toFormat('png')
             .toBuffer();
 
-        const filePath = path.join(imagesDir, `${username}_profile_picture.png`);
+        const sanitizeFilename = (filename) => filename.replace(/[^a-zA-Z0-9_-]/g, '');
+        const sanitizedUsername = sanitizeFilename(username);
+        const filePath = path.join(imagesDir, `${sanitizedUsername}_profile_picture.png`);
         await fs.promises.writeFile(filePath, processedBuffer);
         const imageUrl = `${userServiceUrl}/images/${username}_profile_picture.png`;
 

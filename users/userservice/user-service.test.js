@@ -374,7 +374,7 @@ describe('User Service - PATCH /users/:username', () => {
 
     await request(app).post('/users').send({
       username: testUser1.username,
-      password: 'initialPassword123',
+      password: 'initialPassword123', //NOSONAR
       role: 'USER'
     });
 
