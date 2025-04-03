@@ -84,7 +84,7 @@ export default function StatsTab() {
 		<Card>
 			<CardHeader
 				title={
-					<Box display="flex" justifyContent="space-between" alignItems="center">
+					<Box className={"stats-header"} display="flex" justifyContent="space-between" alignItems="center">
 						<Typography variant="h5">Quiz Statistics</Typography>
 						<Typography variant="body2" color="textSecondary">
 							Based on {statistics ? statistics.totalGames : 0} completed quizzes
@@ -114,7 +114,7 @@ export default function StatsTab() {
 					<>
 						<Grid container spacing={2} className={"detailed-stats"}>
 							<StatCard title="Total Games" value={statistics.totalGames} />
-							<StatCard title="Avg Score per Quiz" value={`${statistics.avgScore} points`} />
+							<StatCard title="Avg Score per Quiz" value={`${statistics.avgScore.toFixed(1)} points`} />
 							<StatCard title="Total Score" value={`${statistics.totalScore} points`} />
 							<StatCard title="Correct Answers" value={statistics.totalCorrectAnswers} />
 							<StatCard title="Total Questions" value={statistics.totalQuestions} />
@@ -132,7 +132,7 @@ export default function StatsTab() {
 
 function StatCard({ title, value }) {
 	return (
-		<Grid item xs={12} sm={6} md={4}>
+		<Grid xs={12} sm={6} md={4}>
 			<Paper elevation={2} sx={{ p: 2 }}>
 				<Typography variant="h5" component="div">
 					{value}
