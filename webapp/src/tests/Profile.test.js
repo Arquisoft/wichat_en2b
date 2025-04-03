@@ -13,31 +13,182 @@ global.fetch = jest.fn();
 global.fetch = jest.fn();
 
 Object.defineProperty(document, 'cookie', {
-  writable: true,
-  configurable: true,
-  value: 'token=mock-token',
+	writable: true,
+	configurable: true,
+	value: 'token=mock-token',
 });
-
 
 jest.mock('../utils/auth.js', () => ({
     getAuthToken: jest.fn(),
 }));
 
 describe('ProfileForm', () => {
-  const mockOnSave = jest.fn();
+	const mockOnSave = jest.fn();
 
-  	beforeEach(() => {
+	beforeEach(() => {
+		jest.useFakeTimers();
 		fetch.mockClear();
 
 		axios.get.mockImplementationOnce(() =>
 			Promise.resolve({ data: { username: 'testUser' } })
 		);
-  	});
+		
+		// Mock window.location.reload
+		Object.defineProperty(window, 'location', {
+			configurable: true,
+			value: { reload: jest.fn() }
+		});
+		
+		// Create a mock for FileReader
+		global.FileReader = class {
+			constructor() {
+				this.onloadend = jest.fn();
+			}
+			readAsDataURL(file) {
+				this.result = 'data:image/jpeg;base64,mockbase64data';
+				setTimeout(() => this.onloadend(), 0);
+			}
+		};
+	});
 
-  	afterEach(() => {
+	afterEach(() => {
 		act(() => jest.runOnlyPendingTimers());
 		jest.useRealTimers();
 		jest.clearAllMocks();
+	});
+
+	test('successfully uploads profile picture', async () => {
+		// Mock fetch response for profile picture upload
+		fetch.mockResolvedValueOnce({
+			ok: true,
+			json: async () => ({ profilePicture: 'https://example.com/profile.jpg' }),
+		});
+
+		render(<ProfileForm username="testuser" onSave={mockOnSave} />);
+
+		// Select the Account tab (where profile picture upload is)
+		const accountTab = screen.getByText('Account');
+		fireEvent.click(accountTab);
+
+		// Create a mock file
+		const file = new File(['(dummy file content)'], 'photo.jpg', {type: 'image/jpeg'});
+		
+		// Get the hidden file input
+		const fileInput = document.querySelector('#profile-picture-input');
+		
+		// Trigger file selection
+		await act(async () => {
+			fireEvent.change(fileInput, { target: { files: [file] } });
+		});
+		
+		// Wait for the fetch call to be made
+		await waitFor(() => {
+			expect(fetch).toHaveBeenCalledWith(
+				'http://localhost:8000/user/profile/picture',
+				expect.objectContaining({
+					method: 'POST',
+					headers: expect.objectContaining({
+						'Authorization': 'Bearer mock-token',
+						'Content-Type': 'application/json',
+					}),
+					body: expect.stringContaining('"image":"mockbase64data"'),
+				})
+			);
+		});
+		
+		// Verify page reload was called
+		expect(window.location.reload).toHaveBeenCalled();
+	});
+	
+	test('handles invalid file type for profile picture', async () => {
+		render(<ProfileForm username="testuser" onSave={mockOnSave} />);
+		
+		// Select the Account tab
+		const accountTab = screen.getByText('Account');
+		fireEvent.click(accountTab);
+		
+		// Create a mock file with invalid type
+		const file = new File(['(dummy text file)'], 'document.txt', {type: 'text/plain'});
+		
+		// Get the hidden file input
+		const fileInput = document.querySelector('#profile-picture-input');
+		
+		// Spy on console.error
+		jest.spyOn(console, 'error').mockImplementation(() => {});
+		
+		// Trigger file selection with invalid file
+		await act(async () => {
+			fireEvent.change(fileInput, { target: { files: [file] } });
+		});
+		
+		// Check that fetch wasn't called
+		expect(fetch).not.toHaveBeenCalledWith(
+			'http://localhost:8000/user/profile/picture', 
+			expect.anything()
+		);
+	});
+	
+	test('handles file size limit for profile picture', async () => {
+		render(<ProfileForm username="testuser" onSave={mockOnSave} />);
+		
+		// Select the Account tab
+		const accountTab = screen.getByText('Account');
+		fireEvent.click(accountTab);
+		
+		// Create a mock file that exceeds size limit (2MB)
+		const largeFile = new File(['x'.repeat(3 * 1024 * 1024)], 'large.jpg', {type: 'image/jpeg'});
+		Object.defineProperty(largeFile, 'size', {value: 3 * 1024 * 1024});
+		
+		// Get the hidden file input
+		const fileInput = document.querySelector('#profile-picture-input');
+		
+		// Trigger file selection with large file
+		await act(async () => {
+			fireEvent.change(fileInput, { target: { files: [largeFile] } });
+		});
+		
+		// Check that fetch wasn't called
+		expect(fetch).not.toHaveBeenCalledWith(
+			'http://localhost:8000/user/profile/picture', 
+			expect.anything()
+		);
+	});
+	
+	test('handles server error during profile picture upload', async () => {
+		// Mock a failed upload response
+		fetch.mockResolvedValueOnce({
+			ok: false,
+			status: 500,
+			json: async () => ({ error: 'Server error' }),
+		});
+		
+		render(<ProfileForm username="testuser" onSave={mockOnSave} />);
+		
+		// Select the Account tab
+		const accountTab = screen.getByText('Account');
+		fireEvent.click(accountTab);
+		
+		// Create a mock file
+		const file = new File(['(dummy file content)'], 'photo.jpg', {type: 'image/jpeg'});
+		
+		// Get the hidden file input
+		const fileInput = document.querySelector('#profile-picture-input');
+		
+		// Spy on console.error
+		jest.spyOn(console, 'error').mockImplementation(() => {});
+		
+		// Trigger file selection
+		await act(async () => {
+			fireEvent.change(fileInput, { target: { files: [file] } });
+		});
+		
+		// Verify the fetch was called
+		await waitFor(() => {
+			expect(fetch).toHaveBeenCalledWith(
+				'http://localhost:8000/user/profile/picture',
+				expect.anything()
+			);
+		});
 	});
 
   	test('Does not udpate the username if it is the same as the current one', async () => {
