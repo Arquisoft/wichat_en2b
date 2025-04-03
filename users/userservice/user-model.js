@@ -27,6 +27,7 @@ const userSchema = new mongoose.Schema({
     },
     userGroup: {
       type: String,
+      default: null,
       required: false
     },
     createdAt: {
