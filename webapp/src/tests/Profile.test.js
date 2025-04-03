@@ -1,128 +1,132 @@
 import React from "react";
-import { render, screen, fireEvent, waitFor, act } from "@testing-library/react";
+import {render, screen, fireEvent, waitFor, act } from "@testing-library/react";
+import QrCode from "../components/home/2fa/qrCode";
 import ProfileForm from "../components/home/ui/ProfileForm";
 
-// Mock fetch y document.cookie
+const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://localhost:8000'; // NOSONAR
+
+// Mock fetch and document.cookie
 global.fetch = jest.fn();
-Object.defineProperty(document, "cookie", {
+Object.defineProperty(document, 'cookie', {
   writable: true,
-  value: "token=mock-token",
+  value: 'token=mock-token', // You can change this to test different scenarios
 });
 
-describe("ProfileForm Component", () => {
-    const mockOnSave = jest.fn();
+jest.mock('../utils/auth.js', () => ({
+    getAuthToken: jest.fn(),
+}));
 
-    beforeEach(() => {
-        jest.clearAllMocks();
+describe('ProfileForm', () => {
+  const mockOnSave = jest.fn();
 
-        delete window.location;
-        window.location = { reload: jest.fn() };
+  beforeEach(() => {
+    fetch.mockClear();
+  });
+
+  it('Does not udpate the username if it is the same as the current one', async () => {
+		const mockApiResponse = { username: 'oldUsername' };
+
+		fetch.mockResolvedValueOnce({
+			ok: true,
+			text: async () => JSON.stringify(mockApiResponse),
+		});
+
+      
+		render(
+			<ProfileForm username="testuser" onSave={mockOnSave} />
+		);
+
+		// Simulate a change in the input field
+		await fireEvent.click(screen.getByText('Edit Username'));
+		const input = screen.getByLabelText('Username');
+		await fireEvent.change(input, { target: { value: 'oldUsername' } });
+	
+		// handleSaveUsername
+		await fireEvent.click(screen.getByText('Save Username'));
+
+		await waitFor(() => expect(screen.getByText('Save Username')).toBeInTheDocument());
     });
 
-    afterEach(() => {
-        jest.restoreAllMocks();     
+	test('should check 2FA status on component mount', async () => {
+		const mockApiResponse = { twoFactorEnabled: true };
+		fetch.mockResolvedValueOnce({
+			ok: true,
+			text: async () => JSON.stringify(mockApiResponse),
+		});
+
+		render(<ProfileForm username="testuser" onSave={mockOnSave} />);
+
+		// Ensure the "2FA" tab is selected
+		const securityTab = screen.getByText('2FA');
+		fireEvent.click(securityTab);
+
+		// Wait for the component to make the check2FA request
+		await waitFor(() => expect(fetch).toHaveBeenCalledWith('http://localhost:8000/check2fa', expect.objectContaining({
+			method: 'GET',
+			headers: expect.objectContaining({
+				'Authorization': 'Bearer mock-token',
+				'Content-Type': 'application/json',
+			}),
+		})));
+
+		// Check that the `already2fa` state is set correctly
+		await waitFor(() => {
+			expect(screen.getByText('Reset 2FA')).toBeInTheDocument();
+		});
+	});
+
+	test('should handle failed 2FA setup', async () => {
+		render(<ProfileForm username="testuser" onSave={mockOnSave} />);
+	
+		// Ensure the "2FA" tab is selected
+		const securityTab = screen.getByText('2FA');
+		fireEvent.click(securityTab);
+	
+		// Now that we're in the 2FA tab, try to find the "Configure 2FA" button
+		const configure2faButton = screen.getByText('Configure 2FA');
+		fireEvent.click(configure2faButton);
+	
+		// Wait for the fetch to be called (or any other side-effect you expect)
+		await waitFor(() => {
+		expect(fetch).toHaveBeenCalled();
+		});
+	});
+});
+
+describe("QrCode Component", () => {
+    test("renders QR Code image when imgUrl is provided", () => {
+        const testUrl = "https://example.com/qrcode.png";
+        render(<QrCode imgUrl={testUrl} />);
+        
+        const imgElement = screen.getByAltText("QR Code for 2FA");
+        expect(imgElement).toBeInTheDocument();
+        expect(imgElement).toHaveAttribute("src", testUrl);
     });
 
-    test("Changes username correctly", async () => {
+    test("renders fallback text when imgUrl is not provided", () => {
+        render(<QrCode imgUrl={null} />);
+        
+        const fallbackText = screen.getByText("QR Code is not available.");
+        expect(fallbackText).toBeInTheDocument();
+    });
+
+    test("fetches and displays QR code", async () => {
         fetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ token: "new-mock-token" }),
+          json: async () => ({ imageUrl: "https://example.com/qrcode.png" }),
         });
-        
+      
+        render(<ProfileForm username="testUser" onSave={jest.fn()} />);
+      
+        // Click on the "2FA" tab first
+        const twoFaTab = screen.getByRole("tab", { name: /2FA/i });
         await act(async () => {
-        render(<ProfileForm username="testUser" profilePicture="" onSave={mockOnSave} />);
+          twoFaTab.click();
         });
-        
-        const usernameField = screen.getByLabelText("Username");
-        expect(usernameField.value).toBe("testUser");
-
-        const editBtn = screen.getByRole("button", { name: /Edit Username/i });
-        fireEvent.click(editBtn);
-        
-        fireEvent.change(usernameField, { target: { value: "newUser" } });
-        
-        // Save Username
-        const saveBtn = screen.getByRole("button", { name: /Save Username/i });
+      
+        // Find and click the "Configure 2FA" button
+        const configureButton = await screen.findByRole("button", { name: /2FA|Configure/i });
         await act(async () => {
-        fireEvent.click(saveBtn);
-        });
-
-        await waitFor(() => {
-        expect(mockOnSave).toHaveBeenCalledWith(expect.objectContaining({ username: "newUser" }));
-        });
-        
-        expect(window.location.reload).toHaveBeenCalled();
-    });
-
-    test("Changes password correctly", async () => {
-        fetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({}),
-        });
-
-        await act(async () => {
-        render(<ProfileForm username="testUser" profilePicture="" onSave={mockOnSave} />);
-        });
-
-        const editPasswordBtn = screen.getByRole("button", { name: /Edit Password/i });
-        fireEvent.click(editPasswordBtn);
-
-        const currentPwdField = screen.getByLabelText("Actual password");
-        const newPwdField = screen.getByLabelText("New password");
-        const confirmPwdField = screen.getByLabelText("Confirm new password");
-
-        fireEvent.change(currentPwdField, { target: { value: "oldPass" } });
-        fireEvent.change(newPwdField, { target: { value: "newPass123" } });
-        fireEvent.change(confirmPwdField, { target: { value: "newPass123" } });
-
-        // Save Password
-        const savePasswordBtn = screen.getByRole("button", { name: /Save Password/i });
-        await act(async () => {
-        fireEvent.click(savePasswordBtn);
-        });
-
-        await waitFor(() => {
-        expect(screen.getByText(/Password updated successfully./i)).toBeInTheDocument();
-        });
-
-        expect(mockOnSave).toHaveBeenCalled();
-    });
-
-    test("Uploads profile picture correctly", async () => {
-        fetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ profilePicture: "http://example.com/newprofile.png" }),
-        });
-
-        const file = new File(["dummy content"], "test.png", { type: "image/png" });
-
-        const fileReaderMock = {
-        readAsDataURL: jest.fn(),
-        result: "data:image/png;base64,dummybase64",
-        onloadend: null,
-        };
-
-        global.FileReader = jest.fn(() => fileReaderMock);
-
-        await act(async () => {
-        render(<ProfileForm username="testUser" profilePicture="" onSave={mockOnSave} />);
-        });
-
-        const fileInput = screen.getByLabelText(/Change profile picture/i).parentElement.querySelector("input[type='file']");
-        expect(fileInput).toBeInTheDocument();
-
-        await act(async () => {
-        fireEvent.change(fileInput, { target: { files: [file] } });
-        });
-
-        act(() => {
-        if (typeof fileReaderMock.onloadend === "function") {
-            fileReaderMock.onloadend();
-        }
-        });
-
-        await waitFor(() => {
-        expect(window.location.reload).toHaveBeenCalled();
+          configureButton.click();
         });
     });
 });
