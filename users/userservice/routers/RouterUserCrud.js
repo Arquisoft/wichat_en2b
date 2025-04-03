@@ -114,35 +114,6 @@ router.patch('/users/:username', async (req, res) => {
             return res.status(404).json({ error: "Error updating the game history to the new username" });
         }
 
-        // Update the profile picture file and URL
-        const imagesDir = './public/images';
-        const sanitizeFilename = (filename) => {
-            return filename.replace(/[^a-zA-Z0-9_-]/g, '').replace(/\.\./g, '');
-        };        
-
-        const sanitizedOldUsername = sanitizeFilename(oldUsername);
-        const sanitizedNewUsername = sanitizeFilename(newUsername);
-
-        const oldFilePath = path.join(imagesDir, `${sanitizedOldUsername}_profile_picture.png`);
-        const newFilePath = path.join(imagesDir, `${sanitizedNewUsername}_profile_picture.png`);
-
-        if (!oldFilePath.startsWith(path.resolve(imagesDir))) {
-            throw new Error("Acceso no autorizado a archivos fuera de la carpeta de imágenes");
-        }
-        
-        if (!newFilePath.startsWith(path.resolve(imagesDir))) {
-            throw new Error("Acceso no autorizado a archivos fuera de la carpeta de imágenes");
-        }
-
-        try {
-            await fs.promises.rename(oldFilePath, newFilePath);
-        } catch (err) {
-            console.warn(`Profile picture for ${sanitizedOldUsername} not found or could not be renamed.`);
-        }
-
-        const newProfilePictureUrl = `${userServiceUrl}/images/${newUsername}_profile_picture.png`;
-        user.profilePicture = newProfilePictureUrl
-
         // Update the username in the users table
         user.username = newUsername;
         await user.save();
@@ -206,52 +177,78 @@ router.patch('/users/:username/password', async (req, res) => {
 
 router.post('/user/profile/picture', async (req, res) => {
     const { image, username } = req.body;
-  
+
+    // Verificar si la imagen y el nombre de usuario fueron proporcionados
     if (!image || !username) {
-      return res.status(400).json({ error: "No image or username provided." });
+        return res.status(400).json({ error: "No image or username provided." });
     }
-  
+
     try {
+        // Buscar el usuario en la base de datos
         const user = await User.findOne({ username: username.toString() });
-        if (!user) return res.status(404).json({ error: "User not found" });
-
-        const imagesDir = './public/images';
-        await fs.promises.mkdir(imagesDir, { recursive: true });
-
-        const buffer = Buffer.from(image, 'base64');
-
-        const MAX_SIZE = 5 * 1024 * 1024;
-        if (buffer.length > MAX_SIZE) {
-            return res.status(400).json({ error: "Too big image." });
+        if (!user) {
+            return res.status(404).json({ error: "User not found" });
         }
 
-        // Validate MIME type to ensure it's an image
-        // Use file-type to check the MIME type of the buffer
+        const imagesDir = './public/images';
+
+        // Sanitizar el nombre de archivo para evitar problemas con nombres no válidos
+        const sanitizeFilename = (filename) => filename.replace(/[^a-zA-Z0-9_-]/g, '').replace(/\.\./g, '');
+
+        // Definir la ruta para el archivo antiguo (si existe) y la nueva imagen
+        const sanitizedUsername = sanitizeFilename(username);
+        const oldFilePath = path.join(imagesDir, `${sanitizedUsername}_profile_picture.png`);
+        const newFilePath = path.join(imagesDir, `${sanitizedUsername}_profile_picture.png`);
+
+        // Verificar que las rutas estén dentro del directorio permitido
+        if(!oldFilePath.startsWith(path.resolve(imagesDir))) {
+            throw new Error("Access denied to files outside the images folder");
+        }
+
+        if (!newFilePath.startsWith(path.resolve(imagesDir))) {
+            throw new Error("Access denied to files outside the images folder");
+        }
+
+        // Procesar la imagen base64
+        const buffer = Buffer.from(image, 'base64');
+
+        // Limitar el tamaño máximo de la imagen a 5MB
+        const MAX_SIZE = 5 * 1024 * 1024;
+        if (buffer.length > MAX_SIZE) {
+            return res.status(400).json({ error: "Image size exceeds the limit of 5MB." });
+        }
+
+        // Validar el tipo MIME para asegurar que es una imagen
         const fileType = (await import('file-type')).fileTypeFromBuffer;
         const allowedMimeTypes = ['image/png', 'image/jpeg', 'image/gif'];
 
-        if (!(await fileType(buffer))?.mime 
-                || !allowedMimeTypes.includes((await fileType(buffer)).mime)) {
-            return res.status(400).json({ error: "Formato de imagen no permitido." });
+        const mimeType = (await fileType(buffer))?.mime;
+        if (!mimeType || !allowedMimeTypes.includes(mimeType)) {
+            return res.status(400).json({ error: "Image format not allowed." });
         }
 
-        // Process the image using sharp to resize and convert to PNG
+        // Usar sharp para procesar la imagen (redimensionar y convertir a PNG)
         const processedBuffer = await sharp(buffer)
             .resize({ width: 500, height: 500, fit: 'inside' })
             .toFormat('png')
             .toBuffer();
 
-        const sanitizeFilename = (filename) => filename.replace(/[^a-zA-Z0-9_-]/g, '');
-        const sanitizedUsername = sanitizeFilename(username);
-        const filePath = path.join(imagesDir, `${sanitizedUsername}_profile_picture.png`);
-        await fs.promises.writeFile(filePath, processedBuffer);
-        const imageUrl = `${userServiceUrl}/images/${username}_profile_picture.png`;
+        // Asegurar que el directorio de imágenes exista
+        await fs.promises.mkdir(imagesDir, { recursive: true });
 
+        // Guardar la imagen procesada
+        await fs.promises.writeFile(newFilePath, processedBuffer);
+
+        // Generar la URL de la imagen
+        const imageUrl = `${userServiceUrl}/images/${sanitizedUsername}_profile_picture.png`;
+
+        // Actualizar el perfil del usuario con la nueva URL de la imagen
         user.profilePicture = imageUrl;
         await user.save();
 
+        // Responder con la URL de la imagen
         res.status(200).json({ profilePicture: imageUrl });
-  
+
     } catch (error) {
         console.error('Error uploading profile picture:', error);
         res.status(500).json({ error: 'Error uploading profile picture' });
