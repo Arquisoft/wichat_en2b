@@ -16,7 +16,8 @@ const serviceUrls = {
   llm: process.env.LLM_SERVICE_URL || 'http://localhost:8003',
   auth: process.env.AUTH_SERVICE_URL || 'http://localhost:8002',
   user: process.env.USER_SERVICE_URL || 'http://localhost:8001',
-  game: process.env.GAME_SERVICE_URL || 'http://localhost:8004'
+  game: process.env.GAME_SERVICE_URL || 'http://localhost:8004',
+  group: process.env.GROUP_SERVICE_URL || 'http://localhost:8005',
 };
 
 // CORS setup
@@ -95,6 +96,35 @@ app.patch('/users/:username', (req, res) => {
 
 app.delete('/users/:username', (req, res) => {
   forwardRequest('user', `/users/${req.params.username}`, req, res);
+});
+
+// Group Management
+app.get('/groups', (req, res) => {
+  forwardRequest('group', '/groups', req, res);
+});
+
+app.get('/groups/:name', (req, res) => {
+  forwardRequest('group', `/groups/${req.params.name}`, req, res);
+});
+
+app.post('/groups', (req, res) => {
+  forwardRequest('group', '/groups', req, res);
+});
+
+app.patch('/groups/:name', (req, res) => {
+  forwardRequest('group', `/groups/${req.params.name}`, req, res);
+});
+
+app.delete('/groups/:name', (req, res) => {
+  forwardRequest('group', `/groups/${req.params.name}`, req, res);
+});
+
+app.post('/groups/join/:name', (req, res) => {
+  forwardRequest('group', `/groups/join/${req.params.name}`, req, res);
+});
+
+app.post('/groups/leave', (req, res) => {
+  forwardRequest('group', '/groups/leave', req, res);
 });
 
 // User Management
