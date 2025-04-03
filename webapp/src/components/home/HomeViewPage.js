@@ -45,7 +45,7 @@ function HomePage({ username, stats }) {
             </div>
 
             <Container maxWidth="lg" className="home-content">
-                    <Typography variant="h4" component="h1" align="center" gutterBottom>
+                    <Typography variant="h4" id='name-page' component="h1" align="center" gutterBottom>
                             WiChat
                     </Typography>
 

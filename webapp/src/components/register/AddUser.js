@@ -138,7 +138,7 @@ const AddUser = () => {
           <h2>Create an Account</h2>
           <p>Enter your username and password below to sign up!</p>
 
-          {error && <p className="error-message">{error}</p>}
+          {error && <p className="error-message" id='error-message'>{error}</p>}
 
           <form onSubmit={addUser}>
             <div className="input-group">

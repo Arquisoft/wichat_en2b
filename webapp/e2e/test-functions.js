@@ -1,3 +1,7 @@
+const bcrypt = require('bcrypt')
+const User = require('../../users/userservice/user-model')
+const mongoose = require('mongoose')
+
 /**
  * Clicks on an element with the given selector
  * @param {Page} page - Puppeteer page object
@@ -27,59 +31,74 @@ async function writeIntoInput(page, selector, text) {
     await page.type(selector, text);
 }
 
-async function connectToDatabase(mongoUri, mongoose) {
-    if (mongoose.connection.readyState === 0) {
-        await mongoose.connect(mongoUri, { useNewUrlParser: true, useUnifiedTopology: true });
+async function addUser(userToAdd) {
+    let data = userToAdd || { username: "mock", password: "123456", role: "USER" };
+    let user;
+
+    const mongoUri = process.env.MONGODB_URI;
+    if (!mongoUri) {
+        throw new Error("❌ MongoDB URI is not defined in the environment variables.");
     }
-    await mongoose.connection.asPromise(); //Wait as promise
-}
 
-async function addUser(mongoUri, mongoose, User) {
-    let data = { username: "mock", password: "123456", role: "USER" };
+    const usersCollection = global.db.collection('users');
 
-    await connectToDatabase(mongoUri, mongoose);
-
-    let retries = 2;
-    let user = null;
-
-    while (retries > 0) {
-        try {
-            user = await User.findOne({ username: data.username }).exec();
-            if (user) break; // Si el usuario existe, salimos del bucle
-
-            // Si no existe, intentamos crearlo
-            user = await User.create(data);
-            console.log("✅ Usuario creado:", user);
-            break;
-        } catch (err) {
-            console.error("⚠️ Error en la operación, reintentando...", err);
-            await new Promise(resolve => setTimeout(resolve, 250));
-            retries--;
+    try {
+        const existingUser = await usersCollection.findOne({ username: data.username });
+        if (existingUser) {
+            throw new Error('❌ Username already exists');
         }
-    }
-    if (!user) {
-        throw new Error("❌ No se pudo crear ni encontrar el usuario después de varios intentos.");
-    }
-    return user;
-}
 
+        user = {
+            username: data.username,
+            password: bcrypt.hashSync(data.password, 10),
+            role: data.role,
+            createdAt: Date.now(),
+            secret: "test",
+        };
+
+        // Insertar el documento usando MongoClient
+        await usersCollection.insertOne(user);
+        console.log("✅ User created:", user);
+
+        mongoose.connect(mongoUri, {
+            serverSelectionTimeoutMS: 30000,
+        });
+
+        // Ahora, usar Mongoose para buscar este usuario
+        const mongooseUser = await User.findOne({ username: data.username });
+        if (mongooseUser) {
+            console.log("✅ User found using Mongoose:", mongooseUser);
+        } else {
+            console.log("❌ User not found using Mongoose");
+        }
+
+    } catch (err) {
+        console.error("⚠️ Error creating the user 'mock'", err);
+    }
+
+    if (!user) {
+        throw new Error("❌ Error when finding or creating the user.");
+    }
+
+    return data;
+}
 
 
 async function login(page, username, password){
-    await writeIntoInput(page,'input[name="username"]', username);
-    await writeIntoInput(page,'input[name="password"]', password);
+    await writeIntoInput(page,'#username', username);
+    await writeIntoInput(page,'#password', password);
     await click(page,'form > button');
 }
 
-async function accessQuiz(page, expect){
-    await click(page, "a[href='/quiz/category/1']");
+async function accessQuiz(page, expect, quizSelector=null){
+    await click(page, quizSelector?quizSelector:"a[href='/quiz/category/1']");
     await expect(page).toMatchElement("* > header > div > a", { text: "Back to Dashboard"});
     await click(page, "#__next > div > div > button:first-child");
 }
 
 async function goToInitialPage(page){
     await page
-        .goto("http://localhost:3000", {
+        .goto("http://localhost:3000/login", {
             waitUntil: "networkidle0",
         })
         .catch(() => {});
