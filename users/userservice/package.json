@@ -25,6 +25,7 @@
     "mongoose": "^8.9.3"
   },
   "devDependencies": {
+    "@types/file-type": "^10.6.0",
     "buffer": "^6.0.3",
     "file-type": "^20.4.1",
     "fs": "^0.0.1-security",
