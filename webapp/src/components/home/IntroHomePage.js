@@ -29,7 +29,7 @@ function IntroHomePage() {
 
     const handleRegister = () => {
         setOpenDialog(false);
-        window.location.href = "/register";
+        window.location.href = "/addUser";
     };
 
     return (
