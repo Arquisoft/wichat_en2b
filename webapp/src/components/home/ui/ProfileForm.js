@@ -69,7 +69,7 @@ export default function ProfileForm({ username, profilePicture, onSave }) {
 
     const handleSaveUsername = async () => {
         if (profileData.username === username) {
-            setSnackbarMessage("No se detectaron cambios en el nombre de usuario.");
+            setSnackbarMessage("No changes on username detected.");
             setOpenSnackbar(true);
             return;
         }
@@ -89,7 +89,7 @@ export default function ProfileForm({ username, profilePicture, onSave }) {
 
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.error || "Error actualizando el nombre de usuario");
+                throw new Error(errorData.error || "Error updating username");
             }
 
             const responseData = await response.json();
@@ -99,7 +99,7 @@ export default function ProfileForm({ username, profilePicture, onSave }) {
             document.cookie = `token=${updatedToken}; path=/; max-age=3600`; 
             setProfileData((prev) => ({ ...prev, username: profileData.username })); 
 
-            setSnackbarMessage("Nombre de usuario actualizado correctamente.");
+            setSnackbarMessage("Username updated successfully.");
             setOpenSnackbar(true);
             setEditingAccount(false);
 
@@ -109,7 +109,7 @@ export default function ProfileForm({ username, profilePicture, onSave }) {
             window.location.reload(); 
 
         } catch (error) {
-            console.error("Error al actualizar el nombre de usuario:", error);
+            console.error("Error updating username:", error);
             setSnackbarMessage(`Error: ${error.message}`);
             setOpenSnackbar(true);
         }
@@ -117,17 +117,17 @@ export default function ProfileForm({ username, profilePicture, onSave }) {
 
     const handleSavePassword = async () => {
         if (!profileData.newPassword) {
-            setSnackbarMessage("Por favor, ingresa una nueva contraseña.");
+            setSnackbarMessage("Please enter a new password.");
             setOpenSnackbar(true);
             return;
         }
         if (profileData.newPassword !== profileData.confirmPassword) {
-            setSnackbarMessage("La nueva contraseña y su confirmación no coinciden.");
+            setSnackbarMessage("The new password and its confirmation do not match.");
             setOpenSnackbar(true);
             return;
         }
         if (!profileData.currentPassword) {
-            setSnackbarMessage("Por favor, ingresa tu contraseña actual.");
+            setSnackbarMessage("Please enter your current password.");
             setOpenSnackbar(true);
             return;
         }
@@ -152,10 +152,10 @@ export default function ProfileForm({ username, profilePicture, onSave }) {
 
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.error || "Error actualizando la contraseña");
+                throw new Error(errorData.error || "Error updating password");
             }
 
-            setSnackbarMessage("Contraseña actualizada correctamente.");
+            setSnackbarMessage("Password updated successfully.");
             setOpenSnackbar(true);
             setEditingPassword(false);
          
@@ -170,7 +170,7 @@ export default function ProfileForm({ username, profilePicture, onSave }) {
 
             onSave({ ...profileData });
         } catch (error) {
-            console.error("Error al actualizar la contraseña:", error);
+            console.error("Error updating password:", error);
             setSnackbarMessage(`Error: ${error.message}`);
             setOpenSnackbar(true);
         }
@@ -191,8 +191,8 @@ export default function ProfileForm({ username, profilePicture, onSave }) {
             const data = await response.json();
             setQrCodeUrl(data.imageUrl);
         } catch (error) {
-            console.error("Error al configurar 2FA:", error);
-            setSnackbarMessage(`Error al configurar 2FA: ${error.message}`);
+            console.error("Error configuring 2FA:", error);
+            setSnackbarMessage(`Error configuring 2FA: ${error.message}`);
             setOpenSnackbar(true);
         }
     };
@@ -214,14 +214,14 @@ export default function ProfileForm({ username, profilePicture, onSave }) {
 
             const responseText = await response.text();
             if (!responseText) {
-                throw new Error("Se recibió una respuesta vacía.");
+                throw new Error("Received an empty response.");
             }
 
             const data = JSON.parse(responseText);
             setAlready2fa(!!data.twoFactorEnabled);
         } catch (error) {
-            console.error("Error al consultar el estado de 2FA:", error);
-            setSnackbarMessage(`Error al consultar 2FA: ${error.message}`);
+            console.error("Error checking 2FA status:", error);
+            setSnackbarMessage(`Error checking 2FA: ${error.message}`);
             setOpenSnackbar(true);
         }
     };
