@@ -4,6 +4,7 @@ const User = require('../user-model');
 const bcrypt = require('bcrypt');
 const fs = require('fs');
 const path = require('path');
+const sharp = require('sharp');
 
 router.use(express.json());
 const gatewayServiceUrl = process.env.GATEWAY_SERVICE_URL || 'http://gatewayservice:8000'; // NOSONAR
@@ -175,9 +176,6 @@ router.patch('/users/:username/password', async (req, res) => {
     }
 });
 
-const fileType = require('file-type');
-const sharp = require('sharp');
-
 router.post('/user/profile/picture', async (req, res) => {
     const { image, username } = req.body;
   
@@ -201,10 +199,12 @@ router.post('/user/profile/picture', async (req, res) => {
 
         // Validate MIME type to ensure it's an image
         // Use file-type to check the MIME type of the buffer
-        const type = await fileType.fileTypeFromBuffer(buffer);
+        const fileType = (await import('file-type')).fileTypeFromBuffer;
         const allowedMimeTypes = ['image/png', 'image/jpeg', 'image/gif'];
-        if (!type || !allowedMimeTypes.includes(type.mime)) {
-        return res.status(400).json({ error: "Formato de imagen no permitido." });
+
+        if (!(await fileType(buffer))?.mime 
+                || !allowedMimeTypes.includes((await fileType(buffer)).mime)) {
+            return res.status(400).json({ error: "Formato de imagen no permitido." });
         }
 
         // Process the image using sharp to resize and convert to PNG
