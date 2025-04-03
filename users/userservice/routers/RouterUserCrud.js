@@ -175,6 +175,9 @@ router.patch('/users/:username/password', async (req, res) => {
     }
 });
 
+const fileType = await import('file-type');
+const sharp = require('sharp');
+
 router.post('/user/profile/picture', async (req, res) => {
     const { image, username } = req.body;
   
@@ -189,10 +192,29 @@ router.post('/user/profile/picture', async (req, res) => {
         const imagesDir = './public/images';
         await fs.promises.mkdir(imagesDir, { recursive: true });
 
-        const filePath = path.join(imagesDir, `${username}_profile_picture.png`);
         const buffer = Buffer.from(image, 'base64');
-   
-        await fs.promises.writeFile(filePath, buffer);
+
+        const MAX_SIZE = 5 * 1024 * 1024;
+        if (buffer.length > MAX_SIZE) {
+            return res.status(400).json({ error: "Too big image." });
+        }
+
+        // Validate MIME type to ensure it's an image
+        // Use file-type to check the MIME type of the buffer
+        const type = await fileType.fileTypeFromBuffer(buffer);
+        const allowedMimeTypes = ['image/png', 'image/jpeg', 'image/gif'];
+        if (!type || !allowedMimeTypes.includes(type.mime)) {
+        return res.status(400).json({ error: "Formato de imagen no permitido." });
+        }
+
+        // Process the image using sharp to resize and convert to PNG
+        const processedBuffer = await sharp(buffer)
+            .resize({ width: 500, height: 500, fit: 'inside' })
+            .toFormat('png')
+            .toBuffer();
+
+        const filePath = path.join(imagesDir, `${username}_profile_picture.png`);
+        await fs.promises.writeFile(filePath, processedBuffer);
         const imageUrl = `${userServiceUrl}/images/${username}_profile_picture.png`;
 
         user.profilePicture = imageUrl;
