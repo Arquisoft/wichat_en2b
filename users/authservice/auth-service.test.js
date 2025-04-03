@@ -273,7 +273,8 @@ describe('Auth Service', () => {
     });
 
     it('Should not register a user with an invalid role', async () => {
-      const invalidRoleUser = { username: 'testuser', password: 'testpassword', role: 'invalidrole' }; // NOSONAR
+      const password = 'testpassword'; // NOSONAR
+      const invalidRoleUser = { username: 'testuser', password: password, role: 'invalidrole' }; // NOSONAR
       const response = await request(app).post('/auth/register').send(invalidRoleUser);
 
       expect(response.status).toBe(400);
@@ -426,7 +427,7 @@ describe('GET /auth/token/username', () => {
 describe('POST /auth/validatePassword', () => {
   it('Should validate the password successfully', async () => {
     const username = 'testuser';
-    const password = 'testpassword';
+    const password = 'testpassword'; //NOSONAR
     const hashedPassword = await bcrypt.hash(password, 10);
     const mockUser = { username, password: hashedPassword };
 
@@ -456,7 +457,7 @@ describe('POST /auth/validatePassword', () => {
 
   it('Should return 404 if user is not found', async () => {
     const username = 'testuser';
-    const password = 'testpassword';
+    const password = 'testpassword'; //NOSONAR
 
     axios.get.mockResolvedValue({ data: null }); // Simulate user not found
 
@@ -470,8 +471,8 @@ describe('POST /auth/validatePassword', () => {
 
   it('Should return 401 if the password is invalid', async () => {
     const username = 'testuser';
-    const password = 'incorrectpassword';
-    const mockUser = { username, password: 'hashedpassword' };
+    const password = 'incorrectpassword'; //NOSONAR
+    const mockUser = { username, password: 'hashedpassword' }; //NOSONAR
 
     axios.get.mockResolvedValue({ data: mockUser });
     bcrypt.compare.mockResolvedValue(false); // Simulate incorrect password
@@ -486,7 +487,7 @@ describe('POST /auth/validatePassword', () => {
 
   it('Should handle errors and return internal server error', async () => {
     const username = 'testuser';
-    const password = 'testpassword';
+    const password = 'testpassword'; //NOSONAR
     const errorMessage = 'Error validating password';
 
     axios.get.mockRejectedValue(new Error(errorMessage));

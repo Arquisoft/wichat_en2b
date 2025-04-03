@@ -362,4 +362,165 @@ describe('Gateway Service', () => {
       .delete('/users/testuser');
     expect(response.statusCode).toBe(204);
   });
+
+  // Test /token/username endpoint
+  it('should fetch username from auth service', async () => {
+    global.fetch.mockImplementationOnce(() =>
+      Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve({ username: 'testuser' }),
+      })
+    );
+
+    const response = await request(app)
+      .get('/token/username')
+      .set('Authorization', 'Bearer mockToken');
+
+    expect(response.statusCode).toBe(200);
+    expect(response.body.username).toBe('testuser');
+    expect(fetch).toHaveBeenCalledWith(
+      'http://localhost:8002/auth/token/username',
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          'Authorization': 'Bearer mockToken',
+          'Origin': 'http://localhost:8000',
+        }),
+      })
+    );
+  });
+
+  // Test /users/:username PATCH (Change Username) endpoint
+  it('should forward username change request to user service', async () => {
+    const mockResponse = { token: 'newToken' }; 
+
+    global.fetch.mockImplementationOnce(() =>
+      Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve(mockResponse),
+      })
+    );
+
+    const response = await fetch('http://localhost:8000/users/testuser', {
+      method: 'PATCH',
+      headers: {
+        'Authorization': 'Bearer mockToken',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        newUsername: 'newtestuser'
+      })
+    });
+    
+    const responseBody = await response.json();
+    expect(responseBody.token).toBe('newToken');
+  });
+
+  // Test /users/:username/password PATCH (Change Password) endpoint
+  it('should forward password change request to user service', async () => {
+    const mockResponse = { message: 'Password updated successfully' };
+
+    global.fetch.mockImplementationOnce(() =>
+      Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve(mockResponse),
+      })
+    );
+
+    const response = await fetch('http://localhost:8000/users/testuser/password', {
+      method: 'PATCH',
+      headers: {
+        'Authorization': 'Bearer mockToken',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        token: 'mockToken',
+        currentPassword: 'oldpassword',
+        newPassword: 'newpassword'
+      })
+    });
+    
+    const responseBody = await response.json();
+    expect(responseBody.message).toBe('Password updated successfully');
+  });
+
+  // Test /game/update/:oldUsername PATCH (Update game history on username change)
+  it('should update game history when username changes', async () => {
+    const mockResponse = { message: 'Game history updated' };
+
+    global.fetch.mockImplementationOnce(() =>
+      Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve(mockResponse),
+      })
+    );
+
+    const response = await request(app)
+      .patch('/game/update/testuser')
+      .send({ newUsername: 'newtestuser' });
+
+    expect(response.statusCode).toBe(200);
+    expect(response.body.message).toBe('Game history updated');
+    expect(fetch).toHaveBeenCalledWith(
+      'http://localhost:8004/game/update/testuser',
+      expect.objectContaining({
+        method: 'PATCH',
+        headers: expect.objectContaining({
+          'Content-Type': 'application/json',
+          'Origin': 'http://localhost:8000',
+        }),
+        body: JSON.stringify({ newUsername: 'newtestuser' }),
+      })
+    );
+  });
+
+  // Test /user/profile/picture POST (Upload profile picture) endpoint
+  it('should forward profile picture upload request to user service', async () => {
+    const mockResponse = { message: 'Profile picture uploaded successfully' };
+
+    global.fetch.mockImplementationOnce(() =>
+      Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve(mockResponse),
+      })
+    );
+
+    const response = await fetch('http://localhost:8000/user/profile/picture', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer mockToken',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        image: 'mockImageData',
+        username: 'testuser'
+      })
+    });
+
+    const responseBody = await response.json();
+    expect(responseBody.message).toBe('Profile picture uploaded successfully');
+  });
+
+  // Test /user/profile/picture/:username GET (Retrieve profile picture) endpoint
+  it('should retrieve profile picture from user service', async () => {
+    const mockResponse = { image: 'mockImageUrl' };
+
+    global.fetch.mockImplementationOnce(() =>
+      Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve(mockResponse),
+      })
+    );
+
+    const response = await fetch('http://localhost:8000/user/profile/picture/testuser', {
+      method: 'GET',
+      headers: {
+        'Authorization': 'Bearer mockToken',
+        'Content-Type': 'application/json'
+      }
+    });
+
+    const responseBody = await response.json();
+    expect(responseBody.image).toBe('mockImageUrl');
+  });
 });

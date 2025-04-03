@@ -35,6 +35,6 @@
         "fs": "^0.0.1-security",
         "jest": "^29.7.0",
         "multer": "^1.4.5-lts.2",
-        "supertest": "^7.0.0"
+        "supertest": "^7.1.0"
     }
 }

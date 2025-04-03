@@ -48,6 +48,10 @@ const forwardRequest = async (service, endpoint, req, res) => {
     } else {
       responseBody = await response.text();
     }
+
+    // Log the response status and body for debugging
+    console.log('Forwarded request status:', response.status);
+    console.log('Forwarded request response body:', responseBody);
     
     // Set the status code from the downstream service response
     res.status(response.status);
