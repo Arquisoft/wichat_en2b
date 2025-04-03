@@ -1,4 +1,3 @@
-// webapp/middleware.js
 import { NextResponse } from "next/server";
 
 export function middleware(request) {
@@ -6,14 +5,22 @@ export function middleware(request) {
   const token = request.cookies.get("token")?.value;
   console.log("Token:", token);
 
-  // If user is logged in (has token) and trying to access /login, redirect to home
-  if (token && (request.nextUrl.pathname === "/login" || request.nextUrl.pathname === "/addUser")) {
-    console.log("Logged-in user attempted to access /login, redirecting to /");
+  const currentPath = request.nextUrl.pathname;
+
+  // Redirect logged-in users trying to access /login or /addUser to the main homepage
+  if (token && (currentPath === "/login" || currentPath === "/addUser")) {
+    console.log("Logged-in user attempted to access /login or /addUser, redirecting to /");
     return NextResponse.redirect(new URL("/", request.url));
   }
 
-  // If no token and trying to access protected routes, redirect to /login
-  if (!token && request.nextUrl.pathname !== "/login" && request.nextUrl.pathname !== "/addUser") {
+  // Allow unauthenticated users to access "/" (default homepage)
+  if (!token && currentPath === "/") {
+    console.log("No token, allowing access to /");
+    return NextResponse.next();
+  }
+
+  // Redirect unauthenticated users trying to access protected routes to /login
+  if (!token && currentPath !== "/login" && currentPath !== "/addUser") {
     console.log("No token, redirecting to /login");
     return NextResponse.redirect(new URL("/login", request.url));
   }
@@ -22,5 +29,5 @@ export function middleware(request) {
 }
 
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"], // Exclude static assets and API routes
 };
