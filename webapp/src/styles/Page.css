@@ -1,12 +1,1 @@
-.App {
-    display: flex;
-    flex-direction: column;
-    width: 100vw;
-    height: 100vh;
-    box-sizing: border-box;
-}
-
-.App-header {
-    flex: 1;
-    overflow: auto;
-}
+.App{display:flex;flex-direction:column;width:100vw;height:100vh;box-sizing:border-box}.App-header{flex:1;overflow:auto}
