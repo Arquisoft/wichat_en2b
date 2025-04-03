@@ -175,7 +175,7 @@ router.patch('/users/:username/password', async (req, res) => {
     }
 });
 
-const fileType = await import('file-type');
+const fileType = require('file-type');
 const sharp = require('sharp');
 
 router.post('/user/profile/picture', async (req, res) => {
