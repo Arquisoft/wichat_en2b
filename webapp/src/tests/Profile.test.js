@@ -2,15 +2,22 @@ import React from "react";
 import {render, screen, fireEvent, waitFor, act } from "@testing-library/react";
 import QrCode from "../components/home/2fa/qrCode";
 import ProfileForm from "../components/home/ui/ProfileForm";
+import axios from 'axios';
 
-const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://localhost:8000'; // NOSONAR
+jest.mock('next/navigation', () => require('next-router-mock'));
+jest.mock('axios');
+
+global.fetch = jest.fn();
 
 // Mock fetch and document.cookie
 global.fetch = jest.fn();
+
 Object.defineProperty(document, 'cookie', {
   writable: true,
-  value: 'token=mock-token', // You can change this to test different scenarios
+  configurable: true,
+  value: 'token=mock-token',
 });
+
 
 jest.mock('../utils/auth.js', () => ({
     getAuthToken: jest.fn(),
@@ -19,11 +26,21 @@ jest.mock('../utils/auth.js', () => ({
 describe('ProfileForm', () => {
   const mockOnSave = jest.fn();
 
-  beforeEach(() => {
-    fetch.mockClear();
-  });
+  	beforeEach(() => {
+		fetch.mockClear();
 
-  it('Does not udpate the username if it is the same as the current one', async () => {
+		axios.get.mockImplementationOnce(() =>
+			Promise.resolve({ data: { username: 'testUser' } })
+		);
+  	});
+
+  	afterEach(() => {
+		act(() => jest.runOnlyPendingTimers());
+		jest.useRealTimers();
+		jest.clearAllMocks();
+	});
+
+  	test('Does not udpate the username if it is the same as the current one', async () => {
 		const mockApiResponse = { username: 'oldUsername' };
 
 		fetch.mockResolvedValueOnce({
@@ -31,7 +48,6 @@ describe('ProfileForm', () => {
 			text: async () => JSON.stringify(mockApiResponse),
 		});
 
-      
 		render(
 			<ProfileForm username="testuser" onSave={mockOnSave} />
 		);
@@ -46,6 +62,214 @@ describe('ProfileForm', () => {
 
 		await waitFor(() => expect(screen.getByText('Save Username')).toBeInTheDocument());
     });
+
+	test('Does not udpate the username if the new one is empty', async () => {
+		const mockApiResponse = { username: 'oldUsername' };
+
+		fetch.mockResolvedValueOnce({
+			ok: true,
+			text: async () => JSON.stringify(mockApiResponse),
+		});
+
+		render(
+			<ProfileForm username="testuser" onSave={mockOnSave} />
+		);
+
+		// Simulate a change in the input field
+		await fireEvent.click(screen.getByText('Edit Username'));
+		const input = screen.getByLabelText('Username');
+		await fireEvent.change(input, { target: { value: '' } });
+	
+		// handleSaveUsername
+		await fireEvent.click(screen.getByText('Save Username'));
+
+		await waitFor(() => expect(screen.getByText('Save Username')).toBeInTheDocument());
+    });
+
+	test('Does not udpate the username if the new is too short', async () => {
+		const mockApiResponse = { username: 'oldUsername' };
+
+		fetch.mockResolvedValueOnce({
+			ok: true,
+			text: async () => JSON.stringify(mockApiResponse),
+		});
+      
+		render(
+			<ProfileForm username="testuser" onSave={mockOnSave} />
+		);
+
+		// Simulate a change in the input field
+		await fireEvent.click(screen.getByText('Edit Username'));
+		const input = screen.getByLabelText('Username');
+		await fireEvent.change(input, { target: { value: 'us' } });
+	
+		// handleSaveUsername
+		await fireEvent.click(screen.getByText('Save Username'));
+	});
+
+	test('Correctly updates username', async () => {
+		// Delete the existing property first
+		delete Object.getOwnPropertyDescriptor(document, 'cookie'); //NOSONAR
+		
+		// Mock the fetch response for a successful username update
+		fetch.mockResolvedValueOnce({
+			ok: true,
+			json: async () => ({ token: 'new-token' }),
+		});
+
+		// Create a spy on document.cookie
+		const setCookieMock = jest.fn();
+		const getCookieMock = jest.fn(() => 'token=mock-token');
+
+		Object.defineProperty(document, 'cookie', {
+			configurable: true,
+			set: setCookieMock,
+			get: getCookieMock,
+		});
+
+		const mockSave = jest.fn();
+		render(<ProfileForm username="oldUsername" onSave={mockSave} />);
+
+		// Edit the username
+		fireEvent.click(screen.getByText('Edit Username'));
+		fireEvent.change(screen.getByLabelText('Username'), { target: { value: 'validNewUsername' } });
+		fireEvent.click(screen.getByText('Save Username'));
+
+		// Check that the API was called with the right parameters
+		await waitFor(() => {
+			expect(fetch).toHaveBeenCalledWith(
+				'http://localhost:8000/users/oldUsername', 
+				expect.objectContaining({
+					method: 'PATCH',
+					headers: expect.objectContaining({
+						'Content-Type': 'application/json',
+						'Authorization': 'Bearer mock-token',
+					}),
+					body: JSON.stringify({ newUsername: 'validNewUsername' }),
+				})
+			);
+		});
+	});
+
+	test('Does not update the password if the current password is missing', async () => {
+		render(<ProfileForm username="testuser" onSave={mockOnSave} />);
+
+		// Ensure the "Security" tab is selected
+		const securityTab = screen.getByText('Security');
+		fireEvent.click(securityTab);
+	
+		// Simulate a change in the password fields
+		await fireEvent.click(screen.getByText('Edit Password'));
+		const currentPasswordInput = screen.getByLabelText('Actual password');
+		const newPasswordInput = screen.getByLabelText('New password');
+		const confirmPasswordInput = screen.getByLabelText('Confirm new password');
+	
+		// Update the new password fields without providing current password
+		await fireEvent.change(currentPasswordInput, { target: { value: '' } });
+		await fireEvent.change(newPasswordInput, { target: { value: 'newpassword123' } });
+		await fireEvent.change(confirmPasswordInput, { target: { value: 'newpassword123' } });
+	
+		// Click save password
+		await fireEvent.click(screen.getByText('Save Password'));	
+		await waitFor(() => expect(screen.getByText('Save Password')).toBeInTheDocument());
+	});
+
+	test('Does not update the password if new password and confirmation do not match', async () => {	
+		render(<ProfileForm username="testuser" onSave={mockOnSave} />);
+
+		// Ensure the "Security" tab is selected
+		const securityTab = screen.getByText('Security');
+		fireEvent.click(securityTab);
+	
+		// Simulate a change in the password fields
+		await fireEvent.click(screen.getByText('Edit Password'));
+		const currentPasswordInput = screen.getByLabelText('Actual password');
+		const newPasswordInput = screen.getByLabelText('New password');
+		const confirmPasswordInput = screen.getByLabelText('Confirm new password');
+	
+		// Enter mismatched passwords
+		await fireEvent.change(currentPasswordInput, { target: { value: 'currentpassword' } });
+		await fireEvent.change(newPasswordInput, { target: { value: 'newpassword123' } });
+		await fireEvent.change(confirmPasswordInput, { target: { value: 'differentpassword123' } });
+	
+		// Click save password
+		await fireEvent.click(screen.getByText('Save Password'));	
+		await waitFor(() => expect(screen.getByText('Save Password')).toBeInTheDocument());
+	});	
+
+	test('Does not update the password if the new password is too short', async () => {
+		render(<ProfileForm username="testuser" onSave={mockOnSave} />);
+
+		// Ensure the "Security" tab is selected
+		const securityTab = screen.getByText('Security');
+		fireEvent.click(securityTab);
+	
+		// Simulate a change in the password fields
+		await fireEvent.click(screen.getByText('Edit Password'));
+		const currentPasswordInput = screen.getByLabelText('Actual password');
+		const newPasswordInput = screen.getByLabelText('New password');
+		const confirmPasswordInput = screen.getByLabelText('Confirm new password');
+	
+		// Enter a password that is too short
+		await fireEvent.change(currentPasswordInput, { target: { value: 'currentpassword' } });
+		await fireEvent.change(newPasswordInput, { target: { value: 'short' } });
+		await fireEvent.change(confirmPasswordInput, { target: { value: 'short' } });
+	
+		// Click save password
+		await fireEvent.click(screen.getByText('Save Password'));
+	
+		await waitFor(() => expect(screen.getByText('Save Password')).toBeInTheDocument());
+	});
+
+	test('Correctly updates password', async () => {
+		// Mock the fetch response for a successful password update
+		fetch.mockResolvedValueOnce({
+			ok: true,
+			json: async () => ({ token: 'new-token' }),
+		});
+	
+		// Create a spy on document.cookie
+		const setCookieMock = jest.fn();
+		const getCookieMock = jest.fn(() => 'token=mock-token');
+	
+		Object.defineProperty(document, 'cookie', {
+			configurable: true,
+			set: setCookieMock,
+			get: getCookieMock,
+		});
+	
+		const mockSave = jest.fn();
+		render(<ProfileForm username="testuser" onSave={mockSave} />);
+
+		// Ensure the "Security" tab is selected
+		const securityTab = screen.getByText('Security');
+		fireEvent.click(securityTab);
+	
+		// Simulate a password update
+		await fireEvent.click(screen.getByText('Edit Password'));
+		await fireEvent.change(screen.getByLabelText('Actual password'), { target: { value: 'currentpassword' } });
+		await fireEvent.change(screen.getByLabelText('New password'), { target: { value: 'newpassword123' } });
+		await fireEvent.change(screen.getByLabelText('Confirm new password'), { target: { value: 'newpassword123' } });
+		await fireEvent.click(screen.getByText('Save Password'));
+	
+		// Check that the API was called with the right parameters
+		await waitFor(() => {
+			expect(fetch).toHaveBeenCalledWith(
+				'http://localhost:8000/users/testuser/password',
+				expect.objectContaining({
+					method: 'PATCH',
+					headers: expect.objectContaining({
+						'Content-Type': 'application/json',
+						'Authorization': 'Bearer mock-token',
+					}),
+					body: JSON.stringify({
+						currentPassword: 'currentpassword',
+						newPassword: 'newpassword123',
+					}),
+				})
+			);
+		});
+	});	
 
 	test('should check 2FA status on component mount', async () => {
 		const mockApiResponse = { twoFactorEnabled: true };
