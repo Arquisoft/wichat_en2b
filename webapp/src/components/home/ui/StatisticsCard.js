@@ -71,7 +71,7 @@ const StatisticsCard = () => {
 							</Grid>
 
 							{/* Rank */}
-							<Grid item size={{ xs: 12, sm: 4 }}>
+							<Grid size={{ xs: 12, sm: 4 }}>
 								<Paper className="stat-card stat-rank">
 								<Typography className="stat-value">#{rank}</Typography>
 								<Typography className="stat-label">Rank</Typography>

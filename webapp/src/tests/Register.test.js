@@ -19,21 +19,27 @@ describe("Register Component", () => {
    
     beforeEach(() => {
         jest.clearAllMocks();
+        jest.useFakeTimers();
     });
 
     test("Renders the Register component correctly", () => {
         render(<Register />);
         
-        expect(screen.getByText("Create an account")).toBeInTheDocument();
-        expect(screen.getByText("Enter your details below to create your account")).toBeInTheDocument();
-        expect(screen.getByPlaceholderText("Username *")).toBeInTheDocument();
-        expect(screen.getByPlaceholderText("Password *")).toBeInTheDocument();
-        expect(screen.getByPlaceholderText("Confirm Password *")).toBeInTheDocument();
-        expect(screen.getByText("Already have an account? Login here")).toBeInTheDocument();
+        expect(screen.getByText("Create an Account")).toBeInTheDocument();
+        expect(screen.getByText("Enter your username and password below to sign up!")).toBeInTheDocument();
+        expect(screen.getByPlaceholderText("Enter your username")).toBeInTheDocument();
+        expect(screen.getByPlaceholderText("Enter your password")).toBeInTheDocument();
+        expect(screen.getByPlaceholderText("Confirm your password")).toBeInTheDocument();
+        expect(screen.getByText("Login here")).toBeInTheDocument();
         expect(screen.getByText("Register")).toBeInTheDocument();
     });
 
     test("Given valid input, the user can register", async () => {
+        const mockPush = jest.fn();
+        jest.spyOn(require('next/navigation'), 'useRouter').mockReturnValue({ push: mockPush });
+        
+        fetch.mockResponseOnce(JSON.stringify({ token: 'fake-token' }), { status: 200 });
+
         render(<Register />);
 
         const UserTest = {
@@ -43,9 +49,9 @@ describe("Register Component", () => {
         };
 
         //Get the elements
-        const usernameInput = screen.getByPlaceholderText("Username *");
-        const passwordInput = screen.getByPlaceholderText("Password *");
-        const confirmPasswordInput = screen.getByPlaceholderText("Confirm Password *");
+        const usernameInput = screen.getByPlaceholderText("Enter your username");
+        const passwordInput = screen.getByPlaceholderText("Enter your password");
+        const confirmPasswordInput = screen.getByPlaceholderText("Confirm your password");
         const registerButtonInput = screen.getByText("Register");
 
         //Fill in the form
@@ -59,14 +65,16 @@ describe("Register Component", () => {
         expect(confirmPasswordInput).toHaveValue(UserTest.confirmPassword);
 
         //Click the register button
-        fireEvent.click(registerButtonInput);
-
-        await new Promise(r => setTimeout(r, 500)); // Pequeña espera
-
-        //Expect the login page to be rendered
+        //Expect the home page to be rendered
+        await act(async () => {
+            fireEvent.click(registerButtonInput);
+            jest.advanceTimersByTime(1000);
+        });
+        
         await waitFor(() => {
-            expect(mockPush).toHaveBeenCalledWith("/login");
-        }, { timeout: 5000 }); 
+            expect(document.cookie).toContain('token=fake-token');
+            expect(mockPush).toHaveBeenCalledWith('/');
+        });
     });
 
     test("Given an empty username, the error is shown", async () => {
@@ -79,9 +87,9 @@ describe("Register Component", () => {
         };
 
         //Get the elements
-        const usernameInput = screen.getByPlaceholderText("Username *");
-        const passwordInput = screen.getByPlaceholderText("Password *");
-        const confirmPasswordInput = screen.getByPlaceholderText("Confirm Password *");
+        const usernameInput = screen.getByPlaceholderText("Enter your username");
+        const passwordInput = screen.getByPlaceholderText("Enter your password");
+        const confirmPasswordInput = screen.getByPlaceholderText("Confirm your password");
         const registerButtonInput = screen.getByText("Register");
 
         //Fill in the form
@@ -109,9 +117,9 @@ describe("Register Component", () => {
         };
 
         //Get the elements
-        const usernameInput = screen.getByPlaceholderText("Username *");
-        const passwordInput = screen.getByPlaceholderText("Password *");
-        const confirmPasswordInput = screen.getByPlaceholderText("Confirm Password *");
+        const usernameInput = screen.getByPlaceholderText("Enter your username");
+        const passwordInput = screen.getByPlaceholderText("Enter your password");
+        const confirmPasswordInput = screen.getByPlaceholderText("Confirm your password");
         const registerButtonInput = screen.getByText("Register");
 
         //Fill in the form
@@ -139,9 +147,9 @@ describe("Register Component", () => {
         };
 
         //Get the elements
-        const usernameInput = screen.getByPlaceholderText("Username *");
-        const passwordInput = screen.getByPlaceholderText("Password *");
-        const confirmPasswordInput = screen.getByPlaceholderText("Confirm Password *");
+        const usernameInput = screen.getByPlaceholderText("Enter your username");
+        const passwordInput = screen.getByPlaceholderText("Enter your password");
+        const confirmPasswordInput = screen.getByPlaceholderText("Confirm your password");
         const registerButtonInput = screen.getByText("Register");
 
         //Fill in the form
@@ -168,9 +176,9 @@ describe("Register Component", () => {
         };
 
         //Get the elements
-        const usernameInput = screen.getByPlaceholderText("Username *");
-        const passwordInput = screen.getByPlaceholderText("Password *");
-        const confirmPasswordInput = screen.getByPlaceholderText("Confirm Password *");
+        const usernameInput = screen.getByPlaceholderText("Enter your username");
+        const passwordInput = screen.getByPlaceholderText("Enter your password");
+        const confirmPasswordInput = screen.getByPlaceholderText("Confirm your password");
         const registerButtonInput = screen.getByText("Register");
 
         //Fill in the form
@@ -180,8 +188,8 @@ describe("Register Component", () => {
         //Click the register button
         fireEvent.click(registerButtonInput);
 
-        expect(screen.getByText("Create an account")).toBeInTheDocument();
-        expect(screen.getByText("Enter your details below to create your account")).toBeInTheDocument();
+        expect(screen.getByText("Create an Account")).toBeInTheDocument();
+        expect(screen.getByText("Enter your username and password below to sign up!")).toBeInTheDocument();
     });
 
     test("Given a short password, the error is shown", async () => {
@@ -194,9 +202,9 @@ describe("Register Component", () => {
         };
 
         //Get the elements
-        const usernameInput = screen.getByPlaceholderText("Username *");
-        const passwordInput = screen.getByPlaceholderText("Password *");
-        const confirmPasswordInput = screen.getByPlaceholderText("Confirm Password *");
+        const usernameInput = screen.getByPlaceholderText("Enter your username");
+        const passwordInput = screen.getByPlaceholderText("Enter your password");
+        const confirmPasswordInput = screen.getByPlaceholderText("Confirm your password");
         const registerButtonInput = screen.getByText("Register");
 
         //Fill in the form
@@ -223,9 +231,9 @@ describe("Register Component", () => {
         };
 
         //Get the elements
-        const usernameInput = screen.getByPlaceholderText("Username *");
-        const passwordInput = screen.getByPlaceholderText("Password *");
-        const confirmPasswordInput = screen.getByPlaceholderText("Confirm Password *");
+        const usernameInput = screen.getByPlaceholderText("Enter your username");
+        const passwordInput = screen.getByPlaceholderText("Enter your password");
+        const confirmPasswordInput = screen.getByPlaceholderText("Confirm your password");
         const registerButtonInput = screen.getByText("Register");
 
         //Fill in the form
@@ -236,8 +244,8 @@ describe("Register Component", () => {
         fireEvent.click(registerButtonInput);
 
         
-        expect(screen.getByText("Create an account")).toBeInTheDocument();
-        expect(screen.getByText("Enter your details below to create your account")).toBeInTheDocument();
+        expect(screen.getByText("Create an Account")).toBeInTheDocument();
+        expect(screen.getByText("Enter your username and password below to sign up!")).toBeInTheDocument();
         
     });
 
@@ -251,9 +259,9 @@ describe("Register Component", () => {
         };
 
         //Get the elements
-        const usernameInput = screen.getByPlaceholderText("Username *");
-        const passwordInput = screen.getByPlaceholderText("Password *");
-        const confirmPasswordInput = screen.getByPlaceholderText("Confirm Password *");
+        const usernameInput = screen.getByPlaceholderText("Enter your username");
+        const passwordInput = screen.getByPlaceholderText("Enter your password");
+        const confirmPasswordInput = screen.getByPlaceholderText("Confirm your password");
         const registerButtonInput = screen.getByText("Register");
 
         //Fill in the form
@@ -288,9 +296,9 @@ describe("Register Component", () => {
         };
     
         // Obtener los elementos
-        const usernameInput = screen.getByPlaceholderText("Username *");
-        const passwordInput = screen.getByPlaceholderText("Password *");
-        const confirmPasswordInput = screen.getByPlaceholderText("Confirm Password *");
+        const usernameInput = screen.getByPlaceholderText("Enter your username");
+        const passwordInput = screen.getByPlaceholderText("Enter your password");
+        const confirmPasswordInput = screen.getByPlaceholderText("Confirm your password");
         const registerButton = screen.getByText("Register");
     
         // Llenar el formulario
@@ -327,9 +335,9 @@ describe("Register Component", () => {
         };
     
         // Obtener los elementos
-        const usernameInput = screen.getByPlaceholderText("Username *");
-        const passwordInput = screen.getByPlaceholderText("Password *");
-        const confirmPasswordInput = screen.getByPlaceholderText("Confirm Password *");
+        const usernameInput = screen.getByPlaceholderText("Enter your username");
+        const passwordInput = screen.getByPlaceholderText("Enter your password");
+        const confirmPasswordInput = screen.getByPlaceholderText("Confirm your password");
         const registerButton = screen.getByText("Register");
     
         // Llenar el formulario

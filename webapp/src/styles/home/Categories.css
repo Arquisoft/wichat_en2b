@@ -88,6 +88,8 @@ body .quiz-card:hover {
 }
 
 body .badgeDifficulty {
+  margin-bottom: 4rem;
+  margin-top: 1rem;
   margin-left: -2rem;
   font-size: 0.75rem;
   font-weight: bold;

@@ -64,7 +64,7 @@ export default function FinishGame(params) {
                     ))}
                 </div>
                 <div className="buttons">
-                    <button className="back-button" onClick={() => location.href = '/'}>Back to home</button>
+                    <button className="back-home-button" onClick={() => location.href = '/'}>Back to home</button>
                     <button className="play-again-button" onClick={fetchQuestions}>Play again</button>
                 </div>
             </div>
