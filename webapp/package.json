@@ -9,7 +9,7 @@
     "lint": "next lint",
     "test": "jest --config=jest.config.js --selectProjects=unit",
     "test:e2e:single": "node ./e2e/test-environment-setup.js && jest --config=jest.config.js",
-    "test:e2e": "start-server-and-test prod http://localhost:3000 'jest --config=jest.config.js --selectProjects=e2e'",
+    "test:e2e": "start-server-and-test prod http://localhost:3000 'jest --runInBand --config=jest.config.js --selectProjects=e2e'",
     "prod": "next start -p 3000"
   },
   "dependencies": {

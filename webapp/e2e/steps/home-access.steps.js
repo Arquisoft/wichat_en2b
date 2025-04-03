@@ -13,9 +13,10 @@ defineFeature(feature, test => {
     beforeAll(async () => {
         browser = process.env.GITHUB_ACTIONS
             ? await puppeteer.launch({headless: "new", args: ['--no-sandbox', '--disable-setuid-sandbox']})
-            : await puppeteer.launch({ headless: false, slowMo: 100 });
+            : await puppeteer.launch({ headless: false, slowMo: 50 });
         page = await browser.newPage();
 
+        await mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true });
         jest.setTimeout(30000)
         await goToInitialPage(page);
     });

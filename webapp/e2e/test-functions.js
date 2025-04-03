@@ -27,14 +27,43 @@ async function writeIntoInput(page, selector, text) {
     await page.type(selector, text);
 }
 
-async function addUser(mongoUri, mongoose, User){
-    let data = {username: "mock", password: "123456", role:"USER"}
-    await mongoose.connect(mongoUri);
-
-    await User.insertOne(data);
-
-    return data;
+async function connectToDatabase(mongoUri, mongoose) {
+    if (mongoose.connection.readyState === 0) {
+        await mongoose.connect(mongoUri, { useNewUrlParser: true, useUnifiedTopology: true });
+    }
+    await mongoose.connection.asPromise(); //Wait as promise
 }
+
+async function addUser(mongoUri, mongoose, User) {
+    let data = { username: "mock", password: "123456", role: "USER" };
+
+    await connectToDatabase(mongoUri, mongoose);
+
+    let retries = 2;
+    let user = null;
+
+    while (retries > 0) {
+        try {
+            user = await User.findOne({ username: data.username }).exec();
+            if (user) break; // Si el usuario existe, salimos del bucle
+
+            // Si no existe, intentamos crearlo
+            user = await User.create(data);
+            console.log("✅ Usuario creado:", user);
+            break;
+        } catch (err) {
+            console.error("⚠️ Error en la operación, reintentando...", err);
+            await new Promise(resolve => setTimeout(resolve, 250));
+            retries--;
+        }
+    }
+    if (!user) {
+        throw new Error("❌ No se pudo crear ni encontrar el usuario después de varios intentos.");
+    }
+    return user;
+}
+
+
 
 async function login(page, username, password){
     await writeIntoInput(page,'input[name="username"]', username);

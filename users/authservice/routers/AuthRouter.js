@@ -8,7 +8,7 @@ require('dotenv').config();
 
 const router = express.Router();
 const validRoles = ['USER', 'ADMIN'];
-const gatewayServiceUrl = process.env.GATEWAY_SERVICE_URL || 'http://gatewayservice:8000'; // NOSONAR
+const gatewayServiceUrl = process.env.GATEWAY_SERVICE_URL || 'http://localhost:8000'; // NOSONAR
 const ERROR_USERNAME_NOT_FOUND = "Username not found";
 const ERROR_WRONG_PASSWORD = "Password is incorrect";
 // Endpoint to login a user and return a JWT token
