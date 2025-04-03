@@ -7,6 +7,9 @@ WORKDIR /usr/src/llmservice
 # Copy package.json and package-lock.json to the working directory
 COPY package*.json ./
 
+ARG LLM_API_KEY
+ENV LLM_API_KEY=${LLM_API_KEY}
+
 # Install app dependencies
 RUN npm install
 

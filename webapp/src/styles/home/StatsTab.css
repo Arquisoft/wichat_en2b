@@ -57,3 +57,15 @@ body .typography {
 body .typography span {
     color: #ff9800;
 }
+
+body .detailed-stats {
+    justify-content: center;
+}
+
+@media screen and (max-width: 670px) {
+    body .stats-header {
+        flex-direction: column;
+        row-gap: 1rem;
+        width: 100%;
+    }
+}

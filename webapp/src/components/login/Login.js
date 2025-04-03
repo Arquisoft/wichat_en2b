@@ -4,6 +4,8 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import "../../styles/login/Login.css";
 import "../../styles/globals.css";
+import Check2fa from "@/components/home/2fa/Check2fa";
+import { loginUser } from "@/utils/LoginUtil";
 
 const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://localhost:8000';
 
@@ -12,42 +14,37 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const [has2fa, setHas2fa] = useState(false);
   const router = useRouter();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrors({});
     setLoading(true);
-
+  
     try {
-      // Get token from cookies, if it exists
+      // Fetch token from cookies if it's available
       const token = document.cookie
         .split("; ")
         .find((row) => row.startsWith("token="))
         ?.split("=")[1];
-
-      const response = await fetch(`${apiEndpoint}/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}), // Send token if present
-        },
-        body: JSON.stringify({
-          user: {
-            username,
-            password,
-          },
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw data;
+  
+   
+      const data = await loginUser(
+        username,
+        password,
+        apiEndpoint,
+        token
+      );
+     
+      // Redirect to the home page after login
+      if(data.has2fa){
+        setHas2fa(true);
+      }else{
+        // On successful login, set the token in the cookie
+        document.cookie = `token=${data.token}; path=/; max-age=3600`;
+        router.push("/");
       }
-
-      document.cookie = `token=${data.token}; path=/; max-age=3600`;
-      router.push("/");
     } catch (err) {
       if (err.error === "You are already logged in") {
         // Redirect to home if already logged in
@@ -61,6 +58,7 @@ const Login = () => {
       setLoading(false);
     }
   };
+  
 
   return (
     <div className="login-container">
@@ -68,7 +66,11 @@ const Login = () => {
         <h2>Welcome to WIChat</h2>
         <p>Login to start playing!</p>
         {errors.general && <p className="error-message">{errors.general}</p>}
-        <form onSubmit={handleSubmit}>
+        {has2fa ? (
+          <Check2fa username={username}/>
+        ) : (
+          <form onSubmit={handleSubmit}>
+       
           <div className="input-group">
             <label htmlFor="username">Username</label>
             <input
@@ -99,6 +101,7 @@ const Login = () => {
             {loading ? "Logging in..." : "Login"}
           </button>
         </form>
+        )}
         <p className="register-link">
           Don’t have an account? <a href="/addUser">Register here</a>
         </p>

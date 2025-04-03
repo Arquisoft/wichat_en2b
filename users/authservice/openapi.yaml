@@ -120,6 +120,116 @@ paths:
                   error:
                     type: string
                     example: "Internal Server Error"
+
+  /auth/setup2fa:
+    post:
+      summary: Set up 2FA for the user.
+      description: Generates a QR code URL for setting up 2FA.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  example: "user"
+      responses:
+        '200':
+          description: Successful 2FA setup.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  imageUrl:
+                    type: string
+                    example: "data:image/png;base64, iVBORw0KGgoAAAANSUhEUgAAAAUA..."
+        '400':
+          description: Bad request. Missing or invalid parameters.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Username is required"
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Error generating QR code"
+
+  /auth/verify2fa:
+    post:
+      summary: Verify the 2FA token provided by the user.
+      description: Verifies the token submitted by the user for 2FA.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+                  example: "123456"
+                user:
+                  type: object
+                  properties:
+                    username:
+                      type: string
+                      example: "user"
+      responses:
+        '200':
+          description: Successful 2FA verification.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "2FA Verified"
+                  token:
+                    type: string
+                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        '400':
+          description: Missing or invalid parameters.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Token and user information are required"
+        '401':
+          description: Unauthorized. Invalid 2FA token.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Invalid 2FA Token"
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Error verifying 2FA token"
+
 components:
   securitySchemes:
     bearerAuth:

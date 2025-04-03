@@ -1,4 +1,4 @@
-import React, { act } from "react";
+import React from "react";
 import "@testing-library/jest-dom";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import InGameChat from "../components/game/InGameChat";
@@ -73,7 +73,7 @@ describe("InGameChat Component", () => {
   });
 
   it("shows loading indicator while fetching response", async () => {
-    fetchMock.mockResponseOnce(() => new Promise((resolve) => setTimeout(() => resolve({body: "{\"content\": \"Test response\"}"}), 500)));
+    fetchMock.mockResponseOnce(() => new Promise((resolve) => setTimeout(() => resolve({body: "{\"content\": \"Test response\"}"}), 500)));//NOSONAR
     render(<InGameChat initialMessages={[]} question={{answers: [], right_answer: ""}}/>);
 
     openChat();
