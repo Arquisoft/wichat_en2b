@@ -1,4 +1,3 @@
-// src/app/components/home/Navbar.js
 "use client";
 
 import React, { useState } from "react";
@@ -12,15 +11,11 @@ import ProfileForm from "./ProfileForm";
 /**
  * Navigation bar for the application.
  *
- * @param {string} username - The username of the player.
+ * @param {string} username - The username of the player (optional).
  *
  * @returns {JSX.Element} The rendered Navbar component.
  */
 const Navbar = ({ username }) => {
-  if (!username) {
-    throw new Error("Invalid props for Navbar component.");
-  }
-
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const router = useRouter(); // Use Next.js router for navigation
 
@@ -58,37 +53,61 @@ const Navbar = ({ username }) => {
 
           <Box className="spacer" />
 
-          {/* Profile button */}
-          <Box className="user-section">
-            <Button
-              variant="contained"
-              color="secondary"
-              startIcon={<PersonIcon />}
-              onClick={handleProfileClick}
-              className="navbar-profile-button"
-            >
-              Profile
-            </Button>
+          {/* Conditional rendering based on username */}
+          {username ? (
+            <Box className="user-section">
+              {/* Profile button */}
+              <Button
+                variant="contained"
+                color="secondary"
+                startIcon={<PersonIcon />}
+                onClick={handleProfileClick}
+                className="navbar-profile-button"
+              >
+                Profile
+              </Button>
 
-            {/* Logout button */}
-            <IconButton aria-label="logout" onClick={handleLogout}>
-              <LogoutIcon />
-            </IconButton>
-          </Box>
+              {/* Logout button */}
+              <IconButton aria-label="logout" onClick={handleLogout}>
+                <LogoutIcon />
+              </IconButton>
+            </Box>
+          ) : (
+            <Box className="user-section">
+              {/* Buttons for anonymous users */}
+              <Button
+                variant="outlined"
+                color="primary"
+                onClick={() => router.push("/login")}
+                sx={{ marginRight: "1rem" }}
+              >
+                Login
+              </Button>
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={() => router.push("/register")}
+              >
+                Register
+              </Button>
+            </Box>
+          )}
         </Toolbar>
       </AppBar>
 
       {/* Dialog for profile form */}
-      <Dialog open={isProfileOpen} onClose={handleCloseProfile} maxWidth="sm" fullWidth>
-        <ProfileForm username={username} onSave={handleSaveProfile} />
-      </Dialog>
+      {username && (
+        <Dialog open={isProfileOpen} onClose={handleCloseProfile} maxWidth="sm" fullWidth>
+          <ProfileForm username={username} onSave={handleSaveProfile} />
+        </Dialog>
+      )}
     </>
   );
 };
 
 // Validation with PropTypes for the username prop
 Navbar.propTypes = {
-  username: PropTypes.string.isRequired,
+  username: PropTypes.string,
 };
 
 export default Navbar;
