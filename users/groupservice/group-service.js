@@ -8,7 +8,7 @@ const userRoutes = require('./routers/GroupRouter');
 
 app.use(bodyParser.json());
 
-const port = 8006;
+const port = 8005;
 
 // Connection to MongoDB user database
 const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/userdb';
