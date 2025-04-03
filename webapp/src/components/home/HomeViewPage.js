@@ -54,7 +54,9 @@ function HomePage() {
             }
             
           } catch (error) {
-            console.error("Error fetching data:", error);
+              setUsername(null); // Set username to null if there's an error
+              console.error("Error fetching data:", error);
+              return;
           }
         };
     
