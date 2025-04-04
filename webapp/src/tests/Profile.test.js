@@ -585,6 +585,180 @@ describe('ProfileForm', () => {
 		});
 	});
 
+	// Test for username update with same username 
+    test('Shows notification when saving with unchanged username', async () => {
+        render(<ProfileForm username="testuser" onSave={mockOnSave} />);
+
+        // Edit the username but don't change it
+        const editUsernameButton = await screen.findByRole("button", { name: /Edit Username/i });
+        await act(async () => { editUsernameButton.click(); });
+        
+        // Don't actually change the input value
+        
+        // Find and click the "Save Username" button
+        const saveUsernameButton = await screen.findByRole("button", { name: /Save Username/i });
+        await act(async () => { saveUsernameButton.click(); });
+
+        // Verify snackbar shows message about no changes
+        await waitFor(() => {
+            expect(screen.getByText("No changes on username detected.")).toBeInTheDocument();
+        });
+    });
+
+    // Test for network error during username update 
+    test('Handles network error during username update', async () => {
+        // Mock network error
+        fetch.mockRejectedValueOnce(new Error('Network error'));
+        
+        // Spy on console.error
+        jest.spyOn(console, 'error').mockImplementation(() => {});
+
+        render(<ProfileForm username="testuser" onSave={mockOnSave} />);
+
+        // Edit username
+        const editUsernameButton = await screen.findByRole("button", { name: /Edit Username/i });
+        await act(async () => { editUsernameButton.click(); });
+        fireEvent.change(screen.getByLabelText('Username'), { target: { value: 'newUsername' } });
+        
+        // Save username
+        const saveUsernameButton = await screen.findByRole("button", { name: /Save Username/i });
+        await act(async () => { saveUsernameButton.click(); });
+
+        // Verify error was logged
+        await waitFor(() => {
+            expect(console.error).toHaveBeenCalled();
+        });
+    });
+
+    // Test for missing new password (lines 91-95)
+    test('Shows error when new password is missing', async () => {
+        render(<ProfileForm username="testuser" onSave={mockOnSave} />);
+
+        // Go to Security tab
+        const securityTab = screen.getByText('Security');
+        fireEvent.click(securityTab);
+
+        // Update password fields
+        const editPasswordButton = await screen.findByRole("button", { name: /Edit Password/i });
+        await act(async () => { editPasswordButton.click(); });
+        
+        // Only fill current password, leave new password empty
+        await fireEvent.change(screen.getByLabelText('Actual password'), { target: { value: 'currentpassword' } });
+        
+        // Save password
+        const savePasswordButton = await screen.findByRole("button", { name: /Save Password/i });
+        await act(async () => { savePasswordButton.click(); });
+
+        // Verify error message about missing new password
+        await waitFor(() => {
+            expect(screen.getByText("Please enter a new password.")).toBeInTheDocument();
+        });
+    });
+
+	// Test handleProfilePictureChange with file size exceeding limit
+    test('Shows error for file size exceeding limit', async () => {
+        render(<ProfileForm username="testuser" onSave={mockOnSave} />);
+
+        // Select the Account tab
+        const accountTab = screen.getByText('Account');
+        fireEvent.click(accountTab);
+
+        // Create a mock file that exceeds size limit (2MB)
+        const largeFile = new File(['x'], 'large.jpg', {type: 'image/jpeg'});
+        Object.defineProperty(largeFile, 'size', {value: 3 * 1024 * 1024});
+        
+        // Get the hidden file input
+        const fileInput = document.querySelector('#profile-picture-input');
+        
+        // Trigger file selection with large file
+        await act(async () => {
+            fireEvent.change(fileInput, { target: { files: [largeFile] } });
+        });
+
+        // Verify error message about file size
+        await waitFor(() => {
+            expect(screen.getByText("This file is too large. Maximum size is 2MB.")).toBeInTheDocument();
+        });
+    });
+
+    // Test the base64 image extraction and upload in handleProfilePictureChange 
+    test('Extracts and uploads base64 image data', async () => {
+        // Spy on console.log
+        jest.spyOn(console, 'log').mockImplementation(() => {});
+
+        // Mock successful profile image upload
+        fetch.mockResolvedValueOnce({
+            ok: true,
+            json: async () => ({ profilePicture: 'https://example.com/profile.jpg' }),
+        });
+
+        render(<ProfileForm username="testuser" onSave={mockOnSave} />);
+
+        // Go to Account tab
+        const accountTab = screen.getByText('Account');
+        fireEvent.click(accountTab);
+
+        // Create a valid mock file
+        const file = new File(['dummy image data'], 'photo.jpg', {type: 'image/jpeg'});
+        
+        // Get the file input
+        const fileInput = document.querySelector('#profile-picture-input');
+        
+        // Upload the file
+        await act(async () => {
+            fireEvent.change(fileInput, { target: { files: [file] } });
+        });
+
+        // Verify base64 data was logged and API call was made
+        await waitFor(() => {
+            expect(console.log).toHaveBeenCalledWith("Base64 Image:", "mockbase64data");
+            expect(fetch).toHaveBeenCalledWith(
+                'http://localhost:8000/user/profile/picture',
+                expect.objectContaining({
+                    method: 'POST',
+                    body: JSON.stringify({ 
+                        image: 'mockbase64data',
+                        username: 'testuser' 
+                    }),
+                })
+            );
+        });
+    });
+
+    // Test avatar display with and without profile picture
+    test('Displays avatar correctly without profile picture', () => {
+        render(<ProfileForm username="testuser" onSave={mockOnSave} />);
+        
+        // Avatar should display the first letter of the username
+        expect(screen.getByText('t')).toBeInTheDocument();
+    });
+
+    // Test profile picture error display
+    test('Shows profile picture error message when present', async () => {
+        render(<ProfileForm username="testuser" onSave={mockOnSave} />);
+
+        // Go to Account tab
+        const accountTab = screen.getByText('Account');
+        fireEvent.click(accountTab);
+
+        // Create an invalid file type
+        const invalidFile = new File(['dummy text'], 'document.txt', {type: 'text/plain'});
+        
+        // Get the file input
+        const fileInput = document.querySelector('#profile-picture-input');
+        
+        // Try to upload invalid file
+        await act(async () => {
+            fireEvent.change(fileInput, { target: { files: [invalidFile] } });
+        });
+
+        // Verify error message is displayed
+        await waitFor(() => {
+            expect(screen.getByText("Invalid file type. Please select an image.")).toBeInTheDocument();
+        });
+    });
+
+
 	test('should check 2FA status on component mount', async () => {
 		const mockApiResponse = { twoFactorEnabled: true };
 		fetch.mockResolvedValueOnce({
