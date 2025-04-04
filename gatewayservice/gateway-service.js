@@ -49,10 +49,6 @@ const forwardRequest = async (service, endpoint, req, res) => {
       responseBody = await response.text();
     }
 
-    // Log the response status and body for debugging
-    console.log('Forwarded request status:', response.status);
-    console.log('Forwarded request response body:', responseBody);
-    
     // Set the status code from the downstream service response
     res.status(response.status);
     // Send the response body as-is
@@ -215,15 +211,32 @@ app.patch('/users/:username',  async (req, res) => {
     const { username } = req.params;
     const { newUsername } = req.body;
 
-    if (req.user.username !== username) {
-      return res.status(403).json({ error: 'You can only change your own username' });
+    const token = req.headers.authorization.split(' ')[1];
+    if (!token) {
+      return res.status(401).json({ error: 'Unauthorized' });
     }
 
     try {
+      const authResponse = await fetch(`${serviceUrls.auth}/auth/token/username`, {
+        headers: { 
+          Authorization: `Bearer ${token}`,	
+          Origin: 'http://localhost:8000',
+        },
+      });
+
+      if (!authResponse.ok) {
+        throw new Error('Failed to validate token');
+      }
+      
+      const dataAuth = await authResponse.json();
+      if (dataAuth.username !== username) {
+        return res.status(403).json({ error: 'You can only change your own username' });
+      }
+
       const response = await fetch(`${serviceUrls.user}/users/${username}`, {
         method: 'PATCH',
         headers: {
-          Authorization: `Bearer ${req.headers.authorization.split(' ')[1]}`,
+          Authorization: `Bearer ${token}`,	
           'Content-Type': 'application/json',
           Origin: 'http://localhost:8000'
         },
@@ -231,8 +244,7 @@ app.patch('/users/:username',  async (req, res) => {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to update username');
+        throw new Error('Failed to update username');
       }
 
       const data = await response.json();
@@ -253,6 +265,10 @@ app.patch('/users/:username',  async (req, res) => {
 app.patch('/users/:username/password',  async (req, res) => {
     const { username } = req.params;
     const { token, currentPassword, newPassword } = req.body;
+
+    if (!token) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
 
     try {
       const authResponse = await fetch(`${serviceUrls.auth}/auth/validatePassword`, {
@@ -304,6 +320,10 @@ app.use('/game/update/:oldUsername', cors(corsOptions));
 app.patch('/game/update/:oldUsername', async (req, res) => {
   const { oldUsername } = req.params;
   const { newUsername } = req.body;
+
+  if (!newUsername) {
+    return res.status(400).json({ error: 'New username is required' });
+  }
 
   try {
     const response = await fetch(`${serviceUrls.game}/game/update/${oldUsername}`, {
@@ -364,6 +384,7 @@ app.post('/user/profile/picture', async (req, res) => {
 
 // Profile picture retrieval
 app.use('/user/profile/picture/:username', publicCors);
+
 app.get('/user/profile/picture/:username', async (req, res) => {
   const { username } = req.params;
 
