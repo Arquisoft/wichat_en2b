@@ -5,7 +5,7 @@ const bcrypt = require('bcrypt');
 const fs = require('fs');
 const path = require('path');
 const sharp = require('sharp');
-import { parse } from 'file-type-mime'; 
+const { parse } = require('file-type-mime');
 
 router.use(express.json());
 const gatewayServiceUrl = process.env.GATEWAY_SERVICE_URL || 'http://gatewayservice:8000'; // NOSONAR
