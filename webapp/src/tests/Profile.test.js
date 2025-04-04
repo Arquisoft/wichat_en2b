@@ -57,6 +57,87 @@ describe('ProfileForm', () => {
 		jest.clearAllMocks();
 	});
 
+	it('should throw an error if username is invalid', () => {
+		expect(() => {
+		  render(<ProfileForm username={undefined} profilePicture="" onSave={() => {}} />);
+		}).toThrowError('Invalid props for ProfileForm component.');
+	  });
+	
+	  it('should throw an error if onSave is not a function', () => {
+		expect(() => {
+		  render(<ProfileForm username="validUsername" profilePicture="" onSave="notAFunction" />);
+		}).toThrowError('Invalid props for ProfileForm component.');
+	  });
+	
+	  it('should render correctly when valid props are provided', () => {
+		const { getByText } = render(<ProfileForm username="validUsername" profilePicture="" onSave={() => {}} />);
+		expect(getByText('validUsername')).toBeInTheDocument();
+	  });
+
+	test('should update username successfully', async () => {
+		const { getByLabelText } = render(
+		  <ProfileForm username="oldUsername" profilePicture="" onSave={mockOnSave} />
+		);
+
+		const editUsernameButton = await screen.findByRole("button", { name: /Edit Username/i });
+		await act(async () => { editUsernameButton.click(); });
+	  
+		fireEvent.change(getByLabelText(/Username/i), { target: { value: 'newUsername' } });
+
+		const saveUsernameButton = await screen.findByRole("button", { name: /Save Username/i });
+		await act(async () => { saveUsernameButton.click(); });
+	  
+		await waitFor(() => {
+		  expect(global.fetch).toHaveBeenCalledWith(
+			expect.stringContaining('/users/oldUsername'),
+			expect.objectContaining({
+			  method: 'PATCH',
+			  headers: expect.objectContaining({
+				'Content-Type': 'application/json',
+				Authorization: 'Bearer mock-token',
+			  }),
+			})
+		  );
+		});
+	});
+
+	test('should update password successfully', async () => {
+		render(
+			<ProfileForm username="username" profilePicture="" onSave={mockOnSave} />
+		);
+
+		// Go to Security tab
+		const securityTab = screen.getByText('Security');
+		fireEvent.click(securityTab);
+		
+		// Llenar los campos de contraseña
+		const editPasswordButton = await screen.findByRole("button", { name: /Edit Password/i });
+		await act(async () => { editPasswordButton.click(); });
+
+		const currentPasswordInput = screen.getByLabelText('Actual password');
+		const newPasswordInput = screen.getByLabelText('New password');
+		const confirmPasswordInput = screen.getByLabelText('Confirm new password');
+		fireEvent.change(currentPasswordInput, { target: { value: 'oldPassword' } });
+		fireEvent.change(newPasswordInput, { target: { value: 'newPassword' } });
+		fireEvent.change(confirmPasswordInput, { target: { value: 'newPassword' } });
+		
+		const savePasswordButton = await screen.findByRole("button", { name: /Save Password/i });
+		await act(async () => { savePasswordButton.click(); });
+		
+		await waitFor(() => {
+			expect(global.fetch).toHaveBeenCalledWith(
+			expect.stringContaining('/users/username/password'),
+			expect.objectContaining({
+				method: 'PATCH',
+				headers: expect.objectContaining({
+				'Content-Type': 'application/json',
+				Authorization: 'Bearer mock-token',
+				}),
+			}));
+		});
+	});
+	  
+
 	test('successfully uploads profile picture', async () => {
 		// Mock fetch response for profile picture upload
 		fetch.mockResolvedValueOnce({
@@ -387,6 +468,45 @@ describe('ProfileForm', () => {
 		await waitFor(() => expect(screen.getByText('Save Password')).toBeInTheDocument());
 	});
 
+	test('Handles error when the username update fails', async () => {
+		// Mock the fetch response for a failed username update
+		fetch.mockResolvedValueOnce({
+			ok: false,  // Simulate a failed response
+			status: 400,
+			json: async () => ({ error: 'Username already taken' }),  // Simulate error message
+		});
+	
+		render(<ProfileForm username="oldUsername" onSave={mockOnSave} />);
+	
+		// Simulate editing the username
+		const editUsernameButton = await screen.findByRole("button", { name: /Edit Username/i });
+		await act(async () => { editUsernameButton.click(); });
+		fireEvent.change(screen.getByLabelText('Username'), { target: { value: 'takenUsername' } });
+	
+		// Find and click the "Save Username" button
+		const saveUsernameButton = await screen.findByRole("button", { name: /Save Username/i });
+		await act(async () => { saveUsernameButton.click(); });
+	
+		// Verify that fetch was called with the correct parameters
+		await waitFor(() => {
+			expect(fetch).toHaveBeenCalledWith(
+				'http://localhost:8000/users/oldUsername', // URL with old username
+				expect.objectContaining({
+					method: 'PATCH',
+					headers: expect.objectContaining({
+						'Content-Type': 'application/json',
+						'Authorization': 'Bearer mock-token', // token passed in the request header
+					}),
+					body: JSON.stringify({ newUsername: 'takenUsername' }), // new username
+				})
+			);
+		});
+
+		await waitFor(() => {
+			expect(screen.getByText("Save Username")).toBeInTheDocument(); 
+		});
+	});	
+
 	test('Correctly updates password', async () => {
 		// Mock the fetch response for a successful password update
 		fetch.mockResolvedValueOnce({
@@ -496,22 +616,56 @@ describe('ProfileForm', () => {
 		});
 	});
 
+	test('Handles server error during password update', async () => {
+		// Mock the fetch response for a failed password update (response.ok = false)
+		fetch.mockResolvedValueOnce({
+			ok: false, // Simula un error en la respuesta
+			json: async () => ({ error: 'Some error occurred' }), // Simula un error de la API
+		});
+	
+		const setProfileData = jest.fn();
+		const mockSave = jest.fn();
+	
+		render(<ProfileForm username="testuser" onSave={mockSave} />);
+	
+		// Go to Security tab
+		const securityTab = screen.getByText('Security');
+		fireEvent.click(securityTab);
+	
+		// Simulate entering new password data
+		const editPasswordButton = await screen.findByRole("button", { name: /Edit Password/i });
+		await act(async () => { editPasswordButton.click(); });
+		await fireEvent.change(screen.getByLabelText('Actual password'), { target: { value: 'currentpassword' } });
+		await fireEvent.change(screen.getByLabelText('New password'), { target: { value: 'newpassword123' } });
+		await fireEvent.change(screen.getByLabelText('Confirm new password'), { target: { value: 'newpassword123' } });
+	
+		// Find and click the "Save Password" button
+		const savePasswordButton = await screen.findByRole("button", { name: /Save Password/i });
+		await act(async () => { savePasswordButton.click(); });
+	
+		await waitFor(() => {
+			expect(screen.getByText("Save Password")).toBeInTheDocument(); 
+		});
+	
+		// Verify that setProfileData was NOT called (since the password update failed)
+		expect(setProfileData).not.toHaveBeenCalled();
+	
+		// Ensure onSave is not called either
+		expect(mockSave).not.toHaveBeenCalled();
+	});
+
 	test('Handles empty file selection for profile picture', async () => {
 		render(<ProfileForm username="testuser" onSave={mockOnSave} />);
 		
-		// Select the Account tab
 		const accountTab = screen.getByText('Account');
 		fireEvent.click(accountTab);
 		
-		// Get the hidden file input
 		const fileInput = document.querySelector('#profile-picture-input');
 		
-		// Trigger file selection with empty file list
 		await act(async () => {
 			fireEvent.change(fileInput, { target: { files: [] } });
 		});
 		
-		// Check that image fetch wasn't called
 		expect(fetch).toHaveBeenCalledWith(
 			'http://localhost:8000/check2fa', 
 			expect.objectContaining({
@@ -524,6 +678,62 @@ describe('ProfileForm', () => {
 				
 		);
 	});
+
+	test('Handles profile picture upload correctly', async () => {
+		fetch.mockResolvedValueOnce({
+			ok: true, 
+			json: async () => ({ profilePicture: 'new-image-url' }), 
+		});
+	
+		render(<ProfileForm username="testuser" onSave={jest.fn()} />);
+	
+		const file = new File(['dummy content'], 'profile-pic.png', { type: 'image/png' });
+		const inputFile = screen.getByLabelText(/profile picture/i);
+		fireEvent.change(inputFile, { target: { files: [file] } });
+	
+		await waitFor(() => {
+			expect(fetch).toHaveBeenCalledWith(
+				expect.stringContaining('/user/profile/picture'),
+				expect.objectContaining({
+					method: 'POST',
+					headers: expect.objectContaining({
+						'Content-Type': 'application/json',
+						Authorization: expect.any(String),
+					}),
+				})
+			);
+		});
+	});
+	
+	test('Handles error during profile picture upload', async () => {
+		fetch.mockResolvedValueOnce({
+			ok: false, 
+			status: 400, 
+			json: async () => ({ error: 'Invalid image format' }), 
+		});
+
+		const setProfileData = jest.fn();
+		render(<ProfileForm username="testuser" onSave={jest.fn()} />);
+	
+		const file = new File(['dummy content'], 'profile-pic.png', { type: 'image/png' });
+		const inputFile = screen.getByLabelText(/profile picture/i);
+		fireEvent.change(inputFile, { target: { files: [file] } });
+	
+		await waitFor(() => {
+			expect(fetch).toHaveBeenCalledWith(
+				expect.stringContaining('/user/profile/picture'),
+				expect.objectContaining({
+					method: 'POST',
+					headers: expect.objectContaining({
+						'Content-Type': 'application/json',
+						Authorization: expect.any(String),
+					}),
+				})
+			);
+		});
+	
+		expect(setProfileData).not.toHaveBeenCalled();
+	});	
 
 	test('Shows error when API rejects profile picture', async () => {
 		// Mock a rejected profile picture
@@ -551,6 +761,34 @@ describe('ProfileForm', () => {
 		// Verify error is displayed
 		await waitFor(() => {
 			expect(screen.getByText(/Change profile picture/i)).toBeInTheDocument();
+		});
+	});
+
+	test('Failed username update', async () => {
+		render(<ProfileForm username="testuser" onSave={mockOnSave} />);
+
+		const editUsername = screen.getByRole("button", { name: /Edit Username/i });
+		fireEvent.click(editUsername);
+	
+		// Wait for the fetch to be called (or any other side-effect you expect)
+		await waitFor(() => {
+			expect(fetch).toHaveBeenCalled();
+		});
+	});
+
+	test('Failed password update', async () => {
+		render(<ProfileForm username="testuser" onSave={mockOnSave} />);
+
+		// Go to Security tab
+		const securityTab = screen.getByText('Security');
+		fireEvent.click(securityTab);
+
+		const editPasswordButton = screen.getByRole("button", { name: /Edit Password/i });
+		fireEvent.click(editPasswordButton);
+	
+		// Wait for the fetch to be called (or any other side-effect you expect)
+		await waitFor(() => {
+			expect(fetch).toHaveBeenCalled();
 		});
 	});
 

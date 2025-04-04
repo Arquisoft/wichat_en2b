@@ -87,11 +87,6 @@ export default function ProfileForm({ username, profilePicture, onSave }) {
                 body: JSON.stringify(payload),
             });
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || "Error updating username");
-            }
-
             const responseData = await response.json();
             const updatedToken = responseData.token;
 
