@@ -1,16 +1,14 @@
 import CreateIcon from '@mui/icons-material/Create';
 import GroupAddIcon from '@mui/icons-material/Search';
-import React, { useState, useEffect } from "react";
-import PropTypes from "prop-types";
+import React, { useState } from "react";
+import axios from "axios";
 import "../../../styles/home/GroupPage.css"; 
 import {
     Box,
     Card,
     CardContent,
-    CardHeader,
     Typography,
     Button,
-    Avatar,
     Tabs,
     TextField,
     Tab,
@@ -34,18 +32,38 @@ export default function GroupPage({ username }) {
     const [groupName, setGroupName] = useState("");
     const [doesGroupExist, setDoesGroupExist] = useState(false);
 
-    const searchGroup = async () => {
+    const searchGroup = async (name) => {
+        setGroupName(name);
         try {
-            const response = await get(`${apiEndpoint}/groups/${groupName}`);
+            const response = await axios.get(`${apiEndpoint}/groups/${name}`);
             console.log("Response from group search:", response);
+            setDoesGroupExist(true);
         } catch (error) {
-            console.error("Error searching for groups:", error);
+            if (error.response && error.response.status === 404) {
+                setDoesGroupExist(false);
+            } else {
+                console.error("Error searching for groups:", error);
+            }
         }
     };
 
     const createGroup = async () => {
         try {
-            const response = await post(`${apiEndpoint}/groups`, { groupName });
+            const token = document.cookie
+            .split("; ")
+            .find((row) => row.startsWith("token="))
+            ?.split("=")[1];
+
+            const response = await axios.post(
+                `${apiEndpoint}/groups`,
+                { name: groupName },
+                {
+                  headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                  },
+                }
+              );
             console.log("Response from group creation:", response);
         } catch (error) {
             console.error("Error creating group:", error);
@@ -83,7 +101,7 @@ export default function GroupPage({ username }) {
                             label="Group Name"
                             variant="outlined"
                             fullWidth
-                            onChange={e => {setGroupName(e.target.value); searchGroup()}}
+                            onChange={e => searchGroup(e.target.value)}
                         />
                         {!doesGroupExist && <p className="error-message">Group does not exist</p>}
                         <Button variant="contained" color="primary">
@@ -99,7 +117,7 @@ export default function GroupPage({ username }) {
                             label="Group Name"
                             variant="outlined"
                             fullWidth
-                            onChange={e => {setGroupName(e.target.value); searchGroup()}}
+                            onChange={e => searchGroup(e.target.value)}
                         />
                         {doesGroupExist && <p className="error-message">Group already exists</p>}
                         <Button variant="contained" color="primary" onClick={createGroup}>

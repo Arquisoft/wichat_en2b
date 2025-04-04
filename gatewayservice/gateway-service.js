@@ -33,7 +33,6 @@ app.get('/health', (req, res) => res.json({ status: 'OK' }));
 // Helper function for forwarding requests using fetch
 const forwardRequest = async (service, endpoint, req, res) => {
   try {
-    console.log(`${serviceUrls[service]}${endpoint}`);
     const response = await fetch(`${serviceUrls[service]}${endpoint}`, {
       method: req.method,
       headers: {
@@ -100,18 +99,22 @@ app.delete('/users/:username', (req, res) => {
 });
 
 // Group Management
+app.use('/groups', publicCors);
 app.get('/groups', (req, res) => {
   forwardRequest('group', '/groups', req, res);
 });
 
+app.use('/groups/joined', publicCors);
 app.get('/groups/joined', (req, res) => {
   forwardRequest('group', '/groups/joined', req, res);
 });
 
+app.use('/groups/:name', publicCors);
 app.get('/groups/:name', (req, res) => {
   forwardRequest('group', `/groups/${req.params.name}`, req, res);
 });
 
+app.use('/groups', publicCors);
 app.post('/groups', (req, res) => {
   forwardRequest('group', '/groups', req, res);
 });
@@ -124,10 +127,12 @@ app.delete('/groups', (req, res) => {
   forwardRequest('group', `/groups`, req, res);
 });
 
+app.use('/groups/join/:name', publicCors);
 app.post('/groups/join/:name', (req, res) => {
   forwardRequest('group', `/groups/join/${req.params.name}`, req, res);
 });
 
+app.use('/groups/leave', publicCors);
 app.post('/groups/leave', (req, res) => {
   forwardRequest('group', `/groups/leave`, req, res);
 });
