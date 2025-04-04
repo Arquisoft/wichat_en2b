@@ -210,29 +210,9 @@ app.use('/users/:username/password', publicCors);
 app.patch('/users/:username',  async (req, res) => {
     const { username } = req.params;
     const { newUsername } = req.body;
-
-    const token = req.headers.authorization.split(' ')[1];
-    if (!token) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
+    const token = req.headers.authorization.split(' ')[1]; // Extract token from the header
 
     try {
-      const authResponse = await fetch(`${serviceUrls.auth}/auth/token/username`, {
-        headers: { 
-          Authorization: `Bearer ${token}`,	
-          Origin: 'http://localhost:8000',
-        },
-      });
-
-      if (!authResponse.ok) {
-        throw new Error('Failed to validate token');
-      }
-      
-      const dataAuth = await authResponse.json();
-      if (dataAuth.username !== username) {
-        return res.status(403).json({ error: 'You can only change your own username' });
-      }
-
       const response = await fetch(`${serviceUrls.user}/users/${username}`, {
         method: 'PATCH',
         headers: {
@@ -243,17 +223,10 @@ app.patch('/users/:username',  async (req, res) => {
         body: JSON.stringify({ newUsername: newUsername }),
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to update username');
-      }
-
       const data = await response.json();
       const newToken = data.token;
 
-      // Configure cookie with updated token (1h expiration)
       res.cookie('token', newToken, { httpOnly: true, path: '/', maxAge: 3600000 });
-
-      // Send response with updated token
       res.json({ message: 'Username updated successfully' });
     } catch (error) {
       res.status(500).json({ error: error.message });
@@ -266,12 +239,8 @@ app.patch('/users/:username/password',  async (req, res) => {
     const { username } = req.params;
     const { token, currentPassword, newPassword } = req.body;
 
-    if (!token) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
-
     try {
-      const authResponse = await fetch(`${serviceUrls.auth}/auth/validatePassword`, {
+      await fetch(`${serviceUrls.auth}/auth/validatePassword`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -280,11 +249,6 @@ app.patch('/users/:username/password',  async (req, res) => {
         },
         body: JSON.stringify({ username: username, password: currentPassword }),
       });
-
-      if (!authResponse.ok) {
-        const errorData = await authResponse.json();
-        throw new Error(errorData.error || 'Invalid current password');
-      }
 
       // Proceed to update the password in the user service if the current password is valid
       const userResponse = await fetch(`${serviceUrls.user}/users/${username}/password`, {

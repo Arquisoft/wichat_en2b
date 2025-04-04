@@ -13,7 +13,7 @@ module.exports = {
       },
       setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
       testEnvironment: 'jest-environment-jsdom',
-      testMatch: ['<rootDir>/src/tests/Profile.test.js'],
+      testMatch: ['<rootDir>/src/tests/**/*.js'],
       transform: {
         '^.+\\.(js|jsx|ts|tsx)$': '@swc/jest',
       },
