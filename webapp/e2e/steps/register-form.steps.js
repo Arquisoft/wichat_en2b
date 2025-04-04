@@ -1,11 +1,10 @@
 const puppeteer = require('puppeteer');
 const {defineFeature, loadFeature} = require('jest-cucumber');
-const setDefaultOptions = require('expect-puppeteer').setDefaultOptions
+
 const feature = loadFeature('./e2e/features/register-form.feature');
 
 const {click, writeIntoInput, goToInitialPage, login, addUser} = require('../test-functions')
-const {configBeforeAll} = require('../test-config')
-const {startMemoryDB, stopMemoryDB} = require('../db-access')
+
 
 let page;
 let browser;
@@ -18,10 +17,8 @@ defineFeature(feature, test => {
             : await puppeteer.launch({headless: false, slowMo: 50});
         page = await browser.newPage();
 
-
-        jest.setTimeout(60000)
         await goToInitialPage(page);
-        await startMemoryDB();
+
     });
 
     afterEach(async () => {
@@ -32,7 +29,6 @@ defineFeature(feature, test => {
         if (browser) {
             await browser.close();
         }
-        await stopMemoryDB();
     })
 
   //  test('The user is not registered in the site', ({given, when, then}) => {
@@ -59,13 +55,13 @@ defineFeature(feature, test => {
 
     test('The user is already registered in the site', ({given, when, then}) => {
 
-        let userData;
+
         given('An already registered user', async () => {
-            userData = await addUser()
+            await login(page,   global.userTestData.username,   global.userTestData.password);
         });
 
         when('I fill the register data in the form and press submit', async () => {
-            await login(page, userData.username, userData.password);
+
             //await click(page, "a[href='/addUser']")
             //await writeIntoInput(page, '#username', userData.username);
             //await writeIntoInput(page, '#password', userData.password);

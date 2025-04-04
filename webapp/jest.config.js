@@ -18,7 +18,10 @@ module.exports = {
        displayName: 'e2e',
        globalSetup:'<rootDir>/e2e/test-environment-setup.js',
        globalTeardown:'<rootDir>/e2e/teardown.js',
-       setupFilesAfterEnv: ['expect-puppeteer'],
+       setupFilesAfterEnv: [
+           '<rootDir>/e2e/setup.js',
+           'expect-puppeteer'
+       ],
        testMatch: ['<rootDir>/e2e/steps/*.js'],
     },
   ],

@@ -1,13 +1,16 @@
 const { MongoMemoryServer } = require('mongodb-memory-server');
+const mongoose = require('mongoose');
+
 
 module.exports = async () => {
 
   global.mongoserver = await MongoMemoryServer.create(
-      { instance: { dbName: 'test', port:5151 } }
+      { instance: { dbName: 'userdb', port:5151 } }
   );
   process.env.MONGODB_URI = global.mongoserver.getUri();
 
-  console.log('🗣️🗣️MONGODB_URI: '+process.env.MONGODB_URI)
+  console.log('\n🗣️🗣️MONGODB_URI: '+process.env.MONGODB_URI)
+
 
   global.userservice = require("../../users/userservice/user-service");
   global.authservice = require("../../users/authservice/auth-service");

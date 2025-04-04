@@ -36,50 +36,6 @@ async function writeIntoInput(page, selector, text) {
     await page.type(selector, text);
 }
 
-async function addUser(userToAdd) {
-    const data = userToAdd || {username: "mock", password: "123456", role: "USER"};
-
-    try {
-        // Verifica el estado actual de la conexión
-        if (mongoose.connection.readyState !== 1) {
-            // Intenta conectar
-            await mongoose.connect(process.env.MONGODB_URI, {
-                dbName: 'userdb',
-                bufferCommands: true,
-                socketTimeoutMS: 30000,
-                connectTimeoutMS: 30000
-            });
-            console.log("✅ Connected to MongoMemoryServer using URI:", process.env.MONGODB_URI);
-        } else {
-            console.log("✅ Already connected to MongoMemoryServer");
-        }
-
-        // Verifica que realmente estás conectado
-        console.log("Connection state after connect attempt:", mongoose.connection.readyState);
-        // 0 = disconnected, 1 = connected, 2 = connecting, 3 = disconnecting
-
-        // Continúa con la creación del usuario solo si estás conectado
-        if (mongoose.connection.readyState === 1) {
-            const user = new User({
-                username: data.username,
-                password: bcrypt.hashSync(data.password, 10),
-                role: data.role,
-                createdAt: Date.now(),
-                secret: "test",
-            });
-
-            let savedData = await user.save();
-            console.log("✅ User created:", user);
-            return savedData;
-        } else {
-            throw new Error("Failed to establish MongoDB connection, state: " + mongoose.connection.readyState);
-        }
-    } catch (err) {
-        console.error("⚠️ Error:", err);
-        throw err;
-    }
-}
-
 async function login(page, username, password) {
     await writeIntoInput(page, '#username', username);
     await writeIntoInput(page, '#password', password);
@@ -104,7 +60,6 @@ async function goToInitialPage(page) {
 module.exports = {
     click,
     writeIntoInput,
-    addUser,
     login,
     accessQuiz,
     goToInitialPage
