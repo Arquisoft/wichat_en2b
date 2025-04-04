@@ -1,7 +1,7 @@
 import express from 'express';
 const router = express.Router();
 
-import User from '../user-model';
+import User from '../user-model.js';
 import bcrypt from 'bcrypt';
 import fs from 'fs';
 import path from 'path';
@@ -185,6 +185,8 @@ router.post('/user/profile/picture', async (req, res) => {
         const user = await User.findOne({ username: username.toString() });
         if (!user) return res.status(404).json({ error: "User not found" });
 
+        const __filename = fileURLToPath(import.meta.url);
+        const __dirname = path.dirname(__filename);
         const imagesDir = path.resolve(__dirname, 'public', 'images');
 
         // Clean the filename to prevent directory traversal attacks
@@ -269,4 +271,4 @@ router.get('/user/profile/picture/:username', async (req, res) => {
     }    
 });
 
-module.exports = router;
+export default router;

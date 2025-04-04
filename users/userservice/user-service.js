@@ -1,12 +1,13 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const helmet = require('helmet');
-const path = require('path');
+import express from 'express';
+import mongoose from 'mongoose';
+import helmet from 'helmet';
+import path from 'path';
+import bodyParser from 'body-parser';
+import userRoutes from './routers/RouterUserCrud.js'; 
+import { fileURLToPath } from 'url';
+
 const app = express();
 app.use(helmet.hidePoweredBy());
-const bodyParser = require('body-parser');
-const userRoutes = require('./routers/RouterUserCrud');
-
 app.use(bodyParser.json());
 
 const port = 8001;
@@ -16,6 +17,8 @@ const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/userdb';
 mongoose.connect(mongoUri)
 
 // Middleware to serve static files
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Use the user routes
@@ -30,4 +33,4 @@ server.on('close', () => {
     mongoose.connection.close();
 });
 
-module.exports = server;
+export default app; 
