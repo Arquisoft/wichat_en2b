@@ -14,7 +14,7 @@ const User = require('../../users/userservice/user-model')
  */
 async function click(page, selector) {
     await Promise.all([
-        page.waitForNavigation({waitUntil: 'networkidle0'}),
+        await page.waitForSelector(selector),
         page.evaluate((sel) => {
             const element = document.querySelector(sel);
             if (element === null) {
