@@ -1,28 +1,16 @@
-const { MongoMemoryServer } = require('mongodb-memory-server');
-const { MongoClient } = require('mongodb');
+const mongoose = require('mongoose');
 
 async function startMemoryDB() {
-    global.mongoserver = await MongoMemoryServer.create();
-    const uri = global.mongoserver.getUri();
 
-
-    global.mongoClient = new MongoClient(uri);
-    await global.mongoClient.connect();
-
-
-    global.db = global.mongoClient.db('userdb');
-
-    console.log("✅ Connected to MongoMemoryServer.");
+   //await mongoose.connect(process.env.MONGODB_URI);
+//
+   // console.log("✅ Connected to MongoMemoryServer using URI:", process.env.MONGODB_URI);
 }
 
 async function stopMemoryDB() {
-    if (global.mongoClient) {
-        await global.mongoClient.close();
-    }
-    if (global.mongoserver) {
-        await global.mongoserver.stop();
-    }
-    console.log("🛑 MongoMemoryServer stopped.");
+    //await mongoose.disconnect();
+
+    //console.log("🛑 MongoMemoryServer stopped");
 }
 
 module.exports = {

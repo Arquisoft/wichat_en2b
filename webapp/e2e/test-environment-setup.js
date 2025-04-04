@@ -1,9 +1,10 @@
 const { MongoMemoryServer } = require('mongodb-memory-server');
-const { MongoClient }= require('mongodb')
 
 module.exports = async () => {
 
-  global.mongoserver = await MongoMemoryServer.create();
+  global.mongoserver = await MongoMemoryServer.create(
+      { instance: { dbName: 'test', port:5151 } }
+  );
   process.env.MONGODB_URI = global.mongoserver.getUri();
 
   console.log('🗣️🗣️MONGODB_URI: '+process.env.MONGODB_URI)
@@ -13,5 +14,4 @@ module.exports = async () => {
   global.llmservice = require("../../llmservice/llm-service");
   global.gatewayservice = require("../../gatewayservice/gateway-service");
   global.gameservice = require("../../gameservice/gameserver");
-
 };

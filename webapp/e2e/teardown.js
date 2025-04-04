@@ -8,6 +8,7 @@ module.exports = async () => {
     global.authservice.server.close();
 
     global.userservice.close();
-
-    global.mongoserver.stop();
+    
+    await global.mongoserver.stop();
+    console.log("🛑 MongoMemoryServer stopped and mongoose disconnected");
 }
