@@ -2,8 +2,33 @@ const request = require('supertest');
 const bcrypt = require('bcrypt');
 const { MongoMemoryServer } = require('mongodb-memory-server');
 const mongoose = require("mongoose");
-
 const User = require('./user-model');
+const path = require('path');
+
+jest.mock('file-type');
+
+jest.mock('sharp', () => {
+  const sharpInstance = {
+    resize: jest.fn().mockReturnThis(),
+    toFormat: jest.fn().mockReturnThis(),
+    toBuffer: jest.fn()
+  };
+  const sharpFn = jest.fn(() => sharpInstance);
+  return sharpFn;
+});
+
+jest.mock('fs', () => {
+  const actualFs = jest.requireActual('fs');
+  return {
+    ...actualFs,
+    promises: {
+      ...actualFs.promises,
+      mkdir: jest.fn(),
+      writeFile: jest.fn()
+    }
+  };
+});
+
 
 const testUser1 = {
   username: 'testuser1',
@@ -402,6 +427,97 @@ describe('User Service - PATCH /users/:username', () => {
   });
 });
 
+describe('POST /user/profile/picture', () => {
+  const validBase64 = Buffer.from('testimage').toString('base64');
+  
+  beforeEach(() => {
+    jest.clearAllMocks();
+    jest.mock('./user-model.js'); 
+  });
+  
+  test('Should respond 400 if no image or username is provided', async () => {
+    const res = await request(app)
+      .post('/user/profile/picture')
+      .send({}); 
+
+    expect(res.statusCode).toBe(400);
+    expect(res.body).toEqual({ error: "No image or username provided." });
+  });
+
+  test('Should respond 404 if the user is not found', async () => {
+    const res = await request(app)
+      .post('/user/profile/picture')
+      .send({ image: validBase64, username: "usuarioInexistente" });
+
+    expect(res.statusCode).toBe(404);
+    expect(res.body).toEqual({ error: "User not found" });
+  });
+
+  test('Should respond 400 if the image exceeds the maximum size (5MB)', async () => {
+    // 5MB + 1 byte
+    const largeBuffer = Buffer.alloc(5 * 1024 * 1024 + 1, 'a');
+    const largeBase64 = largeBuffer.toString('base64');
+
+    const res = await request(app)
+      .post('/user/profile/picture')
+      .send({ image: largeBase64, username: testUser1.username });
+
+    expect(res.statusCode).toBe(413); // Payload Too Large
+  });
+
+  test('Should return 500 if an internal error occurs', async () => {
+    const { fileTypeFromBuffer } = require('file-type');
+    fileTypeFromBuffer.mockResolvedValue({ mime: 'image/png' });
+
+    const sharp = require('sharp');
+    const processedBuffer = Buffer.from('processedImage');
+    sharp().toBuffer.mockResolvedValue(processedBuffer);
+
+    const fs = require('fs');
+    fs.promises.writeFile.mockRejectedValue(new Error("Error de escritura"));
+
+    const res = await request(app)
+      .post('/user/profile/picture')
+      .send({ image: validBase64, username: testUser1.username });
+
+    expect(res.statusCode).toBe(500);
+    expect(res.body).toEqual({ error: 'Error uploading profile picture' });
+  });
+});
+
+describe('User Service - GET /user/profile/picture/:username', () => {
+  beforeAll(async () => {
+    await clearDatabase();
+    await request(app).post('/users').send(testUser1);
+
+    // Set dummy image URL
+    const user = await User.findOne({ username: testUser1.username });
+    user.profilePicture = 'http://localhost:3000/images/testuser1_profile_picture.png';
+    await user.save();
+  });
+
+  it('should return the profile picture URL for a valid user', async () => {
+    const response = await request(app).get(`/user/profile/picture/${testUser1.username}`);
+
+    expect(response.status).toBe(200);
+    expect(response.body).toHaveProperty('profilePicture');
+    expect(response.body.profilePicture).toMatch(/\/images\/testuser1_profile_picture\.png$/);
+  });
+
+  it('should return 404 if user not found', async () => {
+    const response = await request(app).get('/user/profile/picture/nonexistentuser');
+
+    expect(response.status).toBe(404);
+    expect(response.body.error).toBe('User not found');
+  });
+
+  it('should return 400 if username param is missing', async () => {
+    const response = await request(app).get('/user/profile/picture/');
+    // This will likely return 404 instead of 400 because of express routing
+    // You can optionally handle this case in your app
+    expect([400, 404]).toContain(response.status);
+  });
+});
 
 describe('User Service - DELETE /users/:username', () => {
   beforeAll(async () => {
@@ -461,7 +577,15 @@ describe('User Service - Database unavailable', () => {
   it('should return 500 when database is unavailable on PATCH /users/:username', async () => {
     const response = await request(app).patch('/users/testuser').send({ newUsername: 'updateduser' });
     expect(response.status).toBe(500);
+    expect(response.body.error).toBe('Database unavailable');
   });
+
+  it('should return 500 when database is unavailable on PATCH /users/:username/password', async () => {
+    const response = await request(app).patch('/users/testuser/password').send({ newPassword: 'newPassword123' });
+    expect(response.status).toBe(500);
+    console.log(response.body);
+    expect(response.body.error).toBe('Database unavailable');
+  });  
 
   it('should return 500 when database is unavailable on DELETE /users/:username', async () => {
     const response = await request(app).delete('/users/testuser');

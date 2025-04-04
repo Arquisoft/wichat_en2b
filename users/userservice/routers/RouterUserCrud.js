@@ -85,10 +85,6 @@ router.patch('/users/:username', async (req, res) => {
             return res.status(400).json({ error: "Username must be at least 3 characters" });
         }
 
-        if(!username) {
-            return res.status(400).json({ error: "Username is required" });
-        }
-
         // Verify if the new username is available
         const existingUser = await User.findOne({ username: newUsername.toString() });
         if (existingUser) return res.status(404).json({ error: "Username already taken" });
@@ -117,13 +113,6 @@ router.patch('/users/:username', async (req, res) => {
         // Update the username in the users table
         user.username = newUsername;
         await user.save();
-
-        // Find new user by new username
-        const updatedUser = await User.findOne({ username: newUsername.toString() });        
-
-        if (!updatedUser) {
-            return res.status(500).json({ error: "Updated user not found" });
-        }
         
         // Generate a new JWT with the updated username
         const jwt = require('jsonwebtoken');
@@ -135,9 +124,11 @@ router.patch('/users/:username', async (req, res) => {
 
         res.status(200).json({ message: "Username updated successfully", token: newToken });
     } catch (error) {
-        if (error.name === "MongoNetworkError") {
+        if (error.name === "MongoNetworkError" || error.name == "MongoNotConnectedError" ||  error.name === "MongooseServerSelectionError" ||
+            error.message?.includes("failed to connect") || error.message?.includes("ECONNREFUSED")) {
             return res.status(500).json({ error: "Database unavailable" });
         }
+
         console.error("Error updating username:", error);
         res.status(500).json({ error: "Internal Server Error" });
     }
@@ -148,10 +139,6 @@ router.patch('/users/:username/password', async (req, res) => {
     try {
         const { username } = req.params;
         const { newPassword } = req.body;
-
-        if (!username) {
-            return res.status(400).json({ error: "Username is required" });
-        }
 
         if (!newPassword || newPassword.length < 6) {
             return res.status(400).json({ error: "Password must be at least 6 characters" });
@@ -168,9 +155,12 @@ router.patch('/users/:username/password', async (req, res) => {
         res.status(200).json({ message: "Password updated successfully" });
 
     } catch (error) {
-        if (error.name === "MongoNetworkError") {
+        if (error.name === "MongoNetworkError" || error.name == "MongoNotConnectedError" ||  error.name === "MongooseServerSelectionError" ||
+            error.message?.includes("failed to connect") || error.message?.includes("ECONNREFUSED")) {
             return res.status(500).json({ error: "Database unavailable" });
         }
+
+        console.error("Error updating password:", error);
         res.status(500).json({ error: "Internal Server Error" });
     }
 });
@@ -178,75 +168,71 @@ router.patch('/users/:username/password', async (req, res) => {
 router.post('/user/profile/picture', async (req, res) => {
     const { image, username } = req.body;
 
-    // Verificar si la imagen y el nombre de usuario fueron proporcionados
     if (!image || !username) {
         return res.status(400).json({ error: "No image or username provided." });
     }
 
     try {
-        // Buscar el usuario en la base de datos
         const user = await User.findOne({ username: username.toString() });
-        if (!user) {
-            return res.status(404).json({ error: "User not found" });
-        }
+        if (!user) return res.status(404).json({ error: "User not found" });
 
         const imagesDir = './public/images';
 
-        // Sanitizar el nombre de archivo para evitar problemas con nombres no válidos
-        const sanitizeFilename = (filename) => filename.replace(/[^a-zA-Z0-9_-]/g, '').replace(/\.\./g, '');
+        // Clean the filename to prevent directory traversal attacks
+        const sanitizeFilename = (filename) => {
+            return filename.replace(/[^a-zA-Z0-9_-]/g, '').replace(/\.\./g, '');
+        };
 
-        // Definir la ruta para el archivo antiguo (si existe) y la nueva imagen
+        // Define the old and new file paths for the profile picture
         const sanitizedUsername = sanitizeFilename(username);
         const oldFilePath = path.join(imagesDir, `${sanitizedUsername}_profile_picture.png`);
         const newFilePath = path.join(imagesDir, `${sanitizedUsername}_profile_picture.png`);
 
-        // Verificar que las rutas estén dentro del directorio permitido
+        // Verify that the paths are within the allowed directory
         if(!oldFilePath.startsWith(path.resolve(imagesDir))) {
             throw new Error("Access denied to files outside the images folder");
         }
-
         if (!newFilePath.startsWith(path.resolve(imagesDir))) {
             throw new Error("Access denied to files outside the images folder");
         }
 
-        // Procesar la imagen base64
+        // Process the base64 image
         const buffer = Buffer.from(image, 'base64');
 
-        // Limitar el tamaño máximo de la imagen a 5MB
-        const MAX_SIZE = 5 * 1024 * 1024;
-        if (buffer.length > MAX_SIZE) {
-            return res.status(400).json({ error: "Image size exceeds the limit of 5MB." });
-        }
-
-        // Validar el tipo MIME para asegurar que es una imagen
-        const fileType = (await import('file-type')).fileTypeFromBuffer;
+        // Validate the MIME type to ensure it's an image
+        const fileType = (await import('file-type')).fileTypeFromBuffer; // Dynamic import to avoid issues with CommonJS
         const allowedMimeTypes = ['image/png', 'image/jpeg', 'image/gif'];
-
-        const mimeType = (await fileType(buffer))?.mime;
-        if (!mimeType || !allowedMimeTypes.includes(mimeType)) {
-            return res.status(400).json({ error: "Image format not allowed." });
+        const mimeType = (await fileType(buffer))?.mime;  
+        
+        if (!mimeType) {
+            return res.status(400).json({ error: "Invalid image MIME type." });
+        }
+        if (!allowedMimeTypes.includes(mimeType)) {
+            return res.status(400).json({ error: "Invalid image type. Only PNG, JPEG, and GIF are allowed." });
         }
 
-        // Usar sharp para procesar la imagen (redimensionar y convertir a PNG)
+        // Use sharp to process the image (resize and convert to PNG)
         const processedBuffer = await sharp(buffer)
             .resize({ width: 500, height: 500, fit: 'inside' })
             .toFormat('png')
             .toBuffer();
 
-        // Asegurar que el directorio de imágenes exista
-        await fs.promises.mkdir(imagesDir, { recursive: true });
+        // Assure the directory exists
+        if (!fs.existsSync(imagesDir)) {
+            await fs.promises.mkdir(imagesDir, { recursive: true });
+        }
 
-        // Guardar la imagen procesada
+        // Save the processed image to the file system
         await fs.promises.writeFile(newFilePath, processedBuffer);
 
-        // Generar la URL de la imagen
+        // Generate the URL for the image
         const imageUrl = `${userServiceUrl}/images/${sanitizedUsername}_profile_picture.png`;
 
-        // Actualizar el perfil del usuario con la nueva URL de la imagen
+        // Update the user's profile with the new image URL
         user.profilePicture = imageUrl;
         await user.save();
 
-        // Responder con la URL de la imagen
+        // Respond with the image URL
         res.status(200).json({ profilePicture: imageUrl });
 
     } catch (error) {
