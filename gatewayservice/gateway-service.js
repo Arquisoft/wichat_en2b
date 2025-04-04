@@ -380,6 +380,7 @@ app.get('/user/profile/picture/:username', async (req, res) => {
 // Proxy for images
 app.get('/images/:image', (req, res, next) => {
   const { image } = req.params;
+  console.log(`Image requested: ${image}`);
 
   if (image.includes('_profile_picture')) {
     createProxyMiddleware({

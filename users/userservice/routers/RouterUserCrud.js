@@ -5,10 +5,10 @@ const bcrypt = require('bcrypt');
 const fs = require('fs');
 const path = require('path');
 const sharp = require('sharp');
+import { parse } from 'file-type-mime'; 
 
 router.use(express.json());
 const gatewayServiceUrl = process.env.GATEWAY_SERVICE_URL || 'http://gatewayservice:8000'; // NOSONAR
-const userServiceUrl = process.env.USER_SERVICE_URL || 'http://localhost:8001'// NOSONAR
 
 // Create a new user
 router.post('/users', async (req, res) => {
@@ -112,6 +112,7 @@ router.patch('/users/:username', async (req, res) => {
 
         // Update the username in the users table
         user.username = newUsername;
+        user.profilePicture = user.profilePicture.replace(oldUsername, newUsername); 
         await user.save();
         
         // Generate a new JWT with the updated username
@@ -201,6 +202,13 @@ router.post('/user/profile/picture', async (req, res) => {
 
         // Process the base64 image
         const buffer = Buffer.from(image, 'base64');
+        const arrayBuffer = buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
+
+        // Detecta el MIME type usando file-type-mime
+        const fileTypeResult = parse(arrayBuffer);
+        if (!fileTypeResult || !['image/jpeg', 'image/png'].includes(fileTypeResult.mime)) {
+            return res.status(400).json({ error: "Invalid file type. Only JPEG and PNG allowed." });
+        }
 
         // Use sharp to process the image (resize and convert to PNG)
         const processedBuffer = await sharp(buffer)
@@ -217,7 +225,7 @@ router.post('/user/profile/picture', async (req, res) => {
         await fs.promises.writeFile(newFilePath, processedBuffer);
 
         // Generate the URL for the image
-        const imageUrl = `${userServiceUrl}/images/${sanitizedUsername}_profile_picture.png`;
+        const imageUrl = `public/images/${sanitizedUsername}_profile_picture.png`;
 
         // Update the user's profile with the new image URL
         user.profilePicture = imageUrl;
@@ -243,8 +251,7 @@ router.get('/user/profile/picture/:username', async (req, res) => {
         const user = await User.findOne({ username: username.toString() });
         if (!user) return res.status(404).json({ error: "User not found" });
 
-        const profilePictureUrl = user.profilePicture; 
-
+        const profilePictureUrl = `${gatewayServiceUrl}/${user.profilePicture}`;
         res.status(200).json({ profilePicture: profilePictureUrl });
 
     } catch (error) {
