@@ -11,6 +11,10 @@ const userGroupSchema = new mongoose.Schema({
 		required: true,
 		unique: true,
    },
+   members: {
+		type: [String],
+		default: [],
+   },
    createdAt: {
 		type: Date,
 		default: Date.now,

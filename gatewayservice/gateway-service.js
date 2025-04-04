@@ -104,6 +104,10 @@ app.get('/groups', (req, res) => {
   forwardRequest('group', '/groups', req, res);
 });
 
+app.get('/groups/joined', (req, res) => {
+  forwardRequest('group', '/groups/joined', req, res);
+});
+
 app.get('/groups/:name', (req, res) => {
   forwardRequest('group', `/groups/${req.params.name}`, req, res);
 });
@@ -112,12 +116,12 @@ app.post('/groups', (req, res) => {
   forwardRequest('group', '/groups', req, res);
 });
 
-app.patch('/groups/:name', (req, res) => {
-  forwardRequest('group', `/groups/${req.params.name}`, req, res);
+app.patch('/groups', (req, res) => {
+  forwardRequest('group', `/groups`, req, res);
 });
 
-app.delete('/groups/:name', (req, res) => {
-  forwardRequest('group', `/groups/${req.params.name}`, req, res);
+app.delete('/groups', (req, res) => {
+  forwardRequest('group', `/groups`, req, res);
 });
 
 app.post('/groups/join/:name', (req, res) => {
@@ -125,7 +129,7 @@ app.post('/groups/join/:name', (req, res) => {
 });
 
 app.post('/groups/leave', (req, res) => {
-  forwardRequest('group', '/groups/leave', req, res);
+  forwardRequest('group', `/groups/leave`, req, res);
 });
 
 // User Management
