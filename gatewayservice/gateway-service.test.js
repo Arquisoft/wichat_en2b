@@ -420,30 +420,27 @@ describe('Gateway Service', () => {
   });
   
   it('should change the username successfully', async () => {
-    const mockAuthResponse = { username: 'testuser' };
-  
+    const mockAuthResponse = { username: 'newTestUser' };
+
     global.fetch.mockImplementationOnce(() =>
       Promise.resolve({
         ok: true,
         status: 200,
+        headers: new Headers({ 
+          'Authorization': 'Bearer mockToken',
+          'Content-Type': 'application/json'
+        }),
         json: () => Promise.resolve(mockAuthResponse),
       })
     );
 
-    const response = await fetch('http://localhost:8000/users/testuser', {
-      method: 'PATCH',
-      headers: {
-        'Authorization': 'Bearer mockToken',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        newUsername: 'newTestUser'
-      })
-    });
+    const response = await request(app)
+      .patch('/users/testuser')
+      .send({ newUsername: 'newTestUser' });
   
-    const responseBody = await response.json();
+    const responseBody = response.body;
     expect(response.status).toBe(200);
-    expect(responseBody.username).toBe('testuser');
+    expect(responseBody.username).toBe('newTestUser');
   });
 
   it('should return 401 if the token is not defined', async () => {
@@ -451,49 +448,62 @@ describe('Gateway Service', () => {
       Promise.resolve({
         ok: false,
         status: 401,
+        headers: new Headers({ 
+          'Authorization': '',
+          'Content-Type': 'application/json'
+        }),
         json: () => Promise.resolve({ error: 'Unauthorized' }),
       })
     );
 
-    const response = await fetch('http://localhost:8000/users/testuser', {
-      method: 'PATCH',
-      headers: {
-        'Authorization': '',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        newUsername: 'newTestUser'
-      })
-    });
+    const response = await request(app)
+      .patch('/users/testuser')
+      .send({ newUsername: 'newTestUser' });
   
-    const responseBody = await response.json();
-    console.log(responseBody);
+    const responseBody = response.body;
     expect(response.status).toBe(401);
     expect(responseBody.error).toBe('Unauthorized');
   });
+
+  it('should return 401 if Authorization header is missing entirely', async () => {
+    global.fetch.mockImplementationOnce(() =>
+      Promise.resolve({
+        ok: false,
+        status: 401,
+        headers: new Headers({ 
+          'Content-Type': 'application/json' 
+        }),
+        json: () => Promise.resolve({ error: 'Unauthorized' }),
+      })
+    );
+
+    const response = await request(app)
+      .patch('/users/testuser')
+      .send({ newUsername: 'newTestUser' });
+  
+    expect(response.status).toBe(401);
+    expect(response.body.error).toBe('Unauthorized');
+  });
+  
 
   it('should return 500 if auth service fails', async () => {
     global.fetch.mockImplementationOnce(() =>
       Promise.resolve({
         ok: false,
         status: 500,
+        headers: new Headers({ 
+          'Authorization': 'Bearer mockedToken',
+          'Content-Type': 'application/json' 
+        }),
         json: () => Promise.resolve({ error: 'Failed to validate token' }),
       })
     );
 
-    const response = await fetch('http://localhost:8000/users/testuser', {
-      method: 'PATCH',
-      headers: {
-        'Authorization': 'Bearer mockedToken',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        newUsername: 'newTestUser'
-      })
-    });
+    const response = await request(app)
+      .patch('/users/testuser')
+      .send({ newUsername: 'newTestUser' });
     
-    const responseBody = await response.json();
-    console.log(responseBody);  
+    const responseBody = response.body; 
     expect(response.status).toBe(500);
     expect(responseBody.error).toBe('Failed to validate token');
   });  
@@ -714,19 +724,20 @@ describe('Gateway Service', () => {
     global.fetch.mockImplementationOnce(() =>
       Promise.resolve({
         ok: true,
+        status: 200,
+        headers: new Headers({ 
+          'Authorization': 'Bearer mockToken',
+          'Content-Type': 'application/json'
+        }),
         json: () => Promise.resolve(mockResponse),
       })
     );
 
-    const response = await fetch('http://localhost:8000/user/profile/picture/testuser', {
-      method: 'GET',
-      headers: {
-        'Authorization': 'Bearer mockToken',
-        'Content-Type': 'application/json'
-      }
-    });
-
-    const responseBody = await response.json();
+    const response = await request(app)
+      .get('/user/profile/picture/testuser')
+      .send({ newUsername: 'newTestUser' });
+  
+    const responseBody = response.body;
     expect(responseBody.image).toBe('mockImageUrl');
   });
 
@@ -798,19 +809,19 @@ describe('Gateway Service', () => {
     global.fetch.mockImplementationOnce(() =>
       Promise.resolve({
         ok: true,
+        status: 200,
+        headers: new Headers({ 
+          'Content-Type': 'application/json',
+        }),
         json: () => Promise.resolve({ gameId: 'mockGameId' }),
       })
     );
 
-    const response = await fetch('http://localhost:8000/game', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ name: 'newGame', settings: {} }),
-    });
-
-    const responseBody = await response.json();
+    const response = await request(app)
+      .post('/game')
+      .send({ name: 'newGame', settings: {} });
+  
+    const responseBody = response.body;
     expect(responseBody.gameId).toBe('mockGameId');
   });
 
@@ -819,19 +830,18 @@ describe('Gateway Service', () => {
       Promise.resolve({
         ok: false,
         status: 500,
+        headers: new Headers({ 
+          'Content-Type': 'application/json',
+        }),
         json: () => Promise.resolve({ error: 'Game creation failed' }),
       })
     );
 
-    const response = await fetch('http://localhost:8000/game', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ name: 'newGame', settings: {} }),
-    });
-
-    const responseBody = await response.json();
+    const response = await request(app)
+      .post('/game')
+      .send({ name: 'newGame', settings: {} });
+  
+    const responseBody = response.body;
     expect(response.status).toBe(500);
     expect(responseBody.error).toBe('Game creation failed');
   });
