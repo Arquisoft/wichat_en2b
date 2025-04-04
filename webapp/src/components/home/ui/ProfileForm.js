@@ -250,9 +250,6 @@ export default function ProfileForm({ username, profilePicture, onSave }) {
                 const token = getToken();
                 setProfilePictureError(null);
 
-                console.log("Uploading profile picture...");
-                console.log("Base64 Image:", base64Image);
-
                 const response = await fetch(`${apiEndpoint}/user/profile/picture`, {
                     method: "POST",
                     headers: {
@@ -267,9 +264,7 @@ export default function ProfileForm({ username, profilePicture, onSave }) {
                 }
 
                 const data = await response.json();
-                console.log("Profile picture uploaded successfully:", data);
-
-                setSnackbarMessage("Profile picture updated successfully.");
+                setSnackbarMessage("Profile picture uploaded successfully.");
                 setOpenSnackbar(true);
 
                 setProfileData((prev) => ({

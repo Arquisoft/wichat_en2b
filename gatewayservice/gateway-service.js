@@ -304,7 +304,6 @@ app.patch('/game/update/:oldUsername', async (req, res) => {
     }
 
     const data = await response.json();
-    console.log(data);
     res.json(data);
   } catch (error) {
     console.error('Error updating game history:', error);
