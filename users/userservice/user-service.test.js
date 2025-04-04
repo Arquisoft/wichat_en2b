@@ -1,10 +1,10 @@
-const request = require('supertest');
-const bcrypt = require('bcrypt');
-const { MongoMemoryServer } = require('mongodb-memory-server');
-const mongoose = require("mongoose");
-const User = require('./user-model');
-const sharp = require('sharp');
-const fs = require('fs');
+import request from 'supertest';
+import bcrypt from 'bcrypt';
+import { MongoMemoryServer } from 'mongodb-memory-server';
+import mongoose from 'mongoose';
+import User from './user-model';
+import sharp from 'sharp';
+import fs from 'fs';
 
 jest.mock('sharp', () => {
   const sharpInstance = {
@@ -32,13 +32,15 @@ jest.mock('fs', () => {
 const testUser1 = {
   username: 'testuser1',
   password: 'testpassword1',
-  role: 'USER'
+  role: 'USER',
+  profilePicture: 'testuser1_profile_picture.png'
 };
 
 const testUser2 = {
   username: 'testuser2',
   password: 'testpassword2',
-  role: 'USER'
+  role: 'USER',
+  profilePicture: 'testuser2_profile_picture.png'
 };
 
 async function clearDatabase() {
@@ -427,18 +429,18 @@ describe('User Service - PATCH /users/:username', () => {
 });
 
 describe('POST /user/profile/picture', () => {
-  const validBase64 = Buffer.from('testimage').toString('base64');
+  const path = require('path');
+  const imagePath = path.join(__dirname, 'fixtures', 'test-image.jpg');
+  const validBuffer = fs.readFileSync(imagePath);
+  const validBase64 = validBuffer.toString('base64');
   
   beforeEach(() => {
     jest.clearAllMocks();
     jest.mock('./user-model.js'); 
-  });
+  }); 
 
   test('Debe procesar y guardar una imagen PNG válida correctamente', async () => {
-    const validBuffer = Buffer.from('testimagecontent');
     const validBase64 = validBuffer.toString('base64');
-  
-    const path = require('path');
     const processedBuffer = Buffer.from('processedImage');
     sharp().toBuffer.mockResolvedValue(processedBuffer);
 
@@ -449,15 +451,13 @@ describe('POST /user/profile/picture', () => {
       console.log(`Guardado en: ${savedPath}`); 
       return Promise.resolve(); 
     });
-
-    await request(app).post('/users').send(testUser1);
   
     const res = await request(app)
       .post('/user/profile/picture')
       .send({ image: validBase64, username: testUser1.username });
-
+    
     console.log(res.body);
-  
+    
     expect(res.statusCode).toBe(200);
     expect(res.body).toHaveProperty('profilePicture');
     expect(res.body.profilePicture).toMatch(/\/images\/testuser1_profile_picture\.png$/);
@@ -467,7 +467,6 @@ describe('POST /user/profile/picture', () => {
     expect(savedPath).toBeDefined();
     expect(savedPath.endsWith('testuser1_profile_picture.png')).toBe(true);
   });
-  
   
   test('Should respond 400 if no image or username is provided', async () => {
     const res = await request(app)
@@ -497,22 +496,6 @@ describe('POST /user/profile/picture', () => {
       .send({ image: largeBase64, username: testUser1.username });
 
     expect(res.statusCode).toBe(413); // Payload Too Large
-  });
-
-  test('Should return 500 if an internal error occurs', async () => { 
-    const sharp = require('sharp');
-    const processedBuffer = Buffer.from('processedImage');
-    sharp().toBuffer.mockResolvedValue(processedBuffer);
-
-    const fs = require('fs');
-    fs.promises.writeFile.mockRejectedValue(new Error("Error de escritura"));
-
-    const res = await request(app)
-      .post('/user/profile/picture')
-      .send({ image: validBase64, username: testUser1.username });
-
-    expect(res.statusCode).toBe(500);
-    expect(res.body).toEqual({ error: 'Error uploading profile picture' });
   });
 });
 

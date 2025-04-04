@@ -1,11 +1,13 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const User = require('../user-model');
-const bcrypt = require('bcrypt');
-const fs = require('fs');
-const path = require('path');
-const sharp = require('sharp');
-const { parse } = require('file-type-mime');
+
+import User from '../user-model';
+import bcrypt from 'bcrypt';
+import fs from 'fs';
+import path from 'path';
+import sharp from 'sharp';
+import { parse } from 'file-type-mime';
+
 
 router.use(express.json());
 const gatewayServiceUrl = process.env.GATEWAY_SERVICE_URL || 'http://gatewayservice:8000'; // NOSONAR
@@ -112,7 +114,13 @@ router.patch('/users/:username', async (req, res) => {
 
         // Update the username in the users table
         user.username = newUsername;
-        user.profilePicture = user.profilePicture.replace(oldUsername, newUsername); 
+
+        if(user.profilePicture != null || user.profilePicture != undefined) {
+            user.profilePicture = user.profilePicture.replace(oldUsername, newUsername); 
+        } else {
+            user.profilePicture = `public/images/${newUsername}_profile_picture.png`;
+        }
+
         await user.save();
         
         // Generate a new JWT with the updated username
@@ -206,6 +214,7 @@ router.post('/user/profile/picture', async (req, res) => {
 
         // Detecta el MIME type usando file-type-mime
         const fileTypeResult = parse(arrayBuffer);
+        console.log("File type result:", fileTypeResult);
         if (!fileTypeResult || !['image/jpeg', 'image/png'].includes(fileTypeResult.mime)) {
             return res.status(400).json({ error: "Invalid file type. Only JPEG and PNG allowed." });
         }

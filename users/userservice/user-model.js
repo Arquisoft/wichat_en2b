@@ -27,6 +27,7 @@ const userSchema = new mongoose.Schema({
     },
     profilePicture: {
       type: String,
+      default: "",
       required: false,
       validate: [noWhitespaceValidator],
     },
