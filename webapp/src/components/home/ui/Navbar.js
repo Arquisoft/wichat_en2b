@@ -4,10 +4,12 @@
 import React, { useState } from "react";
 import PropTypes from "prop-types";
 import { AppBar, Toolbar, Avatar, IconButton, Button, Box, Typography, Dialog } from "@mui/material";
-import { Logout as LogoutIcon, Person as PersonIcon } from "@mui/icons-material";
+import { Logout as LogoutIcon, Person as PersonIcon} from "@mui/icons-material";
+import GroupsIcon from '@mui/icons-material/Groups';
 import { useRouter } from "next/navigation"; // Import useRouter for navigation
 import "../../../styles/home/Navbar.css";
 import ProfileForm from "./ProfileForm";
+import GroupPage from "./GroupPage";
 
 /**
  * Navigation bar for the application.
@@ -22,6 +24,7 @@ const Navbar = ({ username }) => {
   }
 
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isGroupOpen, setIsGroupOpen] = useState(false);
   const router = useRouter(); // Use Next.js router for navigation
 
   const handleLogoClick = () => {
@@ -47,6 +50,15 @@ const Navbar = ({ username }) => {
     router.push("/login");
   };
 
+  const handleGroupClick = () => {
+    setIsGroupOpen(true);
+  };
+
+  const handleCloseGroup = () => {
+    setIsGroupOpen(false);
+  };
+
+
   return (
     <>
       <AppBar position="sticky" className="app-bar">
@@ -57,6 +69,19 @@ const Navbar = ({ username }) => {
           </Box>
 
           <Box className="spacer" />
+
+          {/* Group button */}
+          <Box className="group-section">
+            <Button
+              variant="contained"
+              color="secondary"
+              startIcon={<GroupsIcon />}
+              onClick={handleGroupClick}
+              className="navbar-group-button"
+            >
+              Groups
+            </Button>
+          </Box>
 
           {/* Profile button */}
           <Box className="user-section">
@@ -81,6 +106,11 @@ const Navbar = ({ username }) => {
       {/* Dialog for profile form */}
       <Dialog open={isProfileOpen} onClose={handleCloseProfile} maxWidth="sm" fullWidth>
         <ProfileForm username={username} onSave={handleSaveProfile} />
+      </Dialog>
+
+      {/* Dialog for group form */}
+      <Dialog open={isGroupOpen} onClose={handleCloseGroup} maxWidth="sm" fullWidth>
+        <GroupPage username={username} />
       </Dialog>
     </>
   );

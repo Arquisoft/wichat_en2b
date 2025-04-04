@@ -35,6 +35,12 @@ body .navbar-profile-button {
     margin-right: 10px;
 }
 
+body .navbar-group-button {
+    text-transform: none;
+    font-weight: bold;
+    margin-right: 10px;
+}
+
 body .navbar-icon-button {
     color: white;
 }
