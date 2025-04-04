@@ -4,7 +4,7 @@ info:
   version: 1.0.0
   description: API for managing user groups in the User Service
 servers:
-  - url: http://localhost:8006
+  - url: http://localhost:8005
     description: Local server
 paths:
   /usergroups:

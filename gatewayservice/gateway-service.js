@@ -33,6 +33,7 @@ app.get('/health', (req, res) => res.json({ status: 'OK' }));
 // Helper function for forwarding requests using fetch
 const forwardRequest = async (service, endpoint, req, res) => {
   try {
+    console.log(`${serviceUrls[service]}${endpoint}`);
     const response = await fetch(`${serviceUrls[service]}${endpoint}`, {
       method: req.method,
       headers: {

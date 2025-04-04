@@ -4,21 +4,21 @@ const helmet = require('helmet');
 const app = express();
 app.use(helmet.hidePoweredBy());
 const bodyParser = require('body-parser');
-const userRoutes = require('./routers/GroupRouter');
+const groupRoutes = require('./routers/GroupRouter');
 
 app.use(bodyParser.json());
 
 const port = 8005;
 
-// Connection to MongoDB user database
+// Connection to MongoDB group database
 const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/userdb';
 mongoose.connect(mongoUri)
 
-// Use the user routes
-app.use(userRoutes);
+// Use the group routes
+app.use(groupRoutes);
 
 const server = app.listen(port, () => {
-    console.log(`User group service running on: http://localhost:${port}`);
+    console.log(`Group service running on: http://localhost:${port}`);
 });
 
 server.on('close', () => {
