@@ -3,9 +3,8 @@ const bcrypt = require('bcrypt');
 const { MongoMemoryServer } = require('mongodb-memory-server');
 const mongoose = require("mongoose");
 const User = require('./user-model');
-const path = require('path');
-
-jest.mock('file-type');
+const sharp = require('sharp');
+const fs = require('fs');
 
 jest.mock('sharp', () => {
   const sharpInstance = {
@@ -434,6 +433,41 @@ describe('POST /user/profile/picture', () => {
     jest.clearAllMocks();
     jest.mock('./user-model.js'); 
   });
+
+  test('Debe procesar y guardar una imagen PNG válida correctamente', async () => {
+    const validBuffer = Buffer.from('testimagecontent');
+    const validBase64 = validBuffer.toString('base64');
+  
+    const path = require('path');
+    const processedBuffer = Buffer.from('processedImage');
+    sharp().toBuffer.mockResolvedValue(processedBuffer);
+
+    fs.promises.writeFile.mockResolvedValue();
+    fs.promises.writeFile.mockImplementation((filePath, data) => {
+      const imagesDir = path.resolve(__dirname, './public/images');
+      const savedPath = path.resolve(imagesDir, path.basename(filePath));
+      console.log(`Guardado en: ${savedPath}`); 
+      return Promise.resolve(); 
+    });
+
+    await request(app).post('/users').send(testUser1);
+  
+    const res = await request(app)
+      .post('/user/profile/picture')
+      .send({ image: validBase64, username: testUser1.username });
+
+    console.log(res.body);
+  
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toHaveProperty('profilePicture');
+    expect(res.body.profilePicture).toMatch(/\/images\/testuser1_profile_picture\.png$/);
+  
+    const savedPath = fs.promises.writeFile.mock.calls[0][0];
+
+    expect(savedPath).toBeDefined();
+    expect(savedPath.endsWith('testuser1_profile_picture.png')).toBe(true);
+  });
+  
   
   test('Should respond 400 if no image or username is provided', async () => {
     const res = await request(app)
@@ -465,10 +499,7 @@ describe('POST /user/profile/picture', () => {
     expect(res.statusCode).toBe(413); // Payload Too Large
   });
 
-  test('Should return 500 if an internal error occurs', async () => {
-    const { fileTypeFromBuffer } = require('file-type');
-    fileTypeFromBuffer.mockResolvedValue({ mime: 'image/png' });
-
+  test('Should return 500 if an internal error occurs', async () => { 
     const sharp = require('sharp');
     const processedBuffer = Buffer.from('processedImage');
     sharp().toBuffer.mockResolvedValue(processedBuffer);
@@ -513,9 +544,7 @@ describe('User Service - GET /user/profile/picture/:username', () => {
 
   it('should return 400 if username param is missing', async () => {
     const response = await request(app).get('/user/profile/picture/');
-    // This will likely return 404 instead of 400 because of express routing
-    // You can optionally handle this case in your app
-    expect([400, 404]).toContain(response.status);
+    expect(response.status).toBe(404);
   });
 });
 

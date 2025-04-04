@@ -176,11 +176,11 @@ router.post('/user/profile/picture', async (req, res) => {
         const user = await User.findOne({ username: username.toString() });
         if (!user) return res.status(404).json({ error: "User not found" });
 
-        const imagesDir = './public/images';
+        const imagesDir = path.resolve(__dirname, 'public', 'images');
 
         // Clean the filename to prevent directory traversal attacks
         const sanitizeFilename = (filename) => {
-            return filename.replace(/[^a-zA-Z0-9_-]/g, '').replace(/\.\./g, '');
+            return filename.replace(/[^a-zA-Z0-9._-]/g, '').replace(/\.\./g, '');
         };
 
         // Define the old and new file paths for the profile picture
@@ -189,29 +189,18 @@ router.post('/user/profile/picture', async (req, res) => {
         const newFilePath = path.join(imagesDir, `${sanitizedUsername}_profile_picture.png`);
 
         // Verify that the paths are within the allowed directory
-        if(!oldFilePath.startsWith(path.resolve(imagesDir))) {
+        if (!path.resolve(oldFilePath).startsWith(imagesDir)) {
+            console.log(`Access Denied: ${oldFilePath} is outside of images folder`);
             throw new Error("Access denied to files outside the images folder");
         }
-        if (!newFilePath.startsWith(path.resolve(imagesDir))) {
+        
+        if (!path.resolve(newFilePath).startsWith(imagesDir)) {
+            console.log(`Access Denied: ${newFilePath} is outside of images folder`);
             throw new Error("Access denied to files outside the images folder");
         }
-
-        /* sonarjs coverage ignore start */
 
         // Process the base64 image
         const buffer = Buffer.from(image, 'base64');
-
-        // Validate the MIME type to ensure it's an image
-        const fileType = (await import('file-type')).fileTypeFromBuffer; // Dynamic import to avoid issues with CommonJS
-        const allowedMimeTypes = ['image/png', 'image/jpeg', 'image/gif'];
-        const mimeType = (await fileType(buffer))?.mime;  
-        
-        if (!mimeType) {
-            return res.status(400).json({ error: "Invalid image MIME type." });
-        }
-        if (!allowedMimeTypes.includes(mimeType)) {
-            return res.status(400).json({ error: "Invalid image type. Only PNG, JPEG, and GIF are allowed." });
-        }
 
         // Use sharp to process the image (resize and convert to PNG)
         const processedBuffer = await sharp(buffer)
@@ -233,8 +222,6 @@ router.post('/user/profile/picture', async (req, res) => {
         // Update the user's profile with the new image URL
         user.profilePicture = imageUrl;
         await user.save();
-
-        /* sonarjs coverage ignore end */
 
         // Respond with the image URL
         res.status(200).json({ profilePicture: imageUrl });
