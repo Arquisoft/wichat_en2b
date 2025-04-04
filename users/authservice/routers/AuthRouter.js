@@ -74,7 +74,7 @@ router.post('/login', [
       res.json({has2fa : has2fa});
     }else{
       const token = jwt.sign(
-        { username: userFromDB.username, role: userFromDB.role },
+        { username: userFromDB.username, role: userFromDB.role, _id: userFromDB._id },
         process.env.JWT_SECRET || 'testing-secret',
         { expiresIn: '1h' }
       );
@@ -119,7 +119,7 @@ router.post('/register', [
 
         // Hashing the password before sending it back
         const token = jwt.sign(
-            { username: newUser.username, role: newUser.role }, 
+            { username: newUser.username, role: newUser.role, _id: newUser._id }, 
             process.env.JWT_SECRET || 'testing-secret',
             { expiresIn: '1h' }
         );
