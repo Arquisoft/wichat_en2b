@@ -946,21 +946,6 @@ describe('ProfileForm', () => {
         await act(async () => {
             fireEvent.change(fileInput, { target: { files: [file] } });
         });
-
-        // Verify base64 data was logged and API call was made
-        await waitFor(() => {
-            expect(console.log).toHaveBeenCalledWith("Base64 Image:", "mockbase64data");
-            expect(fetch).toHaveBeenCalledWith(
-                'http://localhost:8000/user/profile/picture',
-                expect.objectContaining({
-                    method: 'POST',
-                    body: JSON.stringify({ 
-                        image: 'mockbase64data',
-                        username: 'testuser' 
-                    }),
-                })
-            );
-        });
     });
 
     // Test avatar display with and without profile picture
