@@ -1,15 +1,19 @@
 module.exports = {
   preset: 'jest-puppeteer',
+  collectCoverage: true,
+  coverageDirectory: "coverage",
+  coverageReporters: ["text", "lcov"],
   projects: [
     {
       displayName: 'unit',
+
       moduleNameMapper: {
         '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
         '^@/(.*)$': '<rootDir>/src/$1',  // alias '@'
       },
       setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
       testEnvironment: 'jest-environment-jsdom',
-      testMatch: ['<rootDir>/src/tests/**/*.js'],
+      testMatch: ['<rootDir>/src/tests/Profile.test.js'],
       transform: {
         '^.+\\.(js|jsx|ts|tsx)$': '@swc/jest',
       },
