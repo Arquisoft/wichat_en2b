@@ -109,7 +109,7 @@ router.post('/groups', verifyToken, async (req, res) => {
         
         await group.save();
 
-        res.status(201).send(group);
+        res.status(200).send(group);
     } catch (error) {
         console.log("Error caught" + error);
         res.status(500).send(error);
@@ -195,7 +195,7 @@ router.post('/groups/join', verifyToken, async (req, res) => {
     }
     try {
         const name = req.body.name.toString().trim();
-        console.log('Group name:', name);
+
         // Get the group by its name
         // Check if the group name is provided
         const group = await Group.findOne({ groupName: name });
@@ -205,7 +205,6 @@ router.post('/groups/join', verifyToken, async (req, res) => {
 
         // Find the user wanting to join the group
         const userId = req.user._id;
-        console.log('User ID:', userId);
 
         // Check if the user already belongs to a group
         const belongingGroup = await Group.findOne({ members: { $in: [userId.toString()] } });

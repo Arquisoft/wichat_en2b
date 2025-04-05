@@ -58,13 +58,11 @@ router.get('/users/:username', async (req, res) => {
 router.post('/users/by-ids', async (req, res) => {
     try {
         const { users } = req.body;
-        console.log("Users " + users);
         if (!users || !Array.isArray(users)) {
             return res.status(400).json({ error: 'Request body must contain a "users" array' });
         }
 
         const foundUsers = await User.find({ _id: { $in: users } });
-        console.log("Found users " + foundUsers);
         
         res.status(200).json(foundUsers);
     } catch (error) {

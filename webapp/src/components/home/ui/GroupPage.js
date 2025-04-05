@@ -37,6 +37,16 @@ export default function GroupPage({ username }) {
     const [groupMembers, setGroupMembers] = useState([]);
     const [user, setUser] = useState(null);
 
+
+    const updateEverything = (status) => {
+        if (status === 200) {
+            updateUserGroup();
+            if (loggedUserGroup) {
+                updateGroupMembers();
+            }
+        } 
+    };
+
     const updateUserGroup = async () => {
         try {
             const token = document.cookie
@@ -57,7 +67,6 @@ export default function GroupPage({ username }) {
         } catch (error) {
             if (error.response && error.response.status === 404) {
                 setLoggedUserGroup(null);
-                console.error("User group not found:", error);
             }else {
                 console.error("Error fetching user group:", error);
             }
@@ -124,10 +133,7 @@ export default function GroupPage({ username }) {
                 }
             );
 
-            if (response.status === 200) {
-                updateUserGroup();
-                updateGroupMembers();
-            }
+            updateEverything(response.status);
         } catch (error) {
             console.error("Error creating group:", error);
         }
@@ -151,11 +157,8 @@ export default function GroupPage({ username }) {
                 }
             );
 
-            if (response.status === 200) {
-                updateUserGroup();
-                updateGroupMembers();
-            }
-            
+            updateEverything(response.status);
+           
         } catch (error) {
             console.error("Error joining group:", error);
         }
@@ -170,14 +173,16 @@ export default function GroupPage({ username }) {
 
             const response = await axios.post(
                 `${apiEndpoint}/groups/leave`,
+                { },
                 {
                   headers: {
                     Authorization: `Bearer ${token}`,
                     "Content-Type": "application/json",
                   },
                 }
-              );
-            console.log("Response from group leave:", response);
+            );
+
+            updateEverything(response.status);
         } catch (error) {
             console.error("Error leaving group:", error);
         }
