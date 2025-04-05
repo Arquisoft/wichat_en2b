@@ -76,5 +76,11 @@ const stopServer = async () => {
   });
 };
 
+if (!process.argv.includes('jest')) {
+  mongoose.connection.once('open', () => {
+    startServer();
+  });
+}
+
 export { startServer, stopServer };
 export default app; 

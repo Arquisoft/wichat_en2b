@@ -8,7 +8,7 @@ require('dotenv').config();
 
 const router = express.Router();
 const validRoles = ['USER', 'ADMIN'];
-const gatewayServiceUrl = process.env.GATEWAY_SERVICE_URL || 'http://gatewayservice:8000'; // NOSONAR
+const gatewayServiceUrl = process.env.GATEWAY_SERVICE_URL || 'http://localhost:8000'; // NOSONAR
 const ERROR_USERNAME_NOT_FOUND = "Username not found";
 const ERROR_WRONG_PASSWORD = "Password is incorrect";
 
@@ -83,6 +83,7 @@ router.post('/login', [
     }
     
   } catch (error) {
+    console.log(error);
     logger.error('Error in /login endpoint', error);
     res.status(500).json({ error: 'Internal Server Error' });
   }

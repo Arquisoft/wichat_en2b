@@ -231,7 +231,7 @@ router.post('/user/profile/picture', async (req, res) => {
         await fs.promises.writeFile(newFilePath, processedBuffer);
 
         // Generate the URL for the image
-        const imageUrl = `public/images/${sanitizedUsername}_profile_picture.png`;
+        const imageUrl = `images/${sanitizedUsername}_profile_picture.png`;
 
         // Update the user's profile with the new image URL
         user.profilePicture = imageUrl;

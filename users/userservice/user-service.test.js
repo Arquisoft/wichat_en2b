@@ -631,7 +631,6 @@ describe('POST /user/profile/picture - Security Tests', () => {
 describe('User Service - GET /user/profile/picture/:username', () => {
   beforeAll(async () => {
     await clearDatabase();
-    await startServer();
     await request(app).post('/users').send(testUser1);
 
     // Set dummy image URL
