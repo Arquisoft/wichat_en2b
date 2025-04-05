@@ -368,6 +368,19 @@ describe('User Service - PATCH /users/:username', () => {
     if (!fs.existsSync(imagesDir)) {
       fs.mkdirSync(imagesDir, { recursive: true });
     }
+
+    const user1ImagePath = path.join(imagesDir, `${testUser1.username}_profile_picture.png`);
+    if (!fs.existsSync(user1ImagePath)) {
+      fs.writeFileSync(user1ImagePath, 'dummy image content'); 
+    }
+  });
+
+  afterAll(async () => {
+    const imagesDir = path.join(__dirname, './public/images');
+    const user1ImagePath = path.join(imagesDir, `${testUser1.username}_profile_picture.png`);
+    if (!fs.existsSync(user1ImagePath)) {
+      fs.writeFileSync(user1ImagePath, 'dummy image content'); 
+    }
   });
 
   it('should update a user\'s username and generate a new JWT', async () => {

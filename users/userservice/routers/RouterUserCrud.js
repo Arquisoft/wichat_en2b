@@ -114,16 +114,21 @@ router.patch('/users/:username', async (req, res) => {
         user.username = newUsername;
 
         if(user.profilePicture != null && user.profilePicture != undefined) {
-            // Rename the profile picture file
             const publicDir = path.resolve('public', 'images');
-            const oldProfilePicturePath = path.join(publicDir, `${oldUsername}_profile_picture.png`);
-            const newProfilePicturePath = path.join(publicDir, `${newUsername}_profile_picture.png`);
 
-            console.log("Old profile picture path:", oldProfilePicturePath);
-            console.log("New profile picture path:", newProfilePicturePath);
+            const sanitizeFilename = (filename) => {
+                return filename.replace(/[^a-zA-Z0-9._-]/g, '').replace(/\.\./g, '');
+            };
+
+            const safeOldUsername = path.basename(oldUsername);
+            const safeNewUsername = path.basename(newUsername);
+
+            // Construct secure absolute paths
+            const oldProfilePicturePath = path.join(publicDir, `${safeOldUsername}_profile_picture.png`);
+            const newProfilePicturePath = path.join(publicDir, `${safeNewUsername}_profile_picture.png`);
             
             // Check if the old profile picture exists
-            if (fs.existsSync(publicDir)) {
+            if (fs.existsSync(oldProfilePicturePath)) {
                 fs.renameSync(oldProfilePicturePath, newProfilePicturePath);
                 user.profilePicture = `images/${newUsername}_profile_picture.png`;
             } else {
