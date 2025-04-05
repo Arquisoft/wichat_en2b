@@ -1,6 +1,4 @@
 import express from 'express';
-const router = express.Router();
-
 import User from '../user-model.js';
 import bcrypt from 'bcrypt';
 import fs from 'fs';
@@ -8,7 +6,7 @@ import path from 'path';
 import sharp from 'sharp';
 import { parse } from 'file-type-mime';
 
-
+const router = express.Router();
 router.use(express.json());
 const gatewayServiceUrl = process.env.GATEWAY_SERVICE_URL || 'http://gatewayservice:8000'; // NOSONAR
 
@@ -21,7 +19,6 @@ router.post('/users', async (req, res) => {
         const errors = user.validateSync();
 
         if (errors) {
-            console.log(errors);
             return res.status(400).send(errors);
         }
 
@@ -185,8 +182,6 @@ router.post('/user/profile/picture', async (req, res) => {
         const user = await User.findOne({ username: username.toString() });
         if (!user) return res.status(404).json({ error: "User not found" });
 
-        const __filename = fileURLToPath(import.meta.url);
-        const __dirname = path.dirname(__filename);
         const imagesDir = path.resolve(__dirname, 'public', 'images');
 
         // Clean the filename to prevent directory traversal attacks
@@ -216,7 +211,6 @@ router.post('/user/profile/picture', async (req, res) => {
 
         // Detecta el MIME type usando file-type-mime
         const fileTypeResult = parse(arrayBuffer);
-        console.log("File type result:", fileTypeResult);
         if (!fileTypeResult || !['image/jpeg', 'image/png'].includes(fileTypeResult.mime)) {
             return res.status(400).json({ error: "Invalid file type. Only JPEG and PNG allowed." });
         }

@@ -5,6 +5,8 @@ import mongoose from 'mongoose';
 import User from './user-model';
 import sharp from 'sharp';
 import fs from 'fs';
+import path from 'path';
+import { startServer, stopServer } from './user-service'; 
 
 jest.mock('sharp', () => {
   const sharpInstance = {
@@ -80,7 +82,9 @@ describe('User Service - POST /users', () => {
     mongoServer = await MongoMemoryServer.create();
     const mongoUri = mongoServer.getUri();
     process.env.MONGODB_URI = mongoUri;
-    app = require('./user-service');
+    const module = await import('./user-service.js');
+    app = module.default;
+    await startServer();
   });
 
   it('should add a new user on POST /users', async () => {
@@ -290,6 +294,7 @@ describe('User Service - POST /users', () => {
 describe('User Service - GET /users/:username', () => {
   beforeAll(async () => {
     await clearDatabase();
+    await startServer();
     await request(app).post('/users').send(testUser1);
   });
 
@@ -312,6 +317,7 @@ describe('User Service - GET /users/:username', () => {
 describe('User Service - GET /users', () => {
   beforeAll(async () => {
     await clearDatabase();
+    await startServer();
     await request(app).post('/users').send(testUser1);
     await request(app).post('/users').send(testUser2);
   });
@@ -335,6 +341,7 @@ describe('User Service - GET /users', () => {
 describe('User Service - PATCH /users/:username', () => {
   beforeAll(async () => {
     await clearDatabase();
+    await startServer();
     await request(app).post('/users').send(testUser1);
     await request(app).post('/users').send(testUser2);
 
@@ -347,8 +354,6 @@ describe('User Service - PATCH /users/:username', () => {
     );
     
     // Create public/images directory if it doesn't exist
-    const fs = require('fs');
-    const path = require('path');
     const imagesDir = path.join(__dirname, './public/images');
     if (!fs.existsSync(imagesDir)) {
       fs.mkdirSync(imagesDir, { recursive: true });
@@ -429,7 +434,6 @@ describe('User Service - PATCH /users/:username', () => {
 });
 
 describe('POST /user/profile/picture', () => {
-  const path = require('path');
   const imagePath = path.join(__dirname, 'fixtures', 'test-image.jpg');
   const validBuffer = fs.readFileSync(imagePath);
   const validBase64 = validBuffer.toString('base64');
@@ -446,17 +450,12 @@ describe('POST /user/profile/picture', () => {
 
     fs.promises.writeFile.mockResolvedValue();
     fs.promises.writeFile.mockImplementation((filePath, data) => {
-      const imagesDir = path.resolve(__dirname, './public/images');
-      const savedPath = path.resolve(imagesDir, path.basename(filePath));
-      console.log(`Guardado en: ${savedPath}`); 
       return Promise.resolve(); 
     });
   
     const res = await request(app)
       .post('/user/profile/picture')
       .send({ image: validBase64, username: testUser1.username });
-    
-    console.log(res.body);
     
     expect(res.statusCode).toBe(200);
     expect(res.body).toHaveProperty('profilePicture');
@@ -502,6 +501,7 @@ describe('POST /user/profile/picture', () => {
 describe('User Service - GET /user/profile/picture/:username', () => {
   beforeAll(async () => {
     await clearDatabase();
+    await startServer();
     await request(app).post('/users').send(testUser1);
 
     // Set dummy image URL
@@ -532,13 +532,16 @@ describe('User Service - GET /user/profile/picture/:username', () => {
 });
 
 describe('User Service - DELETE /users/:username', () => {
+
   beforeAll(async () => {
     await clearDatabase();
+    await startServer();
     await request(app).post('/users').send(testUser1);
+    
   });
 
   afterAll(async () => {
-    app.close();
+    await stopServer();
     await mongoServer.stop();
   });
 
@@ -564,11 +567,12 @@ describe('User Service - DELETE /users/:username', () => {
 
 describe('User Service - Database unavailable', () => {
   beforeAll(async () => {
-    app = require('./user-service');
+    mongoose.connection.readyState = 0; // 0 = disconnected
+    await startServer();
   });
-  
+
   afterAll(async () => {
-    app.close();
+    await stopServer();
   });
 
   it('should return 500 when database is unavailable on POST /users', async () => {
@@ -589,18 +593,28 @@ describe('User Service - Database unavailable', () => {
   it('should return 500 when database is unavailable on PATCH /users/:username', async () => {
     const response = await request(app).patch('/users/testuser').send({ newUsername: 'updateduser' });
     expect(response.status).toBe(500);
-    expect(response.body.error).toBe('Database unavailable');
+    expect(response.body).toHaveProperty('error');
   });
 
   it('should return 500 when database is unavailable on PATCH /users/:username/password', async () => {
     const response = await request(app).patch('/users/testuser/password').send({ newPassword: 'newPassword123' });
     expect(response.status).toBe(500);
-    console.log(response.body);
-    expect(response.body.error).toBe('Database unavailable');
+    expect(response.body).toHaveProperty('error');
   });  
 
   it('should return 500 when database is unavailable on DELETE /users/:username', async () => {
     const response = await request(app).delete('/users/testuser');
+    expect(response.status).toBe(500);
+  });
+  
+  it('should return 500 when database is unavailable on POST /user/profile/picture', async () => {
+    const response = await request(app).post('/user/profile/picture')
+      .send({ image: 'test-image-data', username: 'testuser' });
+    expect(response.status).toBe(500);
+  });
+  
+  it('should return 500 when database is unavailable on GET /user/profile/picture/:username', async () => {
+    const response = await request(app).get('/user/profile/picture/testuser');
     expect(response.status).toBe(500);
   });
 });

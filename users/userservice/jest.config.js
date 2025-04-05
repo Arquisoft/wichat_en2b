@@ -1,10 +1,14 @@
 export default {
     transform: {
-        '^.+\\.js$': 'babel-jest',
+        "^.+\\.js$": "babel-jest"
     },
-    transformIgnorePatterns: [
-        "/node_modules/(?!some-es6-package)/"
-    ],
+    transformIgnorePatterns: ["/node_modules/"],
+    testEnvironment: 'node',
+    globals: {
+        'ts-jest': {
+          useESM: true,
+        },
+    },
     collectCoverage: true,
     coverageDirectory: "coverage",
     coverageReporters: ["text", "lcov"]

@@ -5,8 +5,8 @@
   "main": "service.js",
   "type": "module",
   "scripts": {
-    "start": "node user-service.js",
-    "test": "jest"
+    "start": "node user-service.js --experimental-vm-modules",
+    "test": "jest --detectOpenHandles"
   },
   "repository": {
     "type": "git",
@@ -21,6 +21,7 @@
   "dependencies": {
     "bcrypt": "^5.1.1",
     "busboy": "^1.6.0",
+    "esm": "^3.2.25",
     "express": "^4.21.2",
     "file-type-mime": "^0.4.6",
     "helmet": "^8.0.0",
@@ -28,7 +29,9 @@
   },
   "devDependencies": {
     "@babel/core": "^7.26.10",
+    "@babel/plugin-transform-runtime": "^7.26.10",
     "@babel/preset-env": "^7.26.9",
+    "@babel/preset-react": "^7.26.3",
     "@types/file-type": "^10.6.0",
     "babel-jest": "^29.7.0",
     "buffer": "^6.0.3",
