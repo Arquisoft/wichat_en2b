@@ -116,10 +116,6 @@ router.patch('/users/:username', async (req, res) => {
         if(user.profilePicture != null && user.profilePicture != undefined) {
             const publicDir = path.resolve('public', 'images');
 
-            const sanitizeFilename = (filename) => {
-                return filename.replace(/[^a-zA-Z0-9._-]/g, '').replace(/\.\./g, '');
-            };
-
             const safeOldUsername = path.basename(oldUsername);
             const safeNewUsername = path.basename(newUsername);
 
