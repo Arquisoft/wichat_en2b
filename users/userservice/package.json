@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "start": "node user-service.js --experimental-vm-modules",
-    "test": "jest --detectOpenHandles"
+    "test": "jest"
   },
   "repository": {
     "type": "git",
