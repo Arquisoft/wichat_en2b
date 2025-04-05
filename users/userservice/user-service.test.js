@@ -469,7 +469,7 @@ describe('POST /user/profile/picture', () => {
     
     expect(res.statusCode).toBe(200);
     expect(res.body).toHaveProperty('profilePicture');
-    expect(res.body.profilePicture).toMatch(/\/images\/testuser1_profile_picture\.png$/);
+    expect(res.body.profilePicture).toBe("images/testuser1_profile_picture.png")
   
     const savedPath = fs.promises.writeFile.mock.calls[0][0];
 

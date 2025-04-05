@@ -89,7 +89,7 @@ function HomePage() {
 
             {/* Navbar */}
             <div className="navbar-container">
-                <Navbar username={username} profilePicture={profilePicture} />
+              <Navbar username={username || ""} profilePicture={profilePicture || ""} />
             </div>
 
             <Container maxWidth="lg" className="home-content">
