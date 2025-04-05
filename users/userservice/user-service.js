@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 import helmet from 'helmet';
 import path from 'path';
 import bodyParser from 'body-parser';
-import userRoutes from './routers/RouterUserCrud.js'; 
+import userRoutes from './routers/RouterUserCrud.js';   
 
 const app = express();
 app.use(helmet.hidePoweredBy());
@@ -24,6 +24,7 @@ mongoose.connect(mongoUri, {
     });
 
 // Middleware to serve static files
+const __dirname = path.resolve();
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Middleware to handle DB connection errors

@@ -182,6 +182,7 @@ router.post('/user/profile/picture', async (req, res) => {
         const user = await User.findOne({ username: username.toString() });
         if (!user) return res.status(404).json({ error: "User not found" });
 
+        const __dirname = path.resolve();
         const imagesDir = path.resolve(__dirname, 'public', 'images');
 
         // Clean the filename to prevent directory traversal attacks
