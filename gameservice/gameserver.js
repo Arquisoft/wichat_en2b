@@ -5,6 +5,7 @@ const questionRouter = require('./routers/RouterQuestionRetriever');
 const generateRouter = require('./routers/RouterQuestionFetcher');
 const gameRouter = require('./routers/RouterGameInfo');
 const statisticsRouter = require('./routers/RouterStatistics');
+const quizRouter = require('./routers/QuizRouter');
 
 const app = express(); //NOSONAR
 app.use(express.json());
@@ -24,6 +25,7 @@ app.use(questionRouter);
 app.use(generateRouter); 
 app.use(gameRouter);
 app.use(statisticsRouter);
+app.use(quizRouter);
 
 const server = app.listen(port, () => {
     console.log(`🚀 Server running on: http://localhost:${port}`);
