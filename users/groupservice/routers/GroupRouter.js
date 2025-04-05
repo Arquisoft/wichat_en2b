@@ -33,10 +33,11 @@ router.get('/groups/joined', verifyToken, async (req, res) => {
     try {
         // Get the user that is logged in
         const userId = req.user._id;
-
+        console.log('User ID:', userId.toString());
         // Get the group that the user belongs to
-        const group = await UserGroup.find({ members: userId });
+        const group = await Group.findOne({ members: userId.toString() });
 
+        console.log('Group:', group);
         if (!group) {
             return res.status(404).json({ error: 'Group not found' });
         }
@@ -136,7 +137,7 @@ router.patch('/groups', verifyToken, async (req, res) => {
             return res.status(400).json({ error: 'New name must be different from the current one' });
         }
 
-        const existingGroup = await Group.findOne({ name });
+        const existingGroup = await Group.findOne({ groupName: name });
         if (existingGroup) {
             return res.status(400).json({ error: 'Group name already exists' });
         }
@@ -229,7 +230,7 @@ router.post('/groups/leave', verifyToken, async (req, res) => {
         const userId = req.user._id;
 
         // Check if the user belongs to a group
-        const group = await Group.findOne({ members: userId });
+        const group = await Group.findOne({ members: { $in: [userId.toString()] } });
         if (!group) {
             return res.status(400).json({ error: 'User does not belong to any group' });
         }

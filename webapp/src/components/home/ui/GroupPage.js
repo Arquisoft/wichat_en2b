@@ -1,6 +1,6 @@
 import CreateIcon from '@mui/icons-material/Create';
 import GroupAddIcon from '@mui/icons-material/Search';
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "../../../styles/home/GroupPage.css"; 
 import {
@@ -31,6 +31,36 @@ export default function GroupPage({ username }) {
     const [tabIndex, setTabIndex] = useState(0);
     const [groupName, setGroupName] = useState("");
     const [doesGroupExist, setDoesGroupExist] = useState(false);
+    const [loggedUserGroup, setLoggedUserGroup] = useState([]);
+    
+    const updateUserGroup = async () => {
+        try {
+            const token = document.cookie
+            .split("; ")
+            .find((row) => row.startsWith("token="))
+            ?.split("=")[1];
+
+            const response = await axios.get(
+                `${apiEndpoint}/groups/joined`,
+                {
+                  headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                  },
+                }
+              );
+            console.log("Response from user group:", response);
+            setLoggedUserGroup(response.data);
+        } catch (error) {
+            if (error.response && error.response.status === 404) {
+                setLoggedUserGroup(null);
+                console.error("User group not found:", error);
+            }else {
+                console.error("Error fetching user group:", error);
+            }
+
+        }
+    };
 
     const searchGroup = async (name) => {
         setGroupName(name);
@@ -93,62 +123,128 @@ export default function GroupPage({ username }) {
         }
     }
 
+    const leaveGroup = async () => {
+        try {
+            const token = document.cookie
+            .split("; ")
+            .find((row) => row.startsWith("token="))
+            ?.split("=")[1];
+
+            const response = await axios.post(
+                `${apiEndpoint}/groups/leave`,
+                {
+                  headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                  },
+                }
+              );
+            console.log("Response from group leave:", response);
+        } catch (error) {
+            console.error("Error leaving group:", error);
+        }
+    }
+
+    useEffect(() => {
+        updateUserGroup();
+    }, []);
+
+    if (!loggedUserGroup){
+        return (
+            <Card className="group-container">
+                <CardContent>
+
+                    <Box className="group-header">
+                        <Typography variant="h5" className="group-title">
+                            You are not part of any group!
+                        </Typography>
+                    </Box>
+
+                    {/* Tabs */}
+                    <div className="tabs-container">
+                        <Tabs 
+                            value={tabIndex} 
+                            onChange={(e, newValue) => setTabIndex(newValue)} 
+                            scrollButtons="auto"
+                            variant="scrollable"
+                            className={"tabs-header"}
+                        >
+                            <Tab label="Join" icon={<GroupAddIcon />} />
+                            <Tab label="Create" icon={<CreateIcon />} />
+                        </Tabs>
+                    </div>
+
+                    {/* Group add tab */}
+                    {tabIndex === 0 && (
+                        <Box className="group-add-tab">
+                            <TextField
+                                label="Group Name"
+                                variant="outlined"
+                                fullWidth
+                                onChange={e => searchGroup(e.target.value)}
+                            />
+                            {!doesGroupExist && <p className="error-message">Group does not exist</p>}
+                            <Button variant="contained" color="primary" onClick={joinGroup}>
+                                Join Group
+                            </Button>
+                        </Box>
+                    )}
+
+                    {/* Group create tab */}
+                    {tabIndex === 1 && (
+                        <Box className="group-create-tab">
+                            <TextField
+                                label="Group Name"
+                                variant="outlined"
+                                fullWidth
+                                onChange={e => searchGroup(e.target.value)}
+                            />
+                            {doesGroupExist && <p className="error-message">Group already exists</p>}
+                            <Button variant="contained" color="primary" onClick={createGroup}>
+                                Create Group
+                            </Button>
+                        </Box>
+                    )}
+                </CardContent>
+            </Card>
+        );
+    }
+
     return (
         <Card className="group-container">
             <CardContent>
 
                 <Box className="group-header">
                     <Typography variant="h5" className="group-title">
-                        Groups
+                        Your group
                     </Typography>
                 </Box>
 
-                {/* Tabs */}
-                <div className="tabs-container">
-                    <Tabs 
-                        value={tabIndex} 
-                        onChange={(e, newValue) => setTabIndex(newValue)} 
-                        scrollButtons="auto"
-                        variant="scrollable"
-                        className={"tabs-header"}
-                    >
-                        <Tab label="Join" icon={<GroupAddIcon />} />
-                        <Tab label="Create" icon={<CreateIcon />} />
-                    </Tabs>
-                </div>
+                <Box className="group-info">
+                    <Typography variant="h6" className="group-name">
+                        Name: {loggedUserGroup.groupName}
+                        Owner: {loggedUserGroup.owner}
+                    </Typography>
+                </Box>
 
-                {/* Group add tab */}
-                {tabIndex === 0 && (
-                    <Box className="group-add-tab">
-                        <TextField
-                            label="Group Name"
-                            variant="outlined"
-                            fullWidth
-                            onChange={e => searchGroup(e.target.value)}
-                        />
-                        {!doesGroupExist && <p className="error-message">Group does not exist</p>}
-                        <Button variant="contained" color="primary" onClick={joinGroup}>
-                            Join Group
-                        </Button>
-                    </Box>
-                )}
+                <Box className="group-members">
+                    <Typography variant="subtitle1" className="group-members-title">
+                        Members:
+                    </Typography>
+                    <ul>
+                        {loggedUserGroup.members.forEach(element => {
+                            <li>{element}</li>
+                        })}
+                    </ul>
+                </Box>
 
-                {/* Group create tab */}
-                {tabIndex === 1 && (
-                    <Box className="group-create-tab">
-                        <TextField
-                            label="Group Name"
-                            variant="outlined"
-                            fullWidth
-                            onChange={e => searchGroup(e.target.value)}
-                        />
-                        {doesGroupExist && <p className="error-message">Group already exists</p>}
-                        <Button variant="contained" color="primary" onClick={createGroup}>
-                            Create Group
-                        </Button>
-                    </Box>
-                )}
+                <Box className="group-leave">
+                    <Button variant="contained" color="secondary" onClick={leaveGroup}>
+                        Leave Group
+                    </Button>
+                </Box>
             </CardContent>
         </Card>
-    );
+    )
+
 };
