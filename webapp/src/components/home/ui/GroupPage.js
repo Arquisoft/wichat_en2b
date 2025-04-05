@@ -122,7 +122,12 @@ export default function GroupPage({ username }) {
                     "Content-Type": "application/json",
                   },
                 }
-              );
+            );
+
+            if (response.status === 200) {
+                updateUserGroup();
+                updateGroupMembers();
+            }
         } catch (error) {
             console.error("Error creating group:", error);
         }
@@ -144,7 +149,13 @@ export default function GroupPage({ username }) {
                     "Content-Type": "application/json",
                   },
                 }
-              );
+            );
+
+            if (response.status === 200) {
+                updateUserGroup();
+                updateGroupMembers();
+            }
+            
         } catch (error) {
             console.error("Error joining group:", error);
         }
