@@ -1,8 +1,12 @@
 module.exports = {
   preset: 'jest-puppeteer',
+  collectCoverage: true,
+  coverageDirectory: "coverage",
+  coverageReporters: ["text", "lcov"],
   projects: [
     {
       displayName: 'unit',
+
       moduleNameMapper: {
         '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
         '^@/(.*)$': '<rootDir>/src/$1',  // alias '@'

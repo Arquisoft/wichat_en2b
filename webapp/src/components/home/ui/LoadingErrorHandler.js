@@ -1,3 +1,5 @@
+import React from 'react';
+import PropTypes from 'prop-types';
 import { CircularProgress, Typography, Card, CardContent } from "@mui/material";
 
 export default function LoadingErrorHandler({ loading, error, children }) {
@@ -5,7 +7,7 @@ export default function LoadingErrorHandler({ loading, error, children }) {
         return (
             <Card>
                 <CardContent style={{ display: "flex", justifyContent: "center" }}>
-                    <CircularProgress/>
+                    <CircularProgress />
                 </CardContent>
             </Card>
         );
@@ -23,3 +25,9 @@ export default function LoadingErrorHandler({ loading, error, children }) {
 
     return children;
 }
+
+LoadingErrorHandler.propTypes = {
+    loading: PropTypes.bool.isRequired,  
+    error: PropTypes.string,             
+    children: PropTypes.node.isRequired, 
+};

@@ -1,5 +1,4 @@
 const express = require('express');
-const axios = require('axios');
 const cors = require('cors');
 const promBundle = require('express-prom-bundle');
 const swaggerUi = require('swagger-ui-express');
@@ -20,7 +19,7 @@ const serviceUrls = {
 };
 
 // CORS setup
-const publicCors = cors({ origin: '*', methods: ['GET', 'POST'] });
+const publicCors = cors({ origin: '*', methods: ['GET', 'POST', 'PATCH', 'OPTIONS', 'DELETE', 'PUT'] });
 
 app.use(express.json());
 app.use(helmet.hidePoweredBy());
@@ -44,17 +43,17 @@ const forwardRequest = async (service, endpoint, req, res) => {
     // Get the response body (if any) and content type
     const contentType = response.headers.get('Content-Type');
     let responseBody;
-    if (contentType && contentType.includes('application/json')) {
+    if (contentType?.includes('application/json')) {
       responseBody = await response.json();
     } else {
       responseBody = await response.text();
     }
-    
+
     // Set the status code from the downstream service response
     res.status(response.status);
     // Send the response body as-is
     if (responseBody) {
-      if (contentType && contentType.includes('application/json')) {
+      if (contentType?.includes('application/json')) {
         res.json(responseBody); // Send JSON (e.g., token or error message)
       } else {
         res.send(responseBody); // Send text if not JSON
@@ -81,7 +80,7 @@ app.post('/users', (req, res) => forwardRequest('user', '/users', req, res));
 
 app.get('/users', (req, res) => {
   const { id } = req.query;
-  const endpoint = id ? `/users?id=${id}` : '/users';
+  const endpoint = id && typeof id === 'string' ? `/users?id=${id}` : '/users';
   forwardRequest('user', endpoint, req, res);
 });
 
@@ -174,11 +173,224 @@ app.get('/game/:subject/:totalQuestions/:numberOptions', async (req, res) => {
   });
 });
 
+// Username handling
+app.use('/token/username', publicCors);
+
+app.get('/token/username', async (req, res) => {
+  try {
+      const token = req.headers.authorization;
+      if (!token) {
+          return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      const response = await fetch(`${serviceUrls.auth}/auth/token/username`, {
+          headers: { 
+            Authorization: token,
+            Origin: 'http://localhost:8000',
+          },
+      });
+
+      if (!response.ok) {
+          return res.status(response.status).json(await response.json());
+      }
+
+      const userData = await response.json();
+      res.json(userData);
+  } catch (error) {
+      console.error("Error fetching user data:", error);
+      res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+// Middleware to handle CORS for the user and password change endpoint
+app.use('/users/:username', publicCors);
+app.use('/users/:username/password', publicCors);
+
+// Change username
+app.patch('/users/:username',  async (req, res) => {
+    const { username } = req.params;
+    const { newUsername } = req.body;
+    const token = req.headers.authorization.split(' ')[1]; // Extract token from the header
+
+    try {
+      const response = await fetch(`${serviceUrls.user}/users/${username}`, {
+        method: 'PATCH',
+        headers: {
+          Authorization: `Bearer ${token}`,	
+          'Content-Type': 'application/json',
+          Origin: 'http://localhost:8000'
+        },
+        body: JSON.stringify({ newUsername: newUsername }),
+      });
+
+      const data = await response.json();
+      res.sendStatus(response.status).json(data);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+);
+
+// Change password
+app.patch('/users/:username/password',  async (req, res) => {
+    const { username } = req.params;
+    const { token, currentPassword, newPassword } = req.body;
+
+    try {
+      await fetch(`${serviceUrls.auth}/auth/validatePassword`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          Origin: 'http://localhost:8000'
+        },
+        body: JSON.stringify({ username: username, password: currentPassword }),
+      });
+
+      // Proceed to update the password in the user service if the current password is valid
+      const userResponse = await fetch(`${serviceUrls.user}/users/${username}/password`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Origin: 'http://localhost:8000'
+        },
+        body: JSON.stringify({ newPassword : newPassword }),
+      });
+
+      if (!userResponse.ok) {
+        const errorData = await userResponse.json();
+        throw new Error(errorData.error || 'Failed to update password');
+      }
+
+      res.json({ message: 'Password updated successfully' });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+);
+
+// Update game history when username changes
+const corsOptions = {
+  origin: serviceUrls.user,
+  methods: ['PATCH'], 
+  allowedHeaders: ['Content-Type', 'Origin'] 
+};
+
+app.use('/game/update/:oldUsername', cors(corsOptions));
+
+app.patch('/game/update/:oldUsername', async (req, res) => {
+  const { oldUsername } = req.params;
+  const { newUsername } = req.body;
+
+  if (!newUsername) {
+    return res.status(400).json({ error: 'New username is required' });
+  }
+
+  try {
+    const response = await fetch(`${serviceUrls.game}/game/update/${oldUsername}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        Origin: 'http://localhost:8000'
+      },
+      body: JSON.stringify({ newUsername : newUsername }),
+    });
+
+    if (!response.ok) {
+      return res.status(500).json({ error: 'Error updating game history' });
+    }
+
+    const data = await response.json();
+    res.json(data);
+  } catch (error) {
+    console.error('Error updating game history:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+// Profile picture upload
+app.use('/user/profile/picture', publicCors);
+
+app.post('/user/profile/picture', async (req, res) => {
+  const { image, username } = req.body; 
+
+  if (!image || !username) {
+    return res.status(400).json({ error: "No image or username provided." });
+  }
+
+  try {
+    const backendUrl =  `${serviceUrls.user}/user/profile/picture`;
+
+    const response = await fetch(backendUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ image, username }), 
+    });
+
+    if (!response.ok) {
+      return res.status(response.status).json({ error: 'Error forwarding profile picture upload request' });
+    }
+
+    const responseBody = await response.json();
+    res.status(response.status).json(responseBody);
+
+  } catch (error) {
+    console.error('Error forwarding profile picture upload request:', error);
+    res.status(500).json({ error: 'Error forwarding profile picture upload request' });
+  }
+});
+
+// Profile picture retrieval
+app.use('/user/profile/picture/:username', publicCors);
+
+app.get('/user/profile/picture/:username', async (req, res) => {
+  const { username } = req.params;
+
+  try {
+    if(!username) {
+      return res.status(400).json({ error: 'Username is required' });
+    }
+
+    const response = await fetch(`${serviceUrls.user}/user/profile/picture/${username}`, {
+      method: 'GET',
+      headers: {
+        Origin: 'http://localhost:8000',
+      },
+    });
+
+    if (!response.ok) {
+      return res.status(response.status).json({ error: 'Error retrieving profile picture' });
+    }
+
+    const responseBody = await response.json();
+    res.status(response.status).json(responseBody);
+
+  } catch (error) {
+    console.error('Error retrieving profile picture:', error);
+    res.status(500).json({ error: 'Error retrieving profile picture' });
+  }
+});
+
 // Proxy for images
-app.get('/images/:image', createProxyMiddleware({
-  target: serviceUrls.game,
-  changeOrigin: true
-}));
+app.get('/images/:image', (req, res, next) => {
+  const { image } = req.params;
+  console.log(`Image requested: ${image}`);
+
+  if (image.includes('_profile_picture')) {
+    createProxyMiddleware({
+      target: serviceUrls.user,
+      changeOrigin: true,
+    })(req, res, next);
+
+  } else {
+    createProxyMiddleware({
+      target: serviceUrls.game,
+      changeOrigin: true,
+    })(req, res, next);
+  }
+});
 
 app.post('/game', (req, res) => {
   forwardRequest('game', '/game', req, res);

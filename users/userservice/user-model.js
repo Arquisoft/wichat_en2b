@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const noWhitespaceValidator = {
   validator: function(value) {
@@ -25,6 +25,12 @@ const userSchema = new mongoose.Schema({
       enum: ['USER', 'ADMIN'],
       validate: [noWhitespaceValidator],
     },
+    profilePicture: {
+      type: String,
+      default: "",
+      required: false,
+      validate: [noWhitespaceValidator],
+    },
     createdAt: {
       type: Date,
       default: Date.now,
@@ -39,4 +45,4 @@ const userSchema = new mongoose.Schema({
 
 const User = mongoose.model('User', userSchema);
 
-module.exports = User;
+export default User;
