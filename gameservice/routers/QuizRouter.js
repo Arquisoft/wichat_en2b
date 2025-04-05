@@ -10,6 +10,7 @@ router.get('/quiz/AllTopics', async (req, res) => {
         res.status(500).send(error);
     }
 });
+
 router.get('/quiz/:topic', async (req, res) => {
     try {
         const quizzes = await QuizModel.find({ category: req.params.topic.toString() });

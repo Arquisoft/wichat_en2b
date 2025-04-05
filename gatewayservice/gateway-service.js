@@ -115,6 +115,11 @@ app.post('/askllm', (req, res) => forwardRequest('llm', '/askllm', req, res));
 app.use('/quiz/AllTopics', publicCors);
 app.get('/quiz/AllTopics', (req, res) => forwardRequest('game', '/quiz/AllTopics', req, res));
 
+// Game Service Routes
+app.use('/quiz', publicCors);
+app.get('/quiz/:topic', (req, res) => forwardRequest('game', '/quiz/:topic', req, res));
+
+
 app.use('/game', publicCors);
 app.get('/game/:subject/:totalQuestions/:numberOptions', async (req, res) => {
   try {
