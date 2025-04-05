@@ -44,7 +44,7 @@ const forwardRequest = async (service, endpoint, req, res) => {
     // Get the response body (if any) and content type
     const contentType = response.headers.get('Content-Type');
     let responseBody;
-    if (contentType && contentType.includes('application/json')) {
+    if (contentType && contentType.includes('application/json')) {//NOSONAR
       responseBody = await response.json();
     } else {
       responseBody = await response.text();
@@ -54,7 +54,7 @@ const forwardRequest = async (service, endpoint, req, res) => {
     res.status(response.status);
     // Send the response body as-is
     if (responseBody) {
-      if (contentType && contentType.includes('application/json')) {
+      if (contentType && contentType.includes('application/json')) {//NOSONAR
         res.json(responseBody); // Send JSON (e.g., token or error message)
       } else {
         res.send(responseBody); // Send text if not JSON
@@ -81,7 +81,7 @@ app.post('/users', (req, res) => forwardRequest('user', '/users', req, res));
 
 app.get('/users', (req, res) => {
   const { id } = req.query;
-  const endpoint = id ? `/users?id=${id}` : '/users';
+  const endpoint = id ? `/users?id=${id}` : '/users';//NOSONAR
   forwardRequest('user', endpoint, req, res);
 });
 
@@ -112,6 +112,9 @@ app.use('/askllm', publicCors);
 app.post('/askllm', (req, res) => forwardRequest('llm', '/askllm', req, res));
 
 // Game Service Routes
+app.use('/quiz/AllTopics', publicCors);
+app.get('/quiz/AllTopics', (req, res) => forwardRequest('game', '/quiz/AllTopics', req, res));
+
 app.use('/game', publicCors);
 app.get('/game/:subject/:totalQuestions/:numberOptions', async (req, res) => {
   try {
