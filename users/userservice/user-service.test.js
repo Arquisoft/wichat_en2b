@@ -82,6 +82,16 @@ describe('User Service - POST /users', () => {
     mongoServer = await MongoMemoryServer.create();
     const mongoUri = mongoServer.getUri();
     process.env.MONGODB_URI = mongoUri;
+    
+    if (mongoose.connection.readyState !== 0) {
+      await mongoose.disconnect();
+    }
+    
+    await mongoose.connect(mongoUri, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true
+    });
+    
     const module = await import('./user-service.js');
     app = module.default;
     await startServer();
