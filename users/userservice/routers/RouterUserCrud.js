@@ -248,10 +248,6 @@ router.post('/user/profile/picture', async (req, res) => {
 router.get('/user/profile/picture/:username', async (req, res) => {
     const { username } = req.params;
 
-    if (!username) {
-        return res.status(400).json({ error: "Username required" });
-    }
-
     try {
         const user = await User.findOne({ username: username.toString() });
         if (!user) return res.status(404).json({ error: "User not found" });

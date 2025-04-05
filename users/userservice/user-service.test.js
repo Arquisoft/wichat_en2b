@@ -581,7 +581,7 @@ describe('POST /user/profile/picture - Security Tests', () => {
     const mockResolve = jest.fn((p) => {
       // Return a path outside the images directory to trigger security check
       if (p.includes('profile_picture')) {
-        return '/tmp/malicious/path';
+        return '/tmp/malicious/path'; //NOSONAR
       }
       return originalResolve(p);
     });
