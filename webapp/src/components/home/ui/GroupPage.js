@@ -70,6 +70,29 @@ export default function GroupPage({ username }) {
         }
     };
 
+    const joinGroup = async () => {
+        try {
+            const token = document.cookie
+            .split("; ")
+            .find((row) => row.startsWith("token="))
+            ?.split("=")[1];
+
+            const response = await axios.post(
+                `${apiEndpoint}/groups/join`,
+                { name: groupName },
+                {
+                  headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                  },
+                }
+              );
+            console.log("Response from group join:", response);
+        } catch (error) {
+            console.error("Error joining group:", error);
+        }
+    }
+
     return (
         <Card className="group-container">
             <CardContent>
@@ -104,7 +127,7 @@ export default function GroupPage({ username }) {
                             onChange={e => searchGroup(e.target.value)}
                         />
                         {!doesGroupExist && <p className="error-message">Group does not exist</p>}
-                        <Button variant="contained" color="primary">
+                        <Button variant="contained" color="primary" onClick={joinGroup}>
                             Join Group
                         </Button>
                     </Box>

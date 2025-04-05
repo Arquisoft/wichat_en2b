@@ -127,9 +127,9 @@ app.delete('/groups', (req, res) => {
   forwardRequest('group', `/groups`, req, res);
 });
 
-app.use('/groups/join/:name', publicCors);
-app.post('/groups/join/:name', (req, res) => {
-  forwardRequest('group', `/groups/join/${req.params.name}`, req, res);
+app.use('/groups/join', publicCors);
+app.post('/groups/join', (req, res) => {
+  forwardRequest('group', `/groups/join`, req, res);
 });
 
 app.use('/groups/leave', publicCors);

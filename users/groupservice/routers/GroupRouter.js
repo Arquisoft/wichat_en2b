@@ -157,7 +157,7 @@ router.delete('/groups', verifyToken, async (req, res) => {
     const { groupId } = req.body;
 
     if (!groupId) {
-        return res.status(400).json({ error: 'Both id and new group name are required' });
+        return res.status(400).json({ error: 'Group id is required' });
     }
 
     try {
@@ -187,26 +187,34 @@ router.delete('/groups', verifyToken, async (req, res) => {
 });
 
 // A user joins a group
-router.post('/groups/join/:name', verifyToken, async (req, res) => {
+router.post('/groups/join', verifyToken, async (req, res) => {
     console.log('Joining group');
+
+    
+    if (!req.body.name) {
+        return res.status(400).json({ error: 'Group name is required' });
+    }
     try {
+        const name = req.body.name.toString().trim();
+        console.log('Group name:', name);
         // Get the group by its name
         // Check if the group name is provided
-        const group = await Group.findOne({ groupName: req.params.name.toString().trim() });
+        const group = await Group.findOne({ groupName: name });
         if (!group) {
             return res.status(404).json({ error: 'Group not found' });
         }
 
         // Find the user wanting to join the group
         const userId = req.user._id;
-        
+        console.log('User ID:', userId);
+
         // Check if the user already belongs to a group
-        const belongingGroup = await Group.findOne({ members: userId });
+        const belongingGroup = await Group.findOne({ members: { $in: [userId.toString()] } });
         if (belongingGroup) {
             return res.status(400).json({ error: 'User already belongs to a group' });
         }
 
-        const updatedGroup = await joinGroup(userId, group._id);
+        const updatedGroup = await joinGroup(userId, group);
 
         res.status(200).json({ message: 'Joined group successfully', group: updatedGroup });
     } catch (error) {
