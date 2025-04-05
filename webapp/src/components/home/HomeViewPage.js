@@ -44,11 +44,11 @@ function HomePage() {
             setUsername(userResponse.data.username);
             
             // Fetch profile picture after username is fetched
-            const profileResponse = await fetch(`${apiEndpoint}/user/profile/picture/${userResponse.data.username}`);
+            const imgRes = await fetch(`${apiEndpoint}/user/profile/picture/${userResponse.data.username}`);
             
-            if (profileResponse.ok) {
-              const data = await profileResponse.json();
-              setProfilePicture(data.profilePicture);
+            if (imgRes.ok) {
+              const imgURL = await imgRes.json();
+              setProfilePicture(`${apiEndpoint}/${imgURL.profilePicture}`);
             } else {
               console.error("Failed to fetch profile picture.");
             }

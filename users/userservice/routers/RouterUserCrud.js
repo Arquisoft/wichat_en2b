@@ -252,9 +252,7 @@ router.get('/user/profile/picture/:username', async (req, res) => {
     try {
         const user = await User.findOne({ username: username.toString() });
         if (!user) return res.status(404).json({ error: "User not found" });
-
-        const profilePictureUrl = `${gatewayServiceUrl}/${user.profilePicture}`;
-        res.status(200).json({ profilePicture: profilePictureUrl });
+        res.status(200).json({ profilePicture: user.profilePicture });
 
     } catch (error) {
         console.error("Error getting profile picture:", error);
