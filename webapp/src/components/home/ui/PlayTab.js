@@ -39,7 +39,7 @@ function PlayTab() {
 				<Typography>Loading categories...</Typography>
 			) : (
 				categories.map((category) => (
-					<Grid key={category.id} item xs={12} sm={6} md={4}>
+					<Grid key={category.id} size={{ xs: 12, sm: 6, md: 4 }}>
 						<Card className="category-card">
 							<CardHeader
 								title={
