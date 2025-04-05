@@ -1,6 +1,7 @@
 import CreateIcon from '@mui/icons-material/Create';
 import GroupAddIcon from '@mui/icons-material/Search';
 import React, { useState, useEffect } from "react";
+import {getAuthToken, getCurrentUserId} from "@/utils/auth";
 import axios from "axios";
 import "../../../styles/home/GroupPage.css"; 
 import {
@@ -12,7 +13,8 @@ import {
     Tabs,
     TextField,
     Tab,
-    Snackbar,
+    TableRow,
+    TableCell
 } from "@mui/material";
 
 const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://localhost:8000';
@@ -31,8 +33,10 @@ export default function GroupPage({ username }) {
     const [tabIndex, setTabIndex] = useState(0);
     const [groupName, setGroupName] = useState("");
     const [doesGroupExist, setDoesGroupExist] = useState(false);
-    const [loggedUserGroup, setLoggedUserGroup] = useState([]);
-    
+    const [loggedUserGroup, setLoggedUserGroup] = useState(null);
+    const [groupMembers, setGroupMembers] = useState([]);
+    const [user, setUser] = useState(null);
+
     const updateUserGroup = async () => {
         try {
             const token = document.cookie
@@ -49,7 +53,6 @@ export default function GroupPage({ username }) {
                   },
                 }
               );
-            console.log("Response from user group:", response);
             setLoggedUserGroup(response.data);
         } catch (error) {
             if (error.response && error.response.status === 404) {
@@ -58,16 +61,42 @@ export default function GroupPage({ username }) {
             }else {
                 console.error("Error fetching user group:", error);
             }
-
         }
+    };
+
+    const updateGroupMembers = async () => {
+        try {            
+            const response = await axios.post(
+                `${apiEndpoint}/users/by-ids`,
+                {users: loggedUserGroup.members},
+                {
+                    headers: {
+                    "Content-Type": "application/json",
+                    },
+                }
+            );
+            
+            setGroupMembers(response.data);
+            
+        } catch (error) {
+            console.error("Error fetching group members:", error);
+        }
+    };
+
+    const getUsernameById = (id) => {
+        const user = groupMembers.find((u) => u._id === id);
+        return user ? user.username : null;
     };
 
     const searchGroup = async (name) => {
         setGroupName(name);
         try {
             const response = await axios.get(`${apiEndpoint}/groups/${name}`);
-            console.log("Response from group search:", response);
-            setDoesGroupExist(true);
+            if (!response.data) {
+                setDoesGroupExist(false);
+            } else {
+                setDoesGroupExist(true);
+            }
         } catch (error) {
             if (error.response && error.response.status === 404) {
                 setDoesGroupExist(false);
@@ -94,7 +123,6 @@ export default function GroupPage({ username }) {
                   },
                 }
               );
-            console.log("Response from group creation:", response);
         } catch (error) {
             console.error("Error creating group:", error);
         }
@@ -117,7 +145,6 @@ export default function GroupPage({ username }) {
                   },
                 }
               );
-            console.log("Response from group join:", response);
         } catch (error) {
             console.error("Error joining group:", error);
         }
@@ -147,7 +174,18 @@ export default function GroupPage({ username }) {
 
     useEffect(() => {
         updateUserGroup();
+        const saveUserId = async () => {
+            const currentUserId = await getCurrentUserId(getAuthToken());
+            setUser(currentUserId);
+        }
+        saveUserId();
     }, []);
+
+    useEffect(() => {
+        if (loggedUserGroup) {
+            updateGroupMembers();
+        }
+    }, [loggedUserGroup]);
 
     if (!loggedUserGroup){
         return (
@@ -223,19 +261,58 @@ export default function GroupPage({ username }) {
                 <Box className="group-info">
                     <Typography variant="h6" className="group-name">
                         Name: {loggedUserGroup.groupName}
-                        Owner: {loggedUserGroup.owner}
                     </Typography>
+
+                    {loggedUserGroup.owner === user && (
+                        <Typography variant="h6" className="group-name">
+                            Owner: {getUsernameById(loggedUserGroup.owner)} (You)   
+                        </Typography>
+                    )}
+
+                    {loggedUserGroup.owner !== user &&(
+                        <Typography variant="h6" className="group-name">
+                            Owner: {getUsernameById(loggedUserGroup.owner)}
+                        </Typography>
+                    )}
+                    
                 </Box>
 
                 <Box className="group-members">
                     <Typography variant="subtitle1" className="group-members-title">
                         Members:
                     </Typography>
-                    <ul>
-                        {loggedUserGroup.members.forEach(element => {
-                            <li>{element}</li>
-                        })}
-                    </ul>
+                    {groupMembers.map((entry, index) => {
+                        const isCurrentUser =
+                            user && (user === entry._id || (typeof user === "object" && user._id === entry._id));
+
+                        return (
+                            <TableRow
+                                key={entry._id}
+                                className={isCurrentUser ? "current-user" : ""}
+                                sx={{
+                                    backgroundColor: isCurrentUser ? "rgba(144, 202, 249, 0.2)" : "inherit",
+                                    "&:hover": {
+                                        backgroundColor: isCurrentUser
+                                            ? "rgba(144, 202, 249, 0.3)"
+                                            : "rgba(0, 0, 0, 0.04)",
+                                    },
+                                }}
+                            >
+                                <TableCell>#{index + 1}</TableCell>
+                                <TableCell>
+                                    {isCurrentUser ? (
+                                        <Typography component="span" fontWeight="bold">
+                                            {entry.username} (You)
+                                        </Typography>
+                                    ) : (
+                                        entry.username
+                                    )}
+                                </TableCell>
+                            </TableRow>
+                        );
+                        })
+                    }
+
                 </Box>
 
                 <Box className="group-leave">

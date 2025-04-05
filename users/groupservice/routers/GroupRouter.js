@@ -33,11 +33,9 @@ router.get('/groups/joined', verifyToken, async (req, res) => {
     try {
         // Get the user that is logged in
         const userId = req.user._id;
-        console.log('User ID:', userId.toString());
         // Get the group that the user belongs to
         const group = await Group.findOne({ members: userId.toString() });
 
-        console.log('Group:', group);
         if (!group) {
             return res.status(404).json({ error: 'Group not found' });
         }

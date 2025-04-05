@@ -98,6 +98,10 @@ app.delete('/users/:username', (req, res) => {
   forwardRequest('user', `/users/${req.params.username}`, req, res);
 });
 
+app.post('/users/by-ids', (req, res) => {
+  forwardRequest('user', `/users/by-ids`, req, res);
+});
+
 // Group Management
 app.use('/groups', publicCors);
 app.get('/groups', (req, res) => {
