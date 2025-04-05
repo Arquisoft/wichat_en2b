@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Container, Box, Typography, Tabs, Tab, CircularProgress } from "@mui/material";
+import { Container, Box, Typography, Tabs, Tab } from "@mui/material";
 import { EmojiEvents as TrophyIcon, BarChart as StatsIcon, Psychology as BrainIcon } from "@mui/icons-material";
 import PlayTab from "./ui/PlayTab";
 import StatsTab from "./ui/StatsTab";
@@ -69,27 +69,12 @@ function HomePage() {
     // Change tab value when clicked
     const handleTabChange = (_, newValue) => setTabValue(newValue);
 
-    if (!username) {
-        return (
-            <Box
-              display="flex"
-              justifyContent="center"
-              alignItems="center"
-              height="100vh"
-              flexDirection="column"
-            >
-                <CircularProgress />
-                <Typography variant="h6" sx={{ mt: 2 }}> Loading... </Typography>
-            </Box>
-        );
-    }
-
     return (
         <Box className="home-container">
 
             {/* Navbar */}
             <div className="navbar-container">
-                <Navbar username={username} profilePicture={profilePicture} />
+                <Navbar username={username || ""} profilePicture={profilePicture || ""} />
             </div>
 
             <Container maxWidth="lg" className="home-content">

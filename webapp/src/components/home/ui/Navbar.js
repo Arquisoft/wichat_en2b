@@ -18,8 +18,9 @@ const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://local
  * @returns {JSX.Element} The rendered Navbar component.
  */
 const Navbar = ({ username = "Guest", profilePicture }) => {
-  if (!username) {
-    throw new Error("Invalid props for Navbar component.");
+  console.log("Navbar component rendered with profilePicture:", profilePicture);
+  if (!username || username === "") {
+    username = "Guest"; 
   }
 
   const [isProfileOpen, setIsProfileOpen] = useState(false);

@@ -224,10 +224,7 @@ app.patch('/users/:username',  async (req, res) => {
       });
 
       const data = await response.json();
-      const newToken = data.token;
-
-      res.cookie('token', newToken, { httpOnly: true, path: '/', maxAge: 3600000 });
-      res.json({ message: 'Username updated successfully' });
+      res.sendStatus(response.status).json(data);
     } catch (error) {
       res.status(500).json({ error: error.message });
     }

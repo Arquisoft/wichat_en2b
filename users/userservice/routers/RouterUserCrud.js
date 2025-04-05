@@ -5,6 +5,7 @@ import fs from 'fs';
 import path from 'path';
 import sharp from 'sharp';
 import { parse } from 'file-type-mime';
+import jwt from 'jsonwebtoken';
 
 const router = express.Router();
 router.use(express.json());
@@ -112,16 +113,30 @@ router.patch('/users/:username', async (req, res) => {
         // Update the username in the users table
         user.username = newUsername;
 
-        if(user.profilePicture != null || user.profilePicture != undefined) {
-            user.profilePicture = user.profilePicture.replace(oldUsername, newUsername); 
+        if(user.profilePicture != null && user.profilePicture != undefined) {
+            // Rename the profile picture file
+            const publicDir = path.resolve('public', 'images');
+            const oldProfilePicturePath = path.join(publicDir, `${oldUsername}_profile_picture.png`);
+            const newProfilePicturePath = path.join(publicDir, `${newUsername}_profile_picture.png`);
+
+            console.log("Old profile picture path:", oldProfilePicturePath);
+            console.log("New profile picture path:", newProfilePicturePath);
+            
+            // Check if the old profile picture exists
+            if (fs.existsSync(publicDir)) {
+                fs.renameSync(oldProfilePicturePath, newProfilePicturePath);
+                user.profilePicture = `images/${newUsername}_profile_picture.png`;
+            } else {
+                console.error("Profile picture not found.");
+            }
         } else {
             user.profilePicture = `public/images/${newUsername}_profile_picture.png`;
         }
 
+
         await user.save();
         
         // Generate a new JWT with the updated username
-        const jwt = require('jsonwebtoken');
         const newToken = jwt.sign(
             { username: user.username, role: user.role },
             process.env.JWT_SECRET || 'testing-secret',
