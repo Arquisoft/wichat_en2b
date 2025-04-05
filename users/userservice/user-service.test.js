@@ -508,6 +508,126 @@ describe('POST /user/profile/picture', () => {
   });
 });
 
+describe('POST /user/profile/picture - Security Tests', () => {
+  beforeAll(async () => {
+    await clearDatabase();
+    await startServer();
+    await request(app).post('/users').send(testUser1);
+    
+    // Mock sharp and fs for these tests
+    sharp().toBuffer.mockResolvedValue(Buffer.from('test image'));
+    fs.promises.mkdir.mockResolvedValue();
+    fs.promises.writeFile.mockResolvedValue();
+    global.parse = jest.fn(() => ({ mime: 'image/png' }));
+  });
+
+  it('should reject path traversal attempts in username', async () => {
+    const maliciousUsername = '../../../etc/passwd';
+    const validBase64 = Buffer.from('test image data').toString('base64');
+    
+    const response = await request(app)
+      .post('/user/profile/picture')
+      .send({
+        username: maliciousUsername,
+        image: validBase64
+      });
+    
+    // Should fail because path validation prevents directory traversal
+    expect(response.statusCode).toBe(404);
+    expect(response.body).toHaveProperty('error');
+    expect(response.body.error).toBe('User not found');
+    
+    // Verify the file wasn't written outside the images directory
+    const writeFileCalls = fs.promises.writeFile.mock.calls;
+    expect(writeFileCalls.length).toBe(0);
+  });
+  
+  it('should sanitize filenames to prevent path traversal', async () => {
+    // Username with path traversal characters that should be sanitized
+    const username = 'user../.././etc/passwd';
+    const validBase64 = Buffer.from('test image data').toString('base64');
+    
+    // Create a test user with this username first
+    await User.create({
+      username: username,
+      password: bcrypt.hashSync('password123', 10),
+      role: 'USER'
+    });
+    
+    await request(app)
+      .post('/user/profile/picture')
+      .send({
+        username: username,
+        image: validBase64
+      });
+    
+    // Check if sanitization worked
+    const writeFileCalls = fs.promises.writeFile.mock.calls;
+    if (writeFileCalls.length > 0) {
+      const savedPath = writeFileCalls[0][0];
+      expect(savedPath).not.toContain('../');
+      expect(savedPath).not.toContain('etc');
+      expect(savedPath).not.toContain('passwd');
+      
+      // Check that path is within imagesDir
+      const imagesDir = path.resolve(__dirname, 'public', 'images');
+      expect(path.resolve(savedPath).startsWith(imagesDir)).toBe(true);
+    }
+  });
+  
+  it('should ensure file paths remain within allowed directory', async () => {
+    // Override path.resolve for this specific test
+    const originalResolve = path.resolve;
+    const mockResolve = jest.fn((p) => {
+      // Return a path outside the images directory to trigger security check
+      if (p.includes('profile_picture')) {
+        return '/tmp/malicious/path';
+      }
+      return originalResolve(p);
+    });
+    
+    path.resolve = mockResolve;
+    
+    try {
+      const validBase64 = Buffer.from('test image data').toString('base64');
+      
+      const response = await request(app)
+        .post('/user/profile/picture')
+        .send({
+          username: testUser1.username,
+          image: validBase64
+        });
+      
+      // Security check should prevent this operation
+      expect(response.statusCode).toBe(500);
+    } finally {
+      // Restore original path.resolve
+      path.resolve = originalResolve;
+    }
+  });
+  
+  it('should handle directory traversal attempts in profile picture path', async () => {
+    // Create a user with a malicious profile picture path
+    const user = await User.findOne({ username: testUser1.username });
+    user.profilePicture = '../../../etc/passwd';
+    await user.save();
+    
+    const validBase64 = Buffer.from('test image data').toString('base64');
+    
+    const response = await request(app)
+      .post('/user/profile/picture')
+      .send({
+        username: testUser1.username,
+        image: validBase64
+      });
+    
+    // Path validation should sanitize or reject the malicious path
+    expect(response.statusCode).not.toBe(200);
+    // Or if it does handle the case by sanitizing:
+    // expect(fs.promises.writeFile.mock.calls[0][0]).not.toContain('../');
+  });
+});
+
 describe('User Service - GET /user/profile/picture/:username', () => {
   beforeAll(async () => {
     await clearDatabase();
