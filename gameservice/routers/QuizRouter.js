@@ -2,6 +2,15 @@ const express = require('express');
 const router = express.Router();
 const QuizModel = require('../quizz-model');
 
+router.get('/quiz', async (req, res) => {
+    try {
+        const quizzes = await QuizModel.find();
+        res.status(200).send(quizzes);
+    } catch (error) {
+        res.status(500).send(error);
+    }
+});
+
 router.get('/quiz/AllTopics', async (req, res) => {
     try {
         const quizzes = await QuizModel.distinct("category");

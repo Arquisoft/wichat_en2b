@@ -10,17 +10,26 @@ function PlayTab() {
 	useEffect(() => {
 		const fetchCategories = async () => {
 			try {
-				const response = await fetch("http://localhost:8000/quiz/AllTopics");
+				const response = await fetch("http://localhost:8000/quiz");
 				const data = await response.json();
 
-				// Convert to objects with dummy values if needed
-				const formattedCategories = data.map((cat, idx) => ({
-					id: idx, // or cat if it's a unique string
-					name: cat,
-					color: "#2196f3", // default or fetched if available
-					icon: "📚", // placeholder
-					quizCount: 5, // placeholder unless you fetch that too
-				}));
+				const formattedCategories = Object.values(
+					data.reduce((acc, quiz) => {
+						const category = quiz.category;
+						if (!acc[category]) {
+							acc[category] = {
+								id: category,
+								name: category,
+								color: quiz.color,
+								icon: "📚",
+								quizCount: 1,
+							};
+						} else {
+							acc[category].quizCount += 1;
+						}
+						return acc;
+					}, {})
+				);
 
 				setCategories(formattedCategories);
 			} catch (error) {
@@ -39,7 +48,7 @@ function PlayTab() {
 				<Typography>Loading categories...</Typography>
 			) : (
 				categories.map((category) => (
-					<Grid key={category.id} size={{ xs: 12, sm: 6, md: 4 }}>
+					<Grid key={category.id} item xs={12} sm={6} md={4}>
 						<Card className="category-card">
 							<CardHeader
 								title={
@@ -53,13 +62,13 @@ function PlayTab() {
 							/>
 							<CardContent className="category-content">
 								<Typography className="quiz-count">
-									{category.quizCount} quizzes available
+									{category.quizCount} questions available
 								</Typography>
 								<Link href={`/quiz/category/${category.name}`} passHref>
 									<Button
 										variant="text"
 										fullWidth
-										className={`start-button button-${category.name.toLowerCase()}`}
+										className={`start-button button-${category.name?.toLowerCase?.() || "default"}`}
 									>
 										Enter Category
 									</Button>

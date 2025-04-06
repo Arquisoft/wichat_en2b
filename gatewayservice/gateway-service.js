@@ -117,8 +117,12 @@ app.get('/quiz/AllTopics', (req, res) => forwardRequest('game', '/quiz/AllTopics
 
 // Game Service Routes
 app.use('/quiz', publicCors);
-app.get('/quiz/:topic', (req, res) => forwardRequest('game', '/quiz/:topic', req, res));
+app.get('/quiz/:topic', (req, res) => {
+  const topic = req.params.topic;
+  forwardRequest('game', `/quiz/${topic}`, req, res);
+});
 
+app.get('/quiz', (req, res) => forwardRequest('game', '/quiz', req, res));
 
 app.use('/game', publicCors);
 app.get('/game/:subject/:totalQuestions/:numberOptions', async (req, res) => {

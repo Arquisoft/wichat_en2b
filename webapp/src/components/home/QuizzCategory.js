@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { ArrowLeft, Clock } from "lucide-react";
-import { quizzesByCategory, quizCategories } from "./data"; 
 import Link from "next/link";
 import QuestionGame from "../game/QuestionGame"; 
 import "../../styles/home/Categories.css";
 import "@/app/layout";
 import { Button, Container, Grid, Box, Typography, Card, CardContent, CardHeader, Badge } from "@mui/material";
+
+const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://localhost:8000';
 
 /**
  * Renders the quiz categories and handles quiz selection.
@@ -29,15 +30,47 @@ function CategoryComponent() {
       setLoading(true);
 
       const timer = setTimeout(() => {
-          const selectedCategory = quizCategories.find(category => category.id === parseInt(id));
-          setCategory(selectedCategory || null);
+          // Replace inside fetchQuizzes in useEffect
+        const fetchQuizzes = async () => {
+          try {
+            const response = await fetch(`${apiEndpoint}/quiz/${id}`);
+            const data = await response.json();
 
-          // Get all quizzes for the selected category
-          const selectedQuizzes = quizzesByCategory[id] || [];
-          setQuizzes(selectedQuizzes);
+            // Map data to fit frontend expectations
+            const mappedQuizzes = data.map((quiz) => ({//NOSONAR
+              id: quiz._id,
+              title: quiz.quizName,
+              description: quiz.description,
+              difficulty: mapDifficulty(quiz.difficulty),
+              wikidataCode: quiz.wikidataQuery,
+              questions: quiz.numQuestions,
+              options: quiz.numOptions,
+              timeEstimate: quiz.timePerQuestion,
+              question: quiz.question,
+              color: quiz.color,
+              category: quiz.category,
+            }));
 
-          // Set loading to false after 200ms
-          setLoading(false);
+            setQuizzes(mappedQuizzes);
+            setCategory({ name: id, color: mappedQuizzes[0]?.color || "#3f51b5" });
+            setLoading(false);
+          } catch (err) {
+            console.log(err);
+          }
+        };
+
+        // Add this helper to map numeric difficulty to labels
+        const mapDifficulty = (level) => {
+          switch (level) {
+            case 1: return "easy";
+            case 2: return "medium";
+            case 3: return "hard";
+            case 4: return "hard";
+            case 5: return "hell";
+            default: return "unknown";
+          }
+        };
+        fetchQuizzes();
       }, 200);
 
       return () => clearTimeout(timer); // Clear the timeout
