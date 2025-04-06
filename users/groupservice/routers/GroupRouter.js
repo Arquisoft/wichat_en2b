@@ -150,30 +150,25 @@ router.patch('/groups', verifyToken, async (req, res) => {
 });
 
 
-// Delete a group by its name
+// Delete the group that the user belongs to
+// Only the owner can delete the group
 router.delete('/groups', verifyToken, async (req, res) => {
     console.log('Deleting group');
-    const { groupId } = req.body;
-
-    if (!groupId) {
-        return res.status(400).json({ error: 'Group id is required' });
-    }
 
     try {
         const userId = req.user._id;
-        if (!userId) {
-            return res.status(404).json({ error: 'User not found' });
-        }
         // Check if the user is the owner of the group
-        const group = await Group.findById(groupId);
+
+        const group = await Group.findOne({ members: { $in: [userId.toString()] } });
         if (!group) {
             return res.status(404).json({ error: 'Group not found' });
         }
         if (group.owner !== userId) {
             return res.status(403).json({ error: 'Only the owner can delete the group' });
         }
+        console.log("Llego a 1");
         // Delete the group if it exists
-        const deleted = await deleteGroup(groupId);
+        const deleted = await deleteGroup(group._id);
         if (!deleted) {
             return res.status(500).json({ error: 'Error deleting group' });
         }

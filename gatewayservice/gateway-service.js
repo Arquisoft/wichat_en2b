@@ -21,7 +21,7 @@ const serviceUrls = {
 };
 
 // CORS setup
-const publicCors = cors({ origin: '*', methods: ['GET', 'POST'] });
+const publicCors = cors({ origin: '*', methods: ['GET', 'POST', 'PATCH', 'DELETE'] });
 
 app.use(express.json());
 app.use(helmet.hidePoweredBy());
@@ -123,10 +123,12 @@ app.post('/groups', (req, res) => {
   forwardRequest('group', '/groups', req, res);
 });
 
+app.use('/groups', publicCors);
 app.patch('/groups', (req, res) => {
   forwardRequest('group', `/groups`, req, res);
 });
 
+app.use('/groups', publicCors);
 app.delete('/groups', (req, res) => {
   forwardRequest('group', `/groups`, req, res);
 });

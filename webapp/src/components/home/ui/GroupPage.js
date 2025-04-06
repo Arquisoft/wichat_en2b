@@ -16,6 +16,7 @@ import {
     TableRow,
     TableCell
 } from "@mui/material";
+import { DEV_CLIENT_PAGES_MANIFEST } from 'next/dist/shared/lib/constants';
 
 const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://localhost:8000';
 
@@ -47,12 +48,17 @@ export default function GroupPage({ username }) {
         } 
     };
 
-    const updateUserGroup = async () => {
-        try {
-            const token = document.cookie
+    const getToken = () => {
+        const token = document.cookie
             .split("; ")
             .find((row) => row.startsWith("token="))
             ?.split("=")[1];
+        return token;
+    };
+
+    const updateUserGroup = async () => {
+        try {
+            const token = getToken();
 
             const response = await axios.get(
                 `${apiEndpoint}/groups/joined`,
@@ -117,10 +123,7 @@ export default function GroupPage({ username }) {
 
     const createGroup = async () => {
         try {
-            const token = document.cookie
-            .split("; ")
-            .find((row) => row.startsWith("token="))
-            ?.split("=")[1];
+            const token = getToken();
 
             const response = await axios.post(
                 `${apiEndpoint}/groups`,
@@ -141,10 +144,7 @@ export default function GroupPage({ username }) {
 
     const joinGroup = async () => {
         try {
-            const token = document.cookie
-            .split("; ")
-            .find((row) => row.startsWith("token="))
-            ?.split("=")[1];
+            const token = getToken();
 
             const response = await axios.post(
                 `${apiEndpoint}/groups/join`,
@@ -166,14 +166,32 @@ export default function GroupPage({ username }) {
 
     const leaveGroup = async () => {
         try {
-            const token = document.cookie
-            .split("; ")
-            .find((row) => row.startsWith("token="))
-            ?.split("=")[1];
+            const token = getToken();
 
             const response = await axios.post(
                 `${apiEndpoint}/groups/leave`,
                 { },
+                {
+                  headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                  },
+                }
+            );
+
+            updateEverything(response.status);
+        } catch (error) {
+            console.error("Error leaving group:", error);
+        }
+    }
+
+
+    const deleteGroup = async () => {
+        try { 
+            const token = getToken();
+
+            const response = await axios.delete(
+                `${apiEndpoint}/groups`,
                 {
                   headers: {
                     Authorization: `Bearer ${token}`,
@@ -325,16 +343,22 @@ export default function GroupPage({ username }) {
                                     )}
                                 </TableCell>
                             </TableRow>
-                        );
+                        ?? null);
                         })
                     }
 
                 </Box>
 
-                <Box className="group-leave">
+                <Box className="group-controls">
                     <Button variant="contained" color="secondary" onClick={leaveGroup}>
                         Leave Group
                     </Button>
+
+                    {loggedUserGroup.owner === user && (
+                        <Button variant="contained" color="error" onClick={deleteGroup}>
+                            Delete Group
+                        </Button>
+                    )}
                 </Box>
             </CardContent>
         </Card>
