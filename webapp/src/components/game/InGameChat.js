@@ -18,7 +18,7 @@ export default function InGameChat(params) {
 
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    }, [messages]);
+    }, [messages, isMinimized]);
 
     const handleSendMessage = async () => {
         if (input.trim() === "") return;

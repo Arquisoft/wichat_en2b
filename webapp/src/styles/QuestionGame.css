@@ -3,8 +3,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  margin: auto;
+  justify-content: space-between; /* This will space out the content */
   background: #fdfdfd;
   border-radius: 12px;
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
@@ -12,6 +11,8 @@
   font-family: 'Poppins', sans-serif;
   position: relative;
   width: 85%;
+  height: 95vh;
+  margin: 2.5vh auto auto;
 }
 
 /* Decorative dividers */
@@ -50,7 +51,8 @@
 .content-box {
   width: 100%;
   text-align: center;
-  position: relative; /* This allows absolute positioning inside it */
+  position: relative;
+  overflow: hidden;
 }
 
 /* Question counter */
@@ -77,7 +79,8 @@
 }
 
 .quiz-image {
-  height: 35vh;
+  max-height: 35vh;
+  max-width: 100%;
   border-radius: 10px;
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
 }
@@ -196,10 +199,14 @@
   border-radius: 10px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   padding: 20px;
-  max-width: 400px;
-  margin: 20px auto;
+  max-width: 450px;
+  margin: 2.5vh auto auto;
   font-family: 'Poppins', sans-serif;
   color: black;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* Ensures space between the content and the buttons */
+  overflow: hidden; /* Prevents extra scrolling */
 }
 
 .quiz-header {
@@ -234,8 +241,9 @@
 }
 
 .answers-list {
+  flex-grow: 1;  /* Allows answers list to take up available space */
+  max-height: 50vh;  /* Limit the height of answers */
   margin-bottom: 20px;
-  max-height: 300px; /* Adjust the height to fit your design */
   overflow-y: auto;  /* Adds vertical scrolling */
   padding-right: 10px; /* Optional: adds a small space for scroll */
 }
@@ -275,9 +283,12 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;  /* Added to prevent overflow on small screens */
+  gap: 10px;  /* Spacing between buttons */
 }
 
-.back-button {
+body div .back-home-button,
+body .back-button {
   background: linear-gradient(90deg, #6b48ff, #ff4081); /* Gradient from purple to pink */
   color: #ffffff;
   border: none;
@@ -288,7 +299,9 @@
   transition: background 0.3s ease;
 }
 
-.back-button:hover {
+.back-home-button:hover,
+body .back-button
+{
   background: linear-gradient(90deg, #5a3de6, #e63977);
 }
 
@@ -301,7 +314,6 @@
   color: #6b48ff;
   cursor: pointer;
   transition: background 0.3s ease, color 0.3s ease;
-  margin-bottom: 16px;
 }
 
 .play-again-button:hover {
@@ -327,4 +339,37 @@
   color: #2e7d32; /* Darker green text (MUI success text color) */
   border: 1px solid #2e7d32; /* Darker green border */
   font-weight: bold;
+}
+
+@media screen and (max-width: 450px) {
+  .quiz-wrapper {
+    padding: 20px;
+    width: 95%;
+  }
+
+  .quiz-option {
+    font-size: 14px;
+    padding: 10px;
+  }
+
+  .timer-container {
+    margin-top: 10px;
+  }
+
+  .progress-bar {
+    height: 10px; /* Reduced height for smaller screens */
+  }
+
+  .quiz-results-container {
+    max-width: 90%;
+    padding: 15px;
+  }
+
+  .options-box {
+    grid-template-columns: repeat(1, 1fr);
+  }
+
+  .buttons {
+    flex-direction: column;  /* Stack buttons vertically */
+  }
 }

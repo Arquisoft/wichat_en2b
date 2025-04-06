@@ -70,7 +70,7 @@ describe("StatsTab Component", () => {
         expect(screen.getByText("Total Games")).toBeInTheDocument();
         expect(screen.getByText("10")).toBeInTheDocument();
         expect(screen.getByText("Avg Score per Quiz")).toBeInTheDocument();
-        expect(screen.getByText("80 points")).toBeInTheDocument();
+        expect(screen.getByText("80.0 points")).toBeInTheDocument();
         expect(screen.getByText("Total Score")).toBeInTheDocument();
         expect(screen.getByText("800 points")).toBeInTheDocument();
         expect(screen.getByText("Correct Answers")).toBeInTheDocument();
