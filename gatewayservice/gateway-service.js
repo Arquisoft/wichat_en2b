@@ -177,30 +177,7 @@ app.get('/game/:subject/:totalQuestions/:numberOptions', async (req, res) => {
 app.use('/token/username', publicCors);
 
 app.get('/token/username', async (req, res) => {
-  // try {
-  //     const token = req.headers.authorization;
-  //     if (!token) {
-  //         return res.status(401).json({ error: "Unauthorized" });
-  //     }
-  //
-  //     const response = await fetch(`${serviceUrls.auth}/auth/token/username`, {
-  //         headers: {
-  //           Authorization: token,
-  //           Origin: 'http://localhost:8000',
-  //         },
-  //     });
-  //
-  //     if (!response.ok) {
-  //         return res.status(response.status).json(await response.json());
-  //     }
-  //
-  //     const userData = await response.json();
-  //     res.json(userData);
-  // } catch (error) {
-  //     console.error("Error fetching user data:", error);
-  //     res.status(500).json({ error: "Internal Server Error" });
-  // }
-  forwardRequest("user", "/token/username", req, res);
+  forwardRequest("auth", "/auth/token/username", req, res);
 });
 
 // Middleware to handle CORS for the user and password change endpoint
