@@ -130,13 +130,12 @@ export default function ProfileForm({ username, profilePicture, onSave }) {
         try {
             const token = getToken();
 
-            const payload = { 
-                token: token,                
-                currentPassword: profileData.currentPassword,
+            const payload = {
+                oldPassword: profileData.currentPassword,
                 newPassword: profileData.newPassword, 
             };
 
-            const response = await fetch(`${apiEndpoint}/users/${username}/password`, {
+            const response = await fetch(`${apiEndpoint}/users/${username}`, {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",

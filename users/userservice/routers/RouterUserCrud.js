@@ -188,6 +188,7 @@ router.patch('/users/:username', async (req, res) => {
 
         // Handle password update
         if (req.body.oldPassword && req.body.newPassword) {
+            console.log("he")
             const { oldPassword, newPassword } = req.body;
 
             // Verify old password
