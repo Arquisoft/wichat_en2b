@@ -135,7 +135,7 @@ useEffect(() => {
             <Avatar className="profile-avatar">
                 {typeof username === "string" && username.length > 0 ? username.charAt(0) : "?"}
             </Avatar>
-            <Typography variant="h6">
+            <Typography variant="h6" id='profile-username'>
                 {typeof username === "string" ? username : "Unknown User"}
             </Typography>
           </Box>

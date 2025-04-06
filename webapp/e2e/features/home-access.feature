@@ -5,7 +5,7 @@ Scenario: The user has an account in the web
   When I fill the data in the login form
   Then I can see in the home page that the user profile is mine
 
-Scenario: The user do not have an account in the web
+Scenario: The user does not have an account in the web
   Given An unregistered user
   When I fill the data in the login form
   Then I can see a message asking me to create an account to access the application

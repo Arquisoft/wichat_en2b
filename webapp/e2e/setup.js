@@ -1,8 +1,10 @@
 const mongoose = require('mongoose');
 const bcrypt = require("bcrypt");
+const setDefaultOptions = require('expect-puppeteer').setDefaultOptions
 
 beforeAll(async () => {
-    jest.setTimeout(60000)
+    jest.setTimeout(60000);
+    setDefaultOptions({timeout: 60000, });
     // put your client connection code here, example with mongoose:
     const mongooseDB = await mongoose.connect(process.env.MONGODB_URI, {
         bufferCommands: true,
@@ -14,7 +16,7 @@ beforeAll(async () => {
     global.mongooseDB = mongooseDB;
 
     try{
-        const data = {username: "mock", password: "123456", role: "USER"};
+        const data = {username: "mock", password: "mocK$1111", role: "USER"};
         global.userTestData = data;
         if (mongooseDB.connection.readyState === 1) {
 
@@ -24,10 +26,13 @@ beforeAll(async () => {
                 username: data.username,
                 password: bcrypt.hashSync(data.password, 10),
                 role: data.role,
-                createdAt: Date.now(),
-                secret: "test",
+                createdAt: Date.now()
             });
-
+            let wasAddedAlready = await User.findOne({username: data.username});
+            if (wasAddedAlready) {
+                console.log("⚠️ User already exists, skipping creation.");
+                return;
+            }
             let savedData = await user.save();
             console.log("✅ User created:", user);
             return;

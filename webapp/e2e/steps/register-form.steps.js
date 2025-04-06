@@ -22,7 +22,6 @@ defineFeature(feature, test => {
     });
 
     afterEach(async () => {
-
         if (browser) {
             await browser.close();
         }
