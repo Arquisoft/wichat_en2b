@@ -37,6 +37,7 @@ export default function GroupPage({ username }) {
     const [loggedUserGroup, setLoggedUserGroup] = useState(null);
     const [groupMembers, setGroupMembers] = useState([]);
     const [user, setUser] = useState(null);
+    const [newGroupName, setNewGroupName] = useState("");
 
 
     const updateEverything = (status) => {
@@ -206,6 +207,25 @@ export default function GroupPage({ username }) {
         }
     }
 
+    const modifyGroup = async () => {
+        try {
+            const token = getToken();
+            const response = await axios.patch(
+                `${apiEndpoint}/groups`,
+                { name: groupName },
+                {
+                  headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                  },
+                }
+            );
+            updateEverything(response.status);
+        } catch (error) {
+            console.error("Error modifying group:", error);
+        }
+    }
+
     useEffect(() => {
         updateUserGroup();
         const saveUserId = async () => {
@@ -301,6 +321,22 @@ export default function GroupPage({ username }) {
                         <Typography variant="h6" className="group-name">
                             Owner: {getUsernameById(loggedUserGroup.owner)} (You)   
                         </Typography>
+                    )}
+                    {loggedUserGroup.owner === user && (
+                        <TextField
+                            label="Change group name"
+                            variant="outlined"
+                            fullWidth
+                            onChange={e => setGroupName(e.target.value)}
+                        />
+                    )}
+
+                    {doesGroupExist && loggedUserGroup.owner === user && <p className="error-message">Group already exists</p>}
+                    {loggedUserGroup.owner === user && (
+                        <Button variant="contained" color="primary" onClick={modifyGroup} 
+                        enabled={groupName !== "" && groupName !== loggedUserGroup.groupName && !doesGroupExist}>
+                            Modify group
+                        </Button>
                     )}
 
                     {loggedUserGroup.owner !== user &&(

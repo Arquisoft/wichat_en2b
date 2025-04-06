@@ -119,16 +119,22 @@ router.post('/groups', verifyToken, async (req, res) => {
 // Update a group by its name
 router.patch('/groups', verifyToken, async (req, res) => {
     console.log('Updating group');
-    const { id, name } = req.body;
+    const { name } = req.body;
 
-    if (!id || !name) {
-        return res.status(400).json({ error: 'Both id and new group name are required' });
+    if (!name) {
+        return res.status(400).json({ error: 'New group name is required' });
     }
 
     try {
-        const group = await Group.findById(id);
+        const userId = req.user._id;
+        // Check if the user is the owner of the group
+
+        const group = await Group.findOne({ members: { $in: [userId.toString()] } });
         if (!group) {
             return res.status(404).json({ error: 'Group not found' });
+        }
+        if (group.owner !== userId) {
+            return res.status(403).json({ error: 'Only the owner can modify the group' });
         }
 
         if (group.groupName === name) {
@@ -166,7 +172,6 @@ router.delete('/groups', verifyToken, async (req, res) => {
         if (group.owner !== userId) {
             return res.status(403).json({ error: 'Only the owner can delete the group' });
         }
-        console.log("Llego a 1");
         // Delete the group if it exists
         const deleted = await deleteGroup(group._id);
         if (!deleted) {
