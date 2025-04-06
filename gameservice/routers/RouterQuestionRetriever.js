@@ -37,9 +37,9 @@ router.get('/game/:subject/:numQuestions?/:numOptions?', async (req, res) => {
             const answers = [q.answer, ...fakeAnswers].sort(() => 0.5 - Math.random());
             
             return {
+                question_id: q._id,
                 image_name: `/images/${q._id}.jpg`,
-                answers,
-                right_answer: q.answer
+                answers
             };
         }));
 
@@ -48,6 +48,24 @@ router.get('/game/:subject/:numQuestions?/:numOptions?', async (req, res) => {
     } catch (error) {
         console.error('Error retrieving questions:', error);
         res.status(500).json({ error: 'Error retrieving questions' });
+    }
+});
+
+router.post('/question/validate', async (req, res) => {
+    try {
+        const { question_id, selected_answer } = req.body;
+
+        const question = await Question.findOne({ _id: question_id }).exec();
+        if (!question) {
+            return res.status(404).json({ error: 'Question not found' });
+        }
+
+        const isCorrect = question.answer === selected_answer;
+        res.json({ isCorrect });
+
+    } catch (error) {
+        console.error('Error validating answer:', error);
+        res.status(500).json({ error: 'Error validating answer' });
     }
 });
 
