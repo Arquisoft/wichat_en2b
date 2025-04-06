@@ -88,21 +88,25 @@ export default function ProfileForm({ username, profilePicture, onSave }) {
             });
 
             const responseData = await response.json();
-            const updatedToken = responseData.token;
+            if (responseData.token) {
+                const updatedToken = responseData.token;
 
-            // Update the cookie with the new token 
-            document.cookie = `token=${updatedToken}; path=/; max-age=3600`; 
-            setProfileData((prev) => ({ ...prev, username: profileData.username })); 
+                // Update the cookie with the new token
+                document.cookie = `token=${updatedToken}; path=/; max-age=3600`;
+                setProfileData((prev) => ({ ...prev, username: profileData.username }));
 
-            setSnackbarMessage("Username updated successfully.");
-            setOpenSnackbar(true);
-            setEditingAccount(false);
+                setSnackbarMessage("Username updated successfully.");
+                setOpenSnackbar(true);
+                setEditingAccount(false);
 
-            onSave({ ...profileData, username: profileData.username });
+                onSave({ ...profileData, username: profileData.username });
 
-            // Reload the page to reflect the new username
-            window.location.reload(); 
-
+                // Reload the page to reflect the new username
+                window.location.reload();
+            } else {
+                setSnackbarMessage(responseData.error || "Error updating username");
+                setOpenSnackbar(true);
+            }
         } catch (error) {
             console.error("Error updating username:", error);
             setSnackbarMessage(`Error: ${error.message}`);
@@ -165,7 +169,7 @@ export default function ProfileForm({ username, profilePicture, onSave }) {
             onSave({ ...profileData });
         } catch (error) {
             console.error("Error updating password:", error);
-            setSnackbarMessage(`Error: ${error.message}`);
+            setSnackbarMessage(`${error.message}`);
             setOpenSnackbar(true);
         }
     };

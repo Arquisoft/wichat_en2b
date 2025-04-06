@@ -257,33 +257,6 @@ const corsOptions = {
 app.use('/game/update/:oldUsername', cors(corsOptions));
 
 app.patch('/game/update/:oldUsername', async (req, res) => {
-  // const { oldUsername } = req.params;
-  // const { newUsername } = req.body;
-  //
-  // if (!newUsername) {
-  //   return res.status(400).json({ error: 'New username is required' });
-  // }
-  //
-  // try {
-  //   const response = await fetch(`${serviceUrls.game}/game/update/${oldUsername}`, {
-  //     method: 'PATCH',
-  //     headers: {
-  //       'Content-Type': 'application/json',
-  //       Origin: 'http://localhost:8000'
-  //     },
-  //     body: JSON.stringify({ newUsername : newUsername }),
-  //   });
-  //
-  //   if (!response.ok) {
-  //     return res.status(500).json({ error: 'Error updating game history' });
-  //   }
-  //
-  //   const data = await response.json();
-  //   res.json(data);
-  // } catch (error) {
-  //   console.error('Error updating game history:', error);
-  //   res.status(500).json({ error: 'Internal Server Error' });
-  // }
     forwardRequest("game", `/game/update/${req.params.oldUsername}`, req, res);
 });
 

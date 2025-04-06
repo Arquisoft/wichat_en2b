@@ -129,6 +129,7 @@ router.patch('/users/:username', async (req, res) => {
 
             // Verify if the new username is available
             const existingUser = await User.findOne({ username: newUsername.toString() });
+            console.log(existingUser)
             if (existingUser) {
                 return res.status(409).json({ error: "Username already taken" });
             }
@@ -180,7 +181,7 @@ router.patch('/users/:username', async (req, res) => {
 
             // Generate a new JWT with the updated username
             newToken = jwt.sign(
-                { username: user.username, role: user.role },
+                { username: user.username, role: 'USER' },
                 process.env.JWT_SECRET || 'testing-secret',
                 { expiresIn: '1h' }
             );
@@ -188,7 +189,6 @@ router.patch('/users/:username', async (req, res) => {
 
         // Handle password update
         if (req.body.oldPassword && req.body.newPassword) {
-            console.log("he")
             const { oldPassword, newPassword } = req.body;
 
             // Verify old password
@@ -250,7 +250,6 @@ router.patch('/users/:username', async (req, res) => {
         }
 
         res.status(200).json(response);
-
     } catch (error) {
         // Handle database connection errors
         if (error.name === "MongoNetworkError" ||
