@@ -75,114 +75,197 @@ router.delete('/users/:username', async (req, res) => {
     }
 });
 
-// Update a user's username, update game records, and generate a new JWT
+// Update a user's information
 router.patch('/users/:username', async (req, res) => {
     try {
-        const { username } = req.params; // Old username
-        const { newUsername } = req.body;
-
-        if (!newUsername || newUsername.length < 3) {
-            return res.status(400).json({ error: "Username must be at least 3 characters" });
+        // Extract authentication token
+        const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return res.status(401).json({ error: "Authentication required" });
         }
 
-        // Verify if the new username is available
-        const existingUser = await User.findOne({ username: newUsername.toString() });
-        if (existingUser) return res.status(404).json({ error: "Username already taken" });
+        const token = authHeader.split(' ')[1];
+        let decodedToken;
 
-        const user = await User.findOne({ username: username.toString() });
-        if (!user) return res.status(500).json({ error: "User not found" });
-
-        const oldUsername = user.username;
-
-        // Update all game records: change user_id from oldUsername to newUsername
-        const payload = { newUsername: newUsername };
-
-        const gameResponse = await fetch(`${gatewayServiceUrl}/game/update/${oldUsername}`, {
-            method: "PATCH",
-            headers: {
-                "Content-Type": "application/json",
-                Origin: process.env.USER_SERVICE_URL || 'http://localhost:8001',
-            },
-            body: JSON.stringify(payload),
-        });
-        
-        if (!gameResponse.ok) {
-            return res.status(404).json({ error: "Error updating the game history to the new username" });
+        try {
+            decodedToken = jwt.verify(token, process.env.JWT_SECRET || 'testing-secret');
+        } catch (err) {
+            return res.status(401).json({ error: "Invalid or expired token" });
         }
 
-        // Update the username in the users table
-        user.username = newUsername;
-
-        if(user.profilePicture != null && user.profilePicture != undefined) {
-            const publicDir = path.resolve('public', 'images');
-
-            const safeOldUsername = path.basename(oldUsername);
-            const safeNewUsername = path.basename(newUsername);
-
-            // Construct secure absolute paths
-            const oldProfilePicturePath = path.join(publicDir, `${safeOldUsername}_profile_picture.png`);
-            const newProfilePicturePath = path.join(publicDir, `${safeNewUsername}_profile_picture.png`);
-            
-            // Check if the old profile picture exists
-            if (fs.existsSync(oldProfilePicturePath)) {
-                fs.renameSync(oldProfilePicturePath, newProfilePicturePath);
-                user.profilePicture = `images/${newUsername}_profile_picture.png`;
-            } else {
-                console.error("Profile picture not found.");
-            }
-        } else {
-            user.profilePicture = `public/images/${newUsername}_profile_picture.png`;
-        }
-
-
-        await user.save();
-        
-        // Generate a new JWT with the updated username
-        const newToken = jwt.sign(
-            { username: user.username, role: user.role },
-            process.env.JWT_SECRET || 'testing-secret',
-            { expiresIn: '1h' }
-        );
-
-        res.status(200).json({ message: "Username updated successfully", token: newToken });
-    } catch (error) {
-        if (error.name === "MongoNetworkError" || error.name == "MongoNotConnectedError" ||  error.name === "MongooseServerSelectionError" ||
-            error.message?.includes("failed to connect") || error.message?.includes("ECONNREFUSED")) {
-            return res.status(500).json({ error: "Database unavailable" });
-        }
-
-        console.error("Error updating username:", error);
-        res.status(500).json({ error: "Internal Server Error" });
-    }
-});
-
-// Update a user's password
-router.patch('/users/:username/password', async (req, res) => {
-    try {
+        // Ensure user can only edit their own profile
         const { username } = req.params;
-        const { newPassword } = req.body;
-
-        if (!newPassword || newPassword.length < 6) {
-            return res.status(400).json({ error: "Password must be at least 6 characters" });
+        if (decodedToken.username !== username) {
+            return res.status(403).json({ error: "You can only update your own profile" });
         }
 
+        // Find the user
         const user = await User.findOne({ username: username.toString() });
         if (!user) {
             return res.status(404).json({ error: "User not found" });
         }
 
-        user.password = bcrypt.hashSync(newPassword, 10);
-        await user.save();
+        const oldUsername = user.username;
+        let updateMade = false;
+        let newToken = null;
 
-        res.status(200).json({ message: "Password updated successfully" });
+        // Handle username update
+        if (req.body.newUsername) {
+            const { newUsername } = req.body;
 
-    } catch (error) {
-        if (error.name === "MongoNetworkError" || error.name == "MongoNotConnectedError" ||  error.name === "MongooseServerSelectionError" ||
-            error.message?.includes("failed to connect") || error.message?.includes("ECONNREFUSED")) {
-            return res.status(500).json({ error: "Database unavailable" });
+            // Validate new username
+            if (newUsername.length < 3) {
+                return res.status(400).json({ error: "Username must be at least 3 characters" });
+            }
+
+            if (/\s/.test(newUsername)) {
+                return res.status(400).json({ error: "Username cannot contain whitespace" });
+            }
+
+            // Check if username is different
+            if (newUsername === oldUsername) {
+                return res.status(400).json({ error: "New username must be different from current username" });
+            }
+
+            // Verify if the new username is available
+            const existingUser = await User.findOne({ username: newUsername.toString() });
+            if (existingUser) {
+                return res.status(409).json({ error: "Username already taken" });
+            }
+
+            // Update game records through gateway service
+            const payload = { newUsername: newUsername };
+            try {
+                const gameResponse = await fetch(`${gatewayServiceUrl}/game/update/${oldUsername}`, {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Origin: process.env.USER_SERVICE_URL || 'http://localhost:8001',
+                    },
+                    body: JSON.stringify(payload),
+                });
+
+                if (!gameResponse.ok) {
+                    return res.status(502).json({ error: "Error updating game history with new username" });
+                }
+            } catch (error) {
+                return res.status(502).json({ error: "Failed to communicate with game service" });
+            }
+
+            // Handle profile picture renaming
+            if (user.profilePicture) {
+                const publicDir = path.resolve('public', 'images');
+
+                const safeOldUsername = path.basename(oldUsername);
+                const safeNewUsername = path.basename(newUsername);
+
+                // Construct secure absolute paths
+                const oldProfilePicturePath = path.join(publicDir, `${safeOldUsername}_profile_picture.png`);
+                const newProfilePicturePath = path.join(publicDir, `${safeNewUsername}_profile_picture.png`);
+
+                // Check if the old profile picture exists and rename it
+                if (fs.existsSync(oldProfilePicturePath)) {
+                    fs.renameSync(oldProfilePicturePath, newProfilePicturePath);
+                    user.profilePicture = `images/${safeNewUsername}_profile_picture.png`;
+                } else {
+                    console.error("Profile picture not found.");
+                }
+            } else {
+                user.profilePicture = `public/images/${newUsername}_profile_picture.png`;
+            }
+
+            // Update the username
+            user.username = newUsername;
+            updateMade = true;
+
+            // Generate a new JWT with the updated username
+            newToken = jwt.sign(
+                { username: user.username, role: user.role },
+                process.env.JWT_SECRET || 'testing-secret',
+                { expiresIn: '1h' }
+            );
         }
 
-        console.error("Error updating password:", error);
+        // Handle password update
+        if (req.body.oldPassword && req.body.newPassword) {
+            const { oldPassword, newPassword } = req.body;
+
+            // Verify old password
+            const isPasswordCorrect = bcrypt.compareSync(oldPassword, user.password);
+            if (!isPasswordCorrect) {
+                return res.status(401).json({ error: "Current password is incorrect" });
+            }
+
+            // Validate new password
+            if (newPassword.length < 6) {
+                return res.status(400).json({ error: "Password must be at least 6 characters" });
+            }
+
+            if (/\s/.test(newPassword)) {
+                return res.status(400).json({ error: "Password cannot contain whitespace" });
+            }
+
+            // Update password
+            user.password = bcrypt.hashSync(newPassword, 10);
+            updateMade = true;
+        }
+
+        // Handle profile picture update (URL only, not the actual upload)
+        if (req.body.profilePicture !== undefined) {
+            if (req.body.profilePicture === "") {
+                user.profilePicture = "";
+            } else if (!/\s/.test(req.body.profilePicture)) {
+                user.profilePicture = req.body.profilePicture;
+            } else {
+                return res.status(400).json({ error: "Profile picture URL cannot contain whitespace" });
+            }
+            updateMade = true;
+        }
+
+        // Handle secret update
+        if (req.body.secret !== undefined) {
+            if (req.body.secret === "") {
+                user.secret = "";
+            } else if (!/\s/.test(req.body.secret)) {
+                user.secret = req.body.secret;
+            } else {
+                return res.status(400).json({ error: "Secret cannot contain whitespace" });
+            }
+            updateMade = true;
+        }
+
+        // Make sure at least one change was requested
+        if (!updateMade) {
+            return res.status(400).json({ error: "No valid update parameters provided" });
+        }
+
+        // Save the updated user
+        await user.save();
+
+        // Prepare response
+        const response = { message: "User updated successfully" };
+        if (newToken) {
+            response.token = newToken;
+        }
+
+        res.status(200).json(response);
+
+    } catch (error) {
+        // Handle database connection errors
+        if (error.name === "MongoNetworkError" ||
+            error.name === "MongoNotConnectedError" ||
+            error.name === "MongooseServerSelectionError" ||
+            error.message?.includes("failed to connect") ||
+            error.message?.includes("ECONNREFUSED")) {
+            return res.status(503).json({ error: "Database unavailable" });
+        }
+
+        // Handle validation errors from Mongoose
+        if (error.name === "ValidationError") {
+            return res.status(400).json({ error: error.message });
+        }
+
+        console.error("Error updating user:", error);
         res.status(500).json({ error: "Internal Server Error" });
     }
 });
