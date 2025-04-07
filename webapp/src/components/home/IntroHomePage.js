@@ -19,7 +19,7 @@ function IntroHomePage() {
 
     const handlePlayNow = () => {
         setOpenDialog(false);
-        window.location.href = "/play";
+        window.location.href = "/guestHomeViewPage";
     };
 
     const handleLogin = () => {
