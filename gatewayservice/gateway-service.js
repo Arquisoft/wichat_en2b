@@ -220,6 +220,11 @@ app.get('/game/:subject/:totalQuestions/:numberOptions', async (req, res) => {
   });
 });
 
+app.use('/leaderboard/group', publicCors);
+app.post('/leaderboard/group', (req, res) => {
+  forwardRequest('game', '/leaderboard/group', req, res);
+});
+
 // Proxy for images
 app.get('/images/:image', createProxyMiddleware({
   target: serviceUrls.game,

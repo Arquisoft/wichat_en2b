@@ -114,3 +114,20 @@
 .leave-button:hover {
     background-color: #c0392b !important;
 }
+
+.scrollable-table {
+    max-height: 300px;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+  
+  /* Opcional: para que la tabla ocupe todo el ancho disponible */
+  .scrollable-table table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .scrollable-table {
+    scrollbar-gutter: stable;
+  }
+  

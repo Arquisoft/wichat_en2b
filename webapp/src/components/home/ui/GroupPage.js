@@ -6,13 +6,13 @@ import axios from "axios";
 import "../../../styles/home/GroupPage.css"; 
 import {
     Box,
-    Card,
-    CardContent,
     Typography,
     Button,
     Tabs,
     TextField,
     Tab,
+    Table,
+    TableBody,
     TableRow,
     TableCell
 } from "@mui/material";
@@ -372,38 +372,47 @@ export default function GroupPage({ username, onClose }) {
                 <Typography variant="subtitle1" className="group-members-title">
                     Members:
                 </Typography>
-                {groupMembers.map((entry, index) => {
-                    const isCurrentUser =
-                        user && (user === entry._id || (typeof user === "object" && user._id === entry._id));
+                
+                
+                <div className="scrollable-table">
+                    <Table>
+                        <TableBody>
 
-                    return (
-                        <TableRow
-                            key={entry._id}
-                            className={isCurrentUser ? "current-user" : ""}
-                            sx={{
-                                backgroundColor: isCurrentUser ? "rgba(144, 202, 249, 0.2)" : "inherit",
-                                "&:hover": {
-                                    backgroundColor: isCurrentUser
-                                        ? "rgba(144, 202, 249, 0.3)"
-                                        : "rgba(0, 0, 0, 0.04)",
-                                },
-                            }}
-                        >
-                            <TableCell>#{index + 1}</TableCell>
-                            <TableCell>
-                                {isCurrentUser ? (
-                                    <Typography component="span" fontWeight="bold">
-                                        {entry.username} (You)
-                                    </Typography>
-                                ) : (
-                                    entry.username
-                                )}
-                            </TableCell>
-                        </TableRow>
-                    ?? null);
-                    })
-                }
+                            {groupMembers.map((entry, index) => {
+                                const isCurrentUser =
+                                    user && (user === entry._id || (typeof user === "object" && user._id === entry._id));
 
+                                return (
+                                    <TableRow
+                                        key={entry._id}
+                                        className={isCurrentUser ? "current-user" : ""}
+                                        sx={{
+                                            backgroundColor: isCurrentUser ? "rgba(144, 202, 249, 0.2)" : "inherit",
+                                            "&:hover": {
+                                                backgroundColor: isCurrentUser
+                                                    ? "rgba(144, 202, 249, 0.3)"
+                                                    : "rgba(0, 0, 0, 0.04)",
+                                            },
+                                        }}
+                                    >
+                                        <TableCell>#{index + 1}</TableCell>
+                                        <TableCell>
+                                            {isCurrentUser ? (
+                                                <Typography component="span" fontWeight="bold">
+                                                    {entry.username} (You)
+                                                </Typography>
+                                            ) : (
+                                                entry.username
+                                            )}
+                                        </TableCell>
+                                    </TableRow>
+                                ?? null);
+                                })
+                            }
+
+                        </TableBody>
+                    </Table>
+                </div>
             </Box>
 
             <Box className="group-controls">

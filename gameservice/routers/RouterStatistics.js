@@ -121,4 +121,56 @@ router.get('/leaderboard', verifyToken, async (req, res) => {
     }
 });
 
+router.post('/leaderboard/group', verifyToken, async (req, res) => {
+    console.log('Fetching group leaderboard');
+    if (!req.body.players || !Array.isArray(req.body.players)) {
+        return res.status(400).json({ error: 'Invalid request body' });
+    }
+
+    const players = req.body.players; // array de usernames
+
+    try {
+        const leaderboard = await GameInfo.aggregate([
+            {
+                $match: { user_id: { $in: players } } // solo partidas de los jugadores dados
+            },
+            {
+                $group: {
+                    _id: '$user_id',
+                    totalScore: { $sum: '$points_gain' },
+                    totalGames: { $sum: 1 },
+                    avgScore: { $avg: '$points_gain' }
+                }
+            },
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: '_id',
+                    foreignField: 'username',
+                    as: 'userDetails'
+                }
+            },
+            {
+                $addFields: {
+                    username: { $first: '$userDetails.username' }
+                }
+            },
+            {
+                $project: {
+                    userDetails: 0
+                }
+            },
+            {
+                $sort: { totalScore: -1 } // ordenamos por puntaje
+            }
+        ]);
+        console.log('Group leaderboard:', leaderboard);
+        res.status(200).json({ leaderboard });
+    } catch (error) {
+        console.error('Leaderboard error:', error);
+        res.status(500).json({ error: 'Error fetching player leaderboard' });
+    }
+});
+
+
 module.exports = router;
