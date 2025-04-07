@@ -38,4 +38,8 @@ app.use((req, res, next) => {
 // Use the user routes
 app.use(userRoutes);
 
-export default app; 
+let server = app.listen(port, () => {
+    console.log(`👨 User service running on: http://localhost:${port}`);
+});
+
+module.exports = server;

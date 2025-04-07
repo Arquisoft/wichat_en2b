@@ -126,7 +126,7 @@ describe('ProfileForm', () => {
 		
 		await waitFor(() => {
 			expect(global.fetch).toHaveBeenCalledWith(
-			expect.stringContaining('/users/username/password'),
+			expect.stringContaining('/users/username'),
 			expect.objectContaining({
 				method: 'PATCH',
 				headers: expect.objectContaining({

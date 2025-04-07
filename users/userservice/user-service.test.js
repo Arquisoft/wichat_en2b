@@ -1,6 +1,6 @@
 import request from 'supertest';
 import bcrypt from 'bcrypt';
-import { MongoMemoryServer } from 'mongodb-memory-server';
+import {MongoMemoryServer} from 'mongodb-memory-server';
 import mongoose from 'mongoose';
 import User from './user-model';
 import sharp from 'sharp';
@@ -86,21 +86,8 @@ let app;
 describe('User Service - POST /users', () => {
   beforeAll(async () => {
     mongoServer = await MongoMemoryServer.create();
-    const mongoUri = mongoServer.getUri();
-    process.env.MONGODB_URI = mongoUri;
-    
-    if (mongoose.connection.readyState !== 0) {
-      await mongoose.disconnect();
-    }
-    
-    await mongoose.connect(mongoUri, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true
-    });
-    
-    const module = await import('./user-service.js');
-    app = module.default;
-    
+    process.env.MONGODB_URI = mongoServer.getUri();
+    app = require('./user-service');
   });
 
   it('should add a new user on POST /users', async () => {
@@ -488,8 +475,6 @@ describe('POST /user/profile/picture', () => {
     }
 
     await mongoose.connect(mongoUri, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true
     });
 
     const module = await import('./user-service.js');
@@ -746,8 +731,11 @@ describe('User Service - DELETE /users/:username', () => {
 describe('User Service - Database unavailable', () => {
   beforeAll(async () => {
     mongoose.connection.readyState = 0; // 0 = disconnected
-    
   });
+
+  afterAll(async () => {
+    app.close();
+  })
 
   it('should return 500 when database is unavailable on POST /users', async () => {
     const response = await request(app).post('/users').send(testUser1);
