@@ -153,12 +153,12 @@ export default function QuestionGame(params) {
             ) : (
                 <div className="content-box">
                     {isRight && (
-                        <Alert severity="success" className="alert-box">
+                        <Alert id='message-success'severity="success" className="alert-box">
                             Great job! You got it right!
                         </Alert>
                     )}
                     {isWrong && (
-                        <Alert severity="error" className="alert-box">
+                        <Alert id='message-fail' severity="error" className="alert-box">
                             Oops! You didn't guess this one.
                         </Alert>
                     )}
@@ -166,7 +166,7 @@ export default function QuestionGame(params) {
                     <div className="progress-indicator">
                         Question {currentQuestion + 1} of {totalQuestions}
                     </div>
-                    <h2 className="question-title">{question}</h2>
+                    <h2 id='title-question' className="question-title">{question}</h2>
 
                     <div className="image-box">
                         <img
@@ -177,8 +177,9 @@ export default function QuestionGame(params) {
                     </div>
 
                     <div className="options-box">
-                        {questions[currentQuestion].answers.map((option) => (
+                        {questions[currentQuestion].answers.map((option, index) => (
                             <button
+                                id={`option-${index}`}
                                 key={option}
                                 className={`quiz-option 
                                 ${selectedOption === option ? "selected" : ""} 
