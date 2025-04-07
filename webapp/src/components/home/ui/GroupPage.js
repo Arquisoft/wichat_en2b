@@ -2,6 +2,7 @@ import CreateIcon from '@mui/icons-material/Create';
 import GroupAddIcon from '@mui/icons-material/Search';
 import React, { useState, useEffect } from "react";
 import {getAuthToken, getCurrentUserId} from "@/utils/auth";
+import { useRouter } from "next/navigation";
 import axios from "axios";
 import "../../../styles/home/GroupPage.css"; 
 import {
@@ -38,6 +39,7 @@ export default function GroupPage({ username, onClose }) {
     const [user, setUser] = useState(null);
     const [newGroupName, setNewGroupName] = useState("");
 
+    const router = useRouter();
 
     const updateEverything = (status) => {
         if (status === 200) {
@@ -46,6 +48,7 @@ export default function GroupPage({ username, onClose }) {
                 updateGroupMembers();
             }
         } 
+        window.location.reload();
     };
 
     const getToken = () => {
@@ -211,7 +214,7 @@ export default function GroupPage({ username, onClose }) {
             const token = getToken();
             const response = await axios.patch(
                 `${apiEndpoint}/groups`,
-                { name: groupName },
+                { name: newGroupName },
                 {
                   headers: {
                     Authorization: `Bearer ${token}`,
