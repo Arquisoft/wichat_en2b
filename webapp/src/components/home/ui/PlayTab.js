@@ -36,6 +36,7 @@ function PlayTab() {
 							{/* Enter category button */}
 							<Link href={`/quiz/category/${category.id}`} passHref>
 								<Button
+								id={`quiz-category-${category.name.toLowerCase()}`}
 								variant="text"
 								fullWidth
 								className={`start-button button-${category.name.toLowerCase()}`}

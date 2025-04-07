@@ -17,4 +17,6 @@ module.exports = async () => {
   global.llmservice = require("../../llmservice/llm-service");
   global.gatewayservice = require("../../gatewayservice/gateway-service");
   global.gameservice = require("../../gameservice/gameserver");
+
+  global.gamesWereAddedAlready = false; //Flag variable to avoid duplicate game addition each time
 };

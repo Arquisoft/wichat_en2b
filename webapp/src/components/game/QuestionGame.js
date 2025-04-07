@@ -140,7 +140,7 @@ export default function QuestionGame(params) {
         <div className="quiz-wrapper">
             {/* Timer and progress bar */}
             <Box className="timer-container">
-                <Typography variant="body2" className="timer-text">
+                <Typography variant="body2" className="timer-text" id='quiz-timer'>
                     Time left: {Math.ceil(timeLeft)}s
                 </Typography>
                 <LinearProgress className="progress-bar" variant="determinate" value={(timeLeft / timerDuration) * 100} />

@@ -6,6 +6,7 @@ if (mongoose.models.User) {
 }
 // Registra el modelo de nuevo
 const User = require('../../users/userservice/user-model')
+const {expect} = require("expect-puppeteer");
 
 /**
  * Clicks on an element with the given selector
@@ -42,10 +43,17 @@ async function login(page, username, password) {
     await click(page, 'form > button');
 }
 
-async function accessQuiz(page, expect, quizSelector = null) {
+/**
+ * Accesses the quiz section of the application
+ * @param page The puppeteer page object
+ * @param quizSelector Optional selector for the quiz link
+ * @returns {Promise<void>}
+ */
+async function accessQuiz(page, quizSelector = null) {
     await click(page, quizSelector ? quizSelector : "a[href='/quiz/category/1']");
-    await expect(page).toMatchElement("* > header > div > a", {text: "Back to Dashboard"});
-    await click(page, "#__next > div > div > button:first-child");
+
+    await page.waitForSelector("#btn-start-quiz:first-of-type", {visible: true, timeout: 10000});
+    await click(page, "#btn-start-quiz:first-of-type");
 }
 
 async function goToInitialPage(page) {

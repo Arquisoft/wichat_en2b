@@ -12,7 +12,7 @@ let browser;
 
 defineFeature(feature, test => {
 
-   beforeEach(async () => {
+    beforeEach(async () => {
         browser = process.env.GITHUB_ACTIONS
             ? await puppeteer.launch({headless: "new", args: ['--no-sandbox', '--disable-setuid-sandbox']})
             : await puppeteer.launch({headless: false, slowMo: 50});

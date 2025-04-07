@@ -63,7 +63,7 @@ function HomePage({ username, stats }) {
                         className="tabs-container"
                     >
                         <Tab icon={<BrainIcon />} label="Play" className="tab-content" />
-                        <Tab icon={<StatsIcon />} label="Stats" className="tab-content" />
+                        <Tab icon={<StatsIcon />} label="Stats" className="tab-content" id='tab-statistics'/>
                         <Tab icon={<TrophyIcon />} label="Leaderboard" className="tab-content" />
                     </Tabs>
 
