@@ -1,62 +1,78 @@
 const puppeteer = require('puppeteer');
 const { defineFeature, loadFeature }=require('jest-cucumber');
-const setDefaultOptions = require('expect-puppeteer').setDefaultOptions
+
 const feature = loadFeature('./e2e/features/game-hint.feature');
-const mongoose = require('mongoose');
-const User = require('../../../users/userservice/user-model'); //Import the users model
-const { click, addUser, login, accessQuiz, goToInitialPage, writeIntoInput} = require('../test-functions')
+
+const { login, click, accessQuiz, goToInitialPage, writeIntoInput} = require('../test-functions')
 const {expect} = require("expect-puppeteer");
 
 let page;
 let browser;
-let userData;
 
 defineFeature(feature, test => {
 
-    beforeAll(async () => {
+    beforeEach(async () => {
         browser = process.env.GITHUB_ACTIONS
-            ? await puppeteer.launch({headless: "new", args: ['--no-sandbox', '--disable-setuid-sandbox']})
-            : await puppeteer.launch({headless: false, slowMo: 50});
+            ? await puppeteer.launch({headless: "new", args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-web-security']})
+            : await puppeteer.launch({headless: false, slowMo: 50,  args: ['--disable-web-security'] });
         page = await browser.newPage();
 
-        jest.setTimeout(30000)
-        userData = addUser(process.env.MONGODB_URI, mongoose, User);
-        await goToInitialPage(page);
-        await login(page, userData.username, userData.password)
-
-        // Intercept the network request for LLM hints
         await page.setRequestInterception(true);
-        page.on('request', request => {
-            if (request.url().includes('/askllm')) {
+
+        page.on('request', (request) => {
+            const url = request.url();
+            if (url.includes('/askllm')) {
                 request.respond({
-                    content: 'application/json',
-                    body: JSON.stringify({ content: "This is a hint from the LLM." })
+                    status: 200,
+                    contentType: 'application/json',
+                    body: JSON.stringify({ content: "Hint: The answer is related to the image" })
                 });
-            } else {
+            } else if (url.includes('/game/')) {
+                request.respond({
+                    status: 200,
+                    contentType: 'application/json',
+                    body: JSON.stringify(global.mockQuestions)  // Use the mock data defined in setup.js
+                });
+            }
+            else {
                 request.continue();
             }
         });
+
+        await goToInitialPage(page);
+    });
+
+    afterEach(async () => {
+        if (browser) {
+            await browser.close();
+        }
     });
 
     afterAll(async () => {
-        browser.close();
-        mongoose.connection.close();
-    })
+        if (browser) {
+            await browser.close();
+        }
+    });
 
     test('The user interacts with the hint chat asking for help', ({ given, when, then }) => {
 
         given('I am on the first question of a quiz', async () => {
-            await accessQuiz(page, expect);
+            await login(page, global.userTestData.username, global.userTestData.password);
+            await accessQuiz(page, "#quiz-category-science");
         });
 
         when('I ask for a hint about the question', async () => {
-            await click(page, '.chatButton'); // Open the chat
-            await writeIntoInput(page, '.inputField', 'Give me a hint');
-            await click(page, '.sendButton');
+            await page.waitForSelector('#chatbot-open-button', {visible: true, timeout: 10000});
+            await click(page, '#chatbot-open-button');
+            await writeIntoInput(page, '#chatbot-input', 'Give me a hint');
+            await click(page, '#chatbot-send-button');
         });
 
         then('I should receive a hint related to the image and question without mentioning the answers provided', async () => {
-            await expect(page).toMatchElement('.llmMessage', {text: 'This is a hint from the LLM.'});
+            await page.waitForSelector('*[data-state="message-0-llm"]', {visible: true, timeout: 10000});
+            const hintText = await page.$eval('*[data-state="message-2-llm"]', el => el.textContent.trim());
+            console.log("🥒 Hint text obtained: ", hintText);
+            expect(hintText).toContain("Hint: The answer is related to the image");
         });
-    });
+    }, 60000);
 });

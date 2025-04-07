@@ -16,18 +16,13 @@ beforeAll(async () => {
     global.mongooseDB = mongooseDB;
     await configUserAddition();
     await configGameInfoAddition();
-    global.mockQuestions = [
-        {
-            image_name: "/images/mock1.jpg",
-            answers: ["Answer 1", "Answer 2", "Answer 3", "Answer 4"],
-            right_answer: "Answer 1"
-        },
-        {
-            image_name: "/images/mock2.jpg",
-            answers: ["Answer 4", "Answer 5", "Answer 6", "Answer 7"],
-            right_answer: "Answer 4"
-        }
-    ];
+    global.mockQuestions = Array.from({ length: 10 }, (_, i) => ({
+        image_name: `/images/mock${(i % 2) + 1}.jpg`,
+        answers: i % 2 === 0
+            ? ["Answer 1", "Answer 2", "Answer 3", "Answer 4"]
+            : ["Answer 4", "Answer 5", "Answer 6", "Answer 7"],
+        right_answer: i % 2 === 0 ? "Answer 1" : "Answer 4"
+    }));
 }, 15000);
 
 afterAll(async () => {

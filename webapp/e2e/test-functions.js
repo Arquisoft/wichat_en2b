@@ -49,8 +49,8 @@ async function login(page, username, password) {
  * @param quizSelector Optional selector for the quiz link
  * @returns {Promise<void>}
  */
-async function accessQuiz(page, quizSelector = null) {
-    await click(page, quizSelector ? quizSelector : "a[href='/quiz/category/1']");
+async function accessQuiz(page, quizSelector ) {
+    await click(page, quizSelector);
 
     await page.waitForSelector("#btn-start-quiz:first-of-type", {visible: true, timeout: 10000});
     await click(page, "#btn-start-quiz:first-of-type");

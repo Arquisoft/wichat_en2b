@@ -12,8 +12,8 @@ defineFeature(feature, test => {
 
     beforeEach(async () => {
         browser = process.env.GITHUB_ACTIONS
-            ? await puppeteer.launch({headless: "new", args: ['--no-sandbox', '--disable-setuid-sandbox']})
-            : await puppeteer.launch({headless: false, slowMo: 50});
+            ? await puppeteer.launch({headless: "new", args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-web-security']})
+            : await puppeteer.launch({headless: false, slowMo: 50, args: ['--disable-web-security']});
         page = await browser.newPage();
 
         await page.setRequestInterception(true);
@@ -44,7 +44,7 @@ defineFeature(feature, test => {
         if (browser) {
             await browser.close();
         }
-    })
+    });
 
     test('The user selects a subject for the quiz and starts playing', ({given, when, then}) => {
 
