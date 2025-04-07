@@ -118,16 +118,34 @@ export default function ProfileForm({ username, profilePicture, onSave }) {
         if (!profileData.newPassword) {
             setSnackbarMessage("Please enter a new password.");
             setOpenSnackbar(true);
+            setProfileData((prev) => ({
+                ...prev,
+                currentPassword: "",
+                newPassword: "",
+                confirmPassword: "",
+            }));
             return;
         }
         if (profileData.newPassword !== profileData.confirmPassword) {
             setSnackbarMessage("The new password and its confirmation do not match.");
             setOpenSnackbar(true);
+            setProfileData((prev) => ({
+                ...prev,
+                currentPassword: "",
+                newPassword: "",
+                confirmPassword: "",
+            }));
             return;
         }
         if (!profileData.currentPassword) {
             setSnackbarMessage("Please enter your current password.");
             setOpenSnackbar(true);
+            setProfileData((prev) => ({
+                ...prev,
+                currentPassword: "",
+                newPassword: "",
+                confirmPassword: "",
+            }));
             return;
         }
 
@@ -163,14 +181,18 @@ export default function ProfileForm({ username, profilePicture, onSave }) {
                 newPassword: "",
                 confirmPassword: "",
                 profilePicture: prev.profilePicture,
-
             }));
 
             onSave({ ...profileData });
         } catch (error) {
-            console.error("Error updating password:", error);
             setSnackbarMessage(`${error.message}`);
             setOpenSnackbar(true);
+            setProfileData((prev) => ({
+                ...prev,
+                currentPassword: "",
+                newPassword: "",
+                confirmPassword: "",
+            }));
         }
     };
 

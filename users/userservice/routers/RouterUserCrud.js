@@ -11,6 +11,45 @@ const router = express.Router();
 router.use(express.json());
 const gatewayServiceUrl = process.env.GATEWAY_SERVICE_URL || 'http://gatewayservice:8000'; // NOSONAR
 
+// Authentication middleware
+const authenticateUser = async (req, res, next) => {
+    try {
+        // Extract authentication token
+        const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return res.status(401).json({ error: "Authentication required" });
+        }
+
+        const token = authHeader.split(' ')[1];
+        let decodedToken;
+
+        try {
+            decodedToken = jwt.verify(token, process.env.JWT_SECRET || 'testing-secret');
+        } catch (err) {
+            return res.status(401).json({ error: "Invalid or expired token" });
+        }
+
+        // Add the decoded token to the request object
+        req.user = decodedToken;
+        next();
+    } catch (error) {
+        console.error("Authentication error:", error);
+        res.status(500).json({ error: "Authentication error" });
+    }
+};
+
+// Authorization middleware to check if user can modify the requested profile
+const authorizeUserAccess = (req, res, next) => {
+    // Extract username from params or body based on route
+    const requestedUsername = req.params.username || req.body.username;
+
+    if (!requestedUsername || req.user.username !== requestedUsername) {
+        return res.status(403).json({ error: "You can only access your own profile" });
+    }
+
+    next();
+};
+
 // Create a new user
 router.post('/users', async (req, res) => {
     try {
@@ -28,7 +67,7 @@ router.post('/users', async (req, res) => {
         if (existingUser) {
             return res.status(400).json({ error: 'Username already exists' });
         }
-       
+
         user.password = bcrypt.hashSync(req.body.password, 10);
 
         await user.save();
@@ -62,31 +101,12 @@ router.get('/users/:username', async (req, res) => {
     }
 });
 
-// Delete a user by username with authentication
-router.delete('/users/:username', async (req, res) => {
+// Delete a user by username
+router.delete('/users/:username', authenticateUser, authorizeUserAccess, async (req, res) => {
     try {
-        // Extract authentication token
-        const authHeader = req.headers.authorization;
-        if (!authHeader || !authHeader.startsWith('Bearer ')) {
-            return res.status(401).json({ error: "Authentication required" });
-        }
-
-        const token = authHeader.split(' ')[1];
-        let decodedToken;
-
-        try {
-            decodedToken = jwt.verify(token, process.env.JWT_SECRET || 'testing-secret');
-        } catch (err) {
-            return res.status(401).json({ error: "Invalid or expired token" });
-        }
-
-        // Ensure user can only delete their own profile
         const { username } = req.params;
-        if (decodedToken.username !== username) {
-            return res.status(403).json({ error: "You can only delete your own profile" });
-        }
-
         const user = await User.findOneAndDelete({ username: username.toString() });
+
         if (!user) {
             return res.status(404).send({ error: "User not found" });
         }
@@ -110,28 +130,9 @@ router.delete('/users/:username', async (req, res) => {
 });
 
 // Update a user's information
-router.patch('/users/:username', async (req, res) => {
+router.patch('/users/:username', authenticateUser, authorizeUserAccess, async (req, res) => {
     try {
-        // Extract authentication token
-        const authHeader = req.headers.authorization;
-        if (!authHeader || !authHeader.startsWith('Bearer ')) {
-            return res.status(401).json({ error: "Authentication required" });
-        }
-
-        const token = authHeader.split(' ')[1];
-        let decodedToken;
-
-        try {
-            decodedToken = jwt.verify(token, process.env.JWT_SECRET || 'testing-secret');
-        } catch (err) {
-            return res.status(401).json({ error: "Invalid or expired token" });
-        }
-
-        // Ensure user can only edit their own profile
         const { username } = req.params;
-        if (decodedToken.username !== username) {
-            return res.status(403).json({ error: "You can only update your own profile" });
-        }
 
         // Find the user
         const user = await User.findOne({ username: username.toString() });
@@ -163,7 +164,6 @@ router.patch('/users/:username', async (req, res) => {
 
             // Verify if the new username is available
             const existingUser = await User.findOne({ username: newUsername.toString() });
-            console.log(existingUser)
             if (existingUser) {
                 return res.status(409).json({ error: "Username already taken" });
             }
@@ -236,6 +236,10 @@ router.patch('/users/:username', async (req, res) => {
                 return res.status(400).json({ error: "Password must be at least 6 characters" });
             }
 
+            if (newPassword === oldPassword) {
+                return res.status(400).json({ error: "New password must be different from current password" });
+            }
+
             if (/\s/.test(newPassword)) {
                 return res.status(400).json({ error: "Password cannot contain whitespace" });
             }
@@ -304,14 +308,15 @@ router.patch('/users/:username', async (req, res) => {
     }
 });
 
-router.post('/user/profile/picture', async (req, res) => {
-    const { image, username } = req.body;
-
-    if (!image || !username) {
-        return res.status(400).json({ error: "No image or username provided." });
-    }
-
+// Upload profile picture
+router.post('/user/profile/picture', authenticateUser, authorizeUserAccess, async (req, res) => {
     try {
+        const { image, username } = req.body;
+
+        if (!image) {
+            return res.status(400).json({ error: "No image provided." });
+        }
+
         const user = await User.findOne({ username: username.toString() });
         if (!user) return res.status(404).json({ error: "User not found" });
 
@@ -323,17 +328,11 @@ router.post('/user/profile/picture', async (req, res) => {
             return filename.replace(/[^a-zA-Z0-9._-]/g, '').replace(/\.\./g, '');
         };
 
-        // Define the old and new file paths for the profile picture
+        // Define the file path for the profile picture
         const sanitizedUsername = sanitizeFilename(username);
-        const oldFilePath = path.join(imagesDir, `${sanitizedUsername}_profile_picture.png`);
         const newFilePath = path.join(imagesDir, `${sanitizedUsername}_profile_picture.png`);
 
-        // Verify that the paths are within the allowed directory
-        if (!path.resolve(oldFilePath).startsWith(imagesDir)) {
-            console.log(`Access Denied: ${oldFilePath} is outside of images folder`);
-            throw new Error("Access denied to files outside the images folder");
-        }
-        
+        // Verify that the path is within the allowed directory
         if (!path.resolve(newFilePath).startsWith(imagesDir)) {
             console.log(`Access Denied: ${newFilePath} is outside of images folder`);
             throw new Error("Access denied to files outside the images folder");
@@ -343,7 +342,7 @@ router.post('/user/profile/picture', async (req, res) => {
         const buffer = Buffer.from(image, 'base64');
         const arrayBuffer = buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
 
-        // Detecta el MIME type usando file-type-mime
+        // Detect the MIME type using file-type-mime
         const fileTypeResult = parse(arrayBuffer);
         if (!fileTypeResult || !['image/jpeg', 'image/png'].includes(fileTypeResult.mime)) {
             return res.status(400).json({ error: "Invalid file type. Only JPEG and PNG allowed." });
@@ -355,7 +354,7 @@ router.post('/user/profile/picture', async (req, res) => {
             .toFormat('png')
             .toBuffer();
 
-        // Assure the directory exists
+        // Ensure the directory exists
         if (!fs.existsSync(imagesDir)) {
             await fs.promises.mkdir(imagesDir, { recursive: true });
         }
@@ -379,6 +378,7 @@ router.post('/user/profile/picture', async (req, res) => {
     }
 });
 
+// Get profile picture
 router.get('/user/profile/picture/:username', async (req, res) => {
     const { username } = req.params;
 
@@ -390,7 +390,7 @@ router.get('/user/profile/picture/:username', async (req, res) => {
     } catch (error) {
         console.error("Error getting profile picture:", error);
         res.status(500).json({ error: "Internal Server Error" });
-    }    
+    }
 });
 
 export default router;
