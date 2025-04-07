@@ -85,9 +85,23 @@ export default function LeaderboardTab() {
                 const playerIds = group.members;
                 console.log("Group members:", playerIds);
 
+                const players = await axios.post(
+                    `${apiEndpoint}/users/by-ids`,
+                    { users: playerIds },
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                            "Content-Type": "application/json",
+                        },
+                    }
+                );
+
+                const playerNames = players.data.map((player) => player.username);
+                console.log("Player names:", playerNames);
+
                 const response = await axios.post(
                     `${apiEndpoint}/leaderboard/group`,
-                    { players: playerIds },
+                    { players: playerNames },
                     {
                         headers: {
                         Authorization: `Bearer ${token}`,
@@ -95,8 +109,8 @@ export default function LeaderboardTab() {
                         },
                     }
                 );
-                console.log("Group leaderboard data:", response.leaderboard);
-                setGroupLeaderboard(response.leaderboard);
+                console.log("Group leaderboard data:", response.data.leaderboard);
+                setGroupLeaderboard(response.data.leaderboard);
             } catch (error) {
                 setGroupLeaderboard(null);
                 if (error.response && error.response.status !== 404) {
