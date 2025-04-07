@@ -62,16 +62,50 @@ router.get('/users/:username', async (req, res) => {
     }
 });
 
-// Delete a user by username
+// Delete a user by username with authentication
 router.delete('/users/:username', async (req, res) => {
     try {
-        const user = await User.findOneAndDelete({username: req.params.username.toString() });
-        if (!user) {
-            return res.status(404).send();
+        // Extract authentication token
+        const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return res.status(401).json({ error: "Authentication required" });
         }
-        res.status(200).send(user);
+
+        const token = authHeader.split(' ')[1];
+        let decodedToken;
+
+        try {
+            decodedToken = jwt.verify(token, process.env.JWT_SECRET || 'testing-secret');
+        } catch (err) {
+            return res.status(401).json({ error: "Invalid or expired token" });
+        }
+
+        // Ensure user can only delete their own profile
+        const { username } = req.params;
+        if (decodedToken.username !== username) {
+            return res.status(403).json({ error: "You can only delete your own profile" });
+        }
+
+        const user = await User.findOneAndDelete({ username: username.toString() });
+        if (!user) {
+            return res.status(404).send({ error: "User not found" });
+        }
+
+        // Delete profile picture if it exists
+        if (user.profilePicture) {
+            const publicDir = path.resolve('public', 'images');
+            const safeUsername = path.basename(username);
+            const profilePicturePath = path.join(publicDir, `${safeUsername}_profile_picture.png`);
+
+            if (fs.existsSync(profilePicturePath)) {
+                fs.unlinkSync(profilePicturePath);
+            }
+        }
+
+        res.status(200).send({ message: "User deleted successfully" });
     } catch (error) {
-        res.status(500).send(error);
+        console.error("Error deleting user:", error);
+        res.status(500).send({ error: "Internal Server Error" });
     }
 });
 
