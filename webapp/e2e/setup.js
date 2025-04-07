@@ -75,14 +75,14 @@ async function configGameInfoAddition(){
 
 
         const data = [{
-            user_id: global.userTestData.username,//TODO-ChangeBy: global.userTestData._id,   //Commented to avoid error in the test as the _id is not used yet
+            user_id: global.userTestData.username,
             subject: "science",
             points_gain: 1400,
             number_of_questions: 10,
             number_correct_answers: 10,
             total_time: 50
         }, {
-            user_id: global.userTestData.username,//TODO-ChangeBy: global.userTestData._id,   //Commented to avoid error in the test as the _id is not used yet
+            user_id: global.userTestData.username,
             subject: "science",
             points_gain: 1400,
             number_of_questions: 10,
@@ -96,7 +96,7 @@ async function configGameInfoAddition(){
             const GameInfo = mongooseDB.model('GameInfo', userSchema);
 
             let gamesAddedAlready = await GameInfo.find(
-                { user_id: global.userTestData.username //TODO-ChangeBy: global.userTestData._id,   //Commented to avoid error in the test as the _id is not used yet
+                { user_id: global.userTestData.username
                 })
             console.log("🗣️ Games already added: ", gamesAddedAlready.length);
             if (gamesAddedAlready.length == 2) {
