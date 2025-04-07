@@ -197,6 +197,22 @@ describe('User Routes', () => {
 
       expect(response.status).toBe(400);
     });
+
+    test('should handle database errors when getting a user', async () => {
+      // Mock mongoose findOne to simulate a database error
+      const originalFindOne = mongoose.Model.findOne;
+      mongoose.Model.findOne = jest.fn().mockImplementation(() => {
+        throw new Error('Database connection error');
+      });
+
+      const response = await request(app)
+          .get(`/api/users/${mockUser.username}`);
+
+      expect(response.status).toBe(500);
+
+      // Restore the original function
+      mongoose.Model.findOne = originalFindOne;
+    });
   });
 
   describe('GET /users', () => {
@@ -225,6 +241,22 @@ describe('User Routes', () => {
           .get('/api/users/nonexistentuser');
 
       expect(response.status).toBe(404);
+    });
+
+    test('should handle database errors when getting a user', async () => {
+      // Mock mongoose findOne to simulate a database error
+      const originalFindOne = mongoose.Model.findOne;
+      mongoose.Model.findOne = jest.fn().mockImplementation(() => {
+        throw new Error('Database connection error');
+      });
+
+      const response = await request(app)
+          .get(`/api/users/${mockUser.username}`);
+
+      expect(response.status).toBe(500);
+
+      // Restore the original function
+      mongoose.Model.findOne = originalFindOne;
     });
   });
 
@@ -268,6 +300,31 @@ describe('User Routes', () => {
       expect(response.status).toBe(200);
       expect(fs.existsSync).toHaveBeenCalled();
       expect(fs.unlinkSync).toHaveBeenCalled();
+    });
+
+    test('should handle error when profile picture cannot be deleted', async () => {
+      // First set a profile picture
+      await User.findOneAndUpdate(
+          { username: mockUser.username },
+          { profilePicture: `images/${mockUser.username}_profile_picture.png` }
+      );
+
+      // Mock existsSync to return true but unlinkSync to throw an error
+      fs.existsSync.mockReturnValueOnce(true);
+      fs.unlinkSync.mockImplementationOnce(() => {
+        throw new Error('Failed to delete file');
+      });
+
+      // Mock console.error to check it's called
+      console.error = jest.fn();
+
+      const response = await request(app)
+          .delete(`/api/users/${mockUser.username}`)
+          .set('Authorization', `Bearer ${token}`);
+
+      expect(response.status).toBe(200);
+      expect(response.body).toHaveProperty('message', 'User deleted successfully');
+      expect(console.error).toHaveBeenCalledWith(expect.stringContaining('Error deleting profile picture'));
     });
   });
 
@@ -493,6 +550,109 @@ describe('User Routes', () => {
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty('error', 'Password cannot contain whitespace');
     });
+
+    test('should handle error when updating game records fails', async () => {
+      // Mock fetch to simulate an error from game service
+      global.fetch.mockImplementationOnce(() =>
+          Promise.resolve({
+            ok: false,
+            json: () => Promise.resolve({ error: "Game service error" })
+          })
+      );
+
+      const response = await request(app)
+          .patch(`/api/users/${mockUser.username}`)
+          .set('Authorization', `Bearer ${token}`)
+          .send({ newUsername: 'newusername' });
+
+      expect(response.status).toBe(502);
+      expect(response.body).toHaveProperty('error', 'Error updating game history with new username');
+    });
+
+    test('should handle error when connecting to game service fails', async () => {
+      // Mock fetch to simulate a network error
+      global.fetch.mockImplementationOnce(() =>
+          Promise.reject(new Error("Network error"))
+      );
+
+      const response = await request(app)
+          .patch(`/api/users/${mockUser.username}`)
+          .set('Authorization', `Bearer ${token}`)
+          .send({ newUsername: 'newusername' });
+
+      expect(response.status).toBe(502);
+      expect(response.body).toHaveProperty('error', 'Failed to communicate with game service');
+    });
+
+    test('should handle renaming profile picture when updating username', async () => {
+      // First set a profile picture
+      await User.findOneAndUpdate(
+          { username: mockUser.username },
+          { profilePicture: `images/${mockUser.username}_profile_picture.png` }
+      );
+
+      const newUsername = 'newusername';
+
+      const response = await request(app)
+          .patch(`/api/users/${mockUser.username}`)
+          .set('Authorization', `Bearer ${token}`)
+          .send({ newUsername });
+
+      expect(response.status).toBe(200);
+      expect(fs.renameSync).toHaveBeenCalled();
+    });
+
+    test('should reject profile picture with whitespace', async () => {
+      const response = await request(app)
+          .patch(`/api/users/${mockUser.username}`)
+          .set('Authorization', `Bearer ${token}`)
+          .send({ profilePicture: 'invalid url with spaces.jpg' });
+
+      expect(response.status).toBe(400);
+      expect(response.body).toHaveProperty('error', 'Profile picture URL cannot contain whitespace');
+    });
+
+    test('should reject secret with whitespace', async () => {
+      const response = await request(app)
+          .patch(`/api/users/${mockUser.username}`)
+          .set('Authorization', `Bearer ${token}`)
+          .send({ secret: 'secret with spaces' });
+
+      expect(response.status).toBe(400);
+      expect(response.body).toHaveProperty('error', 'Secret cannot contain whitespace');
+    });
+
+    test('should return 400 when no valid update parameters are provided', async () => {
+      const response = await request(app)
+          .patch(`/api/users/${mockUser.username}`)
+          .set('Authorization', `Bearer ${token}`)
+          .send({}); // Empty update
+
+      expect(response.status).toBe(400);
+      expect(response.body).toHaveProperty('error', 'No valid update parameters provided');
+    });
+
+    test('should handle case when profile picture is not found during username update', async () => {
+      // First set a profile picture
+      await User.findOneAndUpdate(
+          { username: mockUser.username },
+          { profilePicture: `images/${mockUser.username}_profile_picture.png` }
+      );
+
+      // Mock existsSync to return false specifically for the profile picture check
+      fs.existsSync.mockReturnValueOnce(false);
+
+      const response = await request(app)
+          .patch(`/api/users/${mockUser.username}`)
+          .set('Authorization', `Bearer ${token}`)
+          .send({ newUsername: 'updatedusername' });
+
+      expect(response.status).toBe(200);
+      expect(response.body).toHaveProperty('message', 'User updated successfully');
+      expect(fs.existsSync).toHaveBeenCalled();
+      // Check that console.error was called with the expected message
+      expect(console.error).toHaveBeenCalledWith("Profile picture not found.");
+    });
   });
 
   describe('POST /user/profile/picture', () => {
@@ -673,6 +833,27 @@ describe('User Routes', () => {
 
       expect(response.status).toBe(500);
       expect(response.body).toHaveProperty('error', 'Error uploading profile picture');
+    });
+    test('should handle case when profile picture is not found during username update', async () => {
+      // First set a profile picture
+      await User.findOneAndUpdate(
+          { username: mockUser.username },
+          { profilePicture: `images/${mockUser.username}_profile_picture.png` }
+      );
+
+      // Mock existsSync to return false specifically for the profile picture check
+      fs.existsSync.mockReturnValueOnce(false);
+
+      const response = await request(app)
+          .patch(`/api/users/${mockUser.username}`)
+          .set('Authorization', `Bearer ${token}`)
+          .send({ newUsername: 'updatedusername' });
+
+      expect(response.status).toBe(200);
+      expect(response.body).toHaveProperty('message', 'User updated successfully');
+      expect(fs.existsSync).toHaveBeenCalled();
+      // Check that console.error was called with the expected message
+      expect(console.error).toHaveBeenCalledWith("Profile picture not found.");
     });
   });
 

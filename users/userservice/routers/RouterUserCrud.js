@@ -118,7 +118,11 @@ router.delete('/users/:username', authenticateUser, authorizeUserAccess, async (
             const profilePicturePath = path.join(publicDir, `${safeUsername}_profile_picture.png`);
 
             if (fs.existsSync(profilePicturePath)) {
-                fs.unlinkSync(profilePicturePath);
+                try {
+                    fs.unlinkSync(profilePicturePath);
+                } catch (err) {
+                    console.error(`Error deleting profile picture for ${username}`);
+                }
             }
         }
 
@@ -206,7 +210,7 @@ router.patch('/users/:username', authenticateUser, authorizeUserAccess, async (r
                     console.error("Profile picture not found.");
                 }
             } else {
-                user.profilePicture = `public/images/${newUsername}_profile_picture.png`;
+                user.profilePicture = `images/${newUsername}_profile_picture.png`;
             }
 
             // Update the username
@@ -323,6 +327,14 @@ router.post('/user/profile/picture', authenticateUser, authorizeUserAccess, asyn
         const __dirname = path.resolve();
         const imagesDir = path.resolve(__dirname, 'public', 'images');
 
+        const nonSanitizedFilePath = path.join(imagesDir, `${username}_profile_picture.png`);
+
+        // Verify that the path is within the allowed directory
+        if (!path.resolve(nonSanitizedFilePath).startsWith(imagesDir)) {
+            console.log(`Access Denied: ${username} is outside of images folder`);
+            throw new Error("Access denied to files outside the images folder");
+        }
+
         // Clean the filename to prevent directory traversal attacks
         const sanitizeFilename = (filename) => {
             return filename.replace(/[^a-zA-Z0-9._-]/g, '').replace(/\.\./g, '');
@@ -331,12 +343,6 @@ router.post('/user/profile/picture', authenticateUser, authorizeUserAccess, asyn
         // Define the file path for the profile picture
         const sanitizedUsername = sanitizeFilename(username);
         const newFilePath = path.join(imagesDir, `${sanitizedUsername}_profile_picture.png`);
-
-        // Verify that the path is within the allowed directory
-        if (!path.resolve(newFilePath).startsWith(imagesDir)) {
-            console.log(`Access Denied: ${newFilePath} is outside of images folder`);
-            throw new Error("Access denied to files outside the images folder");
-        }
 
         // Process the base64 image
         const buffer = Buffer.from(image, 'base64');
