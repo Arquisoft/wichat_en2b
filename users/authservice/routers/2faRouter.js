@@ -33,7 +33,7 @@ router.post('/setup2fa', async (req, res) => {
 
     // Generate 2FA secret
     const secret = otplib.authenticator.generateSecret();
-    const otpauth = otplib.authenticator.keyuri(user._id, "wichat_en2b", secret);
+    const otpauth = otplib.authenticator.keyuri(user.username, "wichat_en2b", secret);
 
     // Generate QR code
     const imageUrl = await new Promise((resolve, reject) => {
