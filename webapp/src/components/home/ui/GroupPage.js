@@ -16,7 +16,6 @@ import {
     TableRow,
     TableCell
 } from "@mui/material";
-import { DEV_CLIENT_PAGES_MANIFEST } from 'next/dist/shared/lib/constants';
 
 const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://localhost:8000';
 
@@ -26,7 +25,7 @@ const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://local
  *  
  * @returns {JSX.Element} 
  */
-export default function GroupPage({ username }) {
+export default function GroupPage({ username, onClose }) {
     if (!username) {
         throw new Error("Invalid props for ProfileForm component.");
     }
@@ -243,161 +242,189 @@ export default function GroupPage({ username }) {
 
     if (!loggedUserGroup){
         return (
-            <Card className="group-container">
-                <CardContent>
+            <div className="group-container">
 
-                    <Box className="group-header">
-                        <Typography variant="h5" className="group-title">
-                            You are not part of any group!
-                        </Typography>
+                <Box className="group-header">
+                    <Typography variant="h5" className="group-title">
+                        You are not part of any group!
+                    </Typography>
+                </Box>
+
+                {/* Tabs */}
+                <div className="tabs-container">
+                    <Tabs 
+                        value={tabIndex} 
+                        onChange={(e, newValue) => setTabIndex(newValue)} 
+                        scrollButtons="auto"
+                        variant="scrollable"
+                        className={"tabs-header"}
+                    >
+                        <Tab label="Join" icon={<GroupAddIcon />} />
+                        <Tab label="Create" icon={<CreateIcon />} />
+                    </Tabs>
+                </div>
+
+                {/* Group add tab */}
+                {tabIndex === 0 && (
+                    <Box className="group-add-tab">
+                        <TextField
+                            label="Group Name"
+                            variant="outlined"
+                            fullWidth
+                            onChange={e => searchGroup(e.target.value)}
+                        />
+                        {!doesGroupExist && groupName !== "" && <p className="error-message">Group does not exist</p>}
+                        <Button variant="contained" color="primary" onClick={joinGroup} 
+                        disabled={
+                            !(
+                                groupName.trim() !== "" &&
+                                doesGroupExist
+                            )
+                        }>  
+                            
+                            Join Group
+                        </Button>
                     </Box>
+                )}
 
-                    {/* Tabs */}
-                    <div className="tabs-container">
-                        <Tabs 
-                            value={tabIndex} 
-                            onChange={(e, newValue) => setTabIndex(newValue)} 
-                            scrollButtons="auto"
-                            variant="scrollable"
-                            className={"tabs-header"}
-                        >
-                            <Tab label="Join" icon={<GroupAddIcon />} />
-                            <Tab label="Create" icon={<CreateIcon />} />
-                        </Tabs>
-                    </div>
+                {/* Group create tab */}
+                {tabIndex === 1 && (
+                    <Box className="group-create-tab">
+                        <TextField
+                            label="Group Name"
+                            variant="outlined"
+                            fullWidth
+                            onChange={e => searchGroup(e.target.value)}
+                        />
+                        {doesGroupExist && groupName.trim() !== "" && <p className="error-message">Group already exists</p>}
+                        <Button variant="contained" color="primary" onClick={createGroup}
+                        disabled={
+                            !(
+                                groupName.trim() !== "" &&
+                                !doesGroupExist
+                            )
+                        }>  
+                            Create Group
+                        </Button>
+                    </Box>
+                )}
 
-                    {/* Group add tab */}
-                    {tabIndex === 0 && (
-                        <Box className="group-add-tab">
-                            <TextField
-                                label="Group Name"
-                                variant="outlined"
-                                fullWidth
-                                onChange={e => searchGroup(e.target.value)}
-                            />
-                            {!doesGroupExist && <p className="error-message">Group does not exist</p>}
-                            <Button variant="contained" color="primary" onClick={joinGroup}>
-                                Join Group
-                            </Button>
-                        </Box>
-                    )}
-
-                    {/* Group create tab */}
-                    {tabIndex === 1 && (
-                        <Box className="group-create-tab">
-                            <TextField
-                                label="Group Name"
-                                variant="outlined"
-                                fullWidth
-                                onChange={e => searchGroup(e.target.value)}
-                            />
-                            {doesGroupExist && <p className="error-message">Group already exists</p>}
-                            <Button variant="contained" color="primary" onClick={createGroup}>
-                                Create Group
-                            </Button>
-                        </Box>
-                    )}
-                </CardContent>
-            </Card>
+                <Box className="close-button">
+                    <Button variant="contained" color="secondary" onClick={onClose}>
+                        Close
+                    </Button>
+                </Box>
+            </div>
         );
     }
 
     return (
-        <Card className="group-container">
-            <CardContent>
+        <div className="group-container">
 
-                <Box className="group-header">
-                    <Typography variant="h5" className="group-title">
-                        Your group
-                    </Typography>
-                </Box>
+            <Box className="group-header">
+                <Typography variant="h5" className="group-title">
+                    Your group
+                </Typography>
+            </Box>
 
-                <Box className="group-info">
+            <Box className="group-info">
+                <Typography variant="h6" className="group-name">
+                    Name: {loggedUserGroup.groupName}
+                </Typography>
+
+                {loggedUserGroup.owner === user && (
                     <Typography variant="h6" className="group-name">
-                        Name: {loggedUserGroup.groupName}
+                        Owner: {getUsernameById(loggedUserGroup.owner)} (You)   
                     </Typography>
+                )}
+                {loggedUserGroup.owner === user && (
+                    <TextField
+                        label="Change group name"
+                        variant="outlined"
+                        fullWidth
+                        onChange={e => setNewGroupName(e.target.value)}
+                    />
+                )}
 
-                    {loggedUserGroup.owner === user && (
-                        <Typography variant="h6" className="group-name">
-                            Owner: {getUsernameById(loggedUserGroup.owner)} (You)   
-                        </Typography>
-                    )}
-                    {loggedUserGroup.owner === user && (
-                        <TextField
-                            label="Change group name"
-                            variant="outlined"
-                            fullWidth
-                            onChange={e => setGroupName(e.target.value)}
-                        />
-                    )}
-
-                    {doesGroupExist && loggedUserGroup.owner === user && <p className="error-message">Group already exists</p>}
-                    {loggedUserGroup.owner === user && (
-                        <Button variant="contained" color="primary" onClick={modifyGroup} 
-                        enabled={groupName !== "" && groupName !== loggedUserGroup.groupName && !doesGroupExist}>
-                            Modify group
-                        </Button>
-                    )}
-
-                    {loggedUserGroup.owner !== user &&(
-                        <Typography variant="h6" className="group-name">
-                            Owner: {getUsernameById(loggedUserGroup.owner)}
-                        </Typography>
-                    )}
-                    
-                </Box>
-
-                <Box className="group-members">
-                    <Typography variant="subtitle1" className="group-members-title">
-                        Members:
-                    </Typography>
-                    {groupMembers.map((entry, index) => {
-                        const isCurrentUser =
-                            user && (user === entry._id || (typeof user === "object" && user._id === entry._id));
-
-                        return (
-                            <TableRow
-                                key={entry._id}
-                                className={isCurrentUser ? "current-user" : ""}
-                                sx={{
-                                    backgroundColor: isCurrentUser ? "rgba(144, 202, 249, 0.2)" : "inherit",
-                                    "&:hover": {
-                                        backgroundColor: isCurrentUser
-                                            ? "rgba(144, 202, 249, 0.3)"
-                                            : "rgba(0, 0, 0, 0.04)",
-                                    },
-                                }}
-                            >
-                                <TableCell>#{index + 1}</TableCell>
-                                <TableCell>
-                                    {isCurrentUser ? (
-                                        <Typography component="span" fontWeight="bold">
-                                            {entry.username} (You)
-                                        </Typography>
-                                    ) : (
-                                        entry.username
-                                    )}
-                                </TableCell>
-                            </TableRow>
-                        ?? null);
-                        })
-                    }
-
-                </Box>
-
-                <Box className="group-controls">
-                    <Button variant="contained" color="secondary" onClick={leaveGroup}>
-                        Leave Group
+                {doesGroupExist && loggedUserGroup.owner === user && <p className="error-message">Group already exists</p>}
+                {loggedUserGroup.owner === user && (
+                    <Button variant="contained" color="primary" onClick={modifyGroup} 
+                    disabled={
+                        !(
+                            newGroupName.trim() !== "" &&
+                            newGroupName !== loggedUserGroup.groupName &&
+                            !doesGroupExist
+                        )
+                    }>
+                        Modify group
                     </Button>
+                )}
 
-                    {loggedUserGroup.owner === user && (
-                        <Button variant="contained" color="error" onClick={deleteGroup}>
-                            Delete Group
-                        </Button>
-                    )}
-                </Box>
-            </CardContent>
-        </Card>
+                {loggedUserGroup.owner !== user &&(
+                    <Typography variant="h6" className="group-name">
+                        Owner: {getUsernameById(loggedUserGroup.owner)}
+                    </Typography>
+                )}
+                
+            </Box>
+
+            <Box className="group-members">
+                <Typography variant="subtitle1" className="group-members-title">
+                    Members:
+                </Typography>
+                {groupMembers.map((entry, index) => {
+                    const isCurrentUser =
+                        user && (user === entry._id || (typeof user === "object" && user._id === entry._id));
+
+                    return (
+                        <TableRow
+                            key={entry._id}
+                            className={isCurrentUser ? "current-user" : ""}
+                            sx={{
+                                backgroundColor: isCurrentUser ? "rgba(144, 202, 249, 0.2)" : "inherit",
+                                "&:hover": {
+                                    backgroundColor: isCurrentUser
+                                        ? "rgba(144, 202, 249, 0.3)"
+                                        : "rgba(0, 0, 0, 0.04)",
+                                },
+                            }}
+                        >
+                            <TableCell>#{index + 1}</TableCell>
+                            <TableCell>
+                                {isCurrentUser ? (
+                                    <Typography component="span" fontWeight="bold">
+                                        {entry.username} (You)
+                                    </Typography>
+                                ) : (
+                                    entry.username
+                                )}
+                            </TableCell>
+                        </TableRow>
+                    ?? null);
+                    })
+                }
+
+            </Box>
+
+            <Box className="group-controls">
+                <Button variant="contained" color="secondary" onClick={leaveGroup} className="leave-button">
+                    Leave Group
+                </Button>
+
+                {loggedUserGroup.owner === user && (
+                    <Button variant="contained" color="error" onClick={deleteGroup}>
+                        Delete Group
+                    </Button>
+                )}
+                
+            </Box>
+            
+            <Box className="close-button">
+                <Button variant="contained" color="secondary" onClick={onClose}>
+                    Close
+                </Button>
+            </Box>
+        </div>
     )
 
 };

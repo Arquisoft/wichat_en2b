@@ -110,7 +110,7 @@ const Navbar = ({ username }) => {
 
       {/* Dialog for group form */}
       <Dialog open={isGroupOpen} onClose={handleCloseGroup} maxWidth="sm" fullWidth>
-        <GroupPage username={username} />
+        <GroupPage username={username} onClose={handleCloseGroup} />
       </Dialog>
     </>
   );
