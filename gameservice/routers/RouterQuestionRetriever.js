@@ -75,16 +75,18 @@ router.post('/question/validate', async (req, res) => {
 router.post('/game/chat', async (req, res) => {
     try {
         const { question_id, message } = req.body;
-
+        const SALT = "wichatEN2B"; // Temporal, this should be an environmental variable
         const question = await Question.findOne({ _id: question_id }).exec();
         if (!question) {
             return res.status(404).json({ error: 'Question not found' });
         }
 
+        const obfuscatedAnswer = Buffer.from(question.answer + SALT).toString('base64');
+
         res.json({
             question_data: {
                 answers: question.answers,
-                right_answer: question.answer
+                right_answer: obfuscatedAnswer
             }
         });
 

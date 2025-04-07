@@ -33,7 +33,7 @@ const llmConfigs = {
           content: "You are an assistant designed to help players during a quiz game. When a player asks for a hint, "
             + "you will provide a helpful clue related to the question, but not the full answer."
             + " The possible answers are: " + answer.answers.join(",") + "."
-            + " The right answer is: " + answer.right_answer + "."
+            + " The right answer is: " + Buffer.from(answer.right_answer, 'base64').toString().replace("wichatEN2B", "")  + "."
             + " You will never give the correct answer."
         },
         ...messages 
