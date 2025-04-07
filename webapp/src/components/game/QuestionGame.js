@@ -95,7 +95,6 @@ export default function QuestionGame(params) {
                 ...prevAnswers,
                 {
                     answer: option,
-                    right_answer: questions[currentQuestion].right_answer,
                     isCorrect: isCorrect,
                     points: calculatePoints(isCorrect),
                     timeSpent: timerDuration - timeLeft,
@@ -198,7 +197,7 @@ export default function QuestionGame(params) {
                                 key={option}
                                 className={`quiz-option 
                                 ${selectedOption === option ? "selected" : ""} 
-                                ${selectedOption !== null && option === questions[currentQuestion].right_answer ? "correct-answer" : ""}`}
+                                ${selectedOption === option && isRight ? "correct-answer" : ""}`}
                                 onClick={() => handleOptionSelect(option)}
                                 disabled={selectedOption !== null}>
                                 {option}
