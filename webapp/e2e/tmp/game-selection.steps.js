@@ -16,6 +16,21 @@ defineFeature(feature, test => {
             : await puppeteer.launch({headless: false, slowMo: 50});
         page = await browser.newPage();
 
+        await page.setRequestInterception(true);
+
+        page.on('request', (request) => {
+            const url = request.url();
+            if (url.includes('/game/')) {
+                request.respond({
+                    status: 200,
+                    contentType: 'application/json',
+                    body: JSON.stringify(global.mockQuestions)  // Use the mock data defined in setup.js
+                });
+            } else {
+                request.continue();
+            }
+        });
+
         await goToInitialPage(page);
     });
 
@@ -45,7 +60,7 @@ defineFeature(feature, test => {
 
             await page.waitForSelector('#quiz-timer', {visible: true, timeout: 10000});
 
-            const timerText = await page.$eval('quiz-timer', el => el.textContent.trim());
+            const timerText = await page.$eval('#quiz-timer', el => el.textContent.trim());
 
             expect(timerText.substring(0, 10)).toBe("Time left:");
         });

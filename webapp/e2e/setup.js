@@ -15,7 +15,19 @@ beforeAll(async () => {
 
     global.mongooseDB = mongooseDB;
     await configUserAddition();
-    await configGameInfoAddition()
+    await configGameInfoAddition();
+    global.mockQuestions = [
+        {
+            image_name: "/images/mock1.jpg",
+            answers: ["Answer 1", "Answer 2", "Answer 3", "Answer 4"],
+            right_answer: "Answer 1"
+        },
+        {
+            image_name: "/images/mock2.jpg",
+            answers: ["Answer 4", "Answer 5", "Answer 6", "Answer 7"],
+            right_answer: "Answer 4"
+        }
+    ];
 }, 15000);
 
 afterAll(async () => {
@@ -110,15 +122,6 @@ async function configGameInfoAddition(){
         } else {
             throw new Error("Failed to establish MongoDB connection, state: " + mongooseDB.connection.readyState);
         }
-
-    } catch (err) {
-        console.error("⚠️ Error:", err);
-        throw err;
-    }
-}
-
-async function configQuestionAddition(){
-    try{
 
     } catch (err) {
         console.error("⚠️ Error:", err);
