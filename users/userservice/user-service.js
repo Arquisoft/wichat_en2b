@@ -38,49 +38,4 @@ app.use((req, res, next) => {
 // Use the user routes
 app.use(userRoutes);
 
-let serverInstance = null;
-
-const startServer = () => {
-  if (!serverInstance) {
-    serverInstance = app.listen(port, () => {
-        console.log(`👨 User service running on: http://localhost:${port}`);
-    });
-  }
-  return serverInstance;
-};
-
-// Export a function to close the server and connections
-const stopServer = async () => {
-  return new Promise((resolve, reject) => {
-    if (serverInstance) {
-      serverInstance.close(async () => {
-        console.log("Server closed");
-        try {
-          await mongoose.connection.close(false); // Pass false to avoid waiting for all ops to complete
-          console.log("MongoDB connection closed");
-          serverInstance = null;
-          resolve();
-        } catch (err) {
-          reject(new Error(err));
-        }
-      });
-    } else {
-      // If the server isn't running, just close the MongoDB connection
-      mongoose.connection.close(false)
-        .then(() => {
-          console.log("MongoDB connection closed");
-          resolve();
-        })
-        .catch(reject);
-    }
-  });
-};
-
-if (!process.argv.includes('jest')) {
-  mongoose.connection.once('open', () => {
-    startServer();
-  });
-}
-
-export { startServer, stopServer };
 export default app; 

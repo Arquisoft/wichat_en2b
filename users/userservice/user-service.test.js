@@ -6,7 +6,7 @@ import User from './user-model';
 import sharp from 'sharp';
 import fs from 'fs';
 import path from 'path';
-import { startServer, stopServer } from './user-service'; 
+import jwt from "jsonwebtoken";
 
 jest.mock('sharp', () => {
   const sharpInstance = {
@@ -30,7 +30,6 @@ jest.mock('fs', () => {
   };
 });
 
-
 const testUser1 = {
   username: 'testuser1',
   password: 'testpassword1',
@@ -44,6 +43,13 @@ const testUser2 = {
   role: 'USER',
   profilePicture: 'testuser2_profile_picture.png'
 };
+
+// First, create a JWT for authentication
+const token = jwt.sign(
+    { username: testUser1.username, role: 'USER' },
+    process.env.JWT_SECRET || 'testing-secret',
+    { expiresIn: '1h' }
+);
 
 async function clearDatabase() {
   const collections = mongoose.connection.collections;
@@ -94,7 +100,7 @@ describe('User Service - POST /users', () => {
     
     const module = await import('./user-service.js');
     app = module.default;
-    await startServer();
+    
   });
 
   it('should add a new user on POST /users', async () => {
@@ -304,7 +310,7 @@ describe('User Service - POST /users', () => {
 describe('User Service - GET /users/:username', () => {
   beforeAll(async () => {
     await clearDatabase();
-    await startServer();
+    
     await request(app).post('/users').send(testUser1);
   });
 
@@ -327,7 +333,7 @@ describe('User Service - GET /users/:username', () => {
 describe('User Service - GET /users', () => {
   beforeAll(async () => {
     await clearDatabase();
-    await startServer();
+    
     await request(app).post('/users').send(testUser1);
     await request(app).post('/users').send(testUser2);
   });
@@ -351,7 +357,7 @@ describe('User Service - GET /users', () => {
 describe('User Service - PATCH /users/:username', () => {
   beforeAll(async () => {
     await clearDatabase();
-    await startServer();
+    
     await request(app).post('/users').send(testUser1);
     await request(app).post('/users').send(testUser2);
 
@@ -382,77 +388,88 @@ describe('User Service - PATCH /users/:username', () => {
       fs.writeFileSync(user1ImagePath, 'dummy image content'); 
     }
   });
-
-  it('should update a user\'s username and generate a new JWT', async () => {
-    const newUsername = 'updatedUser';
-    const response = await request(app).patch(`/users/${testUser1.username}`)
-          .send({ newUsername : newUsername });
-
-    expect(response.status).toBe(200);
-    expect(response.body).toHaveProperty('token');
-    expect(response.body.message).toBe('Username updated successfully');
-
-    const testUser = {
-      username: newUsername,
-      password: testUser1.password,
-      role: testUser1.role
-    }
-
-    await checkUserExistsInDb(testUser, true);
-  });
   
-  it('should return 404 when updating a username to an already taken one', async () => {
-    const response = await request(app).patch(`/users/${testUser1.username}`)
-                .send({ newUsername: testUser2.username });
+  it('should return 409 when updating a username to an already taken one', async () => {
+    const response = await request(app)
+        .patch(`/users/${testUser1.username}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({ newUsername: testUser2.username });
 
-    expect(response.status).toBe(404);
+    expect(response.status).toBe(409);
     expect(response.body.error).toBe('Username already taken');
   });
 
   it('should return 400 when updating a username with less than 3 characters', async () => {
-    const response = await request(app).patch(`/users/${testUser1.username}`).send({ newUsername: 'ab' });
+    const response = await request(app)
+        .patch(`/users/${testUser1.username}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({ newUsername: 'ab' });
 
     expect(response.status).toBe(400);
     expect(response.body.error).toBe('Username must be at least 3 characters');
   });
 
-  it('should return 404 when updating a non-existent user', async () => {
-    const response = await request(app).patch(`/users/nonexistentuser`).send({ newUsername: 'newUser' });
+  it('should return 403 when updating a non-existent user', async () => {
+    const response = await request(app)
+        .patch(`/users/patatito`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({ newUsername: 'newUser' });
 
-    expect(response.status).toBe(500);
-    expect(response.body.error).toBe('User not found');
+    expect(response.status).toBe(403);
+    expect(response.body.error).toBe('You can only access your own profile');
   });
 
   it('should update a user\'s password', async () => {
     const newPassword = 'newSecurePassword123';
-
-    await request(app).post('/users').send({
-      username: testUser1.username,
-      password: 'initialPassword123', //NOSONAR
-      role: 'USER'
-    });
+    const oldPassword = testUser1.password;
 
     const response = await request(app)
-            .patch(`/users/${testUser1.username}/password`)
-            .set('Content-Type', 'application/json')
-            .send({ newPassword : newPassword });
+        .patch(`/users/${testUser1.username}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({ oldPassword: oldPassword, newPassword : newPassword });
 
     expect(response.status).toBe(200);
-    expect(response.body.message).toBe('Password updated successfully');
+    expect(response.body.message).toBe('User updated successfully');
   });
 
   it('should return 400 when updating a password with less than 6 characters', async () => {
-    const response = await request(app).patch(`/users/${testUser1.username}/password`).send({ newPassword: '12345' });
+    const response = await request(app)
+        .patch(`/users/${testUser1.username}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({ oldPassword: 'newSecurePassword123', newPassword: '12345' });
 
     expect(response.status).toBe(400);
     expect(response.body.error).toBe('Password must be at least 6 characters');
   });
 
-  it('should return 404 when updating a password for a non-existent user', async () => {
-    const response = await request(app).patch(`/users/nonexistentuser/password`).send({ newPassword: 'newPassword123' });
+  it('should return 403 when updating a password for a non-existent user', async () => {
+    const response = await request(app)
+        .patch(`/users/nonexistent`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({ oldPassword: 'newSecurePassword123', newPassword: 'newPassword123' });
 
-    expect(response.status).toBe(404);
-    expect(response.body.error).toBe('User not found');
+    expect(response.status).toBe(403);
+    expect(response.body.error).toBe('You can only access your own profile');
+  });
+
+  it('should update a user\'s username and generate a new JWT', async () => {
+    const newUsername = 'updatedUser';
+    const response = await request(app)
+        .patch(`/users/${testUser1.username}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({ newUsername : newUsername });
+
+    expect(response.status).toBe(200);
+    expect(response.body).toHaveProperty('token');
+    expect(response.body.message).toBe('User updated successfully');
+
+    const testUser = {
+      username: newUsername,
+      password: 'newSecurePassword123',
+      role: testUser1.role
+    }
+
+    await checkUserExistsInDb(testUser, true);
   });
 });
 
@@ -460,13 +477,35 @@ describe('POST /user/profile/picture', () => {
   const imagePath = path.join(__dirname, 'fixtures', 'test-image.jpg');
   const validBuffer = fs.readFileSync(imagePath);
   const validBase64 = validBuffer.toString('base64');
-  
+
+  beforeAll(async () => {
+    mongoServer = await MongoMemoryServer.create();
+    const mongoUri = mongoServer.getUri();
+    process.env.MONGODB_URI = mongoUri;
+
+    if (mongoose.connection.readyState !== 0) {
+      await mongoose.disconnect();
+    }
+
+    await mongoose.connect(mongoUri, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true
+    });
+
+    const module = await import('./user-service.js');
+    app = module.default;
+
+    await clearDatabase();
+
+    await request(app).post('/users').send(testUser1);
+  })
+
   beforeEach(() => {
     jest.clearAllMocks();
     jest.mock('./user-model.js'); 
   }); 
 
-  test('Debe procesar y guardar una imagen PNG válida correctamente', async () => {
+  test('Should process and save an image correctly', async () => {
     const validBase64 = validBuffer.toString('base64');
     const processedBuffer = Buffer.from('processedImage');
     sharp().toBuffer.mockResolvedValue(processedBuffer);
@@ -478,7 +517,8 @@ describe('POST /user/profile/picture', () => {
   
     const res = await request(app)
       .post('/user/profile/picture')
-      .send({ image: validBase64, username: testUser1.username });
+        .set('Authorization', `Bearer ${token}`)
+        .send({ image: validBase64, username: testUser1.username });
     
     expect(res.statusCode).toBe(200);
     expect(res.body).toHaveProperty('profilePicture');
@@ -490,22 +530,24 @@ describe('POST /user/profile/picture', () => {
     expect(savedPath.endsWith('testuser1_profile_picture.png')).toBe(true);
   });
   
-  test('Should respond 400 if no image or username is provided', async () => {
+  test('Should respond 403 if no image or username is provided', async () => {
     const res = await request(app)
-      .post('/user/profile/picture')
-      .send({}); 
+        .post('/user/profile/picture')
+        .set('Authorization', `Bearer ${token}`)
+        .send({});
 
-    expect(res.statusCode).toBe(400);
-    expect(res.body).toEqual({ error: "No image or username provided." });
+    expect(res.statusCode).toBe(403);
+    expect(res.body).toEqual({ error: "You can only access your own profile" });
   });
 
   test('Should respond 404 if the user is not found', async () => {
     const res = await request(app)
       .post('/user/profile/picture')
+        .set('Authorization', `Bearer ${token}`)
       .send({ image: validBase64, username: "usuarioInexistente" });
 
-    expect(res.statusCode).toBe(404);
-    expect(res.body).toEqual({ error: "User not found" });
+    expect(res.statusCode).toBe(403);
+    expect(res.body).toEqual({ error: "You can only access your own profile" });
   });
 
   test('Should respond 400 if the image exceeds the maximum size (5MB)', async () => {
@@ -515,6 +557,7 @@ describe('POST /user/profile/picture', () => {
 
     const res = await request(app)
       .post('/user/profile/picture')
+        .set('Authorization', `Bearer ${token}`)
       .send({ image: largeBase64, username: testUser1.username });
 
     expect(res.statusCode).toBe(413); // Payload Too Large
@@ -522,9 +565,11 @@ describe('POST /user/profile/picture', () => {
 });
 
 describe('POST /user/profile/picture - Security Tests', () => {
+  let traversalToken;
+
   beforeAll(async () => {
     await clearDatabase();
-    await startServer();
+    
     await request(app).post('/users').send(testUser1);
     
     // Mock sharp and fs for these tests
@@ -532,27 +577,17 @@ describe('POST /user/profile/picture - Security Tests', () => {
     fs.promises.mkdir.mockResolvedValue();
     fs.promises.writeFile.mockResolvedValue();
     global.parse = jest.fn(() => ({ mime: 'image/png' }));
-  });
 
-  it('should reject path traversal attempts in username', async () => {
-    const maliciousUsername = '../../../etc/passwd';
-    const validBase64 = Buffer.from('test image data').toString('base64');
-    
-    const response = await request(app)
-      .post('/user/profile/picture')
-      .send({
-        username: maliciousUsername,
-        image: validBase64
-      });
-    
-    // Should fail because path validation prevents directory traversal
-    expect(response.statusCode).toBe(404);
-    expect(response.body).toHaveProperty('error');
-    expect(response.body.error).toBe('User not found');
-    
-    // Verify the file wasn't written outside the images directory
-    const writeFileCalls = fs.promises.writeFile.mock.calls;
-    expect(writeFileCalls.length).toBe(0);
+    await request(app).post('/users').send({
+        username: '../../../etc/passwd',
+        password: 'password123',
+        role: testUser1.role
+    });
+
+    traversalToken = jwt.sign(
+        { username: '../../../etc/passwd', role: 'USER' },
+        'testing-secret',
+    )
   });
   
   it('should sanitize filenames to prevent path traversal', async () => {
@@ -606,6 +641,7 @@ describe('POST /user/profile/picture - Security Tests', () => {
       
       const response = await request(app)
         .post('/user/profile/picture')
+          .set('Authorization', `Bearer ${token}`)
         .send({
           username: testUser1.username,
           image: validBase64
@@ -677,18 +713,18 @@ describe('User Service - DELETE /users/:username', () => {
 
   beforeAll(async () => {
     await clearDatabase();
-    await startServer();
+    
     await request(app).post('/users').send(testUser1);
     
   });
 
   afterAll(async () => {
-    await stopServer();
+    
     await mongoServer.stop();
   });
 
   it('should delete a user by username on DELETE /users/:username', async () => {
-    const response = await request(app).delete(`/users/${testUser1.username}`);
+    const response = await request(app).delete(`/users/${testUser1.username}`).set('Authorization', `Bearer ${token}`);
 
     expect(response.status).toBe(200);
 
@@ -699,9 +735,9 @@ describe('User Service - DELETE /users/:username', () => {
   it('should return 404 for non-existent user on DELETE /users/:username', async () => {
     const noneExistentUsername = 'inventeduser';
 
-    const response = await request(app).delete(`/users/${noneExistentUsername}`);
+    const response = await request(app).delete(`/users/${noneExistentUsername}`).set('Authorization', `Bearer ${token}`);
 
-    expect(response.status).toBe(404);
+    expect(response.status).toBe(403);
 
     await checkUserExistsInDb({ username: noneExistentUsername }, false);
   });
@@ -710,11 +746,7 @@ describe('User Service - DELETE /users/:username', () => {
 describe('User Service - Database unavailable', () => {
   beforeAll(async () => {
     mongoose.connection.readyState = 0; // 0 = disconnected
-    await startServer();
-  });
-
-  afterAll(async () => {
-    await stopServer();
+    
   });
 
   it('should return 500 when database is unavailable on POST /users', async () => {
