@@ -61,11 +61,36 @@ router.post('/question/validate', async (req, res) => {
         }
 
         const isCorrect = question.answer === selected_answer;
-        res.json({ isCorrect });
+        res.json({
+            isCorrect,
+            correctAnswer: isCorrect ? null : question.answer
+        });
 
     } catch (error) {
         console.error('Error validating answer:', error);
         res.status(500).json({ error: 'Error validating answer' });
+    }
+});
+
+router.post('/game/chat', async (req, res) => {
+    try {
+        const { question_id, message } = req.body;
+
+        const question = await Question.findOne({ _id: question_id }).exec();
+        if (!question) {
+            return res.status(404).json({ error: 'Question not found' });
+        }
+
+        res.json({
+            question_data: {
+                answers: question.answers,
+                right_answer: question.answer
+            }
+        });
+
+    } catch (error) {
+        console.error('Error retrieving question data for chat:', error);
+        res.status(500).json({ error: 'Error retrieving question data' });
     }
 });
 

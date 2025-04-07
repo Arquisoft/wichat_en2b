@@ -9,7 +9,7 @@ const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://local
 
 export default function QuestionGame(params) {
     const { topic, subject, totalQuestions, numberOptions, timerDuration, question } = params;
-
+    const [correctAnswer, setCorrectAnswer] = useState(null);
     const [currentQuestion, setCurrentQuestion] = useState(0);
     const [questions, setQuestions] = useState([]);
     const [isWrong, setIsWrong] = useState(false);
@@ -86,10 +86,11 @@ export default function QuestionGame(params) {
                 })
             });
 
-            const { isCorrect } = await response.json();
+            const { isCorrect, correctAnswer } = await response.json();
 
             setIsRight(isCorrect);
             setIsWrong(!isCorrect);
+            setCorrectAnswer(correctAnswer);
 
             setAnswers((prevAnswers) => [
                 ...prevAnswers,
@@ -129,6 +130,7 @@ export default function QuestionGame(params) {
         setIsWrong(false);
         setSelectedOption(null);
         setTimeLeft(timerDuration);
+        setCorrectAnswer(null);
     };
 
     useEffect(() => {
@@ -197,7 +199,8 @@ export default function QuestionGame(params) {
                                 key={option}
                                 className={`quiz-option 
                                 ${selectedOption === option ? "selected" : ""} 
-                                ${selectedOption === option && isRight ? "correct-answer" : ""}`}
+                                ${selectedOption === option && isRight ? "correct-answer" : ""}
+                                ${!isRight && correctAnswer === option ? "correct-answer" : ""}`}
                                 onClick={() => handleOptionSelect(option)}
                                 disabled={selectedOption !== null}>
                                 {option}

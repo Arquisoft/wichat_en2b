@@ -136,7 +136,8 @@ app.get('/game/:subject/:totalQuestions/:numberOptions', async (req, res) => {
   }
 });
 app.post('/question/validate', (req, res) => forwardRequest('game', '/question/validate', req, res));
-
+app.use('/game/chat', publicCors);
+app.post('/game/chat', (req, res) => forwardRequest('game', '/game/chat', req, res));
 // Statistics Routes
 ['/statistics/subject/:subject', '/statistics/global', '/leaderboard'].forEach(route => {
   app.use(route, publicCors);
