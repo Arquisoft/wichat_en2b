@@ -35,22 +35,13 @@ export default function InGameChat(params) {
         setIsThinking(true);
 
         try {
-            const questionDataResponse = await fetch(`${apiEndpoint}/game/chat`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    question_id: question.question_id,
-                    message: input
-                })
-            });
-            const questionData = await questionDataResponse.json();
             const response = await fetch(`${apiEndpoint}/askllm`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     conversation: [{ role: "user", content: input }],
                     model: "empathy",
-                    possibleAnswers: { answers: question.answers, right_answer: questionData.question_data.right_answer }
+                    possibleAnswers: question
                 })
             });
             const data = await response.json();

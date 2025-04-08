@@ -136,8 +136,15 @@ app.get('/game/:subject/:totalQuestions/:numberOptions', async (req, res) => {
   }
 });
 app.post('/question/validate', (req, res) => forwardRequest('game', '/question/validate', req, res));
-app.use('/game/chat', publicCors);
-app.post('/game/chat', (req, res) => forwardRequest('game', '/game/chat', req, res));
+
+app.use('/question/internal/:id', cors({
+  origin: serviceUrls.llm,
+  methods: ['GET']
+}));
+
+app.get('/question/internal/:id', (req, res) =>
+    forwardRequest('game', `/question/internal/${req.params.id}`, req, res)
+);
 // Statistics Routes
 ['/statistics/subject/:subject', '/statistics/global', '/leaderboard'].forEach(route => {
   app.use(route, publicCors);

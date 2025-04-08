@@ -35,7 +35,6 @@ router.get('/game/:subject/:numQuestions?/:numOptions?', async (req, res) => {
 
             // Shuffle the correct answer with the fake answers
             const answers = [q.answer, ...fakeAnswers].sort(() => 0.5 - Math.random());
-            
             return {
                 question_id: q._id,
                 image_name: `/images/${q._id}.jpg`,
@@ -72,26 +71,18 @@ router.post('/question/validate', async (req, res) => {
     }
 });
 
-router.post('/game/chat', async (req, res) => {
+router.get('/question/internal/:id', async (req, res) => {
     try {
-        const { question_id, message } = req.body;
-        const SALT = "wichatEN2B"; // Temporal, this should be an environmental variable
-        const question = await Question.findOne({ _id: question_id }).exec();
+        console.log("Retrieving question data for LLM...");
+        const question = await Question.findOne({ _id: req.params.id }).exec();
         if (!question) {
             return res.status(404).json({ error: 'Question not found' });
         }
-
-        const obfuscatedAnswer = Buffer.from(question.answer + SALT).toString('base64');
-
         res.json({
-            question_data: {
-                answers: question.answers,
-                right_answer: obfuscatedAnswer
-            }
+            right_answer: question.answer
         });
-
     } catch (error) {
-        console.error('Error retrieving question data for chat:', error);
+        console.error('Error retrieving question data:', error);
         res.status(500).json({ error: 'Error retrieving question data' });
     }
 });
