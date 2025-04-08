@@ -42,7 +42,7 @@ function CategoryComponent() {
               title: quiz.quizName,
               description: quiz.description,
               difficulty: mapDifficulty(quiz.difficulty),
-              wikidataCode: quiz.wikidataQuery,
+              wikidataCode: quiz.wikidataCode,
               questions: quiz.numQuestions,
               options: quiz.numOptions,
               timeEstimate: quiz.timePerQuestion,
@@ -115,14 +115,13 @@ function CategoryComponent() {
 
     const handleStartQuiz = (quiz) => {
       setQuizData({
-          topic: id,
-          subject: quiz.wikidataCode,
-          totalQuestions: quiz.questions,
-          numberOptions: quiz.options,
-          timerDuration: quiz.timeEstimate,
-          question: quiz.question,
+        topic: id, 
+        subject: quiz.wikidataCode, 
+        totalQuestions: quiz.questions, 
+        numberOptions: quiz.options, 
+        timerDuration:  quiz.timeEstimate, 
+        question: quiz.question,
       });
-
       setShowQuiz(true);  
     };
 

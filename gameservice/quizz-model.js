@@ -17,6 +17,11 @@ const questionSchema = new mongoose.Schema({
         required: true,
         trim: true
     },
+    wikidataCode: {
+        type: String,
+        required: true,
+        trim: true
+    },
     description: {
         type: String,
         trim: true
