@@ -42,7 +42,7 @@ services:
     networks:
       - mynetwork
     volumes:
-      - userservice_images:/usr/src/users/userservice/public/images
+      - userservice_images:/usr/src/userservice/public/images
     environment:
       MONGODB_URI: mongodb://mongodb:27017/userdb
 

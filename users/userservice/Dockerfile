@@ -12,6 +12,7 @@ ENV JWT_SECRET=${JWT_SECRET}
 
 # Install app dependencies
 RUN npm install
+RUN mkdir -p /usr/src/userservice/public/images
 
 # Copy the app source code to the working directory
 COPY . .
