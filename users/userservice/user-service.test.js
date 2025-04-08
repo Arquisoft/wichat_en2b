@@ -1,13 +1,13 @@
-const request = require('supertest');
-const express = require('express');
-const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
-const path = require('path');
-const fs = require('fs');
-const { MongoMemoryServer } = require('mongodb-memory-server');
-const User = require('./user-model.js');
-const userRoutes = require('./routers/RouterUserCrud.js'); // Adjust path as necessary
+import request from 'supertest';
+import express from 'express';
+import mongoose from 'mongoose';
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+import path from 'path';
+import fs from 'fs';
+import { MongoMemoryServer } from 'mongodb-memory-server';
+import User from './user-model.js';
+import userRoutes from './routers/RouterUserCrud.js'; // Adjust path as necessary
 
 jest.mock('fs', () => {
   const actualFs = jest.requireActual('fs');

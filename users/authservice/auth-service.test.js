@@ -61,7 +61,7 @@ describe('2FA Service', () => {
       expect(response.status).toBe(200);
       expect(otplib.authenticator.generateSecret).toHaveBeenCalled();
       expect(response.body).toHaveProperty('imageUrl', imageUrl);
-      expect(axios.patch).toHaveBeenCalledWith('http://gatewayservice:8000/users/testuser', { secret: mockSecret });
+      expect(axios.patch).toHaveBeenCalledWith('http://gatewayservice:8000/users/testuser', { secret: mockSecret }, {"headers": {"Authorization": "Bearer valid-jwt-token", "Content-Type": "application/json"}});
     });
     
     it('Should handle errors when generating 2FA setup', async () => {

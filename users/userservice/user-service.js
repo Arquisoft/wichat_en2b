@@ -1,9 +1,9 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const helmet = require('helmet');
-const path = require('path');
-const bodyParser = require('body-parser');
-const userRoutes = require('./routers/RouterUserCrud.js');
+import express from 'express';
+import mongoose from 'mongoose';
+import helmet from 'helmet';
+import path from 'path';
+import bodyParser from 'body-parser';
+import userRoutes from './routers/RouterUserCrud.js';
 
 const app = express();
 app.use(helmet.hidePoweredBy());
@@ -19,6 +19,7 @@ mongoose.connect(mongoUri)
 
 
 // Middleware to serve static files
+const __dirname = path.resolve();
 app.use(express.static(path.join(__dirname, 'public')));
   
 // Use the user routes
@@ -28,4 +29,4 @@ const server = app.listen(port, () => {
     console.log(`👨 User service running on: http://localhost:${port}`);
 });
 
-module.exports = server;
+export default server;

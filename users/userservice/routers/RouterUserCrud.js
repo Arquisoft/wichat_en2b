@@ -1,11 +1,11 @@
-const express = require('express');
-const User = require('../user-model.js');
-const bcrypt = require('bcrypt');
-const fs = require('fs');
-const path = require('path');
-const sharp = require('sharp');
-const { parse } = require('file-type-mime');
-const jwt = require('jsonwebtoken');
+import express from 'express';
+import User from '../user-model.js';
+import bcrypt from 'bcrypt';
+import fs from 'fs';
+import path from 'path';
+import sharp from 'sharp';
+import { parse } from 'file-type-mime';
+import jwt from 'jsonwebtoken';
 
 const router = express.Router();
 router.use(express.json());
@@ -399,4 +399,4 @@ router.get('/user/profile/picture/:username', async (req, res) => {
     }
 });
 
-module.exports = router;
+export default router;
