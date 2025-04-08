@@ -14,7 +14,10 @@ services:
     container_name: authservice-wichat_en2b
     image: ghcr.io/arquisoft/wichat_en2b/authservice:latest
     profiles: ["dev", "prod"]
-    build: ./users/authservice
+    build:
+      context: ./users/authservice
+      args:
+        JWT_SECRET: ${JWT_SECRET}
     depends_on:
       - mongodb
     ports:
@@ -28,7 +31,10 @@ services:
     container_name: userservice-wichat_en2b
     image: ghcr.io/arquisoft/wichat_en2b/userservice:latest
     profiles: ["dev", "prod"]
-    build: ./users/userservice
+    build:
+      context: ./users/userservice
+      args:
+        JWT_SECRET: ${JWT_SECRET}
     depends_on:
       - mongodb
     ports:

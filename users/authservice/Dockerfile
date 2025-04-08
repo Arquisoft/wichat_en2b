@@ -7,6 +7,9 @@ WORKDIR /usr/src/authservice
 # Copy package.json and package-lock.json to the working directory
 COPY package*.json ./
 
+ARG JWT_SECRET
+ENV JWT_SECRET=${JWT_SECRET}
+
 # Install app dependencies
 RUN npm install
 

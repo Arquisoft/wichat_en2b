@@ -85,6 +85,7 @@ jobs:
           registry: ghcr.io
           workdir: users/authservice
           platforms: linux/arm64
+          buildargs: JWT_SECRET=${{ secrets.JWT_SECRET }}
 
   docker-push-userservice:
     name: Push user service Docker Image to GitHub Packages
@@ -106,6 +107,7 @@ jobs:
         registry: ghcr.io
         workdir: users/userservice
         platforms: linux/arm64
+        buildargs: JWT_SECRET=${{ secrets.JWT_SECRET }}
 
   docker-push-llmservice:
     name: Push llm service Docker Image to GitHub Packages
