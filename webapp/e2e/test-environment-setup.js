@@ -8,6 +8,7 @@ module.exports = async () => {
       { instance: { dbName: 'userdb', port:5151 } }
   );
   process.env.MONGODB_URI = global.mongoserver.getUri();
+  process.env.GATEWAY_SERVICE_URL = 'http://localhost:8000';
 
   console.log('\n🗣️🗣️MONGODB_URI: '+process.env.MONGODB_URI)
 
@@ -18,5 +19,4 @@ module.exports = async () => {
   global.gatewayservice = require("../../gatewayservice/gateway-service");
   global.gameservice = require("../../gameservice/gameserver");
 
-  global.gamesWereAddedAlready = false; //Flag variable to avoid duplicate game addition each time
 };
