@@ -28,8 +28,4 @@ const server = app.listen(port, () => {
     console.log(`👨 User service running on: http://localhost:${port}`);
 });
 
-server.on('close', () => {
-    mongoose.connection.close();
-});
-
 module.exports = server;
