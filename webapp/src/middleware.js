@@ -14,17 +14,17 @@ export function middleware(request) {
   }
 
   // Allow unauthenticated users to access "/" (default homepage)
-  if (!token && currentPath === "/") {
+  if (!token && currentPath === "/" || currentPath.startsWith("/guest")) {
     console.log("No token, allowing access to /");
     return NextResponse.next();
   }
-
+  /*
   // Redirect unauthenticated users trying to access protected routes to /login
   if (!token && currentPath !== "/login" && currentPath !== "/addUser") {
     console.log("No token, redirecting to /login");
     return NextResponse.redirect(new URL("/login", request.url));
   }
-
+  */
   return NextResponse.next();
 }
 

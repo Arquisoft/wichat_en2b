@@ -7,9 +7,11 @@ import "../../../styles/home/PlayTab.css";
 /**
  * Displays quiz categories for the user to select.
  * 
+ * @param {boolean} isGuest - Whether the user is a guest.
+ * 
  * @returns {JSX.Element} The rendered component.
  */
-function PlayTab() {
+function PlayTab({ isGuest }) {
   	return (
 		<Grid container spacing={3} className="categories-container">
 			{quizCategories.map((category) => (
@@ -19,8 +21,8 @@ function PlayTab() {
 						<CardHeader
 							title={
 								<>
-								<span className="category-icon">{category.icon}</span>
-								{category.name}
+									<span className="category-icon">{category.icon}</span>
+									{category.name}
 								</>
 							}
 							className="category-header"
@@ -34,13 +36,18 @@ function PlayTab() {
 							</Typography>
 							
 							{/* Enter category button */}
-							<Link href={`/quiz/category/${category.id}`} passHref>
+							<Link 
+								href={isGuest 
+									? `/guest/quiz/category/${category.id}` // Guest route
+									: `/quiz/category/${category.id}`} // Authenticated route
+								passHref
+							>
 								<Button
-								variant="text"
-								fullWidth
-								className={`start-button button-${category.name.toLowerCase()}`}
+									variant="text"
+									fullWidth
+									className={`start-button button-${category.name.toLowerCase()}`}
 								>
-								Enter Category
+									Enter Category
 								</Button>
 							</Link>
 						</CardContent>
@@ -48,7 +55,7 @@ function PlayTab() {
 				</Grid>
 			))}
 		</Grid>
-	);
+  	);
 }
 
 export default PlayTab;
