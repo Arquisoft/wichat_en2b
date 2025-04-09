@@ -1,5 +1,6 @@
 .group-container {
-    max-width: 600px;
+    max-width: 900px; /* o incluso 900px si quieres más */
+    width: 90%;
     margin: 2rem auto;
     padding: 2rem;
     border-radius: 1rem;
@@ -7,6 +8,7 @@
     background: #ffffff;
     transition: all 0.3s ease-in-out;
 }
+
 
 .group-header {
     text-align: center;

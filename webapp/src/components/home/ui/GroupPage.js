@@ -371,7 +371,7 @@ export default function GroupPage({ username, onClose }) {
                 
             </Box>
 
-            <Box className="group-members">
+            <div className="group-members">
                 <Typography variant="subtitle1" className="group-members-title">
                     Members:
                 </Typography>
@@ -416,7 +416,7 @@ export default function GroupPage({ username, onClose }) {
                         </TableBody>
                     </Table>
                 </div>
-            </Box>
+            </div>
 
             <Box className="group-controls">
                 <Button variant="contained" color="secondary" onClick={leaveGroup} className="leave-button">
