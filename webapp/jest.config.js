@@ -27,6 +27,13 @@ module.exports = {
            'expect-puppeteer'
        ],
        testMatch: ['<rootDir>/e2e/steps/*.js'],
+        transform: {
+            "^.+\\.(js|jsx|ts|tsx|mjs)$": "@swc/jest"
+        },
+        // Update moduleNameMapper to handle .mjs extensions
+        moduleNameMapper: {
+            "^(\\.{1,2}/.*)\\.mjs$": "$1"
+        }
     },
   ],
 };

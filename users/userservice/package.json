@@ -5,7 +5,7 @@
   "main": "service.js",
   "type": "module",
   "scripts": {
-    "start": "node user-service.js --experimental-vm-modules",
+    "start": "node user-service.mjs --experimental-vm-modules",
     "test": "jest"
   },
   "repository": {

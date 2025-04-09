@@ -1,12 +1,3 @@
-const bcrypt = require('bcrypt')
-const mongoose = require('mongoose')
-if (mongoose.models.User) {
-    delete mongoose.models.User;
-    delete mongoose.modelSchemas.User;
-}
-// Registra el modelo de nuevo
-const User = require('../../users/userservice/user-model')
-const {expect} = require("expect-puppeteer");
 
 /**
  * Clicks on an element with the given selector
@@ -16,13 +7,7 @@ const {expect} = require("expect-puppeteer");
 async function click(page, selector) {
     await Promise.all([
         await page.waitForSelector(selector),
-        page.evaluate((sel) => {
-            const element = document.querySelector(sel);
-            if (element === null) {
-                throw Error("The selector did not match any element");
-            }
-            element.click();
-        }, selector)
+        await page.click(selector)
     ]);
 }
 

@@ -1,6 +1,4 @@
 const { MongoMemoryServer } = require('mongodb-memory-server');
-const mongoose = require('mongoose');
-
 
 module.exports = async () => {
 
@@ -12,8 +10,8 @@ module.exports = async () => {
 
   console.log('\n🗣️🗣️MONGODB_URI: '+process.env.MONGODB_URI)
 
-
-  global.userservice = require("../../users/userservice/user-service");
+  const userserviceModule = await import("../../users/userservice/user-service.mjs");
+  global.userservice = userserviceModule.default
   global.authservice = require("../../users/authservice/auth-service");
   global.llmservice = require("../../llmservice/llm-service");
   global.gatewayservice = require("../../gatewayservice/gateway-service");

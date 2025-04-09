@@ -1,5 +1,5 @@
 const express = require('express')
-const GameInfo = require('../game-result-model')
+const GameInfo = require('../game-result-model.js')
 // Middleware to verify JWT token
 const verifyToken = require('./middleware/auth');
 const router = express.Router()

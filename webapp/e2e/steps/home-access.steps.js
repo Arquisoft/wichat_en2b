@@ -47,7 +47,7 @@ defineFeature(feature, test => {
             await page.waitForSelector('#profile-username', {visible: true, timeout: 10000});
             const text = await page.$eval('#profile-username', el => el.textContent.trim());
             console.log("🥒 Text expected in the check:", global.userTestData.username," Text obtained: ", text);
-            expect(text).toBe("QuizMaster");   //TODO-ChangeBy: global.userTestData.username); //Commented to avoid the test error as it's not changed
+            expect(text).toBe(global.userTestData.username);
         });
     }, 15000);
 

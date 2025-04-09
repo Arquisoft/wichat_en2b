@@ -1,6 +1,7 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
-const setDefaultOptions = require('expect-puppeteer').setDefaultOptions
+const { setDefaultOptions } = require("expect-puppeteer");
+
 
 beforeAll(async () => {
     jest.setTimeout(60000);
@@ -38,8 +39,9 @@ async function configUserAddition(){
         const data = {username: "mock", password: "mocK$1111", role: "USER"};
         global.userTestData = data;
         if (mongooseDB.connection.readyState === 1) {
+            const userModule = await import("../../users/userservice/user-model.mjs");
 
-            const userSchema = require('../../users/userservice/user-model').schema
+            const userSchema = userModule.default.schema;
             const User = mongooseDB.model('User', userSchema);
             const user = new User({
                 username: data.username,
@@ -92,7 +94,7 @@ async function configGameInfoAddition(){
         global.gameInfoTestData = data;
         if (mongooseDB.connection.readyState === 1) {
 
-            const userSchema = require('../../gameservice/game-result-model').schema
+            const userSchema = require("../../gameservice/game-result-model.js").schema;
             const GameInfo = mongooseDB.model('GameInfo', userSchema);
 
             let gamesAddedAlready = await GameInfo.find(
