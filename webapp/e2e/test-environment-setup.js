@@ -10,7 +10,7 @@ module.exports = async () => {
 
   console.log('\n🗣️🗣️MONGODB_URI: '+process.env.MONGODB_URI)
 
-  const userserviceModule = await import("../../users/userservice/user-service.mjs");
+  global.userserviceModule = await import("../../users/userservice/user-service.mjs");
   global.userservice = userserviceModule.default
   global.authservice = require("../../users/authservice/auth-service");
   global.llmservice = require("../../llmservice/llm-service");
