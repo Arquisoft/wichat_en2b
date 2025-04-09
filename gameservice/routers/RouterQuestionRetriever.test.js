@@ -102,6 +102,7 @@ describe('RouterQuestionRetriever', () => {
         // Restore the original implementation
         jest.restoreAllMocks();
     }, 10000); // Increase timeout
+
     // POST /question/validate tests
     it('should validate correct answer', async () => {
         const question = await Question.create({
