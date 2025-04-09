@@ -1,6 +1,7 @@
 export default {
     transform: {
-        "^.+\\.js$": "babel-jest"
+        "^.+\\.js$": "babel-jest",
+        "^.+\\.mjs$": "babel-jest",
     },
     transformIgnorePatterns: ["/node_modules/"],
     testEnvironment: 'node',
