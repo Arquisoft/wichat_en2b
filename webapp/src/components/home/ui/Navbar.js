@@ -1,4 +1,3 @@
-// src/app/components/home/Navbar.js
 "use client";
 
 import React, { useState } from "react";
@@ -9,6 +8,8 @@ import { useRouter } from "next/navigation"; // Import useRouter for navigation
 import "../../../styles/home/Navbar.css";
 import ProfileForm from "./ProfileForm";
 
+const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://localhost:8000';
+
 /**
  * Navigation bar for the application.
  *
@@ -16,9 +17,10 @@ import ProfileForm from "./ProfileForm";
  *
  * @returns {JSX.Element} The rendered Navbar component.
  */
-const Navbar = ({ username }) => {
-  if (!username) {
-    throw new Error("Invalid props for Navbar component.");
+const Navbar = ({ username = "Guest", profilePicture }) => {
+  console.log("Navbar component rendered with profilePicture:", profilePicture);
+  if (!username || username === "") {
+    username = "Guest"; 
   }
 
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -52,8 +54,11 @@ const Navbar = ({ username }) => {
       <AppBar position="sticky" className="app-bar">
         <Toolbar className="toolbar">
           <Box className="navbar-left" onClick={handleLogoClick}>
-            <Avatar className="logo-avatar">Wi</Avatar>
-            <Typography variant="h6" className="app-title">WiChat</Typography>
+            {/* Displaying the profile picture in the Avatar */}
+            <Avatar className="logo-avatar" src={profilePicture || ""}>
+              {!profilePicture && "Wi"} 
+            </Avatar>
+            <Typography variant="h6" className="app-title">WiChat - {username}</Typography>
           </Box>
 
           <Box className="spacer" />
@@ -80,7 +85,7 @@ const Navbar = ({ username }) => {
 
       {/* Dialog for profile form */}
       <Dialog open={isProfileOpen} onClose={handleCloseProfile} maxWidth="sm" fullWidth>
-        <ProfileForm username={username} onSave={handleSaveProfile} />
+        <ProfileForm username={username} profilePicture={profilePicture} onSave={handleSaveProfile} />
       </Dialog>
     </>
   );
@@ -89,6 +94,7 @@ const Navbar = ({ username }) => {
 // Validation with PropTypes for the username prop
 Navbar.propTypes = {
   username: PropTypes.string.isRequired,
+  profilePicture: PropTypes.string,
 };
 
 export default Navbar;

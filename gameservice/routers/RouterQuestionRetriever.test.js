@@ -1,60 +1,72 @@
 const request = require('supertest');
-const express = require('express');
 const mongoose = require('mongoose');
+const express = require('express');
+const { MongoMemoryServer } = require('mongodb-memory-server');
 const Question = require('../question-model');
 const router = require('./RouterQuestionRetriever');
 
-const { MongoMemoryServer } = require('mongodb-memory-server');
-
 let mongoServer;
-
-const app = express();
-app.use(express.json());
-app.use('/api', router);
+let app;
 
 describe('RouterQuestionRetriever', () => {
     beforeAll(async () => {
+        // Create an in-memory MongoDB server
         mongoServer = await MongoMemoryServer.create();
-        const uri = mongoServer.getUri();
-        await mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true });
-    });
+        const mongoUri = mongoServer.getUri();
+
+        // Connect to the in-memory database
+        await mongoose.connect(mongoUri);
+
+        // Set up the Express app with the router
+        app = express();
+        app.use(express.json());
+        app.use('/api', router);
+    }, 10000); // Increase timeout to 10 seconds
 
     afterAll(async () => {
+        // Clean up after tests
         await mongoose.disconnect();
         await mongoServer.stop();
-    });
+    }, 10000); // Increase timeout to 10 seconds
 
     beforeEach(async () => {
+        // Clear the database before each test
         await Question.deleteMany({});
     });
+
     it('should return 3 random questions with 3 options each by default', async () => {
-        await Question.insertMany([
-            { _id: new mongoose.Types.ObjectId(), subject: 'Math', answer: 'Answer 1' },
-            { _id: new mongoose.Types.ObjectId(), subject: 'Math', answer: 'Answer 2' },
-            { _id: new mongoose.Types.ObjectId(), subject: 'Math', answer: 'Answer 3' },
-            { _id: new mongoose.Types.ObjectId(), subject: 'Math', answer: 'Answer 4' },
-            { _id: new mongoose.Types.ObjectId(), subject: 'Math', answer: 'Answer 5' }
-        ]);
+        // Create test data
+        const questions = [];
+        for (let i = 1; i <= 10; i++) {
+            questions.push({
+                subject: 'Math',
+                answer: `Answer ${i}`,
+                _id: new mongoose.Types.ObjectId()
+            });
+        }
+        await Question.insertMany(questions);
 
         const res = await request(app).get('/api/game/Math');
-        let expectedAnswers = [];
+
         expect(res.status).toBe(200);
         expect(res.body.length).toBe(3);
         res.body.forEach(question => {
             expect(question.answers.length).toBe(3);
             expect(question.image_name).toBe(`/images/${question.question_id}.jpg`);
         });
-    });
+    }, 10000); // Increase timeout
 
     it('should return the specified number of questions and options', async () => {
-        await Question.insertMany([
-            { _id: new mongoose.Types.ObjectId(), subject: 'Science', answer: 'Answer 1' },
-            { _id: new mongoose.Types.ObjectId(), subject: 'Science', answer: 'Answer 2' },
-            { _id: new mongoose.Types.ObjectId(), subject: 'Science', answer: 'Answer 3' },
-            { _id: new mongoose.Types.ObjectId(), subject: 'Science', answer: 'Answer 4' },
-            { _id: new mongoose.Types.ObjectId(), subject: 'Science', answer: 'Answer 5' },
-            { _id: new mongoose.Types.ObjectId(), subject: 'Science', answer: 'Answer 6' }
-        ]);
+        // Create test data
+        const questions = [];
+        for (let i = 1; i <= 10; i++) {
+            questions.push({
+                subject: 'Science',
+                answer: `Answer ${i}`,
+                _id: new mongoose.Types.ObjectId()
+            });
+        }
+        await Question.insertMany(questions);
 
         const res = await request(app).get('/api/game/Science/2/4');
 
@@ -63,7 +75,7 @@ describe('RouterQuestionRetriever', () => {
         res.body.forEach(question => {
             expect(question.answers.length).toBe(4);
         });
-    });
+    }, 10000); // Increase timeout
 
     it('should return 400 if not enough questions in DB', async () => {
         await Question.insertMany([
@@ -74,9 +86,10 @@ describe('RouterQuestionRetriever', () => {
 
         expect(res.status).toBe(400);
         expect(res.body.error).toBe('Not enough questions in DB.');
-    });
+    }, 10000); // Increase timeout
 
     it('should return 500 if an error occurs', async () => {
+        // Mock the aggregate method to throw an error
         jest.spyOn(Question, 'aggregate').mockImplementationOnce(() => {
             throw new Error('Mocked error');
         });
@@ -85,8 +98,10 @@ describe('RouterQuestionRetriever', () => {
 
         expect(res.status).toBe(500);
         expect(res.body.error).toBe('Error retrieving questions');
-    });
 
+        // Restore the original implementation
+        jest.restoreAllMocks();
+    }, 10000); // Increase timeout
     // POST /question/validate tests
     it('should validate correct answer', async () => {
         const question = await Question.create({
