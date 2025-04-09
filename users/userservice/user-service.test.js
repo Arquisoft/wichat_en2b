@@ -485,7 +485,9 @@ describe('User Routes', () => {
       // Mock mongoose findOne to simulate a database error
       const originalFindOne = mongoose.Model.findOne;
       mongoose.Model.findOne = jest.fn().mockImplementation(() => {
-        throw { name: "MongoNetworkError", message: "failed to connect" };
+        const err = new Error("failed to connect");
+        err.name = "MongoNetworkError";
+        throw err;
       });
 
       const response = await request(app)
