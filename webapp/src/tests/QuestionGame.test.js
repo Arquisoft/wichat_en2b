@@ -124,9 +124,12 @@ describe('QuestionGame component', () => {
     });
 
     it('restarts the game when "Play again" is clicked', async () => {
-        fetchMock.mockResponse(JSON.stringify(mockQuestions));
-        fetchMock.mockResponseOnce(JSON.stringify({ isCorrect: true, correctAnswer: null }));
-        fetchMock.mockResponseOnce(JSON.stringify({ isCorrect: true, correctAnswer: null }));
+        fetchMock
+            .mockResponseOnce(JSON.stringify(mockQuestions))
+            .mockResponseOnce(JSON.stringify({ isCorrect: true, correctAnswer: null }))
+            .mockResponseOnce(JSON.stringify({ isCorrect: true, correctAnswer: null }))
+            .mockResponseOnce(JSON.stringify({})) // Save game results mock
+            .mockResponseOnce(JSON.stringify(mockQuestions));
 
         render(<QuestionGame topic="1" subject="test" totalQuestions={2} numberOptions={4} timerDuration={30} />);
 
@@ -135,14 +138,14 @@ describe('QuestionGame component', () => {
         await waitFor(() => screen.getByText('Great job! You got it right!'));
         act(() => jest.advanceTimersByTime(2050));
 
+        await waitFor(() => screen.getByText(/Question 2 of/));
         fireEvent.click(screen.getByText('B'));
         await waitFor(() => screen.getByText('Great job! You got it right!'));
         act(() => jest.advanceTimersByTime(2050));
+
         await waitFor(() => screen.getByText('Quiz Completed!'));
-
-        fetchMock.mockResponseOnce(JSON.stringify(mockQuestions));
-
         fireEvent.click(screen.getByText('Play again'));
+
         await waitFor(() => screen.getByText(/Question 1 of/));
     });
 });
