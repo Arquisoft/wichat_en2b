@@ -1,135 +1,127 @@
+/* Main container */
 .group-container {
-    max-width: 900px; /* o incluso 900px si quieres más */
-    width: 90%;
-    margin: 2rem auto;
-    padding: 2rem;
-    border-radius: 1rem;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-    background: #ffffff;
-    transition: all 0.3s ease-in-out;
-}
-
-
-.group-header {
-    text-align: center;
-    margin-bottom: 1.5rem;
-}
-
-.group-title {
-    font-weight: 600;
-    color: #2c3e50;
-}
-
-.tabs-container {
-    margin-bottom: 1.5rem;
-}
-
-.tabs-header {
-    background-color: #f5f5f5;
-    border-radius: 0.5rem;
-    padding: 0.5rem;
-}
-
-.group-add-tab,
-.group-create-tab {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    margin-top: 1rem;
-}
-
-.group-add-tab button,
-.group-create-tab button {
-    align-self: center;
-    background: linear-gradient(to right, #349e1e, #3a7528);
-}
-
-.close-button {
-    display: flex;
-    justify-content: center;
-    margin-top: 2rem;
-}
-
-.close-button button{
-    background: linear-gradient(to right, #8a2be2, #d147a3);
-}
-
-
-.error-message {
-    color: #e74c3c;
-    font-size: 0.9rem;
-}
-
-.group-info {
-    margin-top: 1.5rem;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
-
-.group-name {
-    color: #34495e;
-}
-
-.group-members {
-    margin-top: 2rem;
-}
-
-.group-members-title {
-    font-weight: 500;
-    color: #2c3e50;
-    margin-bottom: 0.5rem;
-}
-
-.current-user {
-    font-weight: bold;
-    background-color: rgba(144, 202, 249, 0.2);
-}
-
-.group-controls {
-    display: flex;
-    justify-content: center;
-    gap: 1rem;
-    margin-top: 2rem;
-}
-
-@media screen and (max-width: 480px) {
-    .group-controls {
-        flex-direction: column;
-        gap: 1rem;
-    }
-
-    .group-add-tab button,
-    .group-create-tab button {
-        width: 100%;
-        background-color: linear-gradient(to right, #8a2be2, #d147a3);
-    }
-}
-
-.leave-button {
-    background-color: #e74c3c !important;
-    color: white !important;
-    margin-top: 1rem;
-    align-self: center;
-}
-
-.leave-button:hover {
-    background-color: #c0392b !important;
-}
-
-.scrollable-table {
-    max-height: 300px;
-    overflow-y: auto;
-    overflow-x: hidden;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 24px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    min-width: 50%;
   }
   
-  /* Opcional: para que la tabla ocupe todo el ancho disponible */
+  /* Header styling */
+  .group-header {
+    padding: 16px 0;
+    margin-bottom: 24px;
+    border-bottom: 1px solid #e0e0e0;
+  }
+  
+  .group-title {
+    font-weight: 600 !important;
+    color: #333333;
+  }
+  
+  /* Tabs container */
+  .tabs-container {
+    margin-bottom: 24px;
+  }
+  
+  .tabs-header {
+    border-bottom: 1px solid #e0e0e0;
+  }
+  
+  /* Tab content */
+  .group-add-tab,
+  .group-create-tab {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 24px 0;
+  }
+  
+  /* Group info section */
+  .group-info {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 16px;
+    margin-bottom: 24px;
+    background-color: #f5f5f5;
+    border-radius: 6px;
+  }
+  
+  .group-name {
+    font-weight: 500 !important;
+    color: #424242;
+  }
+  
+  /* Members section */
+  .group-members {
+    margin-bottom: 24px;
+  }
+  
+  .group-members-title {
+    font-weight: 500 !important;
+    margin-bottom: 12px !important;
+  }
+  
+  .scrollable-table {
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    margin-bottom: 16px;
+  }
+  
+  /* Table styling */
   .scrollable-table table {
     width: 100%;
     border-collapse: collapse;
   }
   
-  .scrollable-table {
-    scrollbar-gutter: stable;
+  .current-user {
+    background-color: rgba(144, 202, 249, 0.2);
+  }
+  
+  /* Button containers */
+  .group-controls {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 24px;
+    justify-content: space-evenly;
+  }
+  
+  .close-button {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 16px;
+  }
+  
+  /* Error message */
+  .error-message {
+    color: #d32f2f;
+    font-size: 0.875rem;
+    margin: 4px 0;
+  }
+  
+  /* Button styling */
+  .leave-button {
+    background-color: #f44336 !important;
+    color: white !important;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 600px) {
+    .group-container {
+      padding: 16px;
+    }
+  
+    .group-controls {
+      flex-direction: column;
+    }
+  
+    .group-controls button {
+      width: 100%;
+    }
   }
   
