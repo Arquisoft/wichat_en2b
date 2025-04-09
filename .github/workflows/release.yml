@@ -22,6 +22,7 @@ jobs:
     - run: npm --prefix users/userservice test -- --coverage
     - run: npm --prefix llmservice test -- --coverage
     - run: npm --prefix gatewayservice test -- --coverage
+    - run: npm --prefix gameservice test -- --coverage
     - run: npm --prefix webapp test -- --coverage
     - name: Analyze with SonarCloud
       uses: SonarSource/sonarqube-scan-action@master
@@ -84,6 +85,7 @@ jobs:
           registry: ghcr.io
           workdir: users/authservice
           platforms: linux/arm64
+          buildargs: JWT_SECRET=${{ secrets.JWT_SECRET }}
 
   docker-push-userservice:
     name: Push user service Docker Image to GitHub Packages
@@ -105,6 +107,7 @@ jobs:
         registry: ghcr.io
         workdir: users/userservice
         platforms: linux/arm64
+        buildargs: JWT_SECRET=${{ secrets.JWT_SECRET }}
 
   docker-push-llmservice:
     name: Push llm service Docker Image to GitHub Packages
