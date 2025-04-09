@@ -5,33 +5,66 @@ import PlayTab from "./ui/PlayTab";
 import StatsTab from "./ui/StatsTab";
 import LeaderboardTab from "./ui/LeaderboardTab";
 import StatisticsCard from "./ui/StatisticsCard";
-import { recentQuizzes, leaderboardData } from "./data";
 import "../../styles/home/HomePage.css";
 import Navbar from "./ui/Navbar";
 import "../../styles/Footer.css";
-import PropTypes from "prop-types";
+import axios from "axios"; 
 
+const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://localhost:8000';
 
 /**
  * Displays the home view of the application.
  * 
- * @param {String} username         - The username of the player.
- * @param {JSON} stats              - The statistics of the player.
- * 
  * @returns {JSX.Element} The rendered component.
  */
-function HomePage({ username, stats }) {
-    if (!username) {
-        username = "QuizMaster";
-    }
+function HomePage() {
+    const [username, setUsername] = useState("");   
+    const [profilePicture, setProfilePicture] = useState(""); 
 
     const [tabValue, setTabValue] = useState(0);
     const [currentYear, setCurrentYear] = useState(null);
 
     useEffect(() => {
+        const fetchData = async () => {
+          const token = document.cookie
+            .split("; ")
+            .find((row) => row.startsWith("token="))
+            ?.split("=")[1];
+    
+          if (!token) return;
+    
+          try {
+            // Fetch username
+            const userResponse = await axios.get(`${apiEndpoint}/token/username`, {
+              headers: {
+                Authorization: `Bearer ${token}`
+              }
+            });
+            
+            setUsername(userResponse.data.username);
+            
+            // Fetch profile picture after username is fetched
+            const imgRes = await fetch(`${apiEndpoint}/user/profile/picture/${userResponse.data.username}`);
+            
+            if (imgRes.ok) {
+              const imgURL = await imgRes.json();
+              setProfilePicture(`${apiEndpoint}/${imgURL.profilePicture}`);
+            } else {
+              console.error("Failed to fetch profile picture.");
+            }
+            
+          } catch (error) {
+              setUsername(null); // Set username to null if there's an error
+              console.error("Error fetching data:", error);
+              return;
+          }
+        };
+    
+        fetchData();
+    
         setCurrentYear(new Date().getFullYear()); // For footer
         return () => clearTimeout(10); // Cleanup
-    }, []);
+      }, []); 
 
     // Change tab value when clicked
     const handleTabChange = (_, newValue) => setTabValue(newValue);
@@ -41,7 +74,7 @@ function HomePage({ username, stats }) {
 
             {/* Navbar */}
             <div className="navbar-container">
-                <Navbar username={username} />
+                <Navbar username={username || ""} profilePicture={profilePicture || ""} />
             </div>
 
             <Container maxWidth="lg" className="home-content">
@@ -86,11 +119,5 @@ function HomePage({ username, stats }) {
         </Box>
     );
 }
-
-// Validation with PropTypes for the username prop
-HomePage.propTypes = {
-    username: PropTypes.string.isRequired,
-    stats: PropTypes.object.isRequired
-};
 
 export default HomePage;

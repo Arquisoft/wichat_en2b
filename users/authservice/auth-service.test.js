@@ -61,7 +61,7 @@ describe('2FA Service', () => {
       expect(response.status).toBe(200);
       expect(otplib.authenticator.generateSecret).toHaveBeenCalled();
       expect(response.body).toHaveProperty('imageUrl', imageUrl);
-      expect(axios.patch).toHaveBeenCalledWith('http://gatewayservice:8000/users/testuser', { secret: mockSecret });
+      expect(axios.patch).toHaveBeenCalledWith('http://gatewayservice:8000/users/testuser', { secret: mockSecret }, {"headers": {"Authorization": "Bearer valid-jwt-token", "Content-Type": "application/json"}});
     });
     
     it('Should handle errors when generating 2FA setup', async () => {
@@ -273,7 +273,8 @@ describe('Auth Service', () => {
     });
 
     it('Should not register a user with an invalid role', async () => {
-      const invalidRoleUser = { username: 'testuser', password: 'testpassword', role: 'invalidrole' }; // NOSONAR
+      const password = 'testpassword'; // NOSONAR
+      const invalidRoleUser = { username: 'testuser', password: password, role: 'invalidrole' }; // NOSONAR
       const response = await request(app).post('/auth/register').send(invalidRoleUser);
 
       expect(response.status).toBe(400);
@@ -356,5 +357,146 @@ describe('Auth Service', () => {
         'Error in /login endpoint', new Error('Database error')
       );
     });
+  });
+});
+
+describe('GET /auth/token/username', () => {
+  it('Should return user details for a valid token', async () => {
+    const mockUser = { username: 'testuser', role: 'USER' };
+    const mockToken = 'valid-jwt-token';
+
+    // Mock jwt verification and axios call
+    jwt.verify.mockReturnValue(mockUser);
+    axios.get.mockResolvedValue({ data: mockUser });
+
+    const response = await request(app)
+      .get('/auth/token/username')
+      .set('Authorization', `Bearer ${mockToken}`)
+      .send();
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual(mockUser);
+    expect(jwt.verify).toHaveBeenCalledWith(mockToken, process.env.JWT_SECRET || 'testing-secret');
+
+    const expectedUrl = `http://gatewayservice:8000/users/testuser`;
+    expect(axios.get).toHaveBeenCalledWith(expectedUrl);
+  });
+
+  it('Should return unauthorized if no token is provided', async () => {
+    const response = await request(app)
+      .get('/auth/token/username')
+      .send();
+
+    expect(response.status).toBe(401);
+    expect(response.body).toHaveProperty('error', 'Unauthorized');
+  });
+
+  it('Should return 404 if user is not found', async () => {
+    const mockUser = { username: 'testuser', role: 'USER' };
+    const mockToken = 'valid-jwt-token';
+
+    jwt.verify.mockReturnValue(mockUser);
+    axios.get.mockResolvedValue({ data: null }); // Simulate no user found
+
+    const response = await request(app)
+      .get('/auth/token/username')
+      .set('Authorization', `Bearer ${mockToken}`)
+      .send();
+
+    expect(response.status).toBe(404);
+    expect(response.body).toHaveProperty('error', 'User not found');
+  });
+
+  it('Should handle errors and return internal server error', async () => {
+    const mockToken = 'valid-jwt-token';
+    const errorMessage = 'Error fetching user details';
+
+    jwt.verify.mockReturnValue({ username: 'testuser' });
+    axios.get.mockRejectedValue(new Error(errorMessage));
+
+    const response = await request(app)
+      .get('/auth/token/username')
+      .set('Authorization', `Bearer ${mockToken}`)
+      .send();
+
+    expect(response.status).toBe(500);
+    expect(response.body).toHaveProperty('error', 'Internal Server Error');
+  });
+});
+
+describe('POST /auth/validatePassword', () => {
+  it('Should validate the password successfully', async () => {
+    const username = 'testuser';
+    const password = 'testpassword'; //NOSONAR
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const mockUser = { username, password: hashedPassword };
+
+    axios.get.mockResolvedValue({ data: mockUser });
+    bcrypt.compare.mockResolvedValue(true); // Simulate successful password match
+
+    const response = await request(app)
+      .post('/auth/validatePassword')
+      .send({ username, password });
+
+    expect(response.status).toBe(200);
+    expect(response.body).toHaveProperty('message', 'Password is valid');
+
+    const expectedUrl = `http://gatewayservice:8000/users/testuser`;
+    expect(axios.get).toHaveBeenCalledWith(expectedUrl);
+    expect(bcrypt.compare).toHaveBeenCalledWith(password, mockUser.password);
+  });
+
+  it('Should return 400 if username or password is missing', async () => {
+    const response = await request(app)
+      .post('/auth/validatePassword')
+      .send({ username: 'testuser' });
+
+    expect(response.status).toBe(400);
+    expect(response.body).toHaveProperty('error', 'Username and password are required');
+  });
+
+  it('Should return 404 if user is not found', async () => {
+    const username = 'testuser';
+    const password = 'testpassword'; //NOSONAR
+
+    axios.get.mockResolvedValue({ data: null }); // Simulate user not found
+
+    const response = await request(app)
+      .post('/auth/validatePassword')
+      .send({ username, password });
+
+    expect(response.status).toBe(404);
+    expect(response.body).toHaveProperty('error', 'User not found');
+  });
+
+  it('Should return 401 if the password is invalid', async () => {
+    const username = 'testuser';
+    const password = 'incorrectpassword'; //NOSONAR
+    const mockUser = { username, password: 'hashedpassword' }; //NOSONAR
+
+    axios.get.mockResolvedValue({ data: mockUser });
+    bcrypt.compare.mockResolvedValue(false); // Simulate incorrect password
+
+    const response = await request(app)
+      .post('/auth/validatePassword')
+      .send({ username, password });
+
+    expect(response.status).toBe(401);
+    expect(response.body).toHaveProperty('error', 'Invalid password');
+  });
+
+  it('Should handle errors and return internal server error', async () => {
+    const username = 'testuser';
+    const password = 'testpassword'; //NOSONAR
+    const errorMessage = 'Error validating password';
+
+    axios.get.mockRejectedValue(new Error(errorMessage));
+
+    const response = await request(app)
+      .post('/auth/validatePassword')
+      .send({ username, password });
+
+    expect(response.status).toBe(500);
+    expect(response.body).toHaveProperty('error', 'Internal Server Error');
   });
 });

@@ -1,5 +1,5 @@
 # Use an official Node.js runtime as a parent image
-FROM node:22
+FROM node:23
 
 # Set the working directory in the container
 WORKDIR /usr/src/userservice
@@ -7,8 +7,12 @@ WORKDIR /usr/src/userservice
 # Copy package.json and package-lock.json to the working directory
 COPY package*.json ./
 
+ARG JWT_SECRET
+ENV JWT_SECRET=${JWT_SECRET}
+
 # Install app dependencies
 RUN npm install
+RUN mkdir -p /usr/src/userservice/public/images
 
 # Copy the app source code to the working directory
 COPY . .
