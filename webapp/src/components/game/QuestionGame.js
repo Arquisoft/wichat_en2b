@@ -9,7 +9,7 @@ const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://local
 
 export default function QuestionGame(params) {
     const { topic, subject, totalQuestions, numberOptions, timerDuration, question } = params;
-
+    const [correctAnswer, setCorrectAnswer] = useState(null);
     const [currentQuestion, setCurrentQuestion] = useState(0);
     const [questions, setQuestions] = useState([]);
     const [isWrong, setIsWrong] = useState(false);
@@ -65,33 +65,49 @@ export default function QuestionGame(params) {
         }, 0);
     };
 
-    const handleOptionSelect = (option) => {
+    const handleOptionSelect = async (option) => {
         if (isTransitioning.current || selectedOption !== null) return;
 
         isTransitioning.current = true;
         clearInterval(timerIntervalRef.current);
         timerIntervalRef.current = null;
 
-        const isCorrect = option === questions[currentQuestion].right_answer;
-        setIsRight(isCorrect);
-        setIsWrong(!isCorrect);
-
         setSelectedOption(option);
 
-        setAnswers((prevAnswers) => [
-            ...prevAnswers,
-            {
-                answer: option,
-                right_answer: questions[currentQuestion].right_answer,
-                isCorrect: isCorrect,
-                points: calculatePoints(isCorrect),
-                timeSpent: timerDuration - timeLeft,
-            },
-        ]);
+        try {
+            const response = await fetch(`${apiEndpoint}/question/validate`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    question_id: questions[currentQuestion].question_id,
+                    selected_answer: option
+                })
+            });
 
-        setTimeout(() => {
-            transitionToNextQuestion();
-        }, 2000);
+            const { isCorrect, correctAnswer } = await response.json();
+
+            setIsRight(isCorrect);
+            setIsWrong(!isCorrect);
+            setCorrectAnswer(correctAnswer);
+
+            setAnswers((prevAnswers) => [
+                ...prevAnswers,
+                {
+                    answer: option,
+                    isCorrect: isCorrect,
+                    points: calculatePoints(isCorrect),
+                    timeSpent: timerDuration - timeLeft,
+                },
+            ]);
+
+            setTimeout(() => {
+                transitionToNextQuestion();
+            }, 2000);
+        } catch(error) {
+            console.error('Error validating answer: ', error);
+        }
     };
 
     const calculatePoints = (isCorrect) => {
@@ -114,6 +130,7 @@ export default function QuestionGame(params) {
         setIsWrong(false);
         setSelectedOption(null);
         setTimeLeft(timerDuration);
+        setCorrectAnswer(null);
     };
 
     useEffect(() => {
@@ -183,7 +200,8 @@ export default function QuestionGame(params) {
                                 key={option}
                                 className={`quiz-option 
                                 ${selectedOption === option ? "selected" : ""} 
-                                ${selectedOption !== null && option === questions[currentQuestion].right_answer ? "correct-answer" : ""}`}
+                                ${selectedOption === option && isRight ? "correct-answer" : ""}
+                                ${!isRight && correctAnswer === option ? "correct-answer" : ""}`}
                                 onClick={() => handleOptionSelect(option)}
                                 disabled={selectedOption !== null}>
                                 {option}
