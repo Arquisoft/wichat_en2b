@@ -32,7 +32,6 @@ export default function InGameChat(params) {
 
         setMessages(prevMessages => [...prevMessages, newMessage]);
         setInput("");
-
         setIsThinking(true);
 
         try {
@@ -42,7 +41,7 @@ export default function InGameChat(params) {
                 body: JSON.stringify({
                     conversation: [{ role: "user", content: input }],
                     model: "empathy",
-                    possibleAnswers: { answers: question.answers, right_answer: question.right_answer }
+                    possibleAnswers: question
                 })
             });
             const data = await response.json();

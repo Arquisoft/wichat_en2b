@@ -52,7 +52,7 @@ describe('RouterQuestionRetriever', () => {
         expect(res.body.length).toBe(3);
         res.body.forEach(question => {
             expect(question.answers.length).toBe(3);
-            expect(question.answers).toContain(question.right_answer);
+            expect(question.image_name).toBe(`/images/${question.question_id}.jpg`);
         });
     }, 10000); // Increase timeout
 
@@ -74,13 +74,12 @@ describe('RouterQuestionRetriever', () => {
         expect(res.body.length).toBe(2);
         res.body.forEach(question => {
             expect(question.answers.length).toBe(4);
-            expect(question.answers).toContain(question.right_answer);
         });
     }, 10000); // Increase timeout
 
     it('should return 400 if not enough questions in DB', async () => {
         await Question.insertMany([
-            { subject: 'History', answer: 'Answer 1', _id: new mongoose.Types.ObjectId() }
+            { _id: new mongoose.Types.ObjectId(), subject: 'History', answer: 'Answer 1' }
         ]);
 
         const res = await request(app).get('/api/game/History/3');
@@ -103,4 +102,97 @@ describe('RouterQuestionRetriever', () => {
         // Restore the original implementation
         jest.restoreAllMocks();
     }, 10000); // Increase timeout
+
+    // POST /question/validate tests
+    it('should validate correct answer', async () => {
+        const question = await Question.create({
+            _id: new mongoose.Types.ObjectId(),
+            subject: 'Math',
+            answer: 'Mock answer'
+        });
+
+        const res = await request(app)
+            .post('/api/question/validate')
+            .send({
+                question_id: question._id,
+                selected_answer: 'Mock answer'
+            });
+
+        expect(res.status).toBe(200);
+        expect(res.body).toEqual({
+            isCorrect: true,
+            correctAnswer: null
+        });
+    });
+
+    it('should validate incorrect answer', async () => {
+        const question = await Question.create({
+            _id: new mongoose.Types.ObjectId(),
+            subject: 'Math',
+            answer: 'Mock answer'
+        });
+
+        const res = await request(app)
+            .post('/api/question/validate')
+            .send({
+                question_id: question._id,
+                selected_answer: 'Wrong answer'
+            });
+
+        expect(res.status).toBe(200);
+        expect(res.body).toEqual({
+            isCorrect: false,
+            correctAnswer: 'Mock answer'
+        });
+    });
+
+    it('should return 404 for non-existent question', async () => {
+        let question_id = new mongoose.Types.ObjectId();
+        const res = await request(app)
+            .post('/api/question/validate')
+            .send({
+                question_id: question_id,
+                selected_answer: 'Any answer'
+            });
+
+        expect(res.status).toBe(404);
+        expect(res.body.error).toBe('Question not found');
+    });
+
+    // GET /question/internal/:id tests
+    it('should return right answer for internal use', async () => {
+        const question = await Question.create({
+            _id: new mongoose.Types.ObjectId(),
+            subject: 'Math',
+            answer: 'Mock answer'
+        });
+
+        const res = await request(app)
+            .get(`/api/question/internal/${question._id}`);
+
+        expect(res.status).toBe(200);
+        expect(res.body).toEqual({
+            right_answer: 'Mock answer'
+        });
+    });
+
+    it('should return 404 for non-existent question', async () => {
+        const res = await request(app)
+            .get(`/api/question/internal/${new mongoose.Types.ObjectId()}`);
+
+        expect(res.status).toBe(404);
+        expect(res.body.error).toBe('Question not found');
+    });
+
+    it('should return 500 on database error', async () => {
+        jest.spyOn(Question, 'findOne').mockImplementationOnce(() => {
+            throw new Error('Database error');
+        });
+
+        const res = await request(app)
+            .get(`/api/question/internal/${new mongoose.Types.ObjectId()}`);
+
+        expect(res.status).toBe(500);
+        expect(res.body.error).toBe('Error retrieving question data');
+    });
 });
