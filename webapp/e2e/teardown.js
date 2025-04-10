@@ -1,32 +1,18 @@
 module.exports = async () => {
     try {
-        // First close all services
-        await Promise.all([
-            global.gameservice.close(),
-            global.gatewayservice.close(),
-            global.llmservice.close(),
-            global.authservice.server.close(),
-            global.userservice.close(),
-            global.userserviceModule.default.close(),
-        ]);
+        // Close services in reverse order of initialization with proper error handling
+        if (global.gameservice) await global.gameservice.close();
+        if (global.gatewayservice) await global.gatewayservice.close();
+        if (global.llmservice) await global.llmservice.close();
+        if (global.authservice && global.authservice.server) await global.authservice.server.close();
+        if (global.userservice) await global.userservice.close();
+        if (global.userserviceModule && global.userserviceModule.default)
+            await global.userserviceModule.default.close();
+        if (global.mongoserver) await global.mongoserver.stop();
 
-        // Stop mongo memory server last
-        if (global.mongoserver) {
-            await global.mongoserver.stop();
-        }
-
-        // Clear all remaining handles
-        await new Promise(resolve => setTimeout(resolve, 500));
-
-        console.log("🛑 All services stopped and connections closed");
+        console.log("✅ All services successfully closed");
     } catch (error) {
-        console.error("Error during teardown:", error);
-        process.exit(1); // Force exit on error
+        console.error("❌ Error during teardown:", error);
+        throw error; // Rethrow to make Jest aware of the failure
     }
-
-    // Force exit if still hanging
-    setTimeout(() => {
-        console.log("⚠️ Forcing exit after timeout");
-        process.exit(0);
-    }, 1000);
 };
