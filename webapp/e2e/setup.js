@@ -22,7 +22,7 @@ beforeAll(async () => {
         answers: i % 2 === 0
             ? ["Answer 1", "Answer 2", "Answer 3", "Answer 4"]
             : ["Answer 4", "Answer 5", "Answer 6", "Answer 7"],
-        right_answer: i % 2 === 0 ? "Answer 1" : "Answer 4"
+        question_id: '1'
     }));
 }, 15000);
 

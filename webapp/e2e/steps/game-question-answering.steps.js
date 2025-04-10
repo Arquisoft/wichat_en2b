@@ -27,6 +27,36 @@ defineFeature(feature, test => {
                     contentType: 'application/json',
                     body: JSON.stringify(global.mockQuestions)  // Use the mock data defined in setup.js
                 });
+            } else if (url.includes('/question/validate')) {
+                let body;
+                try {
+                    body = JSON.parse(request.postData());
+                } catch (e) {
+                    console.error('Error parsing request body:', e);
+                    request.abort();
+                    return;
+                }
+                const { question_id, selected_answer } = body;
+                const question = global.mockQuestions.find(q => q.question_id === question_id);
+                console.log('Question_id:', question_id, 'Selected answer', selected_answer )
+                console.log('Correct:', question.answers.includes(selected_answer), 'Correct answer:', question.answers[0] )
+                if (!question){
+                    request.respond({
+                        status: 404,
+                        contentType: 'application/json',
+                        body: JSON.stringify({error: 'Question not found'})
+                    });
+                } else {
+                    const isCorrect = selected_answer === question.answers[0];
+                    request.respond({
+                        status: 200,
+                        contentType: 'application/json',
+                        body: JSON.stringify({
+                            isCorrect,
+                            correctAnswer: isCorrect ? null : question.answers[0]
+                        })
+                    });
+                }
             } else {
                 request.continue();
             }
