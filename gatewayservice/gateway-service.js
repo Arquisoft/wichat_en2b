@@ -1,5 +1,4 @@
 const express = require('express');
-const axios = require('axios');
 const cors = require('cors');
 const promBundle = require('express-prom-bundle');
 const swaggerUi = require('swagger-ui-express');
@@ -20,7 +19,7 @@ const serviceUrls = {
 };
 
 // CORS setup
-const publicCors = cors({ origin: '*', methods: ['GET', 'POST'] });
+const publicCors = cors({ origin: '*', methods: ['GET', 'POST', 'PATCH', 'OPTIONS', 'DELETE', 'PUT'] });
 
 app.use(express.json());
 app.use(helmet.hidePoweredBy());
@@ -44,17 +43,17 @@ const forwardRequest = async (service, endpoint, req, res) => {
     // Get the response body (if any) and content type
     const contentType = response.headers.get('Content-Type');
     let responseBody;
-    if (contentType && contentType.includes('application/json')) {//NOSONAR
+    if (contentType?.includes('application/json')) {
       responseBody = await response.json();
     } else {
       responseBody = await response.text();
     }
-    
+
     // Set the status code from the downstream service response
     res.status(response.status);
     // Send the response body as-is
     if (responseBody) {
-      if (contentType && contentType.includes('application/json')) {//NOSONAR
+      if (contentType?.includes('application/json')) {
         res.json(responseBody); // Send JSON (e.g., token or error message)
       } else {
         res.send(responseBody); // Send text if not JSON
@@ -81,7 +80,7 @@ app.post('/users', (req, res) => forwardRequest('user', '/users', req, res));
 
 app.get('/users', (req, res) => {
   const { id } = req.query;
-  const endpoint = id ? `/users?id=${id}` : '/users';//NOSONAR
+  const endpoint = id && typeof id === 'string' ? `/users?id=${id}` : '/users';
   forwardRequest('user', endpoint, req, res);
 });
 
@@ -186,11 +185,67 @@ app.get('/game/:subject/:totalQuestions/:numberOptions', async (req, res) => {
   });
 });
 
+// Username handling
+app.use('/token/username', publicCors);
+
+app.get('/token/username', async (req, res) => {
+  forwardRequest("auth", "/auth/token/username", req, res);
+});
+
+// Middleware to handle CORS for the user and password change endpoint
+app.use('/users/:username', publicCors);
+app.use('/users/:username/password', publicCors);
+
+// Change username
+app.patch('/users/:username',  async (req, res) => {
+  forwardRequest("user", `/users/${req.params.username}`, req, res);
+});
+
+// Update game history when username changes
+const corsOptions = {
+  origin: serviceUrls.user,
+  methods: ['PATCH'], 
+  allowedHeaders: ['Content-Type', 'Origin'] 
+};
+
+app.use('/game/update/:oldUsername', cors(corsOptions));
+
+app.patch('/game/update/:oldUsername', async (req, res) => {
+    forwardRequest("game", `/game/update/${req.params.oldUsername}`, req, res);
+});
+
+// Profile picture upload
+app.use('/user/profile/picture', publicCors);
+
+app.post('/user/profile/picture', async (req, res) => {
+    forwardRequest("user", "/user/profile/picture", req, res);
+});
+
+// Profile picture retrieval
+app.use('/user/profile/picture/:username', publicCors);
+
+app.get('/user/profile/picture/:username', async (req, res) => {
+    forwardRequest("user", `/user/profile/picture/${req.params.username}`, req, res);
+});
+
 // Proxy for images
-app.get('/images/:image', createProxyMiddleware({
-  target: serviceUrls.game,
-  changeOrigin: true
-}));
+app.get('/images/:image', (req, res, next) => {
+  const { image } = req.params;
+  console.log(`Image requested: ${image}`);
+
+  if (image.includes('_profile_picture')) {
+    createProxyMiddleware({
+      target: serviceUrls.user,
+      changeOrigin: true,
+    })(req, res, next);
+
+  } else {
+    createProxyMiddleware({
+      target: serviceUrls.game,
+      changeOrigin: true,
+    })(req, res, next);
+  }
+});
 
 app.post('/game', (req, res) => {
   forwardRequest('game', '/game', req, res);

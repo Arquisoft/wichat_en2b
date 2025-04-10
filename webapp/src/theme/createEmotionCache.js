@@ -1,14 +1,1 @@
-import createCache from '@emotion/cache';
-
-const isBrowser = typeof document !== 'undefined';
-
-export default function createEmotionCache() {
-  let insertionPoint;
-
-  if (isBrowser) {
-    const emotionInsertionPoint = document.querySelector('meta[name="emotion-insertion-point"]');
-    insertionPoint = emotionInsertionPoint ?? undefined;
-  }
-
-  return createCache({ key: 'mui', insertionPoint });
-}
+import createCache from"@emotion/cache";const isBrowser="undefined"!=typeof document;export default function createEmotionCache(){let insertionPoint;if(isBrowser){const emotionInsertionPoint=undefined;insertionPoint=document.querySelector('meta[name="emotion-insertion-point"]')??void 0}return createCache({key:"mui",insertionPoint:insertionPoint})}
