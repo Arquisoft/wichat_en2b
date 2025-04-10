@@ -20,7 +20,6 @@ const deleteGroup = async (groupId) => {
 
 // Get all groups
 router.get('/groups', async (req, res) => {
-    console.log('Fetching all groups');
     try {
         res.status(200).send(await Group.find());
     } catch (error) {
@@ -29,7 +28,6 @@ router.get('/groups', async (req, res) => {
 });
 
 router.get('/groups/joined', verifyToken, async (req, res) => {
-    console.log('Fetching joined groups');
     try {
         // Get the user that is logged in
         const userId = req.user._id;
@@ -47,7 +45,6 @@ router.get('/groups/joined', verifyToken, async (req, res) => {
 
 // Get a group by its name
 router.get('/groups/:name', async (req, res) => {
-    console.log('Fetching group by name');
     try {
         const group = await Group.findOne({ groupName: req.params.name.toString() });
         if (!group) {
@@ -61,7 +58,6 @@ router.get('/groups/:name', async (req, res) => {
 
 // Create a new group
 router.post('/groups', verifyToken, async (req, res) => {
-    console.log('Creating a new group');
     try {
         // Check if the request body is empty
         if (Object.keys(req.body).length === 0) {
@@ -118,7 +114,6 @@ router.post('/groups', verifyToken, async (req, res) => {
 
 // Update a group by its name
 router.patch('/groups', verifyToken, async (req, res) => {
-    console.log('Updating group');
     const { name } = req.body;
 
     if (!name) {
@@ -159,8 +154,6 @@ router.patch('/groups', verifyToken, async (req, res) => {
 // Delete the group that the user belongs to
 // Only the owner can delete the group
 router.delete('/groups', verifyToken, async (req, res) => {
-    console.log('Deleting group');
-
     try {
         const userId = req.user._id;
         // Check if the user is the owner of the group
@@ -187,9 +180,6 @@ router.delete('/groups', verifyToken, async (req, res) => {
 
 // A user joins a group
 router.post('/groups/join', verifyToken, async (req, res) => {
-    console.log('Joining group');
-
-    
     if (!req.body.name) {
         return res.status(400).json({ error: 'Group name is required' });
     }
@@ -221,7 +211,6 @@ router.post('/groups/join', verifyToken, async (req, res) => {
 });
 
 router.post('/groups/leave', verifyToken, async (req, res) => {
-    console.log('Leaving group');
     try {
         // Look for the logged-in user
         const userId = req.user._id;
@@ -254,6 +243,7 @@ router.post('/groups/leave', verifyToken, async (req, res) => {
         res.status(200).json({ message: 'Left the group successfully', group });
 
     } catch (error) {
+        console.log(error);
         res.status(500).json({ error: 'Internal server error', details: error.message });
     }
 });
