@@ -45,8 +45,7 @@ router.post('/quiz', async (req, res) => {
         const query = req.body.wikidataQuery;
         const code = req.body.wikidataCode;
         try {
-            console.log(query);
-            console.log(code);
+
             // Fetch data from Wikidata
             const url = wikiDataUri + encodeURIComponent(query);
             const response = await fetch(url, {

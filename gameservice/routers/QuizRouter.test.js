@@ -1,152 +1,220 @@
 const mongoose = require('mongoose');
 const { MongoMemoryServer } = require('mongodb-memory-server');
-const Question = require('../quizz-model');  // Assuming the model is in question-model.js
+const QuizCategories = require('../quizz-model'); // Adjust the path accordingly
+const request = require('supertest');
+const express = require('express');
+const quizRouter = require('./QuizRouter'); // Adjust the path if needed
 
-let mongoServer;
+const app = express();
+app.use(express.json());
+app.use(quizRouter); // Use your router
 
-beforeAll(async () => {
-  // Set up in-memory MongoDB server
-  mongoServer = await MongoMemoryServer.create();
-  const uri = mongoServer.getUri();
-  await mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true });
-});
+// Mock global fetch for Wikidata and image downloading
+global.fetch = jest.fn();
 
-afterAll(async () => {
-  // Close connection and stop the in-memory server
-  await mongoose.disconnect();
-  await mongoServer.stop();
-});
+describe('Quiz Router Tests', () => {
+  let mongoServer;
 
-beforeEach(async () => {
-  // Clean up the database before each test
-  await Question.deleteMany({});
-});
+  beforeAll(async () => {
+      mongoServer = await MongoMemoryServer.create();
+      const uri = mongoServer.getUri();
+      await mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true });
+  });
 
-describe('Question Model', () => {
-  it('should be invalid if required fields are missing', async () => {
-    const quiz = new Question({
+  afterAll(async () => {
+      await mongoose.disconnect();
+      await mongoServer.stop();
+  });
+
+  afterEach(async () => {
+      await QuizCategories.deleteMany();
+      jest.clearAllMocks();
+  });
+
+  const validQuiz = {
       category: 'Science',
-      quizName: '',  // Missing required quiz name
-      wikidataQuery: 'some query',
-      wikidataCode: 'Q123',
-      description: 'A science quiz',
-      question: 'What is 2 + 2?',
+      quizName: 'Planets',
+      wikidataQuery: 'SELECT ?item WHERE { ?item wdt:P31 wd:Q634. }',
+      wikidataCode: 'WD_PLANETS',
+      description: 'A quiz about the planets in our solar system',
+      question: 'Which planet is known as the Red Planet?',
       difficulty: 3,
-      numQuestions: 10,
+      numQuestions: 5,
       timePerQuestion: 15,
       numOptions: 4,
-      color: '#ff0000',
-    });
+      color: '#ff5733'
+  };
 
-    try {
-      await quiz.validate();
-    } catch (error) {
-      expect(error.errors['quizName']).toBeDefined();
-    }
+  it('GET /quiz - should return all quizzes', async () => {
+      await QuizCategories.create(validQuiz);
+      const res = await request(app).get('/quiz');
+      expect(res.statusCode).toBe(200);
+      expect(res.body).toHaveLength(1);
+      expect(res.body[0].quizName).toBe('Planets');
   });
 
-  it('should be invalid if difficulty is outside valid range', async () => {
-    const quiz = new Question({
-      category: 'Math',
-      quizName: 'Basic Math',
-      wikidataQuery: 'some query',
-      wikidataCode: 'Q456',
-      description: 'A basic math quiz',
-      question: 'What is 2 + 2?',
-      difficulty: 6,  // Invalid difficulty
-      numQuestions: 5,
-      timePerQuestion: 10,
-      numOptions: 4,
-      color: '#00ff00',
-    });
-
-    try {
-      await quiz.validate();
-    } catch (error) {
-      expect(error.errors['difficulty']).toBeDefined();
-    }
+  it('GET /quiz/AllTopics - should return distinct categories', async () => {
+      await QuizCategories.create({ ...validQuiz, category: 'Math', quizName: 'test1' });
+      await QuizCategories.create({ ...validQuiz, category: 'Science', quizName: 'test2' });
+      
+      const res = await request(app).get('/quiz/AllTopics');
+      expect(res.statusCode).toBe(200);
+      expect(res.body).toContain('Math');
+      expect(res.body).toContain('Science');
   });
 
-  it('should be invalid if color is not a valid hex code', async () => {
-    const quiz = new Question({
-      category: 'General Knowledge',
-      quizName: 'Test Color',
-      wikidataQuery: 'some query',
-      wikidataCode: 'Q789',
-      description: 'A quiz with invalid color',
-      question: 'What is 2 + 2?',
-      difficulty: 2,
-      numQuestions: 5,
-      timePerQuestion: 10,
-      numOptions: 4,
-      color: 'red',  // Invalid color
+  it('GET /quiz/:topic - should return quizzes for a topic', async () => {
+    await QuizCategories.create({ ...validQuiz, category: 'Math', quizName:'test1' });
+    await QuizCategories.create({ ...validQuiz, category: 'Science', quizName: 'test2' });
+
+    const res = await request(app).get('/quiz/Math');
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toHaveLength(1);
+    expect(res.body[0].category).toBe('Math');
+});
+
+it('should create quiz and save to database', async () => {
+  const quizData = {
+    quizName: 'Sample Quiz',
+    category: 'Science',
+    color: '#123456',
+    numOptions: 4,
+    timePerQuestion: 30,
+    numQuestions: 10,
+    difficulty: 3,
+    question: 'What is the capital of France?',
+    wikidataCode: 'Q298',
+    wikidataQuery: 'SELECT ?item WHERE { ?item rdfs:label "Paris"@en }',
+  };
+
+  const response = await request(app)
+    .post('/quiz')
+    .send(quizData)
+    .expect(201);
+
+  // Check if the response contains the created quiz data
+  expect(response.body.quizName).toBe(quizData.quizName);
+  expect(response.body.category).toBe(quizData.category);
+  expect(response.body.color).toBe(quizData.color);
+  expect(response.body.numOptions).toBe(quizData.numOptions);
+  expect(response.body.timePerQuestion).toBe(quizData.timePerQuestion);
+  expect(response.body.numQuestions).toBe(quizData.numQuestions);
+  expect(response.body.difficulty).toBe(quizData.difficulty);
+  expect(response.body.question).toBe(quizData.question);
+  expect(response.body.wikidataCode).toBe(quizData.wikidataCode);
+  expect(response.body.wikidataQuery).toBe(quizData.wikidataQuery);
+
+  const quizInDb = await QuizCategories.findById(response.body._id);
+  expect(quizInDb).toBeTruthy();
+});
+
+it('POST /quiz - handles invalid quiz body gracefully', async () => {
+  const res = await request(app)
+      .post('/quiz')
+      .send({}); // Invalid body
+
+  expect(res.statusCode).toBe(500);
+  expect(res.body.message).toBe('Server error');
+});
+
+});
+describe('QuizCategories Model', () => {
+    let mongoServer;
+
+    beforeAll(async () => {
+        mongoServer = await MongoMemoryServer.create();
+        await mongoose.connect(mongoServer.getUri(), {
+            useNewUrlParser: true,
+            useUnifiedTopology: true
+        });
     });
 
-    try {
-      await quiz.validate();
-    } catch (error) {
-      expect(error.errors['color']).toBeDefined();
-    }
-  });
+    afterAll(async () => {
+        await mongoose.disconnect();
+        await mongoServer.stop();
+    });
 
-  it('should save a valid quiz', async () => {
-    const validQuizData = {
-      category: 'Science',
-      quizName: 'Physics 101',
-      wikidataQuery: 'some query',
-      wikidataCode: 'Q123',
-      description: 'A physics quiz',
-      question: 'What is the speed of light?',
-      difficulty: 3,
-      numQuestions: 5,
-      timePerQuestion: 10,
-      numOptions: 4,
-      color: '#ff0000',
+    afterEach(async () => {
+        await QuizCategories.deleteMany();
+    });
+
+    const validQuiz = {
+        category: 'Science',
+        quizName: 'Planets',
+        wikidataQuery: 'SELECT ?item WHERE { ?item wdt:P31 wd:Q634. }',
+        wikidataCode: 'WD_PLANETS',
+        description: 'A quiz about the planets in our solar system',
+        question: 'Which planet is known as the Red Planet?',
+        difficulty: 3,
+        numQuestions: 5,
+        timePerQuestion: 15,
+        numOptions: 4,
+        color: '#ff5733'
     };
 
-    const quiz = new Question(validQuizData);
-
-    const savedQuiz = await quiz.save();
-
-    expect(savedQuiz.quizName).toBe('Physics 101');
-    expect(savedQuiz.color).toBe('#ff0000');
-  });
-
-  it('should throw an error if quiz name is not unique (duplicate key)', async () => {
-    const existingQuiz = new Question({
-      category: 'Math',
-      quizName: 'Math 101',
-      wikidataQuery: 'some query',
-      wikidataCode: 'Q123',
-      description: 'A math quiz',
-      question: 'What is 2 + 2?',
-      difficulty: 3,
-      numQuestions: 5,
-      timePerQuestion: 10,
-      numOptions: 4,
-      color: '#00ff00',
+    it('should save a valid quiz', async () => {
+        const quiz = new QuizCategories(validQuiz);
+        const saved = await quiz.save();
+        expect(saved._id).toBeDefined();
+        expect(saved.quizName).toBe('Planets');
     });
 
-    await existingQuiz.save();
+    it('should fail to save duplicate quizName', async () => {
+        await QuizCategories.create(validQuiz);
 
-    const newQuiz = new Question({
-      category: 'Math',
-      quizName: 'Math 101',  // Same quiz name
-      wikidataQuery: 'some query',
-      wikidataCode: 'Q123',
-      description: 'Another math quiz',
-      question: 'What is 3 + 3?',
-      difficulty: 2,
-      numQuestions: 5,
-      timePerQuestion: 10,
-      numOptions: 4,
-      color: '#ff0000',
+        try {
+            await QuizCategories.create({ ...validQuiz });
+        } catch (error) {
+            expect(error.message).toBe('Quiz name must be unique. A quiz with this name already exists.');
+        }
     });
 
-    try {
-      await newQuiz.save();
-    } catch (error) {
-      expect(error.message).toBe('Quiz name must be unique. A quiz with this name already exists.');
-    }
-  });
+    it('should require all required fields', async () => {
+        const incomplete = new QuizCategories({});
+
+        let err;
+        try {
+            await incomplete.validate();
+        } catch (validationError) {
+            err = validationError;
+        }
+
+        expect(err).toBeDefined();
+        const requiredFields = [
+            'category', 'quizName', 'wikidataQuery', 'wikidataCode',
+            'question', 'difficulty', 'numQuestions', 'timePerQuestion',
+            'numOptions', 'color'
+        ];
+        requiredFields.forEach(field => {
+            expect(err.errors[field]).toBeDefined();
+        });
+    });
+
+    it('should fail if color is not a valid hex code', async () => {
+        const quiz = new QuizCategories({ ...validQuiz, color: 'red' });
+
+        try {
+            await quiz.validate();
+        } catch (err) {
+            expect(err.errors.color).toBeDefined();
+        }
+    });
+
+    it('should fail if difficulty is out of range', async () => {
+        const quiz = new QuizCategories({ ...validQuiz, difficulty: 10 });
+
+        try {
+            await quiz.validate();
+        } catch (err) {
+            expect(err.errors.difficulty).toBeDefined();
+        }
+    });
+
+    it('should fail if numOptions < 2 or > 10', async () => {
+        const low = new QuizCategories({ ...validQuiz, numOptions: 1 });
+        const high = new QuizCategories({ ...validQuiz, numOptions: 11 });
+
+        await expect(low.validate()).rejects.toThrow();
+        await expect(high.validate()).rejects.toThrow();
+    });
 });
