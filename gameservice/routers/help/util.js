@@ -4,7 +4,32 @@ const Question = require('../../question-model');
 const fs = require('fs');
 const QuizModel = require('../../quizz-model');
 
-async function saveQuestionsToDB(items, code) {
+const wikiDataUri = "https://query.wikidata.org/sparql?format=json&query=";
+async function saveQuestionsToDB(code, query) {
+    // Fetch data from Wikidata
+    const url = wikiDataUri + encodeURIComponent(query);
+    const response = await fetch(url, {
+        headers: {
+          'User-Agent': 'wichat_en2b/1.0'
+        }
+    });
+    
+    // Parse JSON response
+    const data = await response.json();
+
+    // Filter out items with missing data
+    const items = data.results.bindings.filter(item => {
+        const itemId = item.item.value.split('/').pop();
+        return item.itemLabel.value != null && item.image.value != null 
+        && !/^Q\d+$/.test(item.itemLabel.value) && itemId != item.itemLabel.value;
+    }).map(item => ({
+            name: item.itemLabel.value,
+            image: item.image.value
+        }));
+    // Check if items are empty (invalid type or no results)
+    if (items.length === 0) {
+        throw new Error('No valid items found for the given type');
+    }
     const imagesDir = './public/images';
 
     // Ensure images directory exists asynchronously
@@ -92,6 +117,8 @@ async function saveQuestionsToDB(items, code) {
         await Promise.all(fetchPromises);
 
         console.log('Data and images saved successfully.');
+        console.log(items);
+        return items;
     } catch (error) {
         console.error('Error saving data:', error);
     }

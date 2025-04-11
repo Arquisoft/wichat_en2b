@@ -20,33 +20,8 @@ router.get('/generate/:type/:amount', async (req, res) => {
     `;
 
     try {
-        // Fetch data from Wikidata
-        const url = wikiDataUri + encodeURIComponent(query);
-        const response = await fetch(url, {
-            headers: {
-              'User-Agent': 'wichat_en2b/1.0'
-            }
-        });
-        
-        // Parse JSON response
-        const data = await response.json();
-
-        // Filter out items with missing data
-        const items = data.results.bindings.filter(item => {
-            const itemId = item.item.value.split('/').pop();
-            return item.itemLabel.value != null && item.image.value != null 
-            && !/^Q\d+$/.test(item.itemLabel.value) && itemId != item.itemLabel.value;
-        }).map(item => ({
-                name: item.itemLabel.value,
-                image: item.image.value
-            }));
-        // Check if items are empty (invalid type or no results)
-        if (items.length === 0) {
-            throw new Error('No valid items found for the given type');
-        }
-
         // Save items to database and images to disk
-        await saveQuestionsToDB(items, itemType);
+        const items = await saveQuestionsToDB(itemType, query);
         
         return res.status(200).json({ message: '✅ Data fetched successfully', items: items }); 
     } catch (error) {
