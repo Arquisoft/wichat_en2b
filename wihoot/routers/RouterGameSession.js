@@ -1,16 +1,12 @@
 const express = require("express");
 const { v4: uuidv4 } = require("uuid");
 const router = express.Router();
+const verifyToken = require('../../gameservice/routers/middleware/auth')
 
-
-// Memory map storage for game sessions codes
-const gameSessions = {};
 
 // Create a new game session with its code (This is available for logged users only)
-router.post("/game/create", (req, res) => {
+router.post("/wihoot/create", verifyToken, (req, res) => {
     const { subject, totalQuestions, numberOptions, adminName } = req.body;
-
-    //TODO: call verifyToken ENDPOINT to check if the user is logged in
 
     if (!subject || !totalQuestions || !numberOptions || !adminName) {
         return res.status(400).json({ error: "Missing required game parameters." });
@@ -39,7 +35,7 @@ router.post("/game/create", (req, res) => {
 });
 
 // Join to a game session using a code
-router.post("/game/:code/join", (req, res) => {
+router.post("/wihoot/:code/join", (req, res) => {
     const joinData = { gameCode, playerName, isGuest }
     joinData.playerName = req.body.playerName;
     joinData.isGuest = req.body.isGuest;
@@ -58,7 +54,7 @@ router.post("/game/:code/join", (req, res) => {
 
 
 // Export game sessions for Socket.IO
-router.get("/internal/game-sessions", (req, res) => {
+router.get("/wihoot/game-sessions", verifyToken, (req, res) => {
     res.json(gameSessions);
 });
 

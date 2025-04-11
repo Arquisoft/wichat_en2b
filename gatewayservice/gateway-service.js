@@ -6,6 +6,7 @@ const fs = require('fs');
 const YAML = require('yaml');
 const { createProxyMiddleware } = require('http-proxy-middleware');
 const helmet = require('helmet');
+const {toFormData} = require("axios");
 
 const app = express();
 const port = 8000;
@@ -15,7 +16,8 @@ const serviceUrls = {
   llm: process.env.LLM_SERVICE_URL || 'http://localhost:8003',
   auth: process.env.AUTH_SERVICE_URL || 'http://localhost:8002',
   user: process.env.USER_SERVICE_URL || 'http://localhost:8001',
-  game: process.env.GAME_SERVICE_URL || 'http://localhost:8004'
+  game: process.env.GAME_SERVICE_URL || 'http://localhost:8004',
+  wihoot: process.env.WIHOOT_SERVICE_URL || 'http://localhost:8005',
 };
 
 // CORS setup
@@ -247,6 +249,34 @@ app.get('/images/:image', (req, res, next) => {
 
 app.post('/game', (req, res) => {
   forwardRequest('game', '/game', req, res);
+});
+
+// Wihoot Routes
+app.use('/wihoot',
+    cors({
+      origin: '*',
+      credentials: true,
+      methods: ['GET', 'POST']
+    })
+)
+app.post('/wihoot/create',(req, res) => {
+    forwardRequest('wihoot', '/wihoot/create', req, res)
+});
+
+app.post('/wihoot/:code/join',(req, res) => {
+  forwardRequest('wihoot', `/wihoot/${req.params.code}/join`, req, res)
+});
+
+app.get('/wihoot/:code/start', (req, res) => {
+    forwardRequest('wihoot', `/wihoot/${req.params.code}/start`, req, res)
+});
+
+app.get('/wihoot/:code/next', (req, res) => {
+  forwardRequest('wihoot', `/wihoot/${req.params.code}/next`, req, res)
+});
+
+app.post('/wihoot/:code/answer', (req, res) => {
+  forwardRequest('wihoot', `/wihoot/${req.params.code}/answer`, req, res)
 });
 
 // OpenAPI Documentation
