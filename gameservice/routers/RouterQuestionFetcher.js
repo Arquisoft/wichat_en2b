@@ -2,6 +2,7 @@ const express = require('express');
 const Question = require('../question-model');
 const fs = require('fs');
 const router = express.Router();
+const saveQuestionsToDB = require('./help/util');
 
 const wikiDataUri = "https://query.wikidata.org/sparql?format=json&query=";
 
@@ -54,62 +55,5 @@ router.get('/generate/:type/:amount', async (req, res) => {
     }
 });
 
-async function saveQuestionsToDB(items, code) {
-    const imagesDir = './public/images';
-
-    // Ensure images directory exists asynchronously
-    await fs.promises.mkdir(imagesDir, { recursive: true });
-
-    try {
-        // Step 1: Fetch existing questions in one go to reduce DB queries
-        const existingQuestions = await Question.find({ subject: code }).lean();
-        const existingMap = new Map(existingQuestions.map(q => [q.answer, q]));
-
-        // Step 2: Prepare bulk operations
-        const bulkOps = [];
-        const fetchPromises = [];
-
-        for (const item of items) {
-            const existingQuestion = existingMap.get(item.name);
-            let questionId;
-
-            if (existingQuestion) {
-                // Update existing question
-                bulkOps.push({
-                    updateOne: {
-                        filter: { _id: existingQuestion._id },
-                        update: { $set: { subject: code, answer: item.name }, $inc: { __v: 1 } }
-                    }
-                });
-                questionId = existingQuestion._id;
-            } else {
-                // Insert new question
-                const newQuestion = new Question({ subject: code, answer: item.name });
-                bulkOps.push({ insertOne: { document: newQuestion } });
-                questionId = newQuestion._id;
-            }
-
-            // Fetch and save image in parallel
-            fetchPromises.push(
-                fetch(item.image)
-                    .then(res => res.arrayBuffer())
-                    .then(buffer => fs.promises.writeFile(`${imagesDir}/${questionId}.jpg`, Buffer.from(buffer)))
-                    .catch(err => console.error(`Error saving image for ${item.name}:`, err))
-            );
-        }
-
-        // Step 3: Execute bulk database operations
-        if (bulkOps.length > 0) {
-            await Question.bulkWrite(bulkOps);
-        }
-
-        // Step 4: Wait for all images to be downloaded and saved
-        await Promise.all(fetchPromises);
-
-        console.log('Data and images saved successfully.');
-    } catch (error) {
-        console.error('Error saving data:', error);
-    }
-}
 
 module.exports = router;
