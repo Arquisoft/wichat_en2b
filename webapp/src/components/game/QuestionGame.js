@@ -100,6 +100,7 @@ export default function QuestionGame(params) {
                     isCorrect: isCorrect,
                     points: calculatePoints(isCorrect),
                     timeSpent: timerDuration - timeLeft,
+                    rightAnswer: correctAnswer,
                 },
             ]);
 
