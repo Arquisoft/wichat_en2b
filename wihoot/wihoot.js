@@ -19,10 +19,33 @@ const io = socketIo(server, {
     },
 })
 
+// Connection to MongoDB game database
+const connectWithRetry = () => {
+    const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/game';
+    mongoose.connect(mongoUri)
+        .then(() => console.log('✅ Connected to MongoDB'))
+        .catch(err => {
+            console.error('❌ Error when connecting to MongoDB:', err)
+            setTimeout(connectWithRetry, 5000)
+        });
+}
+// Handle MongoDB connection events
+mongoose.connection.on("error", (err) => {
+    console.error("MongoDB connection error:", err)
+})
 
+mongoose.connection.on("disconnected", () => {
+    console.log("MongoDB disconnected, attempting to reconnect...")
+    connectWithRetry()
+})
 
 app.use(gamesessionRouter);
 require('./socket/socketHandler')(io)
+
+server.on('close', () => {
+    // Close the Mongoose connection
+    mongoose.connection.close();
+});
 
 server.listen(port, () => {
     console.log(`🚀 Wihoot server running on: http://localhost:${port}`);

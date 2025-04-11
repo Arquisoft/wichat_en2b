@@ -1,5 +1,4 @@
 const mongoose = require("mongoose")
-const Question = require("../../gameservice/question-model")
 
 const PlayerSchema = new mongoose.Schema({
     id: String,
@@ -7,7 +6,14 @@ const PlayerSchema = new mongoose.Schema({
     score: {
         type: Number,
         default: 0,
+    }, answers: {
+        type: Array,
+        default: new Array(),
     },
+    isGuest: {
+        type: Boolean,
+        default: false,
+    }
 })
 
 const SessionSchema = new mongoose.Schema(
@@ -30,6 +36,9 @@ const SessionSchema = new mongoose.Schema(
         currentQuestionIndex: {
             type: Number,
             default: -1, // -1 means in lobby
+        }, questions: {
+            type: Array,
+            default: new Array(),
         },
         started: {
             type: Boolean,
@@ -46,3 +55,8 @@ const SessionSchema = new mongoose.Schema(
         timestamps: true,
     },
 )
+
+const Session = mongoose.model('Session', SessionSchema);
+const Player = mongoose.model('Player', PlayerSchema);
+
+module.exports = { Session, Player }
