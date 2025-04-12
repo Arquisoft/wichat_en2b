@@ -3,13 +3,6 @@ const mongoose = require("mongoose")
 const PlayerSchema = new mongoose.Schema({
     id: String,
     name: String,
-    score: {
-        type: Number,
-        default: 0,
-    }, answers: {
-        type: Array,
-        default: new Array(),
-    },
     isGuest: {
         type: Boolean,
         default: false,
@@ -39,6 +32,10 @@ const SessionSchema = new mongoose.Schema(
         }, questions: {
             type: Array,
             default: new Array(),
+        },
+        timePerQuestion: {
+            type: Number,
+            default: 60,
         },
         started: {
             type: Boolean,

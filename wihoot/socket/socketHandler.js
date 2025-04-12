@@ -1,5 +1,8 @@
 const jwt = require('jsonwebtoken');
+const { ObjectId } = require('mongodb');
 const {Session, Player} = require("../models/session-model");
+const Question = require('../../gameservice/question-model')
+const GameInfo = require("../../gameservice/game-result-model");
 
 // Memory map storage for game sessions codes
 const gameSessions = new Map();
@@ -26,7 +29,7 @@ module.exports = (io) => {
     io.on("connection", (socket) => {
         console.log(`🟢 User connected: ${socket.id}`);
 
-        // HOST EVENTS
+        // { HOST EVENTS }
 
         // Host joins a specific game room to control de game questions
         socket.on("host-join-game", async (gameCode) => {
@@ -38,7 +41,7 @@ module.exports = (io) => {
                 }
 
                 // Get session from database
-                const session = await Session.findOne({ gameCode: gameCode })
+                const session = await Session.findOne({gameCode: gameCode})
 
                 if (!session) {
                     socket.emit("error", "Game not found")
@@ -76,7 +79,7 @@ module.exports = (io) => {
                 }
 
                 // Get session from database
-                const session = await Session.findOne({ gameCode })
+                const session = await Session.findOne({gameCode})
 
                 if (!session) {
                     socket.emit("error", "Game not found")
@@ -110,7 +113,11 @@ module.exports = (io) => {
                 gameSessions.set(gameCode, {
                     session: session,
                     currentQuestionIndex: -1,
-                    timer: null,
+                    timePerQuestion: session.timePerQuestion,
+                    questions: session.questions,
+                    answers: new Map(),
+                    points: new Map(),
+                    numberCorrectAnswers: new Map(),
                 })
 
                 // Notify all players
@@ -224,47 +231,25 @@ module.exports = (io) => {
             }
         })
 
-        // PLAYER EVENTS
+        // { PLAYER EVENTS }
 
-        // Join game
+        // Join game. Client arrive this point once /wihoot/:code/join is responded
         socket.on("join-game", async (gameCode, playerName, callback) => {
             try {
+
                 // Validate inputs
                 if (!gameCode || !playerName) {
-                    if (callback) callback({ success: false, message: "Game code and player name are required" })
+                    if (callback) callback({success: false, message: "Game code and player name are required"})
                     return
                 }
 
                 // Get session from database
-                const session = await Session.findOne({ gameCode })
+                const session = await Session.findOne({gameCode: gameCode})
 
                 if (!session) {
-                    if (callback) callback({ success: false, message: "Game not found" })
+                    if (callback) callback({success: false, message: "Game not found"})
                     return
                 }
-
-                // Check if game has already started
-                if (session.started) {
-                    if (callback) callback({ success: false, message: "Game has already started" })
-                    return
-                }
-
-                // Check if player name is already taken
-                if (session.players.some((p) => p.name === playerName)) {
-                    if (callback) callback({ success: false, message: "Player name already taken" })
-                    return
-                }
-
-                // Add player to session
-                const playerId = socket.id
-                const player = new Player({
-                    id: playerId,
-                    name: playerName,
-                    score: 0,
-                });
-
-                session.players.push(player)
-                await session.save()
 
                 // Join the socket room for this game
                 socket.join(gameCode)
@@ -280,12 +265,12 @@ module.exports = (io) => {
                 // Send updated player list to everyone
                 io.to(gameCode).emit("update-players", session.players)
 
-                if (callback) callback({ success: true })
+                if (callback) callback({success: true})
 
                 console.log(`Player ${playerName} joined game ${gameCode}`)
             } catch (error) {
                 console.error("Error joining game:", error)
-                if (callback) callback({ success: false, message: "Failed to join game" })
+                if (callback) callback({success: false, message: "Failed to join game"})
             }
         })
 
@@ -296,7 +281,7 @@ module.exports = (io) => {
                 const game = gameSessions.get(gameCode)
 
                 if (!game || !game.session.started || game.currentQuestionIndex < 0) {
-                    if (callback) callback({ success: false, message: "Game not active" })
+                    if (callback) callback({success: false, message: "Game not active"})
                     return
                 }
 
@@ -307,7 +292,7 @@ module.exports = (io) => {
                 const player = game.session.players.find((p) => p.name === playerName)
 
                 if (!player) {
-                    if (callback) callback({ success: false, message: "Player not found" })
+                    if (callback) callback({success: false, message: "Player not found"})
                     return
                 }
 
@@ -315,25 +300,27 @@ module.exports = (io) => {
                 const answerTime = Date.now()
 
 
-                if (!game.answers[playerId]){
+                if (!game.answers[playerId]) {
                     game.answers[playerId] = new Map()
                 }
                 // Access the dictionary of answers for the player and to the current question
                 let playerAnswers = game.answers[playerId][game.currentQuestionIndex];
-                if (playerAnswers){
+                if (playerAnswers) {
                     playerAnswers.answerIndex = answerIndex
                     playerAnswers.time = answerTime
                 } else {
-                    game.answers[playerId].set(game.currentQuestionIndex, {
-                        answerIndex,
-                        time: answerTime,
-                    })
+                    game.answers[playerId]
+                        .set(game.currentQuestionIndex,
+                            {
+                                answerIndex,
+                                time: answerTime,
+                            });
                 }
 
                 // Notify the player that their answer was received
-                socket.emit("answer-submitted", { answerIndex })
+                socket.emit("answer-submitted", {answerIndex})
 
-                if (callback) callback({ success: true })
+                if (callback) callback({success: true})
 
                 console.log(`Player ${playerName} submitted answer for game ${gameCode}`)
 
@@ -344,7 +331,7 @@ module.exports = (io) => {
                 }
             } catch (error) {
                 console.error("Error submitting answer:", error)
-                if (callback) callback({ success: false, message: "Failed to submit answer" })
+                if (callback) callback({success: false, message: "Failed to submit answer"})
             }
         })
 
@@ -355,7 +342,7 @@ module.exports = (io) => {
             if (gameCode && socket.isPlayer) {
                 try {
                     // Get session from database
-                    const session = await Session.findOne({ gameCode })
+                    const session = await Session.findOne({gameCode})
 
                     if (session && !session.started) {
                         // Remove player from session
@@ -365,6 +352,7 @@ module.exports = (io) => {
                             const player = session.players[playerIndex]
                             session.players.splice(playerIndex, 1)
                             await session.save()
+                            gameSessions[gameCode].players = session.players
 
                             // Notify others that player left
                             io.to(gameCode).emit("player-left", player)
@@ -400,12 +388,28 @@ module.exports = (io) => {
         let lastAnswer;
         try {
             game.answers.forEach((playerId) => {
-                 lastAnswer = game.answers[playerId][game.currentQuestionIndex]
+                lastAnswer = game.answers[playerId][game.currentQuestionIndex]
+                const points = computePoints(
+                    game.questions[game.currentQuestionIndex].question_id,
+                    lastAnswer.answerIndex,
+                    lastAnswer.time,
+                    game.questions.answers.length,
+                    game.timePerQuestion);
 
+                if (!game.points[playerId]) {
+                    game.points.set(playerId, points);
+                    if (!game.numberCorrectAnswers[playerId]){
+                        game.numberCorrectAnswers.set(playerId, 0);
+                    } else {
+                        game.numberCorrectAnswers.set(playerId, game.numberCorrectAnswers[playerId] + 1);
+                    }
+                } else {
+                    game.points[playerId].set(playerId, game.points[playerId] + points);
+                }
             })
         } catch (error) {
-            console.error("Error computing points for lastAnswer:",lastAnswer, "Error:", error.message);
-            // Handle error (e.g., log it, notify players, etc.)
+            console.error("Error computing points for lastAnswer:", lastAnswer, "Error:", error.message);
+            io.emit("error", "Error computing points for lastAnswer")
         }
 
 
@@ -413,54 +417,110 @@ module.exports = (io) => {
         game.currentQuestionIndex++
 
         // Check if we've reached the end of questions
-        if (game.currentQuestionIndex >= game.quiz.questions.length) {
+        if (game.currentQuestionIndex >= game.questions.length) {
             // End the game
             endGame(gameCode, io)
             return
         }
 
-        const currentQuestion = game.quiz.questions[game.currentQuestionIndex]
-        const timeLimit = currentQuestion.timeLimit || 20 // Default 20 seconds
-
-        // Reset answers for this question
-        game.playerAnswers = new Map()
-
-        // Update session in database
-        Session.findOneAndUpdate({ gameCode }, { currentQuestionIndex: game.currentQuestionIndex })
-            .then(() => {
-                console.log(`Updated question index in database for game ${gameCode}`)
-            })
-            .catch((err) => {
-                console.error(`Error updating question index in database for game ${gameCode}:`, err)
-            })
+        const currentQuestion = game.questions[game.currentQuestionIndex]
 
         // Send question to players (without correct answer)
         const questionForPlayers = {
             questionIndex: game.currentQuestionIndex,
             text: currentQuestion.text,
-            answers: currentQuestion.answers.map((a) => ({ text: a.text })),
-            timeLimit,
+            answers: currentQuestion.answers.map((a) => ({text: a.text})),
+            timeLimit: game.timePerQuestion,
         }
 
-        // Send question to host (with correct answer marked)
+        // Send question to host (with correct answer marked) (TODO: evaluate if this is needed)
         const questionForHost = {
             questionIndex: game.currentQuestionIndex,
             text: currentQuestion.text,
-            answers: currentQuestion.answers.map((a) => ({ text: a.text, isCorrect: a.isCorrect })),
-            timeLimit,
+            answers: currentQuestion.answers.map((a) => ({text: a.text, isCorrect: a.isCorrect})),
+            timeLimit: game.timePerQuestion,
         }
 
         // Emit different events to players and host
         io.to(gameCode).emit("question-started", questionForPlayers)
 
         // Start timer
-        startQuestionTimer(gameCode, timeLimit, io)
+        startQuestionTimer(gameCode, game.timePerQuestion, io)
 
         console.log(`Game ${gameCode} moved to question ${game.currentQuestionIndex + 1}`)
     }
 
+    function startQuestionTimer(gameCode, timeLimit, io) {
+        const game = gameSessions.get(gameCode)
+        if (!game) return
+
+        // Clear any existing timer
+        if (game.timer) {
+            clearInterval(game.timer)
+        }
+
+        // Set start time
+        game.questionStartTime = Date.now()
+
+        // Set end time
+        const endTime = game.questionStartTime + timeLimit * 1000
+
+        // Create timer that updates every second
+        game.timer = setInterval(() => {
+            const timeLeft = Math.ceil((endTime - Date.now()) / 1000)
+
+            // Send time update to all players
+            io.to(gameCode).emit("timer-update", timeLeft)
+
+            // End question when timer reaches 0
+            if (timeLeft <= 0) {
+                clearInterval(game.timer)
+                game.timer = null
+                endQuestion(gameCode, io)
+            }
+        }, 1000)
+    }
+
+    async function endQuestion(gameCode, io) {
+        const game = gameSessions.get(gameCode)
+        if (!game) return
+
+        // Clear timer if it exists
+        if (game.timer) {
+            clearInterval(game.timer)
+            game.timer = null
+        }
+
+        const currentQuestion = game.questions[game.currentQuestionIndex]
+        let correctAnswer = requestValidalidAnser(currentQuestion)
+        const correctAnswerIndex = currentQuestion.answers.findIndex((a) => a.text === correctAnswer)
+
+        // Calculate leaderboard position for each player
+        const playersLeaderboard = []
+        game.players.forEach((playerId) =>{
+            playersLeaderboard.push(
+                {
+                    playerId: playerId,
+                    playerName: player.name,
+                    points: game.points[playerId]
+                }
+            );
+        });
+
+        // Sort by total score (highest first)
+        playersLeaderboard.sort((a, b) => b.points - a.points)
+
+        // Send results to all players
+        io.to(gameCode).emit("question-ended", {
+            questionIndex: game.currentQuestionIndex,
+            playersLeaderboard,
+        })
+
+        console.log(`Question ended for game ${gameCode}`)
+    }
+
     async function endGame(gameCode, io) {
-        const game = activeGames.get(gameCode)
+        const game = gameSessions[gameCode]
         if (!game) return
 
         // Clear any active timers
@@ -470,49 +530,101 @@ module.exports = (io) => {
         }
 
         // Calculate final results
-        const finalResults = game.session.players.map((player) => {
-            // Count correct answers
-            let correctAnswers = 0
-
-            if (game.session.questionAnswers) {
-                game.session.questionAnswers.forEach((qa) => {
-                    const playerAnswer = qa.answers.find((a) => a.playerId === player.id)
-                    if (playerAnswer && playerAnswer.isCorrect) {
-                        correctAnswers++
-                    }
-                })
-            }
-
+        const finalResults = game.players.map((player) => {
             return {
+                isGuest: player.isGuest,
                 playerId: player.id,
                 playerName: player.name,
-                totalPoints: player.score,
-                correctAnswers,
-                totalQuestions: game.quiz.questions.length,
+                points_gain: game.points[player.id].reduce((acc, points) => acc + points, 0),
+                number_correct_answers: game.numberCorrectAnswers[player.id],
+                number_of_questions: game.questions.length,
             }
-        })
+        });
 
         // Sort by score (highest first)
-        finalResults.sort((a, b) => b.totalPoints - a.totalPoints)
+        finalResults.sort((a, b) => b.points_gain - a.points_gain);
 
         // Send final results to all players
         io.to(gameCode).emit("game-ended", finalResults)
 
         // Mark game as ended in database
-        await Session.findOneAndUpdate(
-            { gameCode },
-            {
-                ended: true,
-                endedAt: new Date(),
-            },
-        )
+        const sessionData = await Session.findOne({gameCode})
+        sessionData.ended = true;
+        sessionData.endedAt = new Date();
+        await sessionData.save()
 
-        // Remove active session reference from quiz
-        await Quiz.findByIdAndUpdate(game.quiz._id, { activeSession: null })
+        finalResults.forEach(data => {
+            if (data.isGuest){
+                //TODO: comunicate via a view/form to include the needed data to register the guest player
+            } else {
+                const gameInfo = new GameInfo({
+                    user_id: data.playerId,
+                    subject: sessionData.subject,
+                    points_gain: data.points_gain,
+                    number_of_questions: data.number_of_questions,
+                    number_correct_answers: data.number_correct_answers,
+                    total_time: game.timePerQuestion * game.questions.length
+                })
+                gameInfo.save()
+                    .then(() => {
+                        console.log("Game info saved successfully")
+                    })
+                    .catch((error) => {
+                        console.error("Error saving game info:", error)
+                    })
+            }
+        })
 
         // Remove game from memory
-        activeGames.delete(gameCode)
+        gameSessions.delete(gameCode)
 
         console.log(`Game ${gameCode} ended`)
+    }
+
+    async function computePoints(question_id, answerIndex, time, maxTimeConfigured, numberOptions) {
+        try {
+            const gatewayServiceUrl = process.env.GATEWAY_SERVICE_URL || 'http://gatewayservice:8000';
+            const response = await fetch(`${gatewayServiceUrl}/question/validate`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({question_id, selected_answer: answerIndex}),
+            });
+            if (!response.ok) {
+                throw new Error('Fai when validating the questions. Response: ' + response.statusText);
+            }
+            const data = await response.json();
+            if (data.isCorrect) {
+                // Calculate points based on time taken
+                const timeTaken = maxTimeConfigured - time;
+                return Math.ceil(10 * (80 * numberOptions / maxTimeConfigured) * (timeTaken / maxTimeConfigured));
+            }
+            return 0;
+        } catch (error) {
+            throw new Error("Error when performing the request of validation. ErrorMessage: " + error.message);
+        }
+    }
+
+    async function requestValidalidAnser(questions){
+        try {
+            const likedAnswer = Question.findOne({_id: new ObjectId(questions.question_id)});
+            if (!likedAnswer) {
+                throw new Error('Question not found');
+            }
+            let validAnser;
+            questions.forEach(q=> {
+                if (q.answer === likedAnswer.answer) {
+                    validAnser = q.answer;
+                }
+            })
+            if (!validAnser) {
+                throw new Error('No valid answer found');
+            } else {
+                return validAnser;
+            }
+        } catch (error) {
+            throw new Error("Error when requesting the correct answer. ErrorMessage: " + error.message);
+        }
     }
 }

@@ -20,7 +20,7 @@ async function requestQuestions(subject, totalQuestions, numberOptions) {
 
 // Create a new game session with its code (This is available for logged users only)
 router.post("/wihoot/create", verifyToken, (req, res) => {
-    const {subject, totalQuestions, numberOptions} = req.body;
+    const {subject, totalQuestions, numberOptions, maxTimePerQuestion} = req.body;
 
     if (!subject || !totalQuestions || !numberOptions) {
         return res.status(400).json({error: "Missing required game parameters."});
@@ -39,7 +39,8 @@ router.post("/wihoot/create", verifyToken, (req, res) => {
     const session = new Session({
         gameCode: gameCode,
         hostId: userId,
-        questions: questionsRequested,
+        questions: questionsRequested, //Store the questions included in the session,
+        timePerQuestion: maxTimePerQuestion
     })
 
     session.save()
@@ -62,16 +63,28 @@ router.post("/wihoot/:code/join", async (req, res) => {
         if (!session) {
             return res.status(404).json({error: "The session was not found."});
         } else {
+            // Check if game has already started
+            if (session.started) {
+                res.status(403).json({error: "The game has already started."});
+            }
+
             if (session.hostId !== req.user.id) {
+                let idToUse = req.user.id === null ? uuidv4() : req.user.id;
                 const newPlayer = new Player({
-                    id: uuidv4(),
+                    id: idToUse,
                     name: joinData.playerName,
-                    score: 0,
                     isGuest: joinData.isGuest
                 });
 
-                session.save();
+                if (session.players.find(p => p.id === newPlayer.id)) {
+                    return res.status(400).json({error: "You have already joined to the session."});
+                }
+                if (session.players.find(p => p.name === newPlayer.name)) {
+                    return res.status(400).json({error: "The name "+newPlayer.name+" is already in use."});
+                }
+
                 session.players.push(newPlayer);
+                session.save();
 
                 res.status(200).json({success: true, message: `You have joined to the session: ${joinData.gameCode}.`});
             } else {
