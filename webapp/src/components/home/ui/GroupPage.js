@@ -38,6 +38,7 @@ export default function GroupPage({ username, onClose }) {
     const [groupMembers, setGroupMembers] = useState([]);
     const [user, setUser] = useState(null);
     const [newGroupName, setNewGroupName] = useState("");
+    const [errorMessage, setErrorMessage] = useState("");
 
     const router = useRouter();
 
@@ -224,7 +225,7 @@ export default function GroupPage({ username, onClose }) {
             );
             updateEverything(response.status);
         } catch (error) {
-            console.error("Error modifying group:", error);
+            setErrorMessage(error.response.data.error);
         }
     }
 
@@ -362,6 +363,7 @@ export default function GroupPage({ username, onClose }) {
                         Modify group
                     </Button>
                 )}
+                {loggedUserGroup.owner === user && errorMessage && <p className="error-message">{errorMessage}</p>}
 
                 {loggedUserGroup.owner !== user &&(
                     <Typography variant="h6" className="group-name">

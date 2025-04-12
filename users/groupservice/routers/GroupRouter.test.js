@@ -36,8 +36,6 @@ app.use(bodyParser.json());
 app.use(GroupRouter);
 
 describe('Group Router Tests', () => {
-  // Variables para tests
-  const testUserId = 'mockUserId';
   
   beforeEach(() => {
     // Limpiar todos los mocks antes de cada test
