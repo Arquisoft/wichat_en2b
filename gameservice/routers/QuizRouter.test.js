@@ -4,7 +4,9 @@ const QuizCategories = require('../quizz-model'); // Adjust the path accordingly
 const request = require('supertest');
 const express = require('express');
 const quizRouter = require('./QuizRouter'); // Adjust the path if needed
+jest.mock('../routers/help/util'); // 👈 tell Jest to mock the module
 
+const  saveQuestionsToDB = require('../routers/help/util');
 const app = express();
 app.use(express.json());
 app.use(quizRouter); // Use your router
@@ -86,7 +88,7 @@ it('should create quiz and save to database', async () => {
     wikidataCode: 'Q298',
     wikidataQuery: 'SELECT ?item WHERE { ?item rdfs:label "Paris"@en }',
   };
-
+  saveQuestionsToDB.mockResolvedValueOnce();
   const response = await request(app)
     .post('/quiz')
     .send(quizData)

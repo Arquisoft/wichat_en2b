@@ -1,7 +1,5 @@
 const express = require('express');
 const router = express.Router();
-const Question = require('../question-model');
-const fs = require('fs');
 const QuizModel = require('../quizz-model');
 const saveQuestionsToDB = require('./help/util');
 
@@ -40,17 +38,18 @@ router.post('/quiz', async (req, res) => {
 
         // Validate asynchronously
         await quiz.validate();
-        
-        await quiz.save();
-
+    
         const query = req.body.wikidataQuery;
         const code = req.body.wikidataCode;
         try {
             await saveQuestionsToDB(code, query);
+            await quiz.save();
+            res.status(201).json(quiz);
+
         } catch(err){
             console.error(err);
+            res.status(204).json({ message: 'No items where found with that query, not saving the category.' });
         }
-        res.status(201).json(quiz);
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Server error' });
