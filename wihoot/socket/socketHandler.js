@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 const { ObjectId } = require('mongodb');
-const {Session, Player} = require("../models/session-model");
+const { Session } = require("../models/session-model");
 const Question = require('../../gameservice/question-model')
 const GameInfo = require("../../gameservice/game-result-model");
 
@@ -493,7 +493,7 @@ module.exports = (io) => {
 
         const currentQuestion = game.questions[game.currentQuestionIndex]
         let correctAnswer = requestValidalidAnser(currentQuestion)
-        const correctAnswerIndex = currentQuestion.answers.findIndex((a) => a.text === correctAnswer)
+        const correctAnswerIndex = currentQuestion.answers.findIndex((a) => a.text === correctAnswer) //TODO: check if this is needed
 
         // Calculate leaderboard position for each player
         const playersLeaderboard = []
@@ -502,7 +502,8 @@ module.exports = (io) => {
                 {
                     playerId: playerId,
                     playerName: player.name,
-                    points: game.points[playerId]
+                    points: game.points[playerId],
+                    correctAnswer: correctAnswer
                 }
             );
         });

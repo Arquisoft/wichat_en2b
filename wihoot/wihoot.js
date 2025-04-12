@@ -17,6 +17,7 @@ const io = socketIo(server, {
         methods: ["GET", "POST"],
         credentials: true,
     },
+    path: '/socket.io' // The same path as in the proxy
 })
 
 // Connection to MongoDB game database

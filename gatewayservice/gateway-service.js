@@ -204,8 +204,8 @@ app.patch('/users/:username',  async (req, res) => {
 // Update game history when username changes
 const corsOptions = {
   origin: serviceUrls.user,
-  methods: ['PATCH'], 
-  allowedHeaders: ['Content-Type', 'Origin'] 
+  methods: ['PATCH'],
+  allowedHeaders: ['Content-Type', 'Origin']
 };
 
 app.use('/game/update/:oldUsername', cors(corsOptions));
@@ -259,6 +259,16 @@ app.use('/wihoot',
       methods: ['GET', 'POST']
     })
 )
+
+// Proxy for create WebSocket connections
+const socketProxy = createProxyMiddleware('/socket.io', {
+    target: 'http://wihootservice:8005', // URL interna del servicio Wihoot
+    ws: true, // importante: habilitar WebSockets
+    changeOrigin: true
+});
+
+app.use(socketProxy);
+
 app.post('/wihoot/create',(req, res) => {
     forwardRequest('wihoot', '/wihoot/create', req, res)
 });
