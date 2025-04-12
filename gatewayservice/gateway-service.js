@@ -120,8 +120,8 @@ app.get('/quiz/:topic', (req, res) => {
   const topic = req.params.topic;
   forwardRequest('game', `/quiz/${topic}`, req, res);
 });
-
 app.get('/quiz', (req, res) => forwardRequest('game', '/quiz', req, res));
+app.post('/quiz', (req, res) => forwardRequest('game', '/quiz', req, res));
 
 app.use('/game', publicCors);
 app.use('/question/validate', publicCors);
