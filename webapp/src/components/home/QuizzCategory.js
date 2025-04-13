@@ -97,7 +97,7 @@ function CategoryComponent() {
 
                   <CardContent>
                     <Link href="/">
-                      <Button variant="contained">Back to Dashboard</Button>
+                      <Button id='btn-back-dashboard' variant="contained">Back to Dashboard</Button>
                     </Link>
                   </CardContent>
               </Card>
@@ -202,6 +202,7 @@ function CategoryComponent() {
                     {/* Quiz Card Footer */}
                     <Box className="quiz-button">
                       <Button
+                        id="btn-start-quiz"
                         variant="contained"
                         className="start-quiz-button"
                         onClick={() => handleStartQuiz(quiz)}

@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const GameInfo = require('../game-result-model');
+const GameInfo = require('../game-result-model.js');
 const request = require('supertest');
 const { MongoMemoryServer } = require('mongodb-memory-server');
 const express = require('express');

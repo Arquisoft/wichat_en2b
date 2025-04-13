@@ -6,7 +6,7 @@ import jwt from 'jsonwebtoken';
 import path from 'path';
 import fs from 'fs';
 import { MongoMemoryServer } from 'mongodb-memory-server';
-import User from './user-model.js';
+import User from './user-model.mjs';
 import userRoutes from './routers/RouterUserCrud.js'; // Adjust path as necessary
 
 jest.mock('fs', () => {
