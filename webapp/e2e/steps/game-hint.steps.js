@@ -27,6 +27,18 @@ defineFeature(feature, test => {
                     contentType: 'application/json',
                     body: JSON.stringify({ content: "Hint: The answer is related to the image" })
                 });
+            } else if (url.endsWith('/quiz')) {
+                request.respond({
+                    contentType: 'application/json',
+                    body: JSON.stringify(
+                        global.mockCategory
+                    )
+                });
+            } else if (url.endsWith('quiz/Geography')) {
+                request.respond({
+                    contentType: 'application/json',
+                    body: JSON.stringify(global.mockCategory)
+                });
             } else if (url.includes('/game/')) {
                 request.respond({
                     status: 200,
@@ -58,7 +70,7 @@ defineFeature(feature, test => {
 
         given('I am on the first question of a quiz', async () => {
             await login(page, global.userTestData.username, global.userTestData.password);
-            await accessQuiz(page, "#quiz-category-science");
+            await accessQuiz(page, ".start-button:first-of-type");
         });
 
         when('I ask for a hint about the question', async () => {

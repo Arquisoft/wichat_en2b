@@ -62,7 +62,7 @@ function PlayTab() {
 							/>
 							<CardContent className="category-content">
 								<Typography className="quiz-count">
-									{category.quizCount} questions available
+									{category.quizCount} quizzes available
 								</Typography>
 								<Link href={`/quiz/category/${category.name}`} passHref>
 									<Button

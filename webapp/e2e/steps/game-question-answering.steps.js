@@ -1,9 +1,9 @@
 const puppeteer = require('puppeteer');
-const { defineFeature, loadFeature }=require('jest-cucumber');
+const {defineFeature, loadFeature} = require('jest-cucumber');
 
 const feature = loadFeature('./e2e/features/game-question-answering.feature');
 
-const { click, accessQuiz, login, goToInitialPage} = require('../test-functions')
+const {click, accessQuiz, login, goToInitialPage} = require('../test-functions')
 const {expect} = require("expect-puppeteer");
 
 let page;
@@ -13,7 +13,10 @@ defineFeature(feature, test => {
 
     beforeEach(async () => {
         browser = process.env.GITHUB_ACTIONS
-            ? await puppeteer.launch({headless: "new", args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-web-security']})
+            ? await puppeteer.launch({
+                headless: "new",
+                args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-web-security']
+            })
             : await puppeteer.launch({headless: false, slowMo: 50, args: ['--disable-web-security']});
         page = await browser.newPage();
 
@@ -21,7 +24,19 @@ defineFeature(feature, test => {
 
         page.on('request', (request) => {
             const url = request.url();
-            if (url.includes('/game/')) {
+            if (url.endsWith('/quiz')) {
+                request.respond({
+                    contentType: 'application/json',
+                    body: JSON.stringify(
+                        global.mockCategory
+                    )
+                });
+            } else if (url.endsWith('quiz/Geography')) {
+                request.respond({
+                    contentType: 'application/json',
+                    body: JSON.stringify(global.mockCategory)
+                });
+            } else if (url.includes('/game/')) {
                 request.respond({
                     status: 200,
                     contentType: 'application/json',
@@ -36,11 +51,11 @@ defineFeature(feature, test => {
                     request.abort();
                     return;
                 }
-                const { question_id, selected_answer } = body;
+                const {question_id, selected_answer} = body;
                 const question = global.mockQuestions.find(q => q.question_id === question_id);
-                console.log('Question_id:', question_id, 'Selected answer', selected_answer )
-                console.log('Correct:', question.answers.includes(selected_answer), 'Correct answer:', question.answers[0] )
-                if (!question){
+                console.log('Question_id:', question_id, 'Selected answer', selected_answer)
+                console.log('Correct:', question.answers.includes(selected_answer), 'Correct answer:', question.answers[0])
+                if (!question) {
                     request.respond({
                         status: 404,
                         contentType: 'application/json',
@@ -77,18 +92,18 @@ defineFeature(feature, test => {
         }
     });
 
-    test('The user answers a question correctly', ({ given, when, then }) => {
+    test('The user answers a question correctly', ({given, when, then}) => {
 
         given('I am on the first question of a quiz', async () => {
             await login(page, global.userTestData.username, global.userTestData.password);
-            await accessQuiz(page, "#quiz-category-science");
+            await accessQuiz(page, ".start-button:first-of-type");
 
             // Ensure the first question is loaded
             await page.waitForSelector('#title-question', {visible: true, timeout: 10000});
 
             const title = await page.$eval('#title-question', el => el.textContent.trim());
 
-            expect(title).toBe("What's the discipline shown in the image?");
+            expect(title).toBe("Which Country does this flag belong to?");
         });
 
         when('I select the correct answer for the question', async () => {
@@ -105,18 +120,18 @@ defineFeature(feature, test => {
         });
     }, 30000);
 
-    test('The user answers a question incorrectly', ({ given, when, then }) => {
+    test('The user answers a question incorrectly', ({given, when, then}) => {
 
         given('I am on the first question of a game', async () => {
             await login(page, global.userTestData.username, global.userTestData.password);
-            await accessQuiz(page, "#quiz-category-science");
+            await accessQuiz(page, ".start-button:first-of-type");
 
             // Ensure the first question is loaded
             await page.waitForSelector('#title-question', {visible: true, timeout: 10000});
 
             const title = await page.$eval('#title-question', el => el.textContent.trim());
 
-            expect(title).toBe("What's the discipline shown in the image?");
+            expect(title).toBe("Which Country does this flag belong to?");
         });
 
         when('I select an incorrect answer for the question', async () => {

@@ -24,6 +24,21 @@ beforeAll(async () => {
             : ["Answer 4", "Answer 5", "Answer 6", "Answer 7"],
         question_id: '1'
     }));
+    global.mockCategory = [{
+        "_id": "1",
+        "category": "Geography",
+        "quizName": "Flags",
+        "wikidataQuery": "SELECT ?item ?itemLabel ?image WHERE { ?item wdt:P31 wd:Q6256. ?item wdt:P41 ?image. SERVICE wikibase:label { bd:serviceParam wikibase:language \"en\". } } LIMIT 100",
+        "wikidataCode": "Q6256",
+        "description": "Test your knowledge about different flags of countries.",
+        "question": "Which Country does this flag belong to?",
+        "difficulty": 1,
+        "numQuestions": 10,
+        "timePerQuestion": 60,
+        "numOptions": 4,
+        "color": "#abcdef",
+        "__v": 0
+    }]
 }, 15000);
 
 afterAll(async () => {
