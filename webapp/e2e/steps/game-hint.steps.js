@@ -81,8 +81,9 @@ defineFeature(feature, test => {
         });
 
         then('I should receive a hint related to the image and question without mentioning the answers provided', async () => {
-            await page.waitForSelector('*[data-state="message-0-llm"]', {visible: true, timeout: 10000});
-            const hintText = await page.$eval('*[data-state="message-2-llm"]', el => el.textContent.trim());
+            const hintElement = await page.$('.llmMessage:nth-child(3)');
+            const hintText = await page.evaluate(el => el.textContent, hintElement);
+
             console.log("🥒 Hint text obtained: ", hintText);
             expect(hintText).toContain("Hint: The answer is related to the image");
         });
