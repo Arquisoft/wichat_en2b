@@ -40,7 +40,7 @@ router.get('/game/:subject/:numQuestions?/:numOptions?', async (req, res) => {
             const answers = [q.answer, ...fakeAnswers].sort(() => 0.5 - Math.random());
             return {
                 question_id: q._id,
-                image_name: `/images/${q._id}.jpg`,
+                image_name: `/images/${q._id}.${q.ext}`,
                 answers
             };
         }));
