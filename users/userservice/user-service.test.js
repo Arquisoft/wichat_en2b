@@ -883,4 +883,84 @@ describe('User Routes', () => {
       expect(response.body).toHaveProperty('error', 'User not found');
     });
   });
+
+  describe('POST /users/by-ids', () => {
+    test('debería devolver usuarios cuando se proporcionan IDs válidos', async () => {
+      // Crear algunos usuarios de prueba
+      const user1 = await User.create({ name: 'Usuario 1', email: 'usuario1@test.com' });
+      const user2 = await User.create({ name: 'Usuario 2', email: 'usuario2@test.com' });
+      
+      const response = await request(app)
+        .post('/users/by-ids')
+        .send({
+          users: [user1._id.toString(), user2._id.toString()]
+        });
+      
+      expect(response.status).toBe(200);
+      expect(response.body).toHaveLength(2);
+      expect(response.body[0].name).toBe('Usuario 1');
+      expect(response.body[1].name).toBe('Usuario 2');
+    });
+    
+    test('debería devolver un array vacío si no se encuentran los IDs', async () => {
+      const nonExistentId = new mongoose.Types.ObjectId();
+      
+      const response = await request(app)
+        .post('/users/by-ids')
+        .send({
+          users: [nonExistentId.toString()]
+        });
+      
+      expect(response.status).toBe(200);
+      expect(response.body).toHaveLength(0);
+    });
+    
+    test('debería ignorar IDs con formato inválido', async () => {
+      const user1 = await User.create({ name: 'Usuario 1', email: 'usuario1@test.com' });
+      
+      const response = await request(app)
+        .post('/users/by-ids')
+        .send({
+          users: [user1._id.toString(), 'id-invalido', '123']
+        });
+      
+      expect(response.status).toBe(200);
+      expect(response.body).toHaveLength(1);
+      expect(response.body[0].name).toBe('Usuario 1');
+    });
+    
+    test('debería devolver error 400 si no se proporciona un array de users', async () => {
+      const response = await request(app)
+        .post('/users/by-ids')
+        .send({
+          otrosCampos: 'valor'
+        });
+      
+      expect(response.status).toBe(400);
+      expect(response.body.error).toBe('Request body must contain a "users" array');
+    });
+    
+    test('debería devolver error 400 si users no es un array', async () => {
+      const response = await request(app)
+        .post('/users/by-ids')
+        .send({
+          users: 'no-soy-un-array'
+        });
+      
+      expect(response.status).toBe(400);
+      expect(response.body.error).toBe('Request body must contain a "users" array');
+    });
+    
+    test('debería manejar una solicitud con un array vacío', async () => {
+      const response = await request(app)
+        .post('/users/by-ids')
+        .send({
+          users: []
+        });
+      
+      expect(response.status).toBe(200);
+      expect(response.body).toHaveLength(0);
+    });
+  });
+
 });

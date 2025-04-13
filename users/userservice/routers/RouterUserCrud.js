@@ -108,7 +108,9 @@ router.post('/users/by-ids', async (req, res) => {
             return res.status(400).json({ error: 'Request body must contain a "users" array' });
         }
 
-        const foundUsers = await User.find({ _id: { $in: users } });
+        const validIds = users.filter(id => id.toString());
+
+        const foundUsers = await User.find({ _id: { $in: validIds } });
         
         res.status(200).json(foundUsers);
     } catch (error) {
