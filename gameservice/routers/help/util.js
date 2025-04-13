@@ -79,14 +79,30 @@ async function saveQuestionsToDB(code, query) {
             fetchPromises.push(
                 fetch(item.image)
                     .then(async res => {
-                        const mimeToExt = {
-                            'image/jpeg': 'jpg',
-                            'image/png': 'png',
-                            'image/webp': 'webp',
-                            'image/svg+xml': 'svg',
-                        };
-                        const contentType = res.headers.get('content-type') || 'image/jpeg';
-                        const ext = mimeToExt[contentType] || 'jpg'; // fallback to jpg
+                        let ext = 'jpg';
+
+                        // Method 1: Try to get extension from content-type header
+                        const contentType = res.headers.get('content-type');
+                        if (contentType) {
+                            const mimeToExt = {
+                                'image/jpeg': 'jpg',
+                                'image/png': 'png',
+                                'image/webp': 'webp',
+                                'image/svg+xml': 'svg',
+                            };
+                            if (mimeToExt[contentType]) {
+                                ext = mimeToExt[contentType];
+                            }
+                        }
+
+                        // Method 2: Try to extract extension from URL if Method 1 failed
+                        if (ext === 'jpg') { // If still using default
+                            const urlPath = new URL(item.image).pathname;
+                            const urlExt = urlPath.split('.').pop().toLowerCase();
+                            if (['jpg', 'jpeg', 'png', 'webp', 'svg'].includes(urlExt)) {
+                                ext = urlExt === 'jpeg' ? 'jpg' : urlExt;
+                            }
+                        }
 
                         // Save the image file with the correct extension
                         console.log(questionId + "." + ext);

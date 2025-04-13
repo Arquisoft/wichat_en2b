@@ -3,6 +3,8 @@ import { Card, Grid, CardHeader, CardContent, Typography, Button } from "@mui/ma
 import Link from "next/link";
 import "../../../styles/home/PlayTab.css";
 
+const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://localhost:8000';
+
 function PlayTab() {
 	const [categories, setCategories] = useState([]);
 	const [loading, setLoading] = useState(true);
@@ -10,7 +12,7 @@ function PlayTab() {
 	useEffect(() => {
 		const fetchCategories = async () => {
 			try {
-				const response = await fetch("http://localhost:8000/quiz");
+				const response = await fetch(`${apiEndpoint}/quiz`);
 				const data = await response.json();
 
 				const formattedCategories = Object.values(
