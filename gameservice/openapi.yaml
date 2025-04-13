@@ -234,7 +234,7 @@ paths:
                   $ref: '#/components/schemas/QuizCategory'
         '500':
           description: Error retrieving quizzes
-  /quiz/AllTopics:
+  /quiz/allTopics:
     get:
       summary: Get all quiz topics
       tags:

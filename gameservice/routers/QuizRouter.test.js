@@ -55,11 +55,11 @@ describe('Quiz Router Tests', () => {
       expect(res.body[0].quizName).toBe('Planets');
   });
 
-  it('GET /quiz/AllTopics - should return distinct categories', async () => {
+  it('GET /quiz/allTopics - should return distinct categories', async () => {
       await QuizCategories.create({ ...validQuiz, category: 'Math', quizName: 'test1' });
       await QuizCategories.create({ ...validQuiz, category: 'Science', quizName: 'test2' });
       
-      const res = await request(app).get('/quiz/AllTopics');
+      const res = await request(app).get('/quiz/allTopics');
       expect(res.statusCode).toBe(200);
       expect(res.body).toContain('Math');
       expect(res.body).toContain('Science');

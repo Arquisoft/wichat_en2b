@@ -5,7 +5,7 @@ import { fetchWithAuth } from "@/utils/api-fetch-auth";
 
 jest.mock("@/utils/api-fetch-auth");
 
-// Mock the fetch for /quiz/AllTopics
+// Mock the fetch for /quiz/llTopics
 global.fetch = jest.fn();
 
 describe("StatsTab Component", () => {

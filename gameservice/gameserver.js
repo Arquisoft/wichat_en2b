@@ -2,7 +2,6 @@ const express = require('express');
 const mongoose = require('mongoose');
 const path = require('path');
 const questionRouter = require('./routers/RouterQuestionRetriever');
-const generateRouter = require('./routers/RouterQuestionFetcher');
 const gameRouter = require('./routers/RouterGameInfo');
 const statisticsRouter = require('./routers/RouterStatistics');
 const quizRouter = require('./routers/QuizRouter');
@@ -21,8 +20,7 @@ mongoose.connect(mongoUri)
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Routers
-app.use(questionRouter); 
-app.use(generateRouter); 
+app.use(questionRouter);
 app.use(gameRouter);
 app.use(statisticsRouter);
 app.use(quizRouter);

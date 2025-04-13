@@ -81,7 +81,7 @@ export default function StatsTab() {
 	useEffect(() => {
 		const fetchCategories = async () => {
 			try {
-				const response = await fetch(`${apiEndpoint}/quiz/AllTopics`, {
+				const response = await fetch(`${apiEndpoint}/quiz/allTopics`, {
 					method: "GET",
 					headers: {
 					  "Content-Type": "application/json",

@@ -111,8 +111,8 @@ app.use('/askllm', publicCors);
 app.post('/askllm', (req, res) => forwardRequest('llm', '/askllm', req, res));
 
 // Game Service Routes
-app.use('/quiz/AllTopics', publicCors);
-app.get('/quiz/AllTopics', (req, res) => forwardRequest('game', '/quiz/AllTopics', req, res));
+app.use('/quiz/allTopics', publicCors);
+app.get('/quiz/allTopics', (req, res) => forwardRequest('game', '/quiz/allTopics', req, res));
 
 // Game Service Routes
 app.use('/quiz', publicCors);

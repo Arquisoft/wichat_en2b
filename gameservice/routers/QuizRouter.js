@@ -14,7 +14,7 @@ router.get('/quiz', async (req, res) => {
     }
 });
 
-router.get('/quiz/AllTopics', async (req, res) => {
+router.get('/quiz/allTopics', async (req, res) => {
     try {
         const quizzes = await QuizModel.distinct("category");
         res.status(200).send(quizzes);
