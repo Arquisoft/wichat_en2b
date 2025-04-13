@@ -3,7 +3,6 @@ import "../../styles/QuestionGame.css";
 import { Alert, CircularProgress, LinearProgress, Box, Typography } from "@mui/material";
 import InGameChat from "@/components/game/InGameChat";
 import FinishGame from "@/components/game/FinishGame";
-import {quizCategories} from "@/components/home/data";
 
 const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://localhost:8000';
 
@@ -25,7 +24,9 @@ export default function QuestionGame(params) {
     const fetchQuestions = async () => {
         try {
             const response = await fetch(`${apiEndpoint}/game/${subject}/${totalQuestions}/${numberOptions}`);
+            
             const data = await response.json();
+            console.log(data);
             setQuestions(data);
             resetState();
             setLoading(false);
@@ -34,7 +35,7 @@ export default function QuestionGame(params) {
         }
     };
 
-    const finishParams = {answers: answers, callback: fetchQuestions, subject: quizCategories[topic - 1].name.toLowerCase()};
+    const finishParams = {answers: answers, callback: fetchQuestions, subject: topic.toLowerCase()};
 
     const resetState = () => {
         setAnswers([]);
@@ -99,6 +100,7 @@ export default function QuestionGame(params) {
                     isCorrect: isCorrect,
                     points: calculatePoints(isCorrect),
                     timeSpent: timerDuration - timeLeft,
+                    rightAnswer: correctAnswer,
                 },
             ]);
 

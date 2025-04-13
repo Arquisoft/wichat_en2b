@@ -218,6 +218,82 @@ paths:
                           type: number
         '500':
           description: Error retrieving leaderboard
+  /quiz:
+    get:
+      summary: Get all quizzes
+      tags:
+        - Quizzes
+      responses:
+        '200':
+          description: A list of all quizzes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/QuizCategory'
+        '500':
+          description: Error retrieving quizzes
+  /quiz/allTopics:
+    get:
+      summary: Get all quiz topics
+      tags:
+        - Quizzes
+      responses:
+        '200':
+          description: A list of all quiz topics
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        '500':
+          description: Error retrieving topics
+  /quiz/{topic}:
+    get:
+      summary: Get quizzes by topic
+      tags:
+        - Quizzes
+      parameters:
+        - in: path
+          name: topic
+          schema:
+            type: string
+          required: true
+          description: The quiz topic
+      responses:
+        '200':
+          description: A list of quizzes for the given topic
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/QuizCategory'
+        '500':
+          description: Error retrieving quizzes by topic
+  /quiz:
+    post:
+      summary: Add a new quiz
+      tags:
+        - Quizzes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuizCategory'
+      responses:
+        '201':
+          description: Quiz created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuizCategory'
+        '204':
+          description: No items found with the query, not saving
+        '500':
+          description: Error creating quiz
 components:
   securitySchemes:
     bearerAuth:
@@ -232,3 +308,37 @@ components:
           type: string
         answer:
           type: string
+        ext:
+          type: string
+    QuizCategory:
+      type: object
+      properties:
+        category:
+          type: string
+        quizName:
+          type: string
+        wikidataQuery:
+          type: string
+        wikidataCode:
+          type: string
+        description:
+          type: string
+        question:
+          type: string
+        difficulty:
+          type: integer
+          minimum: 1
+          maximum: 5
+        numQuestions:
+          type: integer
+          minimum: 1
+        timePerQuestion:
+          type: integer
+          minimum: 5
+        numOptions:
+          type: integer
+          minimum: 2
+          maximum: 10
+        color:
+          type: string
+          pattern: '^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$'

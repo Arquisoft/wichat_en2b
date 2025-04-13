@@ -15,10 +15,11 @@ import {
 	MenuItem,
 	Box,
 } from "@mui/material"
-import { quizCategories } from "../data"
 import "../../../styles/home/StatsTab.css"
 import { fetchWithAuth } from "@/utils/api-fetch-auth";
 import LoadingErrorHandler from ".//LoadingErrorHandler";
+
+const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://localhost:8000';
 
 // TabPanel component for the tabs
 function TabPanel(props) {
@@ -53,6 +54,7 @@ export default function StatsTab() {
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState(null)
 	const [selectedSubject, setSelectedSubject] = useState("all")
+	const [categories, setCategories] = useState([]);
 	
 	useEffect(() => {
 		const fetchStatistics = async () => {
@@ -63,7 +65,7 @@ export default function StatsTab() {
 					? "/statistics/global"
 					: `/statistics/subject/${selectedSubject.toLowerCase()}`
 				const data = await fetchWithAuth(endpoint);
-				if (!data || !data.stats) {
+				if (!data || !data.stats) {//NOSONAR
 					setError("You have not played any quizzes on this category yet.");
 					setStatistics(null);
 				}
@@ -76,6 +78,27 @@ export default function StatsTab() {
 		fetchStatistics();
 	}, [selectedSubject]);
 
+	useEffect(() => {
+		const fetchCategories = async () => {
+			try {
+				const response = await fetch(`${apiEndpoint}/quiz/allTopics`, {
+					method: "GET",
+					headers: {
+					  "Content-Type": "application/json",
+					},
+				  });
+				  const data = await response.json();
+				  console.log("Fetched categories:", data);
+				if (Array.isArray(data)) {
+					setCategories(data);
+				}
+			} catch (error) {
+				console.error("Failed to fetch categories", error);
+			}
+		};
+	
+		fetchCategories();
+	}, []);
 	const handleSubjectChange = (event) => {
 		setSelectedSubject(event.target.value);
 	}
@@ -98,9 +121,9 @@ export default function StatsTab() {
 								label="Filter by subject"
 							 variant={"outlined"}>
 								<MenuItem value="all">All Subjects</MenuItem>
-								{quizCategories.map((category) => (
-									<MenuItem key={category.id} value={category.name}>
-										{category.icon} {category.name}
+								{categories.map((category) => (
+									<MenuItem key={category} value={category}>
+										{category}
 									</MenuItem>
 								))}
 							</Select>
@@ -111,7 +134,7 @@ export default function StatsTab() {
 			<CardContent>
 				<LoadingErrorHandler loading={loading} error={error}>
 				{ statistics && (
-					<>
+					<>{/*NOSONAR*/}
 						<Grid container spacing={2} className={"detailed-stats"}>
 							<StatCard id='total-games' title="Total Games" value={statistics.totalGames} />
 							<StatCard id='avg-score' title="Avg Score per Quiz" value={`${statistics.avgScore.toFixed(1)} points`} />
