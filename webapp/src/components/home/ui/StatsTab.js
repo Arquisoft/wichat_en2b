@@ -85,7 +85,7 @@ export default function StatsTab() {
 			<CardHeader
 				title={
 					<Box className={"stats-header"} display="flex" justifyContent="space-between" alignItems="center">
-						<Typography variant="h5">Quiz Statistics</Typography>
+						<Typography variant="h5" id='title-quiz-statistics'>Quiz Statistics</Typography>
 						<Typography variant="body2" color="textSecondary">
 							Based on {statistics ? statistics.totalGames : 0} completed quizzes
 						</Typography>
@@ -113,13 +113,13 @@ export default function StatsTab() {
 				{ statistics && (
 					<>
 						<Grid container spacing={2} className={"detailed-stats"}>
-							<StatCard title="Total Games" value={statistics.totalGames} />
-							<StatCard title="Avg Score per Quiz" value={`${statistics.avgScore.toFixed(1)} points`} />
-							<StatCard title="Total Score" value={`${statistics.totalScore} points`} />
-							<StatCard title="Correct Answers" value={statistics.totalCorrectAnswers} />
-							<StatCard title="Total Questions" value={statistics.totalQuestions} />
-							<StatCard title="Accuracy" value={`${(statistics.successRatio * 100).toFixed(1)}%`} />
-							<StatCard title="Avg Time per Quiz" value={`${statistics.avgTime.toFixed(1)} s`} />
+							<StatCard id='total-games' title="Total Games" value={statistics.totalGames} />
+							<StatCard id='avg-score' title="Avg Score per Quiz" value={`${statistics.avgScore.toFixed(1)} points`} />
+							<StatCard id='total-score' title="Total Score" value={`${statistics.totalScore} points`} />
+							<StatCard id='total-answ' title="Correct Answers" value={statistics.totalCorrectAnswers} />
+							<StatCard id='total-questions' title="Total Questions" value={statistics.totalQuestions} />
+							<StatCard id='accuracy' title="Accuracy" value={`${(statistics.successRatio * 100).toFixed(1)}%`} />
+							<StatCard id='avg-quiz-time' title="Avg Time per Quiz" value={`${statistics.avgTime.toFixed(1)} s`} />
 						</Grid>
 					</>
 				)}
@@ -130,10 +130,10 @@ export default function StatsTab() {
 	)
 }
 
-function StatCard({ title, value }) {
+function StatCard({ id,title, value }) {
 	return (
 		<Grid xs={12} sm={6} md={4}>
-			<Paper elevation={2} sx={{ p: 2 }}>
+			<Paper id={id} elevation={2} sx={{ p: 2 }}>
 				<Typography variant="h5" component="div">
 					{value}
 				</Typography>

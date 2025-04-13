@@ -82,7 +82,7 @@ const Login = () => {
               required
               disabled={loading}
             />
-            {errors.username && <p className="error-message">{errors.username}</p>}
+            {errors.username && <p className="error-message" id='error-username'>{errors.username}</p>}
           </div>
           <div className="input-group">
             <label htmlFor="password">Password</label>
