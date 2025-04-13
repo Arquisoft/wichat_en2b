@@ -41,6 +41,7 @@ describe('RouterQuestionRetriever', () => {
             questions.push({
                 subject: 'Math',
                 answer: `Answer ${i}`,
+                ext: 'extension',
                 _id: new mongoose.Types.ObjectId()
             });
         }
@@ -52,7 +53,7 @@ describe('RouterQuestionRetriever', () => {
         expect(res.body.length).toBe(3);
         res.body.forEach(question => {
             expect(question.answers.length).toBe(3);
-            expect(question.image_name).toBe(`/images/${question.question_id}.jpg`);
+            expect(question.image_name).toBe(`/images/${question.question_id}.extension`);
         });
     }, 10000); // Increase timeout
 
