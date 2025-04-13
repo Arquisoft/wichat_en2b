@@ -885,10 +885,10 @@ describe('User Routes', () => {
   });
 
   describe('POST /users/by-ids', () => {
-    test('debería devolver usuarios cuando se proporcionan IDs válidos', async () => {
+    test('should return an array with the users given valid inputs', async () => {
       // Crear algunos usuarios de prueba
-      const user1 = await User.create({ name: 'Usuario 1', email: 'usuario1@test.com' });
-      const user2 = await User.create({ name: 'Usuario 2', email: 'usuario2@test.com' });
+      const user1 = await User.create({ username: 'Usuario 1', role: 'USER', password: 'testPassword' });
+      const user2 = await User.create({ username: 'Usuario 2', role: 'USER', password: 'testPassword' });
       
       const response = await request(app)
         .post('/users/by-ids')
@@ -902,7 +902,7 @@ describe('User Routes', () => {
       expect(response.body[1].name).toBe('Usuario 2');
     });
     
-    test('debería devolver un array vacío si no se encuentran los IDs', async () => {
+    test('should return an empty list if no id is found', async () => {
       const nonExistentId = new mongoose.Types.ObjectId();
       
       const response = await request(app)
@@ -915,8 +915,8 @@ describe('User Routes', () => {
       expect(response.body).toHaveLength(0);
     });
     
-    test('debería ignorar IDs con formato inválido', async () => {
-      const user1 = await User.create({ name: 'Usuario 1', email: 'usuario1@test.com' });
+    test('should ignore invalid inputs', async () => {
+      const user1 = await User.create({ username: 'Usuario 1', role: 'USER', password: 'testPassword' });
       
       const response = await request(app)
         .post('/users/by-ids')
@@ -929,7 +929,7 @@ describe('User Routes', () => {
       expect(response.body[0].name).toBe('Usuario 1');
     });
     
-    test('debería devolver error 400 si no se proporciona un array de users', async () => {
+    test('should return 400 if sent invalid params', async () => {
       const response = await request(app)
         .post('/users/by-ids')
         .send({
@@ -940,7 +940,7 @@ describe('User Routes', () => {
       expect(response.body.error).toBe('Request body must contain a "users" array');
     });
     
-    test('debería devolver error 400 si users no es un array', async () => {
+    test('should return 400 if users is not an array', async () => {
       const response = await request(app)
         .post('/users/by-ids')
         .send({
@@ -951,7 +951,7 @@ describe('User Routes', () => {
       expect(response.body.error).toBe('Request body must contain a "users" array');
     });
     
-    test('debería manejar una solicitud con un array vacío', async () => {
+    test('should be 200 if an empty array is sent', async () => {
       const response = await request(app)
         .post('/users/by-ids')
         .send({
