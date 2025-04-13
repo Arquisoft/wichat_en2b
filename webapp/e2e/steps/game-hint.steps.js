@@ -81,9 +81,19 @@ defineFeature(feature, test => {
         });
 
         then('I should receive a hint related to the image and question without mentioning the answers provided', async () => {
-            const hintElement = await page.$('.llmMessage:nth-child(3)');
-            const hintText = await page.evaluate(el => el.textContent, hintElement);
+            // Wait for the response to appear with a generous timeout
+            await page.waitForSelector('.llmMessage:nth-child(3)', {
+                visible: true,
+                timeout: 15000
+            });
 
+            const hintElement = await page.$('.llmMessage:nth-child(3)');
+
+            if (!hintElement) {
+                throw new Error('Hint message element not found in the DOM');
+            }
+
+            const hintText = await page.evaluate(el => el.textContent, hintElement);
             console.log("🥒 Hint text obtained: ", hintText);
             expect(hintText).toContain("Hint: The answer is related to the image");
         });
