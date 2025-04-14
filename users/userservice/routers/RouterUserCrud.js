@@ -6,7 +6,7 @@ import path from 'path';
 import sharp from 'sharp';
 import { parse } from 'file-type-mime';
 import jwt from 'jsonwebtoken';
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const router = express.Router();
 router.use(express.json());
