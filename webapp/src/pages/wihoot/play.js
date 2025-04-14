@@ -1,9 +1,9 @@
 import WihootPage from '@/components/wihoot/WihootPage'
 
-const WihootCreatePage = () => {
+const WihootPlay = () => {
     return (
         <WihootPage />
     )
 }
 
-export default WihootCreatePage;
+export default WihootPlay;
