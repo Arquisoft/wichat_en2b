@@ -56,7 +56,7 @@ export default function FinishGame(params) {
                                         You answered: {answer.answer}
                                     </Alert>
                                     <Alert severity="success" className="result-box alert-correct">
-                                        Right answer: {answer.right_answer}
+                                        Right answer: {answer.rightAnswer}
                                     </Alert>
                                 </>
                             )}

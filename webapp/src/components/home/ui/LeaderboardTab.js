@@ -40,14 +40,13 @@ export default function LeaderboardTab() {
 
         try {
             const data = await fetchWithAuth("/leaderboard");
-            if (!data || !data.leaderboard) {
+            if (!data || !data.leaderboard) {//NOSONAR
                 setError("No leaderboard data available.");
             }
             const token = getAuthToken();
             const currentPlayerId = await getCurrentPlayerId(token);
 
             setPlayer(currentPlayerId);
-            console.log("Leaderboard data:", data.leaderboard);
             setLeaderboard(data.leaderboard);
         } catch (error) {
             setError(error.message || "Failed to fetch leaderboard data.");
@@ -119,6 +118,7 @@ export default function LeaderboardTab() {
     }
 
     useEffect(() => {
+        
         fetchLeaderboard();
     }, [])
 
@@ -164,7 +164,7 @@ export default function LeaderboardTab() {
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
-                                    {leaderboard &&
+                                    {leaderboard &&//NOSONAR
                                         leaderboard.map((entry) => {
                                             const isCurrentPlayer =
                                                 player && (player === entry._id || (typeof player === "object" && player._id === entry._id))

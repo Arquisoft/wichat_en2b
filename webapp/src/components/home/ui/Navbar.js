@@ -91,6 +91,7 @@ const Navbar = ({ username = "Guest", profilePicture }) => {
           {/* Profile button */}
           <Box className="user-section">
             <Button
+              id={'navbar-profile-button'}
               variant="contained"
               color="secondary"
               startIcon={<PersonIcon />}

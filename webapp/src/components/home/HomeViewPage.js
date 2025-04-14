@@ -78,7 +78,7 @@ function HomePage() {
             </div>
 
             <Container maxWidth="lg" className="home-content">
-                    <Typography variant="h4" component="h1" align="center" gutterBottom>
+                    <Typography variant="h4" id='name-page' component="h1" align="center" gutterBottom>
                             WiChat
                     </Typography>
 
@@ -96,7 +96,7 @@ function HomePage() {
                         className="tabs-container"
                     >
                         <Tab icon={<BrainIcon />} label="Play" className="tab-content" />
-                        <Tab icon={<StatsIcon />} label="Stats" className="tab-content" />
+                        <Tab icon={<StatsIcon />} label="Stats" className="tab-content" id='tab-statistics'/>
                         <Tab icon={<TrophyIcon />} label="Leaderboard" className="tab-content" />
                     </Tabs>
 
