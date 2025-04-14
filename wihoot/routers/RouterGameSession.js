@@ -98,9 +98,4 @@ router.post("/wihoot/:code/join", async (req, res) => {
 });
 
 
-// Export game sessions for Socket.IO
-router.get("/wihoot/game-sessions", verifyToken, (req, res) => {
-    res.json(gameSessions);
-});
-
 module.exports = router;

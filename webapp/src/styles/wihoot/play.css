@@ -1,0 +1,76 @@
+.play-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.player-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.answer-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.timer-container {
+    margin-bottom: 20px;
+}
+
+.lobby, .question, .waiting, .results, .final-results {
+    background-color: #f8f9fa;
+    border-radius: 10px;
+    padding: 30px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    margin-top: 20px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+    .header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .player-info {
+        align-items: flex-start;
+        margin-top: 10px;
+    }
+
+    .answer-options {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Answer colors */
+button.red {
+    background-color: #f44336 !important;
+    color: white !important;
+}
+
+button.blue {
+    background-color: #2196f3 !important;
+    color: white !important;
+}
+
+button.green {
+    background-color: #4caf50 !important;
+    color: white !important;
+}
+
+button.yellow {
+    background-color: #ffeb3b !important;
+    color: black !important;
+}

@@ -5,6 +5,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import io from "socket.io-client";
 import { Alert, Box, Typography } from "@mui/material";
 
+import '../../styles/wihoot/play.css';
+
 import GameConnecting from "./Connecting";
 import GameLobby from "./Looby";
 import GameQuestion from "./Question";
