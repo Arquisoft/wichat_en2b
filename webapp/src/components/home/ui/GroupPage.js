@@ -27,8 +27,8 @@ const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://local
  * @returns {JSX.Element} 
  */
 export default function GroupPage({ username, onClose }) {
-    if (!username) {
-        throw new Error("Invalid props for ProfileForm component.");
+    if (!username || typeof onClose !== "function") {
+        throw new Error("Invalid props for GroupPage component.");
     }
 
     const [tabIndex, setTabIndex] = useState(0);

@@ -889,8 +889,8 @@ describe('User Routes', () => {
     // Test 1: Debería devolver usuarios encontrados por sus IDs
     test('debería obtener usuarios por IDs válidos', async () => {
       // Crear usuarios de prueba
-      const user1 = await User.create({ username: 'Usuario1', role: 'USER', password: 'testPassword' });
-      const user2 = await User.create({ username: 'Usuario2', role: 'USER', password: 'testPassword' });
+      const user1 = await User.create({ username: 'Usuario1', role: 'USER', password: 'testPassword' }); //NOSONAR
+      const user2 = await User.create({ username: 'Usuario2', role: 'USER', password: 'testPassword' }); //NOSONAR
       
       const userIds = [user1._id.toString(), user2._id.toString()];
       
@@ -918,7 +918,7 @@ describe('User Routes', () => {
     
     // Test 3: Debería devolver un subconjunto de usuarios cuando algunos IDs existen y otros no
     test('debería devolver solo los usuarios que existen cuando se envían IDs mixtos', async () => {
-      const user = await User.create({ username: 'Usuario1', role: 'USER', password: 'testPassword' });
+      const user = await User.create({ username: 'Usuario1', role: 'USER', password: 'testPassword' }); //NOSONAR
       
       const nonExistentId = createValidId().toString();
       const userIds = [user._id.toString(), nonExistentId];
@@ -947,7 +947,7 @@ describe('User Routes', () => {
     
     // Test 5: Debería filtrar IDs no válidos
     test('debería filtrar IDs no válidos y solo buscar los válidos', async () => {
-      const user = await User.create({ username: 'Usuario1', role: 'USER', password: 'testPassword' });
+      const user = await User.create({ username: 'Usuario1', role: 'USER', password: 'testPassword' }); //NOSONAR
       
       const userIds = [user._id.toString(), null, undefined, '', 123];
       
