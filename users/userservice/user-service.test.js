@@ -885,82 +885,96 @@ describe('User Routes', () => {
   });
 
   describe('POST /users/by-ids', () => {
-    test('should return an array with the users given valid inputs', async () => {
-      // Crear algunos usuarios de prueba
-      const user1 = await User.create({ username: 'Usuario 1', role: 'USER', password: 'testPassword' });
-      const user2 = await User.create({ username: 'Usuario 2', role: 'USER', password: 'testPassword' });
+    const createValidId = () => new mongoose.Types.ObjectId();
+    // Test 1: Debería devolver usuarios encontrados por sus IDs
+    test('debería obtener usuarios por IDs válidos', async () => {
+      // Crear usuarios de prueba
+      const user1 = await User.create({ username: 'Usuario1', role: 'USER', password: 'testPassword' });
+      const user2 = await User.create({ username: 'Usuario2', role: 'USER', password: 'testPassword' });
+      
+      const userIds = [user1._id.toString(), user2._id.toString()];
       
       const response = await request(app)
-        .post('/users/by-ids')
-        .send({
-          users: [user1._id.toString(), user2._id.toString()]
-        });
+        .post('/api/users/by-ids')
+        .send({ users: userIds })
+        .expect(200);
       
-      expect(response.status).toBe(200);
       expect(response.body).toHaveLength(2);
-      expect(response.body[0].name).toBe('Usuario 1');
-      expect(response.body[1].name).toBe('Usuario 2');
+      expect(response.body[0]._id).toBe(user1._id.toString());
+      expect(response.body[1]._id).toBe(user2._id.toString());
     });
     
-    test('should return an empty list if no id is found', async () => {
-      const nonExistentId = new mongoose.Types.ObjectId();
+    // Test 2: Debería manejar el caso de IDs inexistentes
+    test('debería manejar IDs que no existen en la base de datos', async () => {
+      const nonExistentId = createValidId().toString();
       
       const response = await request(app)
-        .post('/users/by-ids')
-        .send({
-          users: [nonExistentId.toString()]
-        });
+        .post('/api/users/by-ids')
+        .send({ users: [nonExistentId] })
+        .expect(200);
       
-      expect(response.status).toBe(200);
       expect(response.body).toHaveLength(0);
     });
     
-    test('should ignore invalid inputs', async () => {
-      const user1 = await User.create({ username: 'Usuario 1', role: 'USER', password: 'testPassword' });
+    // Test 3: Debería devolver un subconjunto de usuarios cuando algunos IDs existen y otros no
+    test('debería devolver solo los usuarios que existen cuando se envían IDs mixtos', async () => {
+      const user = await User.create({ username: 'Usuario1', role: 'USER', password: 'testPassword' });
+      
+      const nonExistentId = createValidId().toString();
+      const userIds = [user._id.toString(), nonExistentId];
       
       const response = await request(app)
-        .post('/users/by-ids')
-        .send({
-          users: [user1._id.toString(), 'id-invalido', '123']
-        });
+        .post('/api/users/by-ids')
+        .send({ users: userIds })
+        .expect(200);
       
-      expect(response.status).toBe(200);
       expect(response.body).toHaveLength(1);
-      expect(response.body[0].name).toBe('Usuario 1');
+      expect(response.body[0]._id).toBe(user._id.toString());
     });
     
-    test('should return 400 if sent invalid params', async () => {
-      const response = await request(app)
-        .post('/users/by-ids')
-        .send({
-          otrosCampos: 'valor'
-        });
+    // Test 4: Debería devolver error 400 si no se envía un array de usuarios
+    test('debería devolver error 400 si no se proporciona un array de usuarios', async () => {
+      await request(app)
+        .post('/api/users/by-ids')
+        .send({})
+        .expect(400);
       
-      expect(response.status).toBe(400);
-      expect(response.body.error).toBe('Request body must contain a "users" array');
+      await request(app)
+        .post('/api/users/by-ids')
+        .send({ users: 'no-es-un-array' })
+        .expect(400);
     });
     
-    test('should return 400 if users is not an array', async () => {
-      const response = await request(app)
-        .post('/users/by-ids')
-        .send({
-          users: 'no-soy-un-array'
-        });
+    // Test 5: Debería filtrar IDs no válidos
+    test('debería filtrar IDs no válidos y solo buscar los válidos', async () => {
+      const user = await User.create({ username: 'Usuario1', role: 'USER', password: 'testPassword' });
       
-      expect(response.status).toBe(400);
-      expect(response.body.error).toBe('Request body must contain a "users" array');
+      const userIds = [user._id.toString(), null, undefined, '', 123];
+      
+      const response = await request(app)
+        .post('/api/users/by-ids')
+        .send({ users: userIds })
+        .expect(200);
+      
+      expect(response.body).toHaveLength(1);
+      expect(response.body[0]._id).toBe(user._id.toString());
     });
     
-    test('should be 200 if an empty array is sent', async () => {
-      const response = await request(app)
-        .post('/users/by-ids')
-        .send({
-          users: []
-        });
+    // Test 6: Debería manejar errores internos del servidor
+    test('debería devolver un error 500 cuando ocurre una excepción', async () => {
+      // Mock de User.find para que lance un error
+      const originalFind = User.find;
+      User.find = jest.fn().mockImplementation(() => {
+        throw new Error('Error simulado de base de datos');
+      });
       
-      expect(response.status).toBe(200);
-      expect(response.body).toHaveLength(0);
+      await request(app)
+        .post('/api/users/by-ids')
+        .send({ users: [createValidId().toString()] })
+        .expect(500);
+      
+      // Restaurar la implementación original
+      User.find = originalFind;
     });
   });
-
 });

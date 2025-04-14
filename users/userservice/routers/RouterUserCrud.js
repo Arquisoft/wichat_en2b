@@ -6,6 +6,7 @@ import path from 'path';
 import sharp from 'sharp';
 import { parse } from 'file-type-mime';
 import jwt from 'jsonwebtoken';
+const mongoose = require('mongoose');
 
 const router = express.Router();
 router.use(express.json());
@@ -108,12 +109,21 @@ router.post('/users/by-ids', async (req, res) => {
             return res.status(400).json({ error: 'Request body must contain a "users" array' });
         }
 
-        const validIds = users.filter(id => id.toString());
-
+        const validIds = users
+            .filter(id => id && (typeof id === 'string' || id instanceof mongoose.Types.ObjectId))
+            .filter(id => mongoose.Types.ObjectId.isValid(id));
+        console.log('Valid IDs:', validIds);
+    
+        if (validIds.length === 0) {
+            return res.status(200).json([]);
+        }
         const foundUsers = await User.find({ _id: { $in: validIds } });
         
+        console.log('Found users:', foundUsers);
+
         res.status(200).json(foundUsers);
     } catch (error) {
+        console.error('Error fetching users by IDs:', error);
         res.status(500).send();
     }
 });
