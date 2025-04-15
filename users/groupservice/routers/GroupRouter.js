@@ -35,7 +35,7 @@ router.get('/groups/joined', verifyToken, async (req, res) => {
         const group = await Group.findOne({ members: userId.toString() });
 
         if (!group) {
-            return res.status(204).json({ error: 'Group not found' });
+            return res.status(204).send();
         }
         res.status(200).send(group);
     } catch (error) {

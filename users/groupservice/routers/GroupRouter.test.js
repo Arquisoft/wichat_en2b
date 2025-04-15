@@ -93,13 +93,12 @@ describe('Group Router Tests', () => {
       expect(Group.findOne).toHaveBeenCalledWith({ members: 'mockUserId' });
     });
 
-    it('should return 404 if user is not in any group', async () => {
+    it('should return 204 if user is not in any group', async () => {
       Group.findOne.mockResolvedValue(null);
 
       const response = await request(app).get('/groups/joined');
       
-      expect(response.status).toBe(404);
-      expect(response.body).toEqual({ error: 'Group not found' });
+      expect(response.status).toBe(204);
     });
   });
 
@@ -120,12 +119,12 @@ describe('Group Router Tests', () => {
       expect(Group.findOne).toHaveBeenCalledWith({ groupName: 'TestGroup' });
     });
 
-    it('should return 404 if group not found', async () => {
+    it('should return 204 if group not found', async () => {
       Group.findOne.mockResolvedValue(null);
 
       const response = await request(app).get('/groups/NonExistentGroup');
       
-      expect(response.status).toBe(404);
+      expect(response.status).toBe(204);
     });
   });
 

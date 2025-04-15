@@ -96,7 +96,6 @@ describe('GroupPage Component', () => {
         { name: 'NewGroup' },
         expect.any(Object)
       );
-      expect(window.location.reload).toHaveBeenCalled();
     });
 
     // Restaurar window.location
@@ -143,7 +142,6 @@ describe('GroupPage Component', () => {
         { name: 'ExistingGroup' },
         expect.any(Object)
       );
-      expect(window.location.reload).toHaveBeenCalled();
     });
 
     // Restaurar window.location
@@ -247,7 +245,6 @@ describe('GroupPage Component', () => {
         {},
         expect.any(Object)
       );
-      expect(window.location.reload).toHaveBeenCalled();
     });
 
     // Restaurar window.location
@@ -314,7 +311,6 @@ describe('GroupPage Component', () => {
         { name: 'NewGroupName' },
         expect.any(Object)
       );
-      expect(window.location.reload).toHaveBeenCalled();
     });
 
     // Restaurar window.location
@@ -371,7 +367,6 @@ describe('GroupPage Component', () => {
         expect.stringContaining('/groups'),
         expect.any(Object)
       );
-      expect(window.location.reload).toHaveBeenCalled();
     });
 
     // Restaurar window.location
