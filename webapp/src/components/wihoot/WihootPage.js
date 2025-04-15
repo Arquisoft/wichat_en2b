@@ -7,32 +7,33 @@ import { Alert, Box, Typography } from "@mui/material";
 
 import '../../styles/wihoot/play.css';
 
-import GameConnecting from "./Connecting";
-import GameLobby from "./Looby";
-import GameQuestion from "./Question";
-import GameWaiting from "./Waiting";
-import GameResults from "./ResultsLeaderboard";
-import GameFinal from "./GameFinalOptions";
+import Connecting from "@/components/wihoot/game/Connecting";
+import Lobby from "@/components/wihoot/game/Looby";
+import Question from "@/components/wihoot/game/Question";
+import Waiting from "@/components/wihoot/game/Waiting";
+import ResultsLeaderboard from "@/components/wihoot/game/ResultsLeaderboard";
+import GameFinalOptions from "@/components/wihoot/game/GameFinalOptions";
 
 const gatewayUrl = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://localhost:8000';
 
-export default function PlayPage() {
+export default function PlayPage( code, name) {
     const router = useRouter();
-    const searchParams = useSearchParams();
-    const codeParam = searchParams.get("code");
-    const nameParam = searchParams.get("name");
 
-    const [socket, setSocket] = useState(null);
+    const [socket, setSocket] = useState(null)
+
     const [gameState, setGameState] = useState("connecting");
-    const [gameCode, setGameCode] = useState(codeParam || "");
-    const [playerName, setPlayerName] = useState(nameParam || "");
+    const [gameCode, setGameCode] = useState(code || "");
+    const [playerName, setPlayerName] = useState(name || "");
+    const [isGuest, setIsGuest] = useState(false);
+
     const [currentQuestion, setCurrentQuestion] = useState(null);
     const [selectedAnswer, setSelectedAnswer] = useState(null);
     const [timer, setTimer] = useState(0);
     const [questionResults, setQuestionResults] = useState(null);
     const [finalResults, setFinalResults] = useState(null);
-    const [errorMessage, setErrorMessage] = useState(null);
     const [playerScore, setPlayerScore] = useState(0);
+
+    const [errorMessage, setErrorMessage] = useState(null);
 
     // Initialize socket connection
     useEffect(() => {
@@ -46,13 +47,19 @@ export default function PlayPage() {
             .find((row) => row.startsWith("token="))
             ?.split("=")[1];
 
-        const newSocket = io(gatewayUrl, {
+        const config = token? {
             path: '/socket.io',   // Use the proxy path
             headers: {
                 'Content-Type': 'application/json',
                 Authorization: `Bearer ${token}`
             }
-        });
+        } : {
+            path: 'socket.io'
+        }
+
+        setIsGuest(token? false : true);
+
+        const newSocket = io(gatewayUrl, config);
 
         setSocket(newSocket);
 
@@ -68,7 +75,7 @@ export default function PlayPage() {
         if (socket && gameCode && playerName) {
             setGameState("joining");
 
-            socket.emit("join-game", gameCode, playerName, (response) => {
+            socket.emit("join-game", gameCode, playerName, isGuest, (response) => {
                 if (response.success) {
                     setGameState("lobby");
                 } else {
@@ -104,7 +111,7 @@ export default function PlayPage() {
             setQuestionResults(results);
             setGameState("results");
 
-            const playerResult = results.playerResults.find(
+            const playerResult = results.playerResults.find( //TODO refactor this to handle results
                 (p) => p.playerName === playerName
             );
 
@@ -169,7 +176,7 @@ export default function PlayPage() {
     switch (gameState) {
         case "connecting":
         case "joining":
-            return <GameConnecting />;
+            return <Connecting />;
 
         case "error":
             return (
@@ -195,11 +202,11 @@ export default function PlayPage() {
                     </Box>
 
                     {gameState === "lobby" && (
-                        <GameLobby onExit={handleExitGame} />
+                        <Lobby onExit={handleExitGame} />
                     )}
 
                     {gameState === "question" && currentQuestion && (
-                        <GameQuestion
+                        <Question
                             question={currentQuestion}
                             timer={timer}
                             onAnswerSubmit={handleAnswerSubmit}
@@ -207,15 +214,15 @@ export default function PlayPage() {
                     )}
 
                     {gameState === "waiting" && (
-                        <GameWaiting />
+                        <Waiting />
                     )}
 
                     {gameState === "results" && questionResults && (
-                        <GameResults results={questionResults} playerName={playerName} />
+                        <ResultsLeaderboard results={questionResults} playerName={playerName} />
                     )}
 
                     {gameState === "final" && finalResults && (
-                        <GameFinal results={finalResults} playerName={playerName} onExit={handleExitGame} />
+                        <GameFinalOptions results={finalResults} playerName={playerName} onExit={handleExitGame} />
                     )}
                 </Box>
             );

@@ -4,10 +4,10 @@ import { useRouter } from 'next/router';
 const WihootPlay = () => {
     const router = useRouter();
 
-    // Get the query parameters received from Creating the Quiz
-    const { questions, time } = router.query;
 
-    return (<WihootPage questions={questions} time={time} />)
+    const { code, playerName } = router.query;
+
+    return (<WihootPage code={code} name={playerName}/>)
 }
 
 export default WihootPlay;

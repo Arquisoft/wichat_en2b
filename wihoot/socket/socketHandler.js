@@ -234,7 +234,7 @@ module.exports = (io) => {
         // { PLAYER EVENTS }
 
         // Join game. Client arrive this point once /wihoot/:code/join is responded
-        socket.on("join-game", async (gameCode, playerName, callback) => {
+        socket.on("join-game", async (gameCode, playerName, isGuest, callback) => {
             try {
 
                 // Validate inputs
@@ -254,10 +254,20 @@ module.exports = (io) => {
                 // Join the socket room for this game
                 socket.join(gameCode)
 
+                let playerId = socket.id
+                let player = {
+                    id: playerId,
+                    name: playerName,
+                    isGuest: isGuest
+                }
+
                 // Store game code and player name in socket for disconnection handling
                 socket.gameCode = gameCode
                 socket.playerName = playerName
                 socket.isPlayer = true
+
+                session.players.push(player)
+                session.save();
 
                 // Notify all clients in the room (including the host) about new player
                 io.to(gameCode).emit("player-joined", player)

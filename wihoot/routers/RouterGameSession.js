@@ -32,7 +32,7 @@ router.post("/wihoot/create", verifyToken, (req, res) => {
     let questionsRequested;
     try {
         questionsRequested = requestQuestions(subject, totalQuestions, numberOptions);
-    } catch (errror) {
+    } catch (error) {
         return res.status(500).json({error: "Error requesting the questions."});
     }
 
@@ -45,7 +45,7 @@ router.post("/wihoot/create", verifyToken, (req, res) => {
 
     session.save()
 
-    res.json({gameCode});
+    res.status(200).json({code: gameCode, questions: questionsRequested});
 });
 
 // Join to a game session using a code
