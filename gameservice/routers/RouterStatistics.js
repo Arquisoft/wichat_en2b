@@ -164,7 +164,6 @@ router.post('/leaderboard/group', verifyToken, async (req, res) => {
                 $sort: { totalScore: -1 } // ordenamos por puntaje
             }
         ]);
-        console.log('Group leaderboard:', leaderboard);
         res.status(200).json({ leaderboard });
     } catch (error) {
         console.error('Leaderboard error:', error);

@@ -74,7 +74,7 @@ export default function LeaderboardTab() {
             if (!group) {
                 setLeaderboard(null);
                 setDoesGroupExist(false);
-                return setError("No group data available.");
+                return;
             }
             setDoesGroupExist(true);
 
