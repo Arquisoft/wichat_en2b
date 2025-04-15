@@ -2,7 +2,7 @@ import {useState, useEffect} from "react";
 import {useRouter} from "next/navigation";
 import Link from "next/link";
 import {Box, Typography, Button, TextField, Container, Paper, Grid, Alert} from "@mui/material";
-import GameConnecting from "./Connecting";
+import GameConnecting from "@/components/wihoot/game/Connecting";
 import "../styles/home.css";
 import axios from "axios";
 
@@ -36,16 +36,6 @@ export default function JoinGame() {
 
                 setPlayerName(userResponse.data.username);
 
-                // Fetch profile picture after username is fetched
-                const imgRes = await fetch(`${apiEndpoint}/user/profile/picture/${userResponse.data.username}`);
-
-                if (imgRes.ok) {
-                    const imgURL = await imgRes.json();
-                    setProfilePicture(`${apiEndpoint}/${imgURL.profilePicture}`);
-                } else {
-                    console.error("Failed to fetch profile picture.");
-                }
-
             } catch (error) {
                 setPlayerName(null); // Set username to null if there's an error
                 console.error("Error fetching data:", error);
@@ -71,22 +61,32 @@ export default function JoinGame() {
         setIsLoading(true);
 
         try{
+            const token = document.cookie
+                .split("; ")
+                .find((row) => row.startsWith("token="))
+                ?.split("=")[1];
 
+            let config = isAuthenticated? {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                } : {}
             const response = await axios.post(`/wihoot/${gameCode}/join`,
                 {
                     playerName: playerName,
                     isGuest: isAuthenticated? true : false
                 },
                 {
-                    headers: {
-                        'Content-Type': 'application/json',
-                            Authorization: `Bearer ${token}`
-                    }
+                    headers: config
                 }
             );
 
             if (response.status === 200) {
-                router.push(`/wihoot/create`);
+                router.push(`/wihoot/play`, {
+                    query: {
+                        code: gameCode,
+                        playerName: playerName
+                    }
+                });
                 return;
             } else {
                 setErrorMessage(response.data.error);

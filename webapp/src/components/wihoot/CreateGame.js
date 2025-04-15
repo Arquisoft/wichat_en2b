@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import {quizCategories} from "@/components/home/data";
+import {quizCategories, quizzesByCategory} from "@/components/home/data";
 import { Box, Typography, Button, TextField, Container, Paper, MenuItem, FormControl, InputLabel, Select, Grid, Slider, Divider } from "@mui/material";
+import axios from "axios";
 
 const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://localhost:8000';
 
@@ -16,6 +17,7 @@ export default function CreateQuiz() {
         numberOfQuestions: 10,
         timePerQuestion: 60,
         numberOfAnswers: 4,
+        level: 1
     });
 
     const handleInputChange = (e) => {
@@ -60,23 +62,37 @@ export default function CreateQuiz() {
                 return router.back();
             }
 
-            const response = await fetch(
-                `${apiEndpoint}/game/${quizData.subject}/${quizData.numberOfQuestions}/${quizData.numberOfAnswers}`);
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || "Error when creating the quiz");
+            let quizId = quizCategories.find(c=> c.name === quizData.subject).id;
+            let quizCode = quizzesByCategory[quizId].find(c=>c.id === quizData.level).wikidataCode;
+
+            const response = await axios(`${apiEndpoint}/wihoot/create`,
+                {
+                    subject: quizCode,
+                    totalQuestions: quizData.numberOfQuestions,
+                    numberOptions: quizData.numberOfAnswers,
+                    maxTimePerQuestion: quizData.timePerQuestion
+                },
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+            if (response.status !== 200) {
+                throw new Error(response.data.error || "Error when creating the quiz. response status:" + response.status);
+            } else {
+
+                //TODO remove, dev only!
+                console.log("Quiz created successfully: code:", response.data.code," questions:", response.data.questions);
+
+                // Route the user to the play page
+                router.push(`/wihoot/${response.data.code}/manager`, {
+                    query: {
+                        questions: response.data.questions,
+                        time: quizData.timePerQuestion
+                    }
+                });
             }
-
-            const questionsList = await response.json();
-
-            // Route the user to the play page
-            router.push({
-                pathname: "/wihoot/play",
-                query: {
-                    questions: questionsList,
-                    time: quizData.timePerQuestion
-                }
-            });
 
         } catch (error) {
             console.error("Error al crear el quiz:", error);
@@ -165,6 +181,26 @@ export default function CreateQuiz() {
                                         <MenuItem value={4}>4 answers</MenuItem>
                                         <MenuItem value={5}>5 answers</MenuItem>
                                         <MenuItem value={6}>6 answers</MenuItem>
+                                    </Select>
+                                </FormControl>
+                            </Grid>
+
+                            {/* difficulty level */}
+                            <Grid item xs={12}>
+                                <FormControl fullWidth disabled={isLoading}>
+                                    <InputLabel id="difficuly-level-label">Quiz level</InputLabel>
+                                    <Select
+                                        labelId="difficuly-level-label"
+                                        id="level"
+                                        name="level"
+                                        value={quizData.level}
+                                        label="Quiz level"
+                                        onChange={handleInputChange}
+                                    >
+                                        <MenuItem value={1}>EASY</MenuItem>
+                                        <MenuItem value={2}>MEDIUM</MenuItem>
+                                        <MenuItem value={3}>HARD</MenuItem>
+                                        <MenuItem value={4}>HELL</MenuItem>
                                     </Select>
                                 </FormControl>
                             </Grid>
