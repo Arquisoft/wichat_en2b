@@ -3,7 +3,6 @@ import {useRouter} from "next/navigation";
 import Link from "next/link";
 import {Box, Typography, Button, TextField, Container, Paper, Grid, Alert} from "@mui/material";
 import GameConnecting from "@/components/wihoot/game/Connecting";
-import "../styles/home.css";
 import axios from "axios";
 
 const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://localhost:8000';

@@ -9,3 +9,5 @@ const HostManagerPage = () => {
         <HostManager code={code} questions={questions} time={time}/>
     )
 }
+
+export default HostManagerPage;
