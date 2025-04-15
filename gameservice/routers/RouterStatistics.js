@@ -40,7 +40,7 @@ router.get('/statistics/global', verifyToken, async (req, res) => {
     try{
         const stats = await GameInfo.aggregate([
             { $match: {
-                user_id: req.user.username
+                user_id: req.user._id
             }},
             { $group: {
                 _id: null,
@@ -88,7 +88,7 @@ router.get('/leaderboard', verifyToken, async (req, res) => {
                 $match: { // Gets top 10 and user (11 users if user is not in top 10)
                     $or: [
                         { rank: { $lte: 10 } },
-                        { _id: req.user.username }
+                        { _id: req.user._id }
                     ]
                 }
             },
@@ -96,7 +96,7 @@ router.get('/leaderboard', verifyToken, async (req, res) => {
                 $lookup: { // Gets userDetails for the leaderboard
                     from: 'users',
                     localField: '_id',
-                    foreignField: 'username',
+                    foreignField: '_id',
                     as: 'userDetails'
                 }
             },

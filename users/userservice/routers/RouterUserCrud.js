@@ -195,26 +195,7 @@ router.patch('/users/:username', authenticateUser, authorizeUserAccess, async (r
             if (existingUser) {
                 return res.status(409).json({ error: "Username already taken" });
             }
-
-            // Update game records through gateway service
-            const payload = { newUsername: newUsername };
-            try {
-                const gameResponse = await fetch(`${gatewayServiceUrl}/game/update/${oldUsername}`, {
-                    method: "PATCH",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Origin: process.env.USER_SERVICE_URL || 'http://localhost:8001',
-                    },
-                    body: JSON.stringify(payload),
-                });
-
-                if (!gameResponse.ok) {
-                    return res.status(502).json({ error: "Error updating game history with new username" });
-                }
-            } catch (error) {
-                return res.status(502).json({ error: "Failed to communicate with game service" });
-            }
-
+           
             // Handle profile picture renaming
             if (user.profilePicture) {
                 const publicDir = path.resolve('public', 'images');
@@ -243,7 +224,7 @@ router.patch('/users/:username', authenticateUser, authorizeUserAccess, async (r
 
             // Generate a new JWT with the updated username
             newToken = jwt.sign(
-                { username: user.username, role: 'USER' },
+                { username: user.username, role: 'USER', id: user._id },
                 process.env.JWT_SECRET || 'testing-secret',
                 { expiresIn: '1h' }
             );

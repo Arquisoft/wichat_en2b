@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from "react";
 import { fetchWithAuth } from "@/utils/api-fetch-auth";
 import LoadingErrorHandler from ".//LoadingErrorHandler";
-import {getAuthToken, getCurrentPlayerId} from "@/utils/auth";
+import {getAuthToken, getCurrentUserId} from "@/utils/auth";
 import GroupIcon from '@mui/icons-material/Group';
 import PublicIcon from '@mui/icons-material/Public';
 import axios from "axios";
@@ -34,42 +34,66 @@ export default function LeaderboardTab() {
     const [player, setPlayer] = useState(null);
     const [tabIndex, setTabIndex] = useState(0);
     const [doesGroupExist, setDoesGroupExist] = useState(false);
+    const [usersLeaderboard, setUsersLeaderboard] = useState(null);
 
-    const fetchLeaderboard = async () => {
+    const getUsernameById = (id) => {
+        if (!usersLeaderboard) {
+            return "Loading..."; // O algún texto de carga
+        }
+        const user = usersLeaderboard.find((u) => u._id === id);
+        return user ? user.username : "";
+    };
+
+
+    // Función principal para obtener el leaderboard global
+    const fetchGlobalLeaderboard = async () => {
         setLoading(true);
-
+        setError(null);
+        
         try {
+            // 1. Obtener datos del leaderboard
             const data = await fetchWithAuth("/leaderboard");
-            if (!data || !data.leaderboard) {//NOSONAR
+            if (!data || !data.leaderboard) {
                 setError("No leaderboard data available.");
+                return;
             }
-            const token = getAuthToken();
-            const currentPlayerId = await getCurrentPlayerId(token);
-
-            setPlayer(currentPlayerId);
+            
+            // 2. Guardar los datos del leaderboard
             setLeaderboard(data.leaderboard);
+            
+            // 3. Obtener ID del jugador actual
+            const token = getAuthToken();
+            const currentPlayerId = await getCurrentUserId(token);
+            setPlayer(currentPlayerId);
+            
+            // 4. Obtener usuarios para los IDs del leaderboard
+            const userIds = data.leaderboard.map(entry => entry._id);
+            await fetchUserDetails(userIds);
         } catch (error) {
             setError(error.message || "Failed to fetch leaderboard data.");
         } finally {
             setLoading(false);
         }
-    }
-
+    };
+    
+    // Función principal para obtener el leaderboard de grupo
     const fetchGroupLeaderboard = async () => {
         setLoading(true);
-
+        setError(null);
+        
         const token = getAuthToken();
         try {
+        // 1. Obtener datos del grupo
             const groupFetch = await axios.get(
                 `${apiEndpoint}/groups/joined`,
                 {
-                  headers: {
+                headers: {
                     Authorization: `Bearer ${token}`,
                     "Content-Type": "application/json",
-                  },
+                },
                 }
             );
-
+    
             const group = groupFetch.data;
             if (!group) {
                 setLeaderboard(null);
@@ -77,46 +101,72 @@ export default function LeaderboardTab() {
                 return;
             }
             setDoesGroupExist(true);
-
+        
+            // 2. Obtener leaderboard del grupo
             const playerIds = group.members;
-
-            const players = await axios.post(
-                `${apiEndpoint}/users/by-ids`,
-                { users: playerIds },
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        "Content-Type": "application/json",
-                    },
-                }
-            );
-
-            const playerNames = players.data.map((player) => player.username);
-
             const response = await axios.post(
                 `${apiEndpoint}/leaderboard/group`,
-                { players: playerNames },
+                { players: playerIds },
                 {
-                    headers: {
+                headers: {
                     Authorization: `Bearer ${token}`,
                     "Content-Type": "application/json",
-                    },
+                },
                 }
             );
-
-            setLeaderboard(response.data.leaderboard);
+        
+            // 3. Guardar los datos del leaderboard
+            const leaderboardData = response.data.leaderboard;
+            setLeaderboard(leaderboardData);
+            
+            // 4. Obtener detalles de usuarios para el leaderboard
+            const userIds = leaderboardData.map(entry => entry._id);
+            await fetchUserDetails(userIds);
         } catch (error) {
             setLeaderboard(null);
             setError(error.message || "Failed to fetch group leaderboard data.");
         } finally {
             setLoading(false);
         }
-    }
-
-    useEffect(() => {
+    };
+    
+    // Función auxiliar para obtener detalles de usuarios
+    const fetchUserDetails = async (userIds) => {
+        if (!userIds || userIds.length === 0) {
+            console.log("No user IDs to fetch");
+            return;
+        }
         
-        fetchLeaderboard();
-    }, [])
+        try {            
+            const response = await axios.post(
+                `${apiEndpoint}/users/by-ids`,
+                {users: userIds},
+                {
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                }
+            );
+            setUsersLeaderboard(response.data);
+        } catch (error) {
+            console.error("Error fetching leaderboard users:", error);
+        }
+    };
+    
+    // Tab handler simplificado
+    const handleTabChange = (event, newValue) => {
+        setTabIndex(newValue);
+        if (newValue === 0) {
+            fetchGlobalLeaderboard();
+        } else {
+            fetchGroupLeaderboard();
+        }
+    };
+    
+    // useEffect para cargar datos iniciales
+    useEffect(() => {
+        fetchGlobalLeaderboard();
+    }, []);
 
 
     return (
@@ -125,13 +175,13 @@ export default function LeaderboardTab() {
             <div className="tabs-container">
                 <Tabs 
                     value={tabIndex} 
-                    onChange={(e, newValue) => setTabIndex(newValue)} 
+                    onChange={handleTabChange} 
                     scrollButtons="auto"
                     variant="scrollable"
                     className={"tabs-header"}
                 >
-                    <Tab label="WiChat Leaderboard" icon={<PublicIcon/>} onClick={fetchLeaderboard}/>
-                    <Tab label="Group Leaderboard" icon={<GroupIcon />} onClick={fetchGroupLeaderboard}/>
+                    <Tab label="WiChat Leaderboard" icon={<PublicIcon/>} />
+                    <Tab label="Group Leaderboard" icon={<GroupIcon />} />
                 </Tabs>
             </div>
         
@@ -147,7 +197,7 @@ export default function LeaderboardTab() {
             <CardHeader title="WiChat Leaderboard" />
             <LoadingErrorHandler loading={loading} error={error}>
                 <CardContent className="card-content">
-                    <CardContent className="card-content">
+                    
                         <TableContainer component={Paper}>
                             <Table aria-label="leaderboard table">
                                 <TableHead>
@@ -160,7 +210,7 @@ export default function LeaderboardTab() {
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
-                                    {leaderboard &&//NOSONAR
+                                    {leaderboard && usersLeaderboard && //NOSONAR
                                         leaderboard.map((entry) => {
                                             const isCurrentPlayer =
                                                 player && (player === entry._id || (typeof player === "object" && player._id === entry._id))
@@ -180,10 +230,10 @@ export default function LeaderboardTab() {
                                                     <TableCell>
                                                         {isCurrentPlayer ? (
                                                             <Typography component="span" fontWeight="bold">
-                                                                {entry._id} (You)
+                                                                {getUsernameById(entry._id)} (You)
                                                             </Typography>
                                                         ) : (
-                                                            entry._id
+                                                            getUsernameById(entry._id)
                                                         )}
                                                     </TableCell>
                                                     <TableCell align="right">{`${entry.totalScore.toLocaleString()} points`}</TableCell>
@@ -195,7 +245,7 @@ export default function LeaderboardTab() {
                                 </TableBody>
                             </Table>
                         </TableContainer>
-                    </CardContent>
+                    
                 </CardContent>
             </LoadingErrorHandler>
             </Card>
