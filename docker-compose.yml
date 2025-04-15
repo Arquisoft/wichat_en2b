@@ -77,7 +77,9 @@ services:
     container_name: wihoot-wichat_en2b
     image: ghcr.io/arquisoft/wichat_en2b/wihoot:latest
     profiles: ["dev", "prod"]
-    build: ./wihoot
+    build:
+      context: .
+      dockerfile: wihoot/Dockerfile
     ports:
       - "8005:8005"
     networks:

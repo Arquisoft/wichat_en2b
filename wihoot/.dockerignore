@@ -1,4 +1,17 @@
-node_modules
-.env
-coverage
-.next
+# Ignore all files and directories
+**
+
+# Except directories that are needed
+!gameservice/
+!wihoot/
+
+# Inside that folders ignore
+wihoot/node_modules/
+gameservice/node_modules/
+
+# Ingore also
+**/npm-debug.log
+**/coverage/
+**/.vscode/
+**/.idea/
+**/.next
