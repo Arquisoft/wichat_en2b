@@ -9,7 +9,8 @@ import "../../styles/home/HomePage.css";
 import Navbar from "./ui/Navbar";
 import "../../styles/Footer.css";
 import axios from "axios"; 
-import i18n from "i18next";
+import "../../i18n";
+import { useTranslation } from "react-i18next";
 
 const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://localhost:8000';
 
@@ -19,6 +20,7 @@ const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://local
  * @returns {JSX.Element} The rendered component.
  */
 function HomePage() {
+    const { t } = useTranslation();
     const [username, setUsername] = useState("");   
     const [profilePicture, setProfilePicture] = useState(""); 
 
@@ -84,7 +86,7 @@ function HomePage() {
                     </Typography>
 
                     <Typography variant="subtitle1" color="textSecondary" align="center" sx={{ mb: 3 }}>
-                        Connect, Learn, and Play with WiChat
+                        {t('title')}
                     </Typography>
 
                     {/* Pass the stats to the stats component */}
