@@ -22,18 +22,13 @@ const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://local
 
 /**
  * 
- * @param {String} username
  *  
  * @returns {JSX.Element} 
  */
-export default function GroupPage({ username, onClose }) {
-    if (!username || typeof onClose !== "function") {
-        throw new Error("Invalid props for GroupPage component.");
-    }
-
+export default function GroupPage() {
     const [tabIndex, setTabIndex] = useState(0);
     const [groupName, setGroupName] = useState("");
-    const [doesGroupExist, setDoesGroupExist] = useState(false);
+    const [doesGroupExist, setDoesGroupExist] = useState(true);
     const [loggedUserGroup, setLoggedUserGroup] = useState(null);
     const [groupMembers, setGroupMembers] = useState([]);
     const [user, setUser] = useState(null);
@@ -107,10 +102,9 @@ export default function GroupPage({ username, onClose }) {
         return user ? user.username : null;
     };
 
-    const searchGroup = async (name) => {
-        setGroupName(name);
+    const searchGroup = async () => {
         try {
-            const response = await axios.get(`${apiEndpoint}/groups/${name}`);
+            const response = await axios.get(`${apiEndpoint}/groups/${groupName}`);
             if (!response.data) {
                 setDoesGroupExist(false);
             } else {
@@ -275,15 +269,18 @@ export default function GroupPage({ username, onClose }) {
                             label="Group Name"
                             variant="outlined"
                             fullWidth
-                            onChange={e => searchGroup(e.target.value)}
+                            onChange={e => setGroupName(e.target.value)}
                         />
                         {!doesGroupExist && groupName !== "" && <p className="error-message">Group does not exist</p>}
-                        <Button variant="contained" color="primary" onClick={joinGroup} 
+                        <Button variant="contained" color="primary" onClick={() => {
+                            searchGroup();
+                            if (doesGroupExist) {
+                                joinGroup();
+                            }
+                        }
+                        } 
                         disabled={
-                            !(
-                                groupName.trim() !== "" &&
-                                doesGroupExist
-                            )
+                            !(groupName.trim() !== "")
                         }>  
                             
                             Join Group
@@ -298,26 +295,22 @@ export default function GroupPage({ username, onClose }) {
                             label="Group Name"
                             variant="outlined"
                             fullWidth
-                            onChange={e => searchGroup(e.target.value)}
+                            onChange={e => setGroupName(e.target.value)}
                         />
                         {doesGroupExist && groupName.trim() !== "" && <p className="error-message">Group already exists</p>}
-                        <Button variant="contained" color="primary" onClick={createGroup}
+                        <Button variant="contained" color="primary" onClick={() => {
+                            searchGroup();
+                            if (!doesGroupExist) {
+                                createGroup();
+                            }
+                        }}
                         disabled={
-                            !(
-                                groupName.trim() !== "" &&
-                                !doesGroupExist
-                            )
+                            !(groupName.trim() !== "" )
                         }>  
                             Create Group
                         </Button>
                     </Box>
                 )}
-
-                <Box className="close-button">
-                    <Button variant="contained" color="secondary" onClick={onClose}>
-                        Close
-                    </Button>
-                </Box>
             </div>
         );
     }
@@ -431,12 +424,6 @@ export default function GroupPage({ username, onClose }) {
                     </Button>
                 )}
                 
-            </Box>
-            
-            <Box className="close-button">
-                <Button variant="contained" color="secondary" onClick={onClose}>
-                    Close
-                </Button>
             </Box>
         </div>
     )

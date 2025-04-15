@@ -28,45 +28,6 @@ describe('GroupPage Component', () => {
     jest.clearAllMocks();
     getCurrentUserId.mockResolvedValue('mockUserId');
   });
-
-  test('throws error when username is not provided', () => {
-    // Spy console.error para evitar que los errores de la consola contaminen los resultados del test
-    const consoleErrorSpy = jest.spyOn(console, 'error');
-    consoleErrorSpy.mockImplementation(() => {});
-
-    // Verificar que lanza error sin username
-    expect(() => render(<GroupPage onClose={() => {}} />)).toThrow(
-      "Invalid props for GroupPage component."
-    );
-
-    consoleErrorSpy.mockRestore();
-  });
-
-  test('throws error when onClose is not provided', () => {
-    // Spy console.error para evitar que los errores de la consola contaminen los resultados del test
-    const consoleErrorSpy = jest.spyOn(console, 'error');
-    consoleErrorSpy.mockImplementation(() => {});
-
-    // Verificar que lanza error sin onClose
-    expect(() => render(<GroupPage username="testuser" />)).toThrow(
-      "Invalid props for GroupPage component."
-    );
-
-    consoleErrorSpy.mockRestore();
-  });
-
-  test('throws error when onClose is not a function', () => {
-    // Spy console.error para evitar que los errores de la consola contaminen los resultados del test
-    const consoleErrorSpy = jest.spyOn(console, 'error');
-    consoleErrorSpy.mockImplementation(() => {});
-
-    // Verificar que lanza error con onClose que no es una función
-    expect(() => render(<GroupPage username="testuser" onClose="not a function" />)).toThrow(
-      "Invalid props for GroupPage component."
-    );
-
-    consoleErrorSpy.mockRestore();
-  });
   
   // Test para cuando el usuario no está en un grupo
   test('renders "not part of any group" message when user has no group', async () => {

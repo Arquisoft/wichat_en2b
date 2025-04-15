@@ -79,7 +79,6 @@ export default function LeaderboardTab() {
             setDoesGroupExist(true);
 
             const playerIds = group.members;
-            console.log("Group members:", playerIds);
 
             const players = await axios.post(
                 `${apiEndpoint}/users/by-ids`,
@@ -93,7 +92,6 @@ export default function LeaderboardTab() {
             );
 
             const playerNames = players.data.map((player) => player.username);
-            console.log("Player names:", playerNames);
 
             const response = await axios.post(
                 `${apiEndpoint}/leaderboard/group`,
@@ -105,7 +103,7 @@ export default function LeaderboardTab() {
                     },
                 }
             );
-            console.log("Group leaderboard data:", response.data.leaderboard);
+
             setLeaderboard(response.data.leaderboard);
         } catch (error) {
             setLeaderboard(null);

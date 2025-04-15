@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Container, Box, Typography, Tabs, Tab } from "@mui/material";
 import { EmojiEvents as TrophyIcon, BarChart as StatsIcon, Psychology as BrainIcon } from "@mui/icons-material";
+import GroupsIcon from '@mui/icons-material/Groups';
 import PlayTab from "./ui/PlayTab";
 import StatsTab from "./ui/StatsTab";
 import LeaderboardTab from "./ui/LeaderboardTab";
@@ -9,6 +10,7 @@ import "../../styles/home/HomePage.css";
 import Navbar from "./ui/Navbar";
 import "../../styles/Footer.css";
 import axios from "axios"; 
+import GroupPage from "./ui/GroupPage"; 
 
 const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://localhost:8000';
 
@@ -98,11 +100,13 @@ function HomePage() {
                         <Tab icon={<BrainIcon />} label="Play" className="tab-content" />
                         <Tab icon={<StatsIcon />} label="Stats" className="tab-content" id='tab-statistics'/>
                         <Tab icon={<TrophyIcon />} label="Leaderboard" className="tab-content" />
+                        <Tab icon={<GroupsIcon />} label="Groups" className="tab-content" />
                     </Tabs>
 
                     {tabValue === 0 && <PlayTab />}
                     {tabValue === 1 && <StatsTab />}
                     {tabValue === 2 && <LeaderboardTab />}
+                    {tabValue === 3 && <GroupPage />}
             </Container>
 
             {/* Footer */}
