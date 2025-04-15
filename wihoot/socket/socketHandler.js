@@ -269,6 +269,9 @@ module.exports = (io) => {
                 session.players.push(player)
                 session.save();
 
+                const game = gameSessions.get(gameCode);
+                game.players = session.players;
+
                 // Notify all clients in the room (including the host) about new player
                 io.to(gameCode).emit("player-joined", player)
 
@@ -393,35 +396,35 @@ module.exports = (io) => {
             game.timer = null
         }
 
-        // Compute the points of the last question for each player
+        if (game.currentQuestionIndex >= 0) {
+            // Compute the points of the last question for each player
+            let lastAnswer;
+            try {
+                game.answers.forEach((playerId) => {
+                    lastAnswer = game.answers[playerId][game.currentQuestionIndex]
+                    const points = computePoints(
+                        game.questions[game.currentQuestionIndex].question_id,
+                        lastAnswer.answerIndex,
+                        lastAnswer.time,
+                        game.questions.answers.length,
+                        game.timePerQuestion);
 
-        let lastAnswer;
-        try {
-            game.answers.forEach((playerId) => {
-                lastAnswer = game.answers[playerId][game.currentQuestionIndex]
-                const points = computePoints(
-                    game.questions[game.currentQuestionIndex].question_id,
-                    lastAnswer.answerIndex,
-                    lastAnswer.time,
-                    game.questions.answers.length,
-                    game.timePerQuestion);
-
-                if (!game.points[playerId]) {
-                    game.points.set(playerId, points);
-                    if (!game.numberCorrectAnswers[playerId]){
-                        game.numberCorrectAnswers.set(playerId, 0);
+                    if (!game.points[playerId]) {
+                        game.points.set(playerId, points);
+                        if (!game.numberCorrectAnswers[playerId]){
+                            game.numberCorrectAnswers.set(playerId, 0);
+                        } else {
+                            game.numberCorrectAnswers.set(playerId, game.numberCorrectAnswers[playerId] + 1);
+                        }
                     } else {
-                        game.numberCorrectAnswers.set(playerId, game.numberCorrectAnswers[playerId] + 1);
+                        game.points[playerId].set(playerId, game.points[playerId] + points);
                     }
-                } else {
-                    game.points[playerId].set(playerId, game.points[playerId] + points);
-                }
-            })
-        } catch (error) {
-            console.error("Error computing points for lastAnswer:", lastAnswer, "Error:", error.message);
-            io.emit("error", "Error computing points for lastAnswer")
+                })
+            } catch (error) {
+                console.error("Error computing points for lastAnswer:", lastAnswer, "Error:", error.message);
+                io.emit("error", "Error computing points for lastAnswer")
+            }
         }
-
 
         // Move to next question
         game.currentQuestionIndex++
@@ -511,7 +514,7 @@ module.exports = (io) => {
             playersLeaderboard.push(
                 {
                     playerId: playerId,
-                    playerName: player.name,
+                    playerName: game.players[playerId].name,
                     points: game.points[playerId],
                     correctAnswer: correctAnswer
                 }

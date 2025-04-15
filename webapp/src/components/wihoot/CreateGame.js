@@ -85,10 +85,18 @@ export default function CreateQuiz() {
                 //TODO remove, dev only!
                 console.log("Quiz created successfully: code:", response.data.code," questions:", response.data.questions);
 
+                // Add the text question in each question to ease showing it in the game
+                let questionsList = response.data.questions.map(q=> {
+                    return {
+                        ...q,
+                        text: quizzesByCategory[quizId].find(c => c.id === q.level).description
+                    }
+                });
+
                 // Route the user to the play page
                 router.push(`/wihoot/${response.data.code}/manager`, {
                     query: {
-                        questions: response.data.questions,
+                        questions: questionsList,
                         time: quizData.timePerQuestion
                     }
                 });
