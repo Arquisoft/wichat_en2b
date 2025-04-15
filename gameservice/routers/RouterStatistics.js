@@ -171,5 +171,43 @@ router.post('/leaderboard/group', verifyToken, async (req, res) => {
     }
 });
 
+router.post('/leaderboard/calculateGroupScores', verifyToken, async (req, res) => {
+    try {
+      const { groups } = req.body;
+      
+      // Calcular puntuaciones para cada grupo
+      const groupsWithScores = [];
+      
+      for (const group of groups) {
+        let totalPoints = 0;
+        
+        // Calcular puntos para cada miembro del grupo
+        for (const memberId of group.members) {
+          const memberResults = await GameInfo.find({ user_id: memberId });
+          const memberPoints = memberResults.reduce((sum, result) => sum + result.points_gain, 0);
+          totalPoints += memberPoints;
+        }
+        
+        // Añadir información del grupo con la puntuación
+        groupsWithScores.push({
+          ...group,
+          totalPoints
+        });
+      }
+      
+      res.status(200).json({
+        success: true,
+        data: groupsWithScores
+      });
+    } catch (error) {
+      console.error('Error en calculateGroupScores:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Error al calcular puntuaciones de grupos',
+        error: error.message
+      });
+    }
+});
+
 
 module.exports = router;

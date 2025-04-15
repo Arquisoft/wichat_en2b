@@ -3,6 +3,7 @@ const router = express.Router();
 const Group = require('../group-model.js');
 const verifyToken = require('./auth.js');
 
+const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://localhost:8000';
 
 const joinGroup = async (userId, group) => {
     if (!group.members.includes(userId.toString())) {
@@ -248,5 +249,46 @@ router.post('/groups/leave', verifyToken, async (req, res) => {
     }
 });
 
+
+router.get('/groups/topGroups', async (req, res) => {
+    try {
+        // 1. Obtener todos los grupos
+        const groups = await Group.find({});
+        
+        // 2. Para cada grupo, recolectar sus miembros
+        const groupsWithMembers = groups.map(group => ({
+          groupId: group._id,
+          groupName: group.groupName,
+          owner: group.owner,
+          memberCount: group.members.length,
+          members: group.members,
+          createdAt: group.createdAt
+        }));
+        
+        // 3. Enviar la lista de grupos al servicio de GameInfo para calcular puntuaciones
+        const response = await axios.post(`${apiEndpoint}/api/calculate-group-scores`, {
+          groups: groupsWithMembers
+        });
+        
+        // 4. Obtener la respuesta del servicio de GameInfo que contiene los grupos con puntuaciones
+        const groupsWithScores = response.data.data;
+        
+        // 5. Ordenar por puntuación y obtener los 10 mejores
+        groupsWithScores.sort((a, b) => b.totalPoints - a.totalPoints);
+        const topGroups = groupsWithScores.slice(0, 10);
+        
+        res.status(200).json({
+          success: true,
+          data: topGroups
+        });
+      } catch (error) {
+        console.error('Error en getTopGroups:', error);
+        res.status(500).json({
+          success: false,
+          message: 'Error al obtener el leaderboard de grupos',
+          error: error.message
+        });
+      }
+});
 
 module.exports = router;
