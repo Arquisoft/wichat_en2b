@@ -1,5 +1,5 @@
 import express from 'express';
-import User from '../user-model.js';
+import User from '../user-model.mjs';
 import bcrypt from 'bcrypt';
 import fs from 'fs';
 import path from 'path';

@@ -111,7 +111,20 @@ app.use('/askllm', publicCors);
 app.post('/askllm', (req, res) => forwardRequest('llm', '/askllm', req, res));
 
 // Game Service Routes
+app.use('/quiz/allTopics', publicCors);
+app.get('/quiz/allTopics', (req, res) => forwardRequest('game', '/quiz/allTopics', req, res));
+
+// Game Service Routes
+app.use('/quiz', publicCors);
+app.get('/quiz/:topic', (req, res) => {
+  const topic = req.params.topic;
+  forwardRequest('game', `/quiz/${topic}`, req, res);
+});
+app.get('/quiz', (req, res) => forwardRequest('game', '/quiz', req, res));
+app.post('/quiz', (req, res) => forwardRequest('game', '/quiz', req, res));
+
 app.use('/game', publicCors);
+app.use('/question/validate', publicCors);
 app.get('/game/:subject/:totalQuestions/:numberOptions', async (req, res) => {
   try {
     const response = await fetch(
@@ -133,7 +146,16 @@ app.get('/game/:subject/:totalQuestions/:numberOptions', async (req, res) => {
     res.status(500).json({ error: 'Hubo un problema al obtener las preguntas' });
   }
 });
+app.post('/question/validate', (req, res) => forwardRequest('game', '/question/validate', req, res));
 
+app.use('/question/internal/:id', cors({
+  origin: serviceUrls.llm,
+  methods: ['GET']
+}));
+
+app.get('/question/internal/:id', (req, res) =>
+    forwardRequest('game', `/question/internal/${req.params.id}`, req, res)
+);
 // Statistics Routes
 ['/statistics/subject/:subject', '/statistics/global', '/leaderboard'].forEach(route => {
   app.use(route, publicCors);

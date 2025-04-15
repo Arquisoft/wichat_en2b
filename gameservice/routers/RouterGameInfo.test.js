@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const GameInfo = require('../game-result-model');
+const GameInfo = require('../game-result-model.js');
 const request = require('supertest');
 const { MongoMemoryServer } = require('mongodb-memory-server');
 const express = require('express');
@@ -10,6 +10,23 @@ let mongoServer;
 let app;
 let server;
 let validToken;
+
+global.fetch = jest.fn((url, options) => {
+    const authHeader = options.headers['Authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+    try {
+        const user = jwt.verify(token, 'testing-secret');
+        return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve(user)
+        });
+    } catch (err) {
+        return Promise.resolve({
+            ok: false,
+            json: () => Promise.resolve({ error: 'Invalid token' })
+        });
+    }
+});
 
 beforeAll(async function (){
     mongoServer = await MongoMemoryServer.create();
@@ -34,6 +51,7 @@ afterAll(async function (){
     await mongoose.disconnect();
     server.close();
     await mongoServer.stop();
+    fetch.mockClear();
 });
 
 describe('Game Info Router', function (){
