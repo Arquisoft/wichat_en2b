@@ -14,10 +14,13 @@ import {
 	Select,
 	MenuItem,
 	Box,
+	useTheme,
+	useMediaQuery,
 } from "@mui/material"
 import "../../../styles/home/StatsTab.css"
 import { fetchWithAuth } from "@/utils/api-fetch-auth";
 import LoadingErrorHandler from ".//LoadingErrorHandler";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts"
 
 const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://localhost:8000';
 
@@ -55,7 +58,9 @@ export default function StatsTab() {
 	const [error, setError] = useState(null)
 	const [selectedSubject, setSelectedSubject] = useState("all")
 	const [categories, setCategories] = useState([]);
-	
+	const theme = useTheme();
+	const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+
 	useEffect(() => {
 		const fetchStatistics = async () => {
 			setLoading(true);
@@ -84,11 +89,11 @@ export default function StatsTab() {
 				const response = await fetch(`${apiEndpoint}/quiz/allTopics`, {
 					method: "GET",
 					headers: {
-					  "Content-Type": "application/json",
+						"Content-Type": "application/json",
 					},
-				  });
-				  const data = await response.json();
-				  console.log("Fetched categories:", data);
+				});
+				const data = await response.json();
+				console.log("Fetched categories:", data);
 				if (Array.isArray(data)) {
 					setCategories(data);
 				}
@@ -96,11 +101,24 @@ export default function StatsTab() {
 				console.error("Failed to fetch categories", error);
 			}
 		};
-	
+
 		fetchCategories();
 	}, []);
 	const handleSubjectChange = (event) => {
 		setSelectedSubject(event.target.value);
+	}
+
+	const getChartData = () => {
+		if (!statistics) return []
+
+		return [
+			{ name: "Correct", value: statistics.totalCorrectAnswers, color: theme.palette.success.main },
+			{
+				name: "Incorrect",
+				value: statistics.totalQuestions - statistics.totalCorrectAnswers,
+				color: theme.palette.error.main,
+			},
+		]
 	}
 
 	return (
@@ -119,7 +137,7 @@ export default function StatsTab() {
 								value={selectedSubject}
 								onChange={handleSubjectChange}
 								label="Filter by subject"
-							 variant={"outlined"}>
+								variant={"outlined"}>
 								<MenuItem value="all">All Subjects</MenuItem>
 								{categories.map((category) => (
 									<MenuItem key={category} value={category}>
@@ -133,20 +151,57 @@ export default function StatsTab() {
 			/>
 			<CardContent>
 				<LoadingErrorHandler loading={loading} error={error}>
-				{ statistics && (
-					<>{/*NOSONAR*/}
-						<Grid container spacing={2} className={"detailed-stats"}>
-							<StatCard id='total-games' title="Total Games" value={statistics.totalGames} />
-							<StatCard id='avg-score' title="Avg Score per Quiz" value={`${statistics.avgScore.toFixed(1)} points`} />
-							<StatCard id='total-score' title="Total Score" value={`${statistics.totalScore} points`} />
-							<StatCard id='total-answ' title="Correct Answers" value={statistics.totalCorrectAnswers} />
-							<StatCard id='total-questions' title="Total Questions" value={statistics.totalQuestions} />
-							<StatCard id='accuracy' title="Accuracy" value={`${(statistics.successRatio * 100).toFixed(1)}%`} />
-							<StatCard id='avg-quiz-time' title="Avg Time per Quiz" value={`${statistics.avgTime.toFixed(1)} s`} />
-						</Grid>
-					</>
-				)}
-			</LoadingErrorHandler>
+					{ statistics && (
+						<>{/*NOSONAR*/}
+							<Grid container spacing={2}>
+								<Grid item xs={12} md={7}>
+									<Grid container spacing={2} className={"detailed-stats"}>
+										<StatCard title="Total Games" value={statistics.totalGames} />
+										<StatCard title="Avg Score per Quiz" value={`${statistics.avgScore.toFixed(1)} points`} />
+										<StatCard title="Total Score" value={`${statistics.totalScore} points`} />
+										<StatCard title="Correct Answers" value={statistics.totalCorrectAnswers} />
+										<StatCard title="Total Questions" value={statistics.totalQuestions} />
+										<StatCard title="Accuracy" value={`${(statistics.successRatio * 100).toFixed(1)}%`} />
+										<StatCard title="Avg Time per Quiz" value={`${statistics.avgTime.toFixed(1)} s`} />
+									</Grid>
+								</Grid>
+								<Grid item xs={12} md={5}>
+									<Paper elevation={2} sx={{ p: 2, height: isMobile ? "300px" : "100%", minHeight: "300px" }}>
+										<Typography variant="h6" gutterBottom>
+											Answer Distribution
+										</Typography>
+										<ResponsiveContainer width="100%" height="90%">
+											<PieChart>
+												<Pie
+													data={getChartData()}
+													cx="50%"
+													cy="50%"
+													labelLine={false}
+													outerRadius={80}
+													fill="#8884d8"
+													dataKey="value"
+													label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+												>
+													{getChartData().map((entry, index) => (
+														<Cell key={`cell-${index}`} fill={entry.color} />
+													))}
+												</Pie>
+												<Tooltip
+													formatter={(value) => [`${value} answers`, ""]}
+													contentStyle={{
+														backgroundColor: theme.palette.background.paper,
+														borderColor: theme.palette.divider,
+													}}
+												/>
+												<Legend />
+											</PieChart>
+										</ResponsiveContainer>
+									</Paper>
+								</Grid>
+							</Grid>
+						</>
+					)}
+				</LoadingErrorHandler>
 			</CardContent>
 
 		</Card>
