@@ -107,9 +107,7 @@ export default function LeaderboardTab() {
             setLeaderboard(response.data.leaderboard);
         } catch (error) {
             setLeaderboard(null);
-            if (error.response && error.response.status !== 404) {
-                setError(error.message || "Failed to fetch group leaderboard data.");
-            }
+            setError(error.message || "Failed to fetch group leaderboard data.");
         } finally {
             setLoading(false);
         }

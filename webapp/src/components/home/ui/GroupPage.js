@@ -28,14 +28,16 @@ const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://local
 export default function GroupPage() {
     const [tabIndex, setTabIndex] = useState(0);
     const [groupName, setGroupName] = useState("");
-    const [doesGroupExist, setDoesGroupExist] = useState(true);
+    const [doesJoinGroupExist, setDoesJoinGroupExist] = useState(true);
+    const [doesCreateGroupExist, setDoesCreateGroupExist] = useState(false);
+    const [doesNewGroupExist, setDoesNewGroupExist] = useState(false);
     const [loggedUserGroup, setLoggedUserGroup] = useState(null);
     const [groupMembers, setGroupMembers] = useState([]);
     const [user, setUser] = useState(null);
     const [newGroupName, setNewGroupName] = useState("");
     const [errorMessage, setErrorMessage] = useState("");
 
-    const router = useRouter();
+    useRouter();
 
     const updateEverything = (status) => {
         if (status === 200) {
@@ -44,7 +46,6 @@ export default function GroupPage() {
                 updateGroupMembers();
             }
         } 
-        window.location.reload();
     };
 
     const getToken = () => {
@@ -102,22 +103,63 @@ export default function GroupPage() {
         return user ? user.username : null;
     };
 
-    const searchGroup = async () => {
+    const searchJoinGroup = async () => {
         try {
-            const response = await axios.get(`${apiEndpoint}/groups/${groupName}`);
-            if (!response.data) {
-                setDoesGroupExist(false);
-            } else {
-                setDoesGroupExist(true);
-            }
+            const data = await abstractSearch(groupName);
+            setDoesJoinGroupExist(!!data);
+            return !!data; // Devuelve si existe o no
         } catch (error) {
-            if (error.response && error.response.status === 404) {
-                setDoesGroupExist(false);
+            if (error.response && error.response.status === 204) {
+                setDoesJoinGroupExist(false);
+                return false;
+            } else {
+                console.error("Error searching for groups:", error);
+                return false;
+            }
+        }
+    };
+    
+    const searchCreateGroup = async () => {
+        try {
+            const data = await abstractSearch(groupName);
+            setDoesCreateGroupExist(!!data);
+            return !!data; // Devuelve si existe o no
+        } catch (error) {
+            if (error.response && error.response.status === 204) {
+                setDoesCreateGroupExist(false);
+                return false;
+            } else {
+                console.error("Error searching for groups:", error);
+                return false;
+            }
+        }
+    };
+
+    const searchUpdateGroup = async () => {
+        try {
+            setErrorMessage("");
+            const data = await abstractSearch(newGroupName);
+            setDoesNewGroupExist(!!data);
+        } catch (error) {
+            if (error.response && error.response.status === 204) {
+                setDoesNewGroupExist(false);
             } else {
                 console.error("Error searching for groups:", error);
             }
         }
-    };
+    }
+
+    const abstractSearch = async (name) => {
+        try {
+            const response = await axios.get(`${apiEndpoint}/groups/${name}`);
+            return response.data;
+        } catch (error) {
+            if (error.response && error.response.status === 204) {
+                return null; // Grupo no existe
+            }
+            throw error; // Re-lanza otros errores
+        }
+    }
 
     const createGroup = async () => {
         try {
@@ -211,15 +253,21 @@ export default function GroupPage() {
                 `${apiEndpoint}/groups`,
                 { name: newGroupName },
                 {
-                  headers: {
-                    Authorization: `Bearer ${token}`,
-                    "Content-Type": "application/json",
-                  },
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        "Content-Type": "application/json",
+                    },
                 }
             );
             updateEverything(response.status);
+            setNewGroupName(""); // Limpia el campo después de una actualización exitosa
         } catch (error) {
-            setErrorMessage(error.response.data.error);
+            if (error.response && error.response.data && error.response.data.error) {
+                setErrorMessage(error.response.data.error);
+            } else {
+                setErrorMessage("Error al modificar el grupo");
+            }
+            console.error("Error modifying group:", error);
         }
     }
 
@@ -237,6 +285,14 @@ export default function GroupPage() {
             updateGroupMembers();
         }
     }, [loggedUserGroup]);
+
+    useEffect(() => {
+        // Limpia los errores y estados al cambiar entre pestañas
+        setGroupName("");
+        setDoesJoinGroupExist(true);
+        setDoesCreateGroupExist(false);
+        setErrorMessage("");
+    }, [tabIndex]);
 
     if (!loggedUserGroup){
         return (
@@ -271,18 +327,18 @@ export default function GroupPage() {
                             fullWidth
                             onChange={e => setGroupName(e.target.value)}
                         />
-                        {!doesGroupExist && groupName !== "" && <p className="error-message">Group does not exist</p>}
-                        <Button variant="contained" color="primary" onClick={() => {
-                            searchGroup();
-                            if (doesGroupExist) {
-                                joinGroup();
-                            }
-                        }
-                        } 
-                        disabled={
-                            !(groupName.trim() !== "")
-                        }>  
-                            
+                        {!doesJoinGroupExist && groupName !== "" && <p className="error-message">Group does not exist</p>}
+                        <Button 
+                            variant="contained" 
+                            color="primary" 
+                            onClick={async () => {
+                                const exists = await searchJoinGroup();
+                                if (exists) {
+                                    joinGroup();
+                                }
+                            }} 
+                            disabled={!(groupName.trim() !== "")}
+                        >  
                             Join Group
                         </Button>
                     </Box>
@@ -297,16 +353,18 @@ export default function GroupPage() {
                             fullWidth
                             onChange={e => setGroupName(e.target.value)}
                         />
-                        {doesGroupExist && groupName.trim() !== "" && <p className="error-message">Group already exists</p>}
-                        <Button variant="contained" color="primary" onClick={() => {
-                            searchGroup();
-                            if (!doesGroupExist) {
-                                createGroup();
-                            }
-                        }}
-                        disabled={
-                            !(groupName.trim() !== "" )
-                        }>  
+                        {doesCreateGroupExist && groupName.trim() !== "" && <p className="error-message">Group already exists</p>} 
+                        <Button 
+                            variant="contained" 
+                            color="primary" 
+                            onClick={async () => {
+                                const exists = await searchCreateGroup();
+                                if (!exists) {
+                                    createGroup();
+                                }
+                            }}
+                            disabled={!(groupName.trim() !== "")}
+                        >  
                             Create Group
                         </Button>
                     </Box>
@@ -343,14 +401,18 @@ export default function GroupPage() {
                     />
                 )}
 
-                {doesGroupExist && loggedUserGroup.owner === user && <p className="error-message">Group already exists</p>}
                 {loggedUserGroup.owner === user && (
-                    <Button variant="contained" color="primary" onClick={modifyGroup} 
+                    <Button variant="contained" color="primary" onClick={() =>{
+                        searchUpdateGroup();
+                        if (!doesNewGroupExist) {
+                            modifyGroup();
+                        }
+                    } 
+                    }
                     disabled={
                         !(
                             newGroupName.trim() !== "" &&
-                            newGroupName !== loggedUserGroup.groupName &&
-                            !doesGroupExist
+                            newGroupName !== loggedUserGroup.groupName
                         )
                     }>
                         Modify group
