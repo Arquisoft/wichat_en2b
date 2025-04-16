@@ -49,8 +49,7 @@ router.post('/setup2fa', async (req, res) => {
     
     // Save the secret to the user (make sure the gatewayServiceUrl is defined)
     try {
-      const foundUser = await axios.get(`${gatewayServiceUrl}/users/id/${user._id}`);
-      await axios.patch(`${gatewayServiceUrl}/users/${foundUser.username}`,
+      await axios.patch(`${gatewayServiceUrl}/users`,
           { secret },
           {
             headers: {
@@ -80,22 +79,22 @@ router.post('/verify2fa', async (req, res) => {
     if (!token) {
       return res.status(400).json({ error: "Token is required" });
     }
-      console.log("Aaaaaaaaaaaaaaaaaaaaaaa ", user);
-      userResponse = await axios.get(`${gatewayServiceUrl}/users/${user}`);
-      const userFromDB = userResponse.data;
-      let secret = userFromDB.secret;
-      const isValid = otplib.authenticator.verify({ token, secret});
-      if(isValid){
-      const jwtToken = jwt.sign(
-          { _id: userFromDB._id, role: userFromDB.role },
-          process.env.JWT_SECRET || 'testing-secret',
-          { expiresIn: '1h' }
-        );
-      res.json({ message: "2FA Verified" , token: jwtToken});
-      }else {
-        res.status(401).json({ error: "Invalid 2FA Token" });
-      }
-    }  catch (error) {
+    console.log("Aaaaaaaaaaaaaaaaaaaaaaa ", user.username);
+    userResponse = await axios.get(`${gatewayServiceUrl}/users/${user.username}`);
+    const userFromDB = userResponse.data;
+    let secret = userFromDB.secret;
+    const isValid = otplib.authenticator.verify({ token, secret});
+    if(isValid){
+    const jwtToken = jwt.sign(
+        { _id: userFromDB._id, role: userFromDB.role },
+        process.env.JWT_SECRET || 'testing-secret',
+        { expiresIn: '1h' }
+      );
+    res.json({ message: "2FA Verified" , token: jwtToken});
+    }else {
+      res.status(401).json({ error: "Invalid 2FA Token" });
+    }
+  }  catch (error) {
     logger.error(`Failure verifying the 2FA token: ${error.message}`);
     res.status(500).json({ error: "Error verifying 2FA token" });
   }
