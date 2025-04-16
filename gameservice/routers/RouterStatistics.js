@@ -8,7 +8,7 @@ router.get('/statistics/subject/:subject', verifyToken, async (req, res) => {
     try{
         const stats = await GameInfo.aggregate([
             { $match: {
-                user_id: req.user.username,
+                user_id: req.user._id,
                 subject: req.params.subject
             }},
             { $group: {
@@ -101,11 +101,6 @@ router.get('/leaderboard', verifyToken, async (req, res) => {
                 }
             },
             {
-                $addFields: { // Adds only the username
-                    username: { $first: '$userDetails.username' }
-                }
-            },
-            {
                 $project: { // Removes the rest of the user details
                     userDetails: 0
                 }
@@ -135,33 +130,36 @@ router.post('/leaderboard/group', verifyToken, async (req, res) => {
                 $match: { user_id: { $in: players } } // solo partidas de los jugadores dados
             },
             {
-                $group: {
+                $group: { // Full player database
                     _id: '$user_id',
                     totalScore: { $sum: '$points_gain' },
                     totalGames: { $sum: 1 },
                     avgScore: { $avg: '$points_gain' }
+                }},
+            { $sort: { totalScore: -1 }}, // Sorted by score
+            {
+                $setWindowFields: { // Adds a rank attribute to every user
+                    sortBy: { totalScore: -1 },
+                    output: {
+                        rank: { $rank: {} }
+                    }
                 }
             },
             {
-                $lookup: {
+                $lookup: { // Gets userDetails for the leaderboard
                     from: 'users',
                     localField: '_id',
-                    foreignField: 'username',
+                    foreignField: '_id',
                     as: 'userDetails'
                 }
             },
             {
-                $addFields: {
-                    username: { $first: '$userDetails.username' }
-                }
-            },
-            {
-                $project: {
+                $project: { // Removes the rest of the user details
                     userDetails: 0
                 }
             },
             {
-                $sort: { totalScore: -1 } // ordenamos por puntaje
+                $sort: { rank: 1 } // Sorts by rank
             }
         ]);
         res.status(200).json({ leaderboard });

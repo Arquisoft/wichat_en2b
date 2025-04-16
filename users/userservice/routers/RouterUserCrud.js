@@ -39,17 +39,6 @@ const authenticateUser = async (req, res, next) => {
     }
 };
 
-// Authorization middleware to check if user can modify the requested profile
-const authorizeUserAccess = (req, res, next) => {
-    // Extract username from params or body based on route
-    const requestedUsername = req.params.username || req.body.username;
-
-    if (!requestedUsername || req.user.username !== requestedUsername) {
-        return res.status(403).json({ error: "You can only access your own profile" });
-    }
-
-    next();
-};
 
 // Create a new user
 router.post('/users', async (req, res) => {
@@ -125,11 +114,25 @@ router.post('/users/by-ids', async (req, res) => {
     }
 });
 
+router.get('/users/id/:id', async (req, res) => {
+    try{
+        const userId = req.params.id;
+        const user = await User.findById(userId);
+
+        if (!user){
+            return res.status(404).send({ error: "User not found" });
+        }
+
+        return res.status(200).send(user);
+    } catch (error){
+    }
+});
+
 // Delete a user by username
-router.delete('/users/:username', authenticateUser, authorizeUserAccess, async (req, res) => {
+router.delete('/users', authenticateUser, async (req, res) => {
     try {
-        const { username } = req.params;
-        const user = await User.findOneAndDelete({ username: username.toString() });
+        const userId = req.user._id;
+        const user = await User.findByIdAndDelete(userId);
 
         if (!user) {
             return res.status(404).send({ error: "User not found" });
@@ -138,14 +141,14 @@ router.delete('/users/:username', authenticateUser, authorizeUserAccess, async (
         // Delete profile picture if it exists
         if (user.profilePicture) {
             const publicDir = path.resolve('public', 'images');
-            const safeUsername = path.basename(username);
+            const safeUsername = path.basename(userId);
             const profilePicturePath = path.join(publicDir, `${safeUsername}_profile_picture.png`);
 
             if (fs.existsSync(profilePicturePath)) {
                 try {
                     fs.unlinkSync(profilePicturePath);
                 } catch (err) {
-                    console.error(`Error deleting profile picture for ${username}`);
+                    console.error(`Error deleting profile picture for ${user.username}`);
                 }
             }
         }
@@ -158,19 +161,18 @@ router.delete('/users/:username', authenticateUser, authorizeUserAccess, async (
 });
 
 // Update a user's information
-router.patch('/users/:username', authenticateUser, authorizeUserAccess, async (req, res) => {
+router.patch('/users', authenticateUser, async (req, res) => {
     try {
-        const { username } = req.params;
+        const userId = req.user._id;
 
         // Find the user
-        const user = await User.findOne({ username: username.toString() });
+        const user = await User.findById(userId);
         if (!user) {
             return res.status(404).json({ error: "User not found" });
         }
 
         const oldUsername = user.username;
         let updateMade = false;
-        let newToken = null;
 
         // Handle username update
         if (req.body.newUsername) {
@@ -195,39 +197,10 @@ router.patch('/users/:username', authenticateUser, authorizeUserAccess, async (r
             if (existingUser) {
                 return res.status(409).json({ error: "Username already taken" });
             }
-           
-            // Handle profile picture renaming
-            if (user.profilePicture) {
-                const publicDir = path.resolve('public', 'images');
-
-                const safeOldUsername = path.basename(oldUsername);
-                const safeNewUsername = path.basename(newUsername);
-
-                // Construct secure absolute paths
-                const oldProfilePicturePath = path.join(publicDir, `${safeOldUsername}_profile_picture.png`);
-                const newProfilePicturePath = path.join(publicDir, `${safeNewUsername}_profile_picture.png`);
-
-                // Check if the old profile picture exists and rename it
-                if (fs.existsSync(oldProfilePicturePath)) {
-                    fs.renameSync(oldProfilePicturePath, newProfilePicturePath);
-                    user.profilePicture = `images/${safeNewUsername}_profile_picture.png`;
-                } else {
-                    console.error("Profile picture not found.");
-                }
-            } else {
-                user.profilePicture = `images/${newUsername}_profile_picture.png`;
-            }
 
             // Update the username
             user.username = newUsername;
             updateMade = true;
-
-            // Generate a new JWT with the updated username
-            newToken = jwt.sign(
-                { username: user.username, role: 'USER', id: user._id },
-                process.env.JWT_SECRET || 'testing-secret',
-                { expiresIn: '1h' }
-            );
         }
 
         // Handle password update
@@ -292,9 +265,6 @@ router.patch('/users/:username', authenticateUser, authorizeUserAccess, async (r
 
         // Prepare response
         const response = { message: "User updated successfully" };
-        if (newToken) {
-            response.token = newToken;
-        }
 
         res.status(200).json(response);
     } catch (error) {
@@ -318,21 +288,22 @@ router.patch('/users/:username', authenticateUser, authorizeUserAccess, async (r
 });
 
 // Upload profile picture
-router.post('/user/profile/picture', authenticateUser, authorizeUserAccess, async (req, res) => {
+router.post('/user/profile/picture', authenticateUser, async (req, res) => {
     try {
         const { image, username } = req.body;
+        const userID = req.user._id;
 
         if (!image) {
             return res.status(400).json({ error: "No image provided." });
         }
 
-        const user = await User.findOne({ username: username.toString() });
+        const user = await User.findById(userId);
         if (!user) return res.status(404).json({ error: "User not found" });
 
         const __dirname = path.resolve();
         const imagesDir = path.resolve(__dirname, 'public', 'images');
 
-        const nonSanitizedFilePath = path.join(imagesDir, `${username}_profile_picture.png`);
+        const nonSanitizedFilePath = path.join(imagesDir, `${userID}_profile_picture.png`);
 
         // Verify that the path is within the allowed directory
         if (!path.resolve(nonSanitizedFilePath).startsWith(imagesDir)) {
@@ -346,8 +317,8 @@ router.post('/user/profile/picture', authenticateUser, authorizeUserAccess, asyn
         };
 
         // Define the file path for the profile picture
-        const sanitizedUsername = sanitizeFilename(username);
-        const newFilePath = path.join(imagesDir, `${sanitizedUsername}_profile_picture.png`);
+        const sanitizedUserId = sanitizeFilename(userID);
+        const newFilePath = path.join(imagesDir, `${sanitizedUserId}_profile_picture.png`);
 
         // Process the base64 image
         const buffer = Buffer.from(image, 'base64');
@@ -374,7 +345,7 @@ router.post('/user/profile/picture', authenticateUser, authorizeUserAccess, asyn
         await fs.promises.writeFile(newFilePath, processedBuffer);
 
         // Generate the URL for the image
-        const imageUrl = `images/${sanitizedUsername}_profile_picture.png`;
+        const imageUrl = `images/${sanitizedUserId}_profile_picture.png`;
 
         // Update the user's profile with the new image URL
         user.profilePicture = imageUrl;
@@ -390,11 +361,11 @@ router.post('/user/profile/picture', authenticateUser, authorizeUserAccess, asyn
 });
 
 // Get profile picture
-router.get('/user/profile/picture/:username', async (req, res) => {
-    const { username } = req.params;
+router.get('/user/profile/picture/:id', async (req, res) => {
+    const { id } = req.params;
 
     try {
-        const user = await User.findOne({ username: username.toString() });
+        const user = await User.findById(id);
         if (!user) return res.status(404).json({ error: "User not found" });
         res.status(200).json({ profilePicture: user.profilePicture });
 

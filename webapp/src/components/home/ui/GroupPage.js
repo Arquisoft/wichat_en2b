@@ -1,7 +1,7 @@
 import CreateIcon from '@mui/icons-material/Create';
 import GroupAddIcon from '@mui/icons-material/Search';
 import React, { useState, useEffect } from "react";
-import {getAuthToken, getCurrentUserId} from "@/utils/auth";
+import {getAuthToken, getCurrentPlayerId} from "@/utils/auth";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import "../../../styles/home/GroupPage.css"; 
@@ -274,7 +274,7 @@ export default function GroupPage() {
     useEffect(() => {
         updateUserGroup();
         const saveUserId = async () => {
-            const currentUserId = await getCurrentUserId(getAuthToken());
+            const currentUserId = await getCurrentPlayerId(getAuthToken());
             setUser(currentUserId);
         }
         saveUserId();

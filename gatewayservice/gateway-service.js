@@ -89,16 +89,20 @@ app.get('/users/:username', (req, res) => {
   forwardRequest('user', `/users/${req.params.username}`, req, res);
 });
 
-app.patch('/users/:username', (req, res) => {
-  forwardRequest('user', `/users/${req.params.username}`, req, res);
+app.patch('/users', (req, res) => {
+  forwardRequest('user', `/users`, req, res);
 });
 
-app.delete('/users/:username', (req, res) => {
-  forwardRequest('user', `/users/${req.params.username}`, req, res);
+app.delete('/users', (req, res) => {
+  forwardRequest('user', `/users`, req, res);
 });
 
 app.post('/users/by-ids', (req, res) => {
   forwardRequest('user', `/users/by-ids`, req, res);
+});
+
+app.get('/users/id/:id', (req, res) => {
+  forwardRequest('user', `/users/id/${req.params.id}`, req, res);
 });
 
 // Group Management

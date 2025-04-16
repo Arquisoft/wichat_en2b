@@ -75,7 +75,7 @@ router.post('/login', [
       res.json({has2fa : has2fa});
     }else{
       const token = jwt.sign(
-        { username: userFromDB.username, role: userFromDB.role, _id: userFromDB._id },
+        { _id: userFromDB._id, role: userFromDB.role },
         process.env.JWT_SECRET || 'testing-secret',
         { expiresIn: '1h' }
       );
@@ -120,7 +120,7 @@ router.post('/register', [
 
         // Hashing the password before sending it back
         const token = jwt.sign(
-            { username: newUser.username, role: newUser.role, _id: newUser._id }, 
+            { _id: userFromDB._id, role: newUser.role }, 
             process.env.JWT_SECRET || 'testing-secret',
             { expiresIn: '1h' }
         );
@@ -151,9 +151,8 @@ router.get('/token/username', async (req, res) => {
       if (!token) return res.status(401).json({ error: "Unauthorized" });
 
       const decoded = jwt.verify(token, process.env.JWT_SECRET || 'testing-secret');
-
       // Llamada al backend user CRUD para obtener detalles del usuario
-      const userResponse = await axios.get(`${gatewayServiceUrl}/users/${decoded.username}`);
+      const userResponse = await axios.get(`${gatewayServiceUrl}/users/id/${decoded._id}`);
 
       if (!userResponse.data) {
           return res.status(404).json({ error: "User not found" });

@@ -33,7 +33,7 @@ router.post('/setup2fa', async (req, res) => {
 
     // Generate 2FA secret
     const secret = otplib.authenticator.generateSecret();
-    const otpauth = otplib.authenticator.keyuri(user.username, "wichat_en2b", secret);
+    const otpauth = otplib.authenticator.keyuri(user._id, "wichat_en2b", secret);
 
     // Generate QR code
     const imageUrl = await new Promise((resolve, reject) => {
@@ -46,9 +46,11 @@ router.post('/setup2fa', async (req, res) => {
       });
     });
 
+    
     // Save the secret to the user (make sure the gatewayServiceUrl is defined)
     try {
-      await axios.patch(`${gatewayServiceUrl}/users/${user.username}`,
+      const foundUser = await axios.get(`${gatewayServiceUrl}/users/id/${user._id}`);
+      await axios.patch(`${gatewayServiceUrl}/users/${foundUser.username}`,
           { secret },
           {
             headers: {
@@ -78,14 +80,14 @@ router.post('/verify2fa', async (req, res) => {
     if (!token) {
       return res.status(400).json({ error: "Token is required" });
     }
-    
-      userResponse = await axios.get(`${gatewayServiceUrl}/users/${user.username}`);
+      console.log("Aaaaaaaaaaaaaaaaaaaaaaa ", user);
+      userResponse = await axios.get(`${gatewayServiceUrl}/users/${user}`);
       const userFromDB = userResponse.data;
       let secret = userFromDB.secret;
       const isValid = otplib.authenticator.verify({ token, secret});
       if(isValid){
       const jwtToken = jwt.sign(
-          { username: userFromDB.username, role: userFromDB.role },
+          { _id: userFromDB._id, role: userFromDB.role },
           process.env.JWT_SECRET || 'testing-secret',
           { expiresIn: '1h' }
         );
@@ -102,6 +104,8 @@ router.get('/check2fa', async (req, res) => {
   try {
     // Get the user from the token
     const user = getUserFromToken(req);
+    console.log("User from 2fa: ", user);
+
     if (!user) {
       return res.status(401).json({ error: 'Unauthorized. Invalid or expired token.' });
     }
@@ -109,7 +113,8 @@ router.get('/check2fa', async (req, res) => {
     // Check if the user exists and retrieve their 2FA status
     let foundUser;
     try{
-      foundUser = await axios.get(`${gatewayServiceUrl}/users/${user.username}`);
+      foundUser = await axios.get(`${gatewayServiceUrl}/users/id/${user._id}`);
+
     }catch (err) {
       if (err.response && err.response.status === 404) {
         logger.error(`Failure in login: user ${user.username} not found`);
@@ -124,7 +129,7 @@ router.get('/check2fa', async (req, res) => {
     const is2faEnabled = !!foundUser.data.secret; // If `secret` exists, 2FA is enabled
 
     // Respond with the 2FA status
-    return res.status(200).json({ twoFactorEnabled: is2faEnabled , username : user.username});
+    return res.status(200).json({ twoFactorEnabled: is2faEnabled , user_id : user._id});
 
   } catch (error) {
     logger.error("Error checking 2FA status:", error);

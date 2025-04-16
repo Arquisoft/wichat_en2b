@@ -42,12 +42,12 @@ function HomePage() {
                 Authorization: `Bearer ${token}`
               }
             });
-            
+            console.log(userResponse);
             setUsername(userResponse.data.username);
             
             // Fetch profile picture after username is fetched
-            const imgRes = await fetch(`${apiEndpoint}/user/profile/picture/${userResponse.data.username}`);
-            
+            const imgRes = await fetch(`${apiEndpoint}/user/profile/picture/${userResponse.data._id}`);
+            console.log(imgRes);
             if (imgRes.ok) {
               const imgURL = await imgRes.json();
               setProfilePicture(`${apiEndpoint}/${imgURL.profilePicture}`);

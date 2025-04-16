@@ -1,19 +1,20 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import { AppBar, Toolbar, Avatar, IconButton, Button, Box, Typography, Dialog } from "@mui/material";
 import { Logout as LogoutIcon, Person as PersonIcon} from "@mui/icons-material";
 import { useRouter } from "next/navigation"; // Import useRouter for navigation
 import "../../../styles/home/Navbar.css";
 import ProfileForm from "./ProfileForm";
+import axios from "axios";
 
 const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://localhost:8000';
 
 /**
  * Navigation bar for the application.
  *
- * @param {string} username - The username of the player.
+ * @param {string} username - The id of the player.
  *
  * @returns {JSX.Element} The rendered Navbar component.
  */

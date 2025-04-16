@@ -210,7 +210,7 @@ describe('Statistics Router', function() {
         });
         it('should return top 10 plus user when the user is outside top 10', async function() {
             const token = jwt.sign(
-                { username: 'user11', role: 'USER' },
+                { username: 'user11', role: 'USER' , _id: "user11"},
                 'testing-secret',
                 { expiresIn: '1h' }
             );
