@@ -163,6 +163,7 @@ router.delete('/users', authenticateUser, async (req, res) => {
 // Update a user's information
 router.patch('/users', authenticateUser, async (req, res) => {
     try {
+        console.log("UPDATING USER INFORMATION");
         const userId = req.user._id;
 
         // Find the user
@@ -290,6 +291,7 @@ router.patch('/users', authenticateUser, async (req, res) => {
 // Upload profile picture
 router.post('/user/profile/picture', authenticateUser, async (req, res) => {
     try {
+        console.log("UPDATING PROFILE PICTURE");
         const { image, username } = req.body;
         const userID = req.user._id;
 
@@ -297,29 +299,20 @@ router.post('/user/profile/picture', authenticateUser, async (req, res) => {
             return res.status(400).json({ error: "No image provided." });
         }
 
-        const user = await User.findById(userId);
+        const user = await User.findById(userID);
         if (!user) return res.status(404).json({ error: "User not found" });
 
         const __dirname = path.resolve();
         const imagesDir = path.resolve(__dirname, 'public', 'images');
 
-        const nonSanitizedFilePath = path.join(imagesDir, `${userID}_profile_picture.png`);
-
+        const filePath = path.join(imagesDir, `${userID}_profile_picture.png`);
+        console.log("Image non sanitized: ", filePath);
         // Verify that the path is within the allowed directory
-        if (!path.resolve(nonSanitizedFilePath).startsWith(imagesDir)) {
+        if (!path.resolve(filePath).startsWith(imagesDir)) {
             console.log(`Access Denied: ${username} is outside of images folder`);
             throw new Error("Access denied to files outside the images folder");
         }
-
-        // Clean the filename to prevent directory traversal attacks
-        const sanitizeFilename = (filename) => {
-            return filename.replace(/[^a-zA-Z0-9._-]/g, '').replace(/\.\./g, '');
-        };
-
-        // Define the file path for the profile picture
-        const sanitizedUserId = sanitizeFilename(userID);
-        const newFilePath = path.join(imagesDir, `${sanitizedUserId}_profile_picture.png`);
-
+       
         // Process the base64 image
         const buffer = Buffer.from(image, 'base64');
         const arrayBuffer = buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
@@ -342,10 +335,10 @@ router.post('/user/profile/picture', authenticateUser, async (req, res) => {
         }
 
         // Save the processed image to the file system
-        await fs.promises.writeFile(newFilePath, processedBuffer);
+        await fs.promises.writeFile(filePath, processedBuffer);
 
         // Generate the URL for the image
-        const imageUrl = `images/${sanitizedUserId}_profile_picture.png`;
+        const imageUrl = `images/${userID}_profile_picture.png`;
 
         // Update the user's profile with the new image URL
         user.profilePicture = imageUrl;

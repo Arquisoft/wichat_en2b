@@ -266,19 +266,6 @@ app.patch('/users/:username',  async (req, res) => {
   forwardRequest("user", `/users/${req.params.username}`, req, res);
 });
 
-// Update game history when username changes
-const corsOptions = {
-  origin: serviceUrls.user,
-  methods: ['PATCH'], 
-  allowedHeaders: ['Content-Type', 'Origin'] 
-};
-
-app.use('/game/update/:oldUsername', cors(corsOptions));
-
-app.patch('/game/update/:oldUsername', async (req, res) => {
-    forwardRequest("game", `/game/update/${req.params.oldUsername}`, req, res);
-});
-
 // Profile picture upload
 app.use('/user/profile/picture', publicCors);
 
@@ -287,10 +274,10 @@ app.post('/user/profile/picture', async (req, res) => {
 });
 
 // Profile picture retrieval
-app.use('/user/profile/picture/:username', publicCors);
+app.use('/user/profile/picture/:id', publicCors);
 
-app.get('/user/profile/picture/:username', async (req, res) => {
-    forwardRequest("user", `/user/profile/picture/${req.params.username}`, req, res);
+app.get('/user/profile/picture/:id', async (req, res) => {
+    forwardRequest("user", `/user/profile/picture/${req.params.id}`, req, res);
 });
 
 // Proxy for images

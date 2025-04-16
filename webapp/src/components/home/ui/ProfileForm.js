@@ -273,6 +273,7 @@ export default function ProfileForm({ username, profilePicture, onSave }) {
                 const token = getToken();
                 setProfilePictureError(null);
 
+                console.log("WEBAPP: UPLOADING IMAGE");
                 const response = await fetch(`${apiEndpoint}/user/profile/picture`, {
                     method: "POST",
                     headers: {
@@ -286,6 +287,7 @@ export default function ProfileForm({ username, profilePicture, onSave }) {
                     throw new Error(`Error HTTP! Estado: ${response.status}`);
                 }
 
+                console.log("Image uploaded");
                 const data = await response.json();
                 setSnackbarMessage("Profile picture uploaded successfully.");
                 setOpenSnackbar(true);
