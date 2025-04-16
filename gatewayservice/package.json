@@ -26,7 +26,7 @@
         "express-prom-bundle": "^8.0.0",
         "helmet": "^8.1.0",
         "http-proxy": "^1.18.1",
-        "http-proxy-middleware": "^3.0.3",
+        "http-proxy-middleware": "^3.0.5",
         "jsonwebtoken": "^9.0.2",
         "node-fetch": "^3.3.2",
         "swagger-ui-express": "^5.0.1",
