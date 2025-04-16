@@ -13,11 +13,11 @@ export default function FinishGame(params) {
 
     // Calculate game results once
     const gameData = {
-        subject,
+        subject: params.subject,
         points_gain: answers.reduce((acc, a) => acc + a.points, 0),
         number_of_questions: answers.length,
         number_correct_answers: answers.filter((a) => a.isCorrect).length,
-        total_time: answers.reduce((acc, a) => acc + a.timeSpent, 0),
+        total_time: answers.reduce((acc, a) => acc + a.timeSpent, 0)
     };
 
     // Function to save game data to the server
@@ -97,7 +97,7 @@ export default function FinishGame(params) {
                                     You answered: {answer.answer}
                                 </Alert>
                                 <Alert severity="success" className="result-box alert-correct">
-                                    Right answer: {answer.right_answer}
+                                    Right answer: {answer.rightAnswer}
                                 </Alert>
                             </>
                         )}

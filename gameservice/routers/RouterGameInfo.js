@@ -1,5 +1,5 @@
 const express = require('express')
-const GameInfo = require('../game-result-model')
+const GameInfo = require('../game-result-model.js')
 // Middleware to verify JWT token
 const verifyToken = require('./middleware/auth');
 const router = express.Router()
@@ -40,6 +40,34 @@ router.post('/game', verifyToken, async (req, res) => {
     } catch (error) {
         console.error("Error when saving the game data:", error);
         res.status(500).json({ error: 'Error saving game data' });
+    }
+});
+
+// Update game info history of user by username
+router.patch('/game/update/:oldUsername', async (req, res) => {
+    try {
+        const { oldUsername } = req.params;
+        const { newUsername } = req.body;    
+
+        const gameInfo = await GameInfo.updateMany(
+            { user_id: oldUsername }, 
+            { $set: { user_id: newUsername } });
+
+        if (gameInfo.matchedCount === 0) {
+            return res.status(200).json({ 
+                gameInfo: gameInfo,
+                message: "No game history found for the user" 
+            });
+        }
+
+        res.status(200).json({ 
+            gameInfo: gameInfo,
+            message: "Game history updated successfully" 
+        });
+        
+    } catch (error) {
+        console.error("Error when updating the game data:", error);
+        res.status(500).json({ error: 'Error updating game data' });
     }
 });
 

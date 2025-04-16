@@ -2,6 +2,8 @@ const axios = require('axios');
 const express = require('express');
 const helmet = require('helmet')
 
+const apiEndpoint = process.env.GATEWAY_SERVICE_URL || 'http://gatewayservice:8000';
+
 const app = express();
 
 app.use(helmet());
@@ -25,7 +27,7 @@ const llmConfigs = {
   },
   empathy: {
     url: () => 'https://empathyai.prod.empathy.co/v1/chat/completions',
-    transformRequest: (messages, answer) => ({
+    transformRequest: (messages, answer, questionResponse) => ({
       model: "mistralai/Mistral-7B-Instruct-v0.3",
       messages: [
         { 
@@ -33,7 +35,7 @@ const llmConfigs = {
           content: "You are an assistant designed to help players during a quiz game. When a player asks for a hint, "
             + "you will provide a helpful clue related to the question, but not the full answer."
             + " The possible answers are: " + answer.answers.join(",") + "."
-            + " The right answer is: " + answer.right_answer + "."
+            + " The right answer is: " + questionResponse.data.right_answer + "."
             + " You will never give the correct answer."
         },
         ...messages 
@@ -59,13 +61,14 @@ function validateRequiredFields(req, requiredFields) {
 // Function to send questions to LLM
 async function sendQuestionToLLM(conversation, apiKey, answer, model = 'empathy') {
   try {
+    const questionResponse = await axios.get(`${apiEndpoint}/question/internal/${answer.question_id}`);
+
     const config = llmConfigs[model];
     if (!config) {
       throw new Error(`Model "${model}" is not supported.`);
     }
-    
 
-    const requestData = config.transformRequest(conversation, answer);
+    const requestData = config.transformRequest(conversation, answer, questionResponse);
     
     const headers = {
       'Content-Type': 'application/json',
@@ -74,7 +77,7 @@ async function sendQuestionToLLM(conversation, apiKey, answer, model = 'empathy'
 
     const url = config.url(apiKey);
 
-     const filterWords = answer.answers;  
+     const filterWords = answer.answers;
 
      let response;
      let llmAnswer;

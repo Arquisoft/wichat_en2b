@@ -32,7 +32,6 @@ export default function InGameChat(params) {
 
         setMessages(prevMessages => [...prevMessages, newMessage]);
         setInput("");
-
         setIsThinking(true);
 
         try {
@@ -42,7 +41,7 @@ export default function InGameChat(params) {
                 body: JSON.stringify({
                     conversation: [{ role: "user", content: input }],
                     model: "empathy",
-                    possibleAnswers: { answers: question.answers, right_answer: question.right_answer }
+                    possibleAnswers: question
                 })
             });
             const data = await response.json();
@@ -90,6 +89,7 @@ export default function InGameChat(params) {
     if (isMinimized) {
         return (
             <IconButton
+                id='chatbot-open-button'
                 onClick={toggleMinimize}
                 className="chatButton"
                 aria-label="Open chat"
@@ -116,13 +116,18 @@ export default function InGameChat(params) {
             {/* Messages Area */}
             <Box className="messageArea" p={2}>
                 <Stack spacing={2}>
-                    {messages.map((message) => (
+                    {messages.map((message, index) => (
                         <Paper
                             key={message.id}
                             elevation={3}
                             className={message.isUser ? "userMessage" : "llmMessage"}
                         >
-                            <Typography variant="body2">{message.content}</Typography>
+                            <Typography
+                                data-state={`message-${index}-${message.isUser ? "user" : "llm"}`}
+                                variant="body2"
+                            >
+                                {message.content}
+                            </Typography>
                         </Paper>
                     ))}
                     {isThinking && (
@@ -137,6 +142,7 @@ export default function InGameChat(params) {
             {/* Chat Input Area */}
             <Box className={"inputArea"} p={2} display="flex" justifyContent="space-between">
                 <TextField
+                    id='chatbot-input'
                     fullWidth
                     size="small"
                     value={input}
@@ -148,6 +154,7 @@ export default function InGameChat(params) {
                     className="inputField"
                 />
                 <Button
+                    id='chatbot-send-button'
                     variant="contained"
                     color="primary"
                     onClick={handleSendMessage}

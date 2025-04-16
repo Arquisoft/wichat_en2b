@@ -48,7 +48,15 @@ router.post('/setup2fa', async (req, res) => {
 
     // Save the secret to the user (make sure the gatewayServiceUrl is defined)
     try {
-      await axios.patch(`${gatewayServiceUrl}/users/${user.username}`, { secret });
+      await axios.patch(`${gatewayServiceUrl}/users/${user.username}`,
+          { secret },
+          {
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": req.headers.authorization
+            }
+          }
+      );
       logger.info('User updated with 2FA secret');
     } catch (error) {
       logger.error(`Error saving 2FA secret to user: ${error.message}`);

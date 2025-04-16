@@ -154,7 +154,7 @@ const AddUser = () => {
           <h2>Create an Account</h2>
           <p>Enter your username and password below to sign up!</p>
 
-          {error && <p className="error-message">{error}</p>}
+          {error && <p className="error-message" id='error-message'>{error}</p>}
 
           <form onSubmit={addUser}>
             <div className="input-group">
@@ -169,7 +169,7 @@ const AddUser = () => {
                   disabled={isSubmitting}
               />
               {validationErrors.username && (
-                  <p className="error-message">{validationErrors.username}</p>
+                  <p className="error-message" id='error-username'>{validationErrors.username}</p>
               )}
             </div>
 
@@ -185,7 +185,7 @@ const AddUser = () => {
                   disabled={isSubmitting}
               />
               {validationErrors.passwordErrors && (
-                  <p className="error-message">{validationErrors.passwordErrors}</p>
+                  <p className="error-message" id='error-password'>{validationErrors.passwordErrors}</p>
               )}
             </div>
 
@@ -201,7 +201,7 @@ const AddUser = () => {
                   disabled={isSubmitting}
               />
               {validationErrors.confirmPasswordErrors && (
-                  <p className="error-message">{validationErrors.confirmPasswordErrors}</p>
+                  <p className="error-message" id='error-confirmpassword'>{validationErrors.confirmPasswordErrors}</p>
               )}
             </div>
 
