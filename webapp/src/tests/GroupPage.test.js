@@ -3,13 +3,13 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import GroupPage from '../components/home/ui/GroupPage';
 import axios from 'axios';
-import { getAuthToken, getCurrentUserId } from '@/utils/auth';
+import { getAuthToken, getCurrentPlayerId } from '@/utils/auth';
 
 // Mock de módulos y funciones externas
 jest.mock('axios');
 jest.mock('@/utils/auth', () => ({
-  getAuthToken: jest.fn(),
-  getCurrentUserId: jest.fn()
+  getAuthToken: jest.fn(() => 'mock-token'),
+  getCurrentPlayerId: jest.fn(() => Promise.resolve('mockUserId'))
 }));
 jest.mock('next/navigation', () => ({
   useRouter: () => ({
@@ -26,7 +26,7 @@ Object.defineProperty(document, 'cookie', {
 describe('GroupPage Component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    getCurrentUserId.mockResolvedValue('mockUserId');
+    getCurrentPlayerId.mockResolvedValue('mockUserId');
   });
   
   // Test para cuando el usuario no está en un grupo
@@ -39,7 +39,7 @@ describe('GroupPage Component', () => {
       return Promise.resolve({ data: [] });
     });
 
-    render(<GroupPage username="testuser" onClose={jest.fn()} />);
+    render(<GroupPage />);
 
     // Verificar que se muestra el mensaje
     await waitFor(() => {
@@ -71,7 +71,7 @@ describe('GroupPage Component', () => {
     delete window.location;
     window.location = { reload: jest.fn() };
 
-    render(<GroupPage username="testuser" onClose={jest.fn()} />);
+    render(<GroupPage />);
 
     // Cambiar a la pestaña de creación
     await waitFor(() => {
@@ -122,7 +122,7 @@ describe('GroupPage Component', () => {
     delete window.location;
     window.location = { reload: jest.fn() };
 
-    render(<GroupPage username="testuser" onClose={jest.fn()} />);
+    render(<GroupPage />);
 
     // La pestaña "Join" debería estar seleccionada por defecto
     const input = screen.getByLabelText('Group Name');
@@ -176,7 +176,7 @@ describe('GroupPage Component', () => {
       return Promise.resolve({ data: {} });
     });
 
-    render(<GroupPage username="testuser" onClose={jest.fn()} />);
+    render(<GroupPage />);
 
     // Verificar que se muestra la información del grupo
     await waitFor(() => {
@@ -228,7 +228,7 @@ describe('GroupPage Component', () => {
     delete window.location;
     window.location = { reload: jest.fn() };
 
-    render(<GroupPage username="testuser" onClose={jest.fn()} />);
+    render(<GroupPage />);
 
     // Esperar a que se cargue la información del grupo
     await waitFor(() => {
@@ -286,7 +286,7 @@ describe('GroupPage Component', () => {
     delete window.location;
     window.location = { reload: jest.fn() };
 
-    render(<GroupPage username="testuser" onClose={jest.fn()} />);
+    render(<GroupPage />);
 
     // Esperar a que se cargue la información del grupo
     await waitFor(() => {
@@ -351,7 +351,7 @@ describe('GroupPage Component', () => {
     delete window.location;
     window.location = { reload: jest.fn() };
 
-    render(<GroupPage username="testuser" onClose={jest.fn()} />);
+    render(<GroupPage />);
 
     // Esperar a que se cargue la información del grupo
     await waitFor(() => {
