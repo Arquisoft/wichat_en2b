@@ -9,7 +9,7 @@ import "../../../styles/home/Navbar.css";
 import ProfileForm from "./ProfileForm";
 
 const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://localhost:8000';
-
+const isGuest = false;
 /**
  * Navigation bar for the application.
  *
@@ -21,6 +21,7 @@ const Navbar = ({ username = "Guest", profilePicture }) => {
   console.log("Navbar component rendered with profilePicture:", profilePicture);
   if (!username || username === "") {
     username = "Guest"; 
+    isGuest = true;
   }
 
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -58,13 +59,17 @@ const Navbar = ({ username = "Guest", profilePicture }) => {
             <Avatar className="logo-avatar" src={profilePicture || ""}>
               {!profilePicture && "Wi"} 
             </Avatar>
-            <Typography variant="h6" className="app-title">WiChat - {username}</Typography>
+            {isGuest ? (
+              <Typography variant="h6" className="app-title">WiChat - {username}</Typography>
+            ) : (
+              <Typography variant="h6" className="app-title">WiChat</Typography>
+            )}
           </Box>
 
           <Box className="spacer" />
 
-          {/* Conditional rendering based on username */}
-          {username ? (
+          {/* Conditional rendering based on guest or not */}
+          {isGuest ? (
             <Box className="user-section">
               {/* Profile button */}
               <Button
