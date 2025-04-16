@@ -39,7 +39,7 @@ const Navbar = ({ username }) => {
     // Clear the token cookie
     document.cookie = "token=; path=/; max-age=0; SameSite=Lax";
     // Redirect to /login
-    router.push("/login");
+    window.location.href = "/";
   };
 
   return (
