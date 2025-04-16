@@ -120,7 +120,7 @@ router.post('/register', [
 
         // Hashing the password before sending it back
         const token = jwt.sign(
-            { _id: userFromDB._id, role: newUser.role }, 
+            { _id: newUser._id, role: newUser.role }, 
             process.env.JWT_SECRET || 'testing-secret',
             { expiresIn: '1h' }
         );
