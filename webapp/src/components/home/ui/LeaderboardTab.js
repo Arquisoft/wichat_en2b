@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from "react";
 import { fetchWithAuth } from "@/utils/api-fetch-auth";
 import LoadingErrorHandler from ".//LoadingErrorHandler";
-import {getAuthToken, getCurrentUserId} from "@/utils/auth";
+import {getAuthToken, getCurrentPlayerId} from "@/utils/auth";
 import GroupIcon from '@mui/icons-material/Group';
 import PublicIcon from '@mui/icons-material/Public';
 import axios from "axios";
@@ -40,8 +40,14 @@ export default function LeaderboardTab() {
         if (!usersLeaderboard) {
             return "Loading..."; // O algún texto de carga
         }
-        const user = usersLeaderboard.find((u) => u._id === id);
-        return user ? user.username : "";
+        
+        if (Array.isArray(usersLeaderboard)) {
+            const user = usersLeaderboard.find((u) => u._id === id || u.id === id);
+            return user ? (user.username || "") : "";
+        }
+        
+        // Si no es un array, podría ser un objeto con propiedades id/username
+        return usersLeaderboard[id]?.username || "";
     };
 
 
@@ -63,7 +69,7 @@ export default function LeaderboardTab() {
             
             // 3. Obtener ID del jugador actual
             const token = getAuthToken();
-            const currentPlayerId = await getCurrentUserId(token);
+            const currentPlayerId = await getCurrentPlayerId(token);
             setPlayer(currentPlayerId);
             
             // 4. Obtener usuarios para los IDs del leaderboard
