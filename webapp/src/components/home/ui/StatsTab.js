@@ -19,6 +19,7 @@ import "../../../styles/home/StatsTab.css"
 import { fetchWithAuth } from "@/utils/api-fetch-auth";
 import LoadingErrorHandler from ".//LoadingErrorHandler";
 import { PieChart } from '@mui/x-charts/PieChart';
+import { Gauge, gaugeClasses } from '@mui/x-charts/Gauge';
 
 const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://localhost:8000';
 
@@ -144,6 +145,38 @@ export default function StatsTab() {
 		);
 	}
 
+	function StatsArc() {
+		if (!statistics || !statistics.totalQuestions)
+			return null;
+		const settings = {
+			width: 200,
+			height: 200,
+			value: (statistics.successRatio * 100).toFixed(1),
+		};
+		return (
+			<Box sx={{ display: 'flex', justifyContent: 'center', my: 3 }}>
+			<Gauge
+				{...settings}
+				cornerRadius="50%"
+				sx={(theme) => ({
+					[`& .${gaugeClasses.valueText}`]: {
+						fontSize: 40,
+					},
+					[`& .${gaugeClasses.valueArc}`]: {
+						fill: '#af33c3',
+					},
+					[`& .${gaugeClasses.referenceArc}`]: {
+						fill: theme.palette.text.disabled,
+					},
+				})}
+				text={
+					({ value }) => `${value} %`
+				}
+			/>
+			</Box>
+		);
+	}
+
 	return (
 		<Card>
 			<CardHeader
@@ -176,7 +209,8 @@ export default function StatsTab() {
 				<LoadingErrorHandler loading={loading} error={error}>
 					{ statistics && (
 						<>{/*NOSONAR*/}
-							<StatsPie statistics={statistics} />
+							<StatsPie />
+							<StatsArc />
 							<Grid container spacing={2} className={"detailed-stats"}>
 								<StatCard id='total-games' title="Total Games" value={statistics.totalGames} />
 								<StatCard id='avg-score' title="Avg Score per Quiz" value={`${statistics.avgScore.toFixed(1)} points`} />
