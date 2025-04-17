@@ -506,7 +506,7 @@ module.exports = (io) => {
 
         const currentQuestion = game.questions[game.currentQuestionIndex]
         let correctAnswer = requestValidalidAnser(currentQuestion)
-        const correctAnswerIndex = currentQuestion.answers.findIndex((a) => a.text === correctAnswer) //TODO: check if this is needed
+        const correctAnswerIndex = currentQuestion.answers.findIndex((a) => a.text === correctAnswer)
 
         // Calculate leaderboard position for each player
         const playersLeaderboard = []
@@ -516,7 +516,8 @@ module.exports = (io) => {
                     playerId: playerId,
                     playerName: game.players[playerId].name,
                     points: game.points[playerId],
-                    correctAnswer: correctAnswer
+                    correctAnswer: correctAnswer,
+                    correct: game.answers[playerId][game.currentQuestionIndex].answerIndex === correctAnswerIndex
                 }
             );
         });
@@ -562,10 +563,20 @@ module.exports = (io) => {
         io.to(gameCode).emit("game-ended", finalResults)
 
         // Mark game as ended in database
-        const sessionData = await Session.findOne({gameCode})
+        const sessionData = await Session.findOne({gameCode: gameCode})
         sessionData.ended = true;
         sessionData.endedAt = new Date();
-        await sessionData.save()
+        //save data of the local game
+        sessionData.players = game.players.map(player => {
+            return {
+                id: player.id,
+                name: player.name,
+                isGuest: player.isGuest
+            }
+        });
+        sessionData.currentQuestionIndex = game.currentQuestionIndex;
+
+        await sessionData.save();
 
         finalResults.forEach(data => {
             if (data.isGuest){

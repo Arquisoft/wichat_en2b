@@ -106,17 +106,17 @@ export default function PlayPage( code, name) {
             console.log("Answer submitted:", data);
         });
 
-        socket.on("question-ended", (results) => {
-            console.log("Question ended:", results);
-            setQuestionResults(results);
+        socket.on("question-ended", (questionIndex, results) => {
+            console.log("Question ",questionIndex," ended:", results);
+            setQuestionResults({ index: questionIndex, results: results });
             setGameState("results");
 
-            const playerResult = results.playerResults.find( //TODO refactor this to handle results
+            const playerResult = results.find(
                 (p) => p.playerName === playerName
             );
 
             if (playerResult) {
-                setPlayerScore(playerResult.totalScore || 0);
+                setPlayerScore(playerResult.points || 0);
             }
         });
 
@@ -181,7 +181,7 @@ export default function PlayPage( code, name) {
         case "error":
             return (
                 <Box className="play-container">
-                    <Alert severity="error">{errorMessage || "An error occurred"}</Alert>
+                    <Alert severity="error">{String(errorMessage) || "An error occurred"}</Alert>
                     <button onClick={handleExitGame}>Exit Game</button>
                 </Box>
             );
@@ -205,7 +205,7 @@ export default function PlayPage( code, name) {
                         <Lobby onExit={handleExitGame} />
                     )}
 
-                    {gameState === "question" && currentQuestion && (
+                    {gameState === "question" && currentQuestion !== null && (
                         <Question
                             question={currentQuestion}
                             timer={timer}
@@ -217,11 +217,11 @@ export default function PlayPage( code, name) {
                         <Waiting />
                     )}
 
-                    {gameState === "results" && questionResults && (
-                        <ResultsLeaderboard results={questionResults} playerName={playerName} />
+                    {gameState === "results" && questionResults !== null && (
+                        <ResultsLeaderboard results={questionResults.results} playerName={playerName} questionIndex={questionResults.index} />
                     )}
 
-                    {gameState === "final" && finalResults && (
+                    {gameState === "final" && finalResults !== null && (
                         <GameFinalOptions results={finalResults} playerName={playerName} onExit={handleExitGame} />
                     )}
                 </Box>
