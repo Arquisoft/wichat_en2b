@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const GameInfo = require('../game-result-model');
+const GameInfo = require('../game-result-model.js');
 const verifyToken = require('./middleware/auth');
 
 // statistics filtered by subject

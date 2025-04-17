@@ -3,7 +3,6 @@ import "../../styles/QuestionGame.css";
 import { Alert, CircularProgress, LinearProgress, Box, Typography } from "@mui/material";
 import InGameChat from "@/components/game/InGameChat";
 import FinishGame from "@/components/game/FinishGame";
-import {quizCategories} from "@/components/home/data";
 
 const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://localhost:8000';
 
@@ -25,7 +24,9 @@ export default function QuestionGame(params) {
     const fetchQuestions = async () => {
         try {
             const response = await fetch(`${apiEndpoint}/game/${subject}/${totalQuestions}/${numberOptions}`);
+            
             const data = await response.json();
+            console.log(data);
             setQuestions(data);
             resetState();
             setLoading(false);
@@ -34,7 +35,7 @@ export default function QuestionGame(params) {
         }
     };
 
-    const finishParams = {answers: answers, callback: fetchQuestions, subject: quizCategories[topic - 1].name.toLowerCase()};
+    const finishParams = {answers: answers, callback: fetchQuestions, subject: topic.toLowerCase()};
 
     const resetState = () => {
         setAnswers([]);
@@ -99,6 +100,7 @@ export default function QuestionGame(params) {
                     isCorrect: isCorrect,
                     points: calculatePoints(isCorrect),
                     timeSpent: timerDuration - timeLeft,
+                    rightAnswer: correctAnswer,
                 },
             ]);
 
@@ -157,7 +159,7 @@ export default function QuestionGame(params) {
         <div className="quiz-wrapper">
             {/* Timer and progress bar */}
             <Box className="timer-container">
-                <Typography variant="body2" className="timer-text">
+                <Typography variant="body2" className="timer-text" id='quiz-timer'>
                     Time left: {Math.ceil(timeLeft)}s
                 </Typography>
                 <LinearProgress className="progress-bar" variant="determinate" value={(timeLeft / timerDuration) * 100} />
@@ -170,12 +172,12 @@ export default function QuestionGame(params) {
             ) : (
                 <div className="content-box">
                     {isRight && (
-                        <Alert severity="success" className="alert-box">
+                        <Alert id='message-success'severity="success" className="alert-box">
                             Great job! You got it right!
                         </Alert>
                     )}
                     {isWrong && (
-                        <Alert severity="error" className="alert-box">
+                        <Alert id='message-fail' severity="error" className="alert-box">
                             Oops! You didn't guess this one.
                         </Alert>
                     )}
@@ -183,7 +185,7 @@ export default function QuestionGame(params) {
                     <div className="progress-indicator">
                         Question {currentQuestion + 1} of {totalQuestions}
                     </div>
-                    <h2 className="question-title">{question}</h2>
+                    <h2 id='title-question' className="question-title">{question}</h2>
 
                     <div className="image-box">
                         <img
@@ -194,8 +196,9 @@ export default function QuestionGame(params) {
                     </div>
 
                     <div className="options-box">
-                        {questions[currentQuestion].answers.map((option) => (
+                        {questions[currentQuestion].answers.map((option, index) => (
                             <button
+                                id={`option-${index}`}
                                 key={option}
                                 className={`quiz-option 
                                 ${selectedOption === option ? "selected" : ""} 

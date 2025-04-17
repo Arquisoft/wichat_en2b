@@ -154,7 +154,7 @@ export default function ProfileForm({ username, profilePicture, onSave }) {
 
             const payload = {
                 oldPassword: profileData.currentPassword,
-                newPassword: profileData.newPassword, 
+                newPassword: profileData.newPassword,
             };
 
             const response = await fetch(`${apiEndpoint}/users/${username}`, {
@@ -174,7 +174,7 @@ export default function ProfileForm({ username, profilePicture, onSave }) {
             setSnackbarMessage("Password updated successfully.");
             setOpenSnackbar(true);
             setEditingPassword(false);
-         
+
             setProfileData((prev) => ({
                 ...prev,
                 currentPassword: "",
@@ -256,20 +256,20 @@ export default function ProfileForm({ username, profilePicture, onSave }) {
         if (!file) {
             setProfilePictureError("No file selected.");
             return;
-        }         
+        }
         if (!file.type.startsWith("image/")) {
             setProfilePictureError("Invalid file type. Please select an image.");
             return;
-        }         
+        }
         if (file && file.size > FILE_SIZE_LIMIT) {
             setProfilePictureError("This file is too large. Maximum size is 2MB.");
             return;
-        } 
+        }
 
         const reader = new FileReader();
 
         reader.onloadend = async () => {
-            const base64Image = reader.result.split(',')[1]; 
+            const base64Image = reader.result.split(',')[1];
 
             try {
                 const token = getToken();
@@ -279,9 +279,9 @@ export default function ProfileForm({ username, profilePicture, onSave }) {
                     method: "POST",
                     headers: {
                         Authorization: `Bearer ${token}`,
-                        "Content-Type": "application/json", 
+                        "Content-Type": "application/json",
                     },
-                    body: JSON.stringify({ image: base64Image, username: username }), 
+                    body: JSON.stringify({ image: base64Image, username: username }),
                 });
 
                 if (!response.ok) {
@@ -294,7 +294,7 @@ export default function ProfileForm({ username, profilePicture, onSave }) {
 
                 setProfileData((prev) => ({
                     ...prev,
-                    profilePicture: data.profilePicture, 
+                    profilePicture: data.profilePicture,
                 }));
 
             } catch (error) {
@@ -319,7 +319,7 @@ export default function ProfileForm({ username, profilePicture, onSave }) {
                     >
                         {(!profileData.profilePicture) && (typeof username === "string" && username.length > 0 ? username.charAt(0) : "?")}
                     </Avatar>
-                    <Typography variant="h6" className="profile-username">
+                    <Typography variant="h6" className="profile-username" id='profile-username'>
                         {typeof username === "string" ? username : "Unknown User"}
                     </Typography>
                 </Box>
@@ -343,27 +343,27 @@ export default function ProfileForm({ username, profilePicture, onSave }) {
                 {tabIndex === 0 && (
                     <Box component="form" className="form-section">
                         {/* Sección de foto de perfil mejorada */}
-                        <Box 
-                            sx={{ 
-                                mb: 4, 
-                                display: "flex", 
-                                flexDirection: "column", 
-                                alignItems: "center", 
-                                border: "1px solid #e0e0e0", 
-                                borderRadius: 2, 
-                                p: 2 
+                        <Box
+                            sx={{
+                                mb: 4,
+                                display: "flex",
+                                flexDirection: "column",
+                                alignItems: "center",
+                                border: "1px solid #e0e0e0",
+                                borderRadius: 2,
+                                p: 2
                             }}
-                        >                        
+                        >
                             {/* Button for uploading the photo */}
                             <label htmlFor="profile-picture-input">
                                 <Button variant="contained" color="primary" component="span"
                                         startIcon={<CloudUpload />} sx={{ textTransform: "none" }}>
                                     Change profile picture
                                 </Button>
-                                <input id="profile-picture-input" type="file" accept="image/*" 
+                                <input id="profile-picture-input" type="file" accept="image/*"
                                         hidden onChange={handleProfilePictureChange} />
                             </label>
-                            
+
                             {profilePictureError && (
                                 <Typography variant="body2" color="error" sx={{ mt: 1 }}>
                                     {profilePictureError}
@@ -380,7 +380,7 @@ export default function ProfileForm({ username, profilePicture, onSave }) {
                             onChange={handleChange}
                             disabled={!editingAccount}
                         />
-                        
+
                         {/* Botones para editar o guardar el nombre de usuario */}
                         <Box className="action-button" sx={{ mt: 2 }}>
                             {editingAccount ? (
@@ -392,7 +392,7 @@ export default function ProfileForm({ username, profilePicture, onSave }) {
                                     Edit Username
                                 </Button>
                             )}
-                        </Box>                
+                        </Box>
                     </Box>
                 )}
 

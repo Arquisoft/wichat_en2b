@@ -64,7 +64,7 @@ jobs:
           registry: ghcr.io
           workdir: webapp
           platforms: linux/arm64
-          buildargs: NEXT_PUBLIC_GATEWAY_SERVICE_URL=http://${{ secrets.DEPLOY_HOST_ORACLE }}:8000
+          buildargs: NEXT_PUBLIC_GATEWAY_SERVICE_URL=${{ secrets.GATEWAY_URL }}
   docker-push-authservice:
     name: Push auth service Docker Image to GitHub Packages
     runs-on: ubuntu-latest
