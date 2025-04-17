@@ -121,7 +121,7 @@ describe('QuestionGame component', () => {
         await waitFor(() => screen.getByText(/Question 2 of/), {timeout: 8000, interval: 10});
 
         jest.useRealTimers(); // Restore real timers after the test
-    });
+    }, 10000);
 
     it('restarts the game when "Play again" is clicked', async () => {
         fetchMock

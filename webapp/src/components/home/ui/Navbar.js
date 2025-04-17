@@ -9,7 +9,7 @@ import "../../../styles/home/Navbar.css";
 import ProfileForm from "./ProfileForm";
 
 const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://localhost:8000';
-const isGuest = false;
+let isGuest = false;
 /**
  * Navigation bar for the application.
  *
