@@ -172,6 +172,11 @@ export default function PlayPage( code, name) {
         router.push("/");
     };
 
+    // Handle registration of guest users
+    const handleRegister = () => {
+        //TODO implement
+    };
+
     // Render appropriate component based on game state
     switch (gameState) {
         case "connecting":
@@ -222,7 +227,7 @@ export default function PlayPage( code, name) {
                     )}
 
                     {gameState === "final" && finalResults !== null && (
-                        <GameFinalOptions results={finalResults} playerName={playerName} onExit={handleExitGame} />
+                        <GameFinalOptions results={finalResults} playerName={playerName} isGuest={isGuest} onExit={handleExitGame} onRegister={handleRegister} />
                     )}
                 </Box>
             );
