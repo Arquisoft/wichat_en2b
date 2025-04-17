@@ -13,14 +13,12 @@ import {
 	InputLabel,
 	Select,
 	MenuItem,
-	Box,
-	useTheme,
-	useMediaQuery,
+	Box
 } from "@mui/material"
 import "../../../styles/home/StatsTab.css"
 import { fetchWithAuth } from "@/utils/api-fetch-auth";
 import LoadingErrorHandler from ".//LoadingErrorHandler";
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts"
+import { PieChart } from '@mui/x-charts/PieChart';
 
 const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://localhost:8000';
 
@@ -58,8 +56,6 @@ export default function StatsTab() {
 	const [error, setError] = useState(null)
 	const [selectedSubject, setSelectedSubject] = useState("all")
 	const [categories, setCategories] = useState([]);
-	const theme = useTheme();
-	const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
 	useEffect(() => {
 		const fetchStatistics = async () => {
@@ -108,17 +104,44 @@ export default function StatsTab() {
 		setSelectedSubject(event.target.value);
 	}
 
-	const getChartData = () => {
-		if (!statistics) return []
-
-		return [
-			{ name: "Correct", value: statistics.totalCorrectAnswers, color: theme.palette.success.main },
-			{
-				name: "Incorrect",
-				value: statistics.totalQuestions - statistics.totalCorrectAnswers,
-				color: theme.palette.error.main,
-			},
-		]
+	function StatsPie() {
+		if (!statistics || !statistics.totalQuestions)
+			return null;
+		return (
+			<Box sx={{ display: 'flex', justifyContent: 'center', my: 3 }}>
+			<PieChart
+				series={[
+					{
+						data: [
+							{
+								id: 0,
+								value: statistics.totalCorrectAnswers,
+								label: 'Correct',
+								color: "#5ca8f1"
+							},
+							{
+								id: 1,
+								value: statistics.totalQuestions - statistics.totalCorrectAnswers,
+								label: 'Incorrect',
+								color: "#e6296f"
+							},
+						],
+						highlightScope: { faded: 'global', highlighted: 'item' },
+					},
+				]}
+				slotProps={{
+					legend: {
+						direction: 'row',
+						position: { vertical: 'bottom', horizontal: 'middle' },
+						padding: 20
+					},
+				}}
+				margin={{ top: 10, bottom: 70, left: 0, right: 0 }}
+				width={400}
+				height={300}
+			/>
+			</Box>
+		);
 	}
 
 	return (
@@ -153,51 +176,15 @@ export default function StatsTab() {
 				<LoadingErrorHandler loading={loading} error={error}>
 					{ statistics && (
 						<>{/*NOSONAR*/}
-							<Grid container spacing={2}>
-								<Grid item xs={12} md={7}>
-									<Grid container spacing={2} className={"detailed-stats"}>
-										<StatCard title="Total Games" value={statistics.totalGames} />
-										<StatCard title="Avg Score per Quiz" value={`${statistics.avgScore.toFixed(1)} points`} />
-										<StatCard title="Total Score" value={`${statistics.totalScore} points`} />
-										<StatCard title="Correct Answers" value={statistics.totalCorrectAnswers} />
-										<StatCard title="Total Questions" value={statistics.totalQuestions} />
-										<StatCard title="Accuracy" value={`${(statistics.successRatio * 100).toFixed(1)}%`} />
-										<StatCard title="Avg Time per Quiz" value={`${statistics.avgTime.toFixed(1)} s`} />
-									</Grid>
-								</Grid>
-								<Grid item xs={12} md={5}>
-									<Paper elevation={2} sx={{ p: 2, height: isMobile ? "300px" : "100%", minHeight: "300px" }}>
-										<Typography variant="h6" gutterBottom>
-											Answer Distribution
-										</Typography>
-										<ResponsiveContainer width="100%" height="90%">
-											<PieChart>
-												<Pie
-													data={getChartData()}
-													cx="50%"
-													cy="50%"
-													labelLine={false}
-													outerRadius={80}
-													fill="#8884d8"
-													dataKey="value"
-													label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-												>
-													{getChartData().map((entry, index) => (
-														<Cell key={`cell-${index}`} fill={entry.color} />
-													))}
-												</Pie>
-												<Tooltip
-													formatter={(value) => [`${value} answers`, ""]}
-													contentStyle={{
-														backgroundColor: theme.palette.background.paper,
-														borderColor: theme.palette.divider,
-													}}
-												/>
-												<Legend />
-											</PieChart>
-										</ResponsiveContainer>
-									</Paper>
-								</Grid>
+							<StatsPie statistics={statistics} />
+							<Grid container spacing={2} className={"detailed-stats"}>
+								<StatCard id='total-games' title="Total Games" value={statistics.totalGames} />
+								<StatCard id='avg-score' title="Avg Score per Quiz" value={`${statistics.avgScore.toFixed(1)} points`} />
+								<StatCard id='total-score' title="Total Score" value={`${statistics.totalScore} points`} />
+								<StatCard id='total-answ' title="Correct Answers" value={statistics.totalCorrectAnswers} />
+								<StatCard id='total-questions' title="Total Questions" value={statistics.totalQuestions} />
+								<StatCard id='accuracy' title="Accuracy" value={`${(statistics.successRatio * 100).toFixed(1)}%`} />
+								<StatCard id='avg-quiz-time' title="Avg Time per Quiz" value={`${statistics.avgTime.toFixed(1)} s`} />
 							</Grid>
 						</>
 					)}
