@@ -10,6 +10,7 @@ let mongoServer;
 let app;
 let server;
 let validToken;
+let userId = new mongoose.Types.ObjectId();
 
 global.fetch = jest.fn((url, options) => {
     const authHeader = options.headers['Authorization'];
@@ -41,7 +42,7 @@ beforeAll(async function (){
     app.use(router);
     server = app.listen(0);
     validToken = jwt.sign(
-        { username: 'testuser', role: 'USER' },
+        { _id: userId, role: 'USER' },
         'testing-secret',
         { expiresIn: '1h' }
     );
@@ -71,7 +72,7 @@ describe('Game Info Router', function (){
 
         expect(response.status).toBe(201);
 
-        const savedGame = await GameInfo.findOne({ user_id: 'testuser' });
+        const savedGame = await GameInfo.findOne({ user_id: userId });
 
         expect(savedGame).not.toBeNull();
         expect(savedGame.subject).toBe('math');

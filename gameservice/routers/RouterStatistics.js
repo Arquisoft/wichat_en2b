@@ -117,13 +117,12 @@ router.get('/leaderboard', verifyToken, async (req, res) => {
 });
 
 router.post('/leaderboard/group', verifyToken, async (req, res) => {
-    console.log('Fetching group leaderboard');
     if (!req.body.players || !Array.isArray(req.body.players)) {
         return res.status(400).json({ error: 'Invalid request body' });
     }
 
     const players = req.body.players; // array de usernames
-
+  
     try {
         const leaderboard = await GameInfo.aggregate([
             {
