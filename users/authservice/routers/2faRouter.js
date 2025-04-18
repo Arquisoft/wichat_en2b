@@ -79,7 +79,6 @@ router.post('/verify2fa', async (req, res) => {
     if (!token) {
       return res.status(400).json({ error: "Token is required" });
     }
-    console.log("Aaaaaaaaaaaaaaaaaaaaaaa ", user.username);
     userResponse = await axios.get(`${gatewayServiceUrl}/users/${user.username}`);
     const userFromDB = userResponse.data;
     let secret = userFromDB.secret;
@@ -99,6 +98,7 @@ router.post('/verify2fa', async (req, res) => {
     res.status(500).json({ error: "Error verifying 2FA token" });
   }
 });
+
 router.get('/check2fa', async (req, res) => {
   try {
     // Get the user from the token
