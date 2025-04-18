@@ -110,37 +110,37 @@ export default function StatsTab() {
 			return null;
 		return (
 			<Box sx={{ display: 'flex', justifyContent: 'center', my: 3 }}>
-			<PieChart
-				series={[
-					{
-						data: [
-							{
-								id: 0,
-								value: statistics.totalCorrectAnswers,
-								label: 'Correct',
-								color: "#5ca8f1"
-							},
-							{
-								id: 1,
-								value: statistics.totalQuestions - statistics.totalCorrectAnswers,
-								label: 'Incorrect',
-								color: "#e6296f"
-							},
-						],
-						highlightScope: { faded: 'global', highlighted: 'item' },
-					},
-				]}
-				slotProps={{
-					legend: {
-						direction: 'row',
-						position: { vertical: 'bottom', horizontal: 'middle' },
-						padding: 20
-					},
-				}}
-				margin={{ top: 10, bottom: 70, left: 0, right: 0 }}
-				width={400}
-				height={300}
-			/>
+				<PieChart
+					series={[
+						{
+							data: [
+								{
+									id: 0,
+									value: statistics.totalCorrectAnswers,
+									label: 'Correct',
+									color: "#48d511"
+								},
+								{
+									id: 1,
+									value: statistics.totalQuestions - statistics.totalCorrectAnswers,
+									label: 'Incorrect',
+									color: "#e6296f"
+								},
+							],
+							highlightScope: { faded: 'global' },
+						},
+					]}
+					slotProps={{
+						legend: {
+							direction: 'row',
+							position: { vertical: 'bottom', horizontal: 'middle' },
+							padding: 20
+						},
+					}}
+					margin={{ top: 10, bottom: 70, left: 0, right: -20 }}
+					width={200}
+					height={200}
+				/>
 			</Box>
 		);
 	}
@@ -154,25 +154,32 @@ export default function StatsTab() {
 			value: (statistics.successRatio * 100).toFixed(1),
 		};
 		return (
-			<Box sx={{ display: 'flex', justifyContent: 'center', my: 3 }}>
-			<Gauge
-				{...settings}
-				cornerRadius="50%"
-				sx={(theme) => ({
-					[`& .${gaugeClasses.valueText}`]: {
-						fontSize: 40,
-					},
-					[`& .${gaugeClasses.valueArc}`]: {
-						fill: '#af33c3',
-					},
-					[`& .${gaugeClasses.referenceArc}`]: {
-						fill: theme.palette.text.disabled,
-					},
-				})}
-				text={
-					({ value }) => `${value} %`
-				}
-			/>
+			<Box sx={{ display: 'flex',
+				flexDirection: 'column',
+				alignItems: 'center',
+				justifyContent: 'center'
+			}}>
+				<Gauge
+					{...settings}
+					cornerRadius="50%"
+					sx={() => ({
+						[`& .${gaugeClasses.valueText}`]: {
+							fontSize: 40,
+						},
+						[`& .${gaugeClasses.valueArc}`]: {
+							fill: '#48d511',
+						},
+						[`& .${gaugeClasses.referenceArc}`]: {
+							fill: '#d1dad1',
+						},
+					})}
+					text={
+						({ value }) => `${value} %`
+					}
+				/>
+				<Typography variant="body1" sx={{ mt: 1 }}>
+					Accuracy
+				</Typography>
 			</Box>
 		);
 	}
@@ -209,8 +216,17 @@ export default function StatsTab() {
 				<LoadingErrorHandler loading={loading} error={error}>
 					{ statistics && (
 						<>{/*NOSONAR*/}
-							<StatsPie />
-							<StatsArc />
+							<Box sx={{
+								display: 'flex',
+								flexDirection: 'row',
+								justifyContent: 'center',
+								alignItems: 'center',
+								gap: 0,
+								mb: 4
+							}}>
+									<StatsPie />
+									<StatsArc />
+							</Box>
 							<Grid container spacing={2} className={"detailed-stats"}>
 								<StatCard id='total-games' title="Total Games" value={statistics.totalGames} />
 								<StatCard id='avg-score' title="Avg Score per Quiz" value={`${statistics.avgScore.toFixed(1)} points`} />
