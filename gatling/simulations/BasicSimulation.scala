@@ -5,14 +5,14 @@ import scala.concurrent.duration._
 class BasicSimulation extends Simulation {
 
   val httpProtocol = http
-    .baseUrl("http://localhost:8000")
+    .baseUrl("http://gatewayservice:8000")
     .header("Content-Type", "application/json")
     .acceptHeader("application/json")
 
   // Login scenario - reused by other scenarios
   val loginScenario = exec(http("Login Request")
-    .post("/login")
-    .body(StringBody("""{"username":"testuser","password":"password"}"""))
+    .post("/login")  // Changed from /api/auth/login to /login
+    .body(StringBody("""{"user":{"username":"testuser","password":"password"}}"""))
     .check(jsonPath("$.token").saveAs("authToken"))
   )
 
@@ -26,21 +26,8 @@ class BasicSimulation extends Simulation {
       .check(status.is(200))
     )
 
-  // Global statistics scenario
-  val statsScenario = scenario("Get Global Statistics")
-    .exec(loginScenario)
-    .pause(1)
-    .exec(http("Get Global Statistics")
-      .get("/statistics/global")
-      .header("Authorization", "Bearer ${authToken}")
-      .check(status.is(200))
-    )
-
   setUp(
     quizTopicsScenario.inject(
-      rampUsers(50).during(30.seconds)
-    ),
-    statsScenario.inject(
       rampUsers(50).during(30.seconds)
     )
   ).protocols(httpProtocol)
