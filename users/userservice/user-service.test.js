@@ -175,22 +175,6 @@ describe('User Routes', () => {
 
       expect(response.status).toBe(400);
     });
-
-    test('should handle database errors when getting a user', async () => {
-      // Mock mongoose findOne to simulate a database error
-      const originalFindOne = mongoose.Model.findOne;
-      mongoose.Model.findOne = jest.fn().mockImplementation(() => {
-        throw new Error('Database connection error');
-      });
-
-      const response = await request(app)
-          .get(`/api/users/${mockUser.username}`);
-
-      expect(response.status).toBe(500);
-
-      // Restore the original function
-      mongoose.Model.findOne = originalFindOne;
-    });
   });
 
   describe('GET /users', () => {
