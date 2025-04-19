@@ -9,8 +9,8 @@ class CompleteUserJourneyTest extends Simulation {
     .baseUrl("http://gatewayservice:8000")
     .header("Content-Type", "application/json")
     .acceptHeader("application/json")
-  
-  // Update feeder with better user generation
+
+  // Use a more robust unique username generation with UUID
   val feeder = Iterator.continually {
     val timestamp = System.currentTimeMillis()
     val uuid = UUID.randomUUID().toString.take(8)
@@ -20,15 +20,15 @@ class CompleteUserJourneyTest extends Simulation {
     )
   }
   
-  // Register scenario
+  // Register scenario - create a unique user for each virtual user
   val registerScenario = feed(feeder)
     .exec(http("Register New User")
       .post("/adduser")
       .body(StringBody("""{"username":"${username}","password":"${password}","role":"USER"}"""))
       .check(status.in(200, 201))
     )
-  
-  // Login scenario
+
+  // Login scenario - reused by other scenarios
   val loginScenario = exec(http("Login Request")
     .post("/login")
     .body(StringBody("""{"user":{"username":"${username}","password":"${password}"}}"""))
@@ -41,6 +41,7 @@ class CompleteUserJourneyTest extends Simulation {
     .header("Authorization", "Bearer ${authToken}")
     .check(status.is(200))
     .check(bodyString.saveAs("topicsResponse"))
+    // Use regex pattern to match any topic string
     .check(regex("""["']([^"']+)["']""").findRandom.saveAs("firstTopic"))
   )
   .exec(session => {
@@ -49,30 +50,33 @@ class CompleteUserJourneyTest extends Simulation {
     session
   })
 
-  // View quizzes for a specific topic
+  // View quizzes for a specific topic (using a more flexible approach)
   val viewTopicQuizzes = exec(http("Get Topic Quizzes")
     .get("/quiz/${firstTopic}")
     .header("Authorization", "Bearer ${authToken}")
     .check(status.is(200))
     .check(bodyString.saveAs("quizzesResponse"))
+    // Try to extract wikidataCode from the first quiz in the response
     .check(jsonPath("$[0].wikidataCode").optional.saveAs("extractedCode"))
   )
   .exec(session => {
     println(s"Quizzes response: ${session("quizzesResponse").as[String]}")
     
+    // Use extracted code if available, otherwise use default
     val code = session.attributes.get("extractedCode") match {
       case Some(value) => value.toString
-      case None => "Q2329" // Default to biology
+      case None => "Q2329" // Default to biology if extraction fails
     }
     session.set("subjectCode", code)
   })
 
-  // Basic game playing scenario
+  // Make the playGame more resilient to failures
   val playGame = exec(http("Get Game Questions")
     .get("/game/${subjectCode}/5/4")
     .header("Authorization", "Bearer ${authToken}")
     .check(status.saveAs("gameStatus"))
     .check(bodyString.saveAs("gameQuestionsResponse"))
+    // Make the extraction optional to avoid failures
     .check(jsonPath("$[0].question_id").optional.saveAs("questionIdOpt"))
   )
   .exec(session => {
@@ -82,15 +86,17 @@ class CompleteUserJourneyTest extends Simulation {
     println(s"Game questions status: $gameStatus")
     println(s"Game questions sample: ${gameResponse.take(200)}...")
     
+    // Create a dummy questionId if the extraction failed
     val questionId = session.attributes.get("questionIdOpt") match {
       case Some(id) if id != null => id.toString
-      case _ => "5f8d0d55d4aaed429451106a" // Fallback ID
+      case _ => "5f8d0d55d4aaed429451106a" // Fallback MongoDB ObjectId format
     }
     
     println(s"Using question_id: $questionId")
     session.set("questionId", questionId)
   })
   .doIfOrElse(session => session("gameStatus").as[String] == "200") {
+    // If game status was OK, proceed with validate
     exec(http("Validate Answer")
       .post("/question/validate")
       .header("Authorization", "Bearer ${authToken}")
@@ -104,6 +110,7 @@ class CompleteUserJourneyTest extends Simulation {
       .check(status.in(201, 200))
     )
   } {
+    // If game status was not OK, skip validate
     exec(session => {
       println("Skipping validate due to game status.")
       session
@@ -128,7 +135,7 @@ class CompleteUserJourneyTest extends Simulation {
     .check(status.is(200))
   )
 
-  // Create full user journey
+  // Full user journey with longer pauses to keep users active
   val userScenario = scenario("User Journey")
     .exec(registerScenario)
     .pause(5.seconds)
@@ -141,18 +148,30 @@ class CompleteUserJourneyTest extends Simulation {
     .exec(playGame)
     .pause(5.seconds)
     .exec(viewStats)
+    // Add pause at the end to keep users in the system longer
     .pause(10.seconds)
 
   setUp(
-    scenario("Registration and Login Test")
-      .exec(registerScenario)
-      .pause(2.seconds)
-      .exec(loginScenario)
-      .pause(2.seconds)
-      .exec(browseTopics)
-      .pause(2.seconds)
-      .exec(viewTopicQuizzes)
-      .inject(atOnceUsers(10)),
-    userScenario.inject(atOnceUsers(5))
+    userScenario.inject(
+      // Small user base
+      atOnceUsers(100),
+      
+      // Gradual ramp-up to 5000 users. These values can be modified to test different load scenarios
+      nothingFor(10.seconds),
+      rampUsers(400).during(200.seconds),
+      nothingFor(10.seconds),
+      rampUsers(500).during(200.seconds),
+      nothingFor(10.seconds),
+      rampUsers(1000).during(200.seconds),
+      nothingFor(10.seconds),
+      rampUsers(1000).during(200.seconds),
+      nothingFor(10.seconds),
+      rampUsers(2000).during(200.seconds)
+    )
   ).protocols(httpProtocol)
+    .maxDuration(20.minutes) // Ensure the test runs long enough for all users
+    .assertions(
+      global.responseTime.max.lt(10000), // 10 seconds max response time
+      global.successfulRequests.percent.gt(95) // 95% of requests should succeed
+    )
 }
