@@ -8,7 +8,7 @@ export const getAuthToken = () => {
 export const getCurrentPlayerId = (token) => {
     try {
         const decoded = JSON.parse(atob(token.split('.')[1]));
-        return decoded.username;
+        return decoded._id;
     } catch (error) {
         console.error('Error getting current player ID:', error);
         return null;

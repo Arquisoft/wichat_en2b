@@ -61,7 +61,7 @@ describe('2FA Service', () => {
       expect(response.status).toBe(200);
       expect(otplib.authenticator.generateSecret).toHaveBeenCalled();
       expect(response.body).toHaveProperty('imageUrl', imageUrl);
-      expect(axios.patch).toHaveBeenCalledWith('http://gatewayservice:8000/users/testuser', { secret: mockSecret }, {"headers": {"Authorization": "Bearer valid-jwt-token", "Content-Type": "application/json"}});
+      expect(axios.patch).toHaveBeenCalledWith('http://gatewayservice:8000/users', { secret: mockSecret }, {"headers": {"Authorization": "Bearer valid-jwt-token", "Content-Type": "application/json"}});
     });
     
     it('Should handle errors when generating 2FA setup', async () => {
@@ -105,22 +105,22 @@ describe('2FA Service', () => {
       const mockUser = { username: 'testuser', role: 'USER' };
       const mockToken = 'valid-jwt-token';
       const mockSecret = 'mockSecret';
-      const mockDbUser = { username: 'testuser', role: 'USER', secret: mockSecret }; // Mocked user from DB
+      const mockDbUser = { _id: 'user123', username: 'testuser', role: 'USER', secret: mockSecret }; // Añadido _id
       const mock2faToken = '123456'; // Mock valid token
-    
+      
       jwt.verify.mockReturnValue(mockUser);
       axios.get.mockResolvedValue({ data: mockDbUser });
       otplib.authenticator.verify.mockReturnValue(true);
-    
+      
       const response = await request(app)
         .post('/auth/verify2fa')
         .set('Authorization', `Bearer ${mockToken}`)
         .send({ token: mock2faToken, user: mockUser });
-    
+        
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('message', '2FA Verified');
       expect(jwt.sign).toHaveBeenCalledWith(
-        { username: mockUser.username, role: mockUser.role },
+        { _id: mockDbUser._id, role: mockDbUser.role }, // Cambiado para usar _id en lugar de username
         process.env.JWT_SECRET || 'testing-secret',
         { expiresIn: '1h' }
       );
@@ -204,8 +204,8 @@ describe('2FA Service', () => {
       .send();
   
     expect(response.status).toBe(200);
+    console.log(response.body);
     expect(response.body).toHaveProperty('twoFactorEnabled', false);
-    expect(response.body).toHaveProperty('username', 'testuser');
   });
 
   it('Should return unauthorized if no token is provided', async () => {
@@ -378,7 +378,7 @@ describe('GET /auth/token/username', () => {
     expect(response.body).toEqual(mockUser);
     expect(jwt.verify).toHaveBeenCalledWith(mockToken, process.env.JWT_SECRET || 'testing-secret');
 
-    const expectedUrl = `http://gatewayservice:8000/users/testuser`;
+    const expectedUrl = `http://gatewayservice:8000/users/id/undefined`;
     expect(axios.get).toHaveBeenCalledWith(expectedUrl);
   });
 

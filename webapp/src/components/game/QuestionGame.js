@@ -26,7 +26,6 @@ export default function QuestionGame(params) {
             const response = await fetch(`${apiEndpoint}/game/${subject}/${totalQuestions}/${numberOptions}`);
             
             const data = await response.json();
-            console.log(data);
             setQuestions(data);
             resetState();
             setLoading(false);

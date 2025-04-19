@@ -78,7 +78,7 @@ export default function ProfileForm({ username, profilePicture, onSave }) {
             const token = getToken();
             const payload = { newUsername: profileData.username };
 
-            const response = await fetch(`${apiEndpoint}/users/${username}`, {
+            const response = await fetch(`${apiEndpoint}/users`, {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",
@@ -88,11 +88,9 @@ export default function ProfileForm({ username, profilePicture, onSave }) {
             });
 
             const responseData = await response.json();
-            if (responseData.token) {
-                const updatedToken = responseData.token;
+            if (responseData) {
 
                 // Update the cookie with the new token
-                document.cookie = `token=${updatedToken}; path=/; max-age=3600`;
                 setProfileData((prev) => ({ ...prev, username: profileData.username }));
 
                 setSnackbarMessage("Username updated successfully.");
@@ -157,7 +155,7 @@ export default function ProfileForm({ username, profilePicture, onSave }) {
                 newPassword: profileData.newPassword,
             };
 
-            const response = await fetch(`${apiEndpoint}/users/${username}`, {
+            const response = await fetch(`${apiEndpoint}/users`, {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",
