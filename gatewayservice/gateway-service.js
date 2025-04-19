@@ -23,7 +23,24 @@ const publicCors = cors({ origin: '*', methods: ['GET', 'POST', 'PATCH', 'OPTION
 
 app.use(express.json());
 app.use(helmet.hidePoweredBy());
-app.use(promBundle({ includeMethod: true }));
+
+const metricsMiddleware = promBundle({
+  includeMethod: true,
+  includePath: true,
+  includeStatusCode: true,
+  includeUp: true,
+  promClient: {
+    collectDefaultMetrics: {
+      timeout: 5000
+    }
+  },
+  customLabels: {
+    service: 'gateway-service'
+  },
+  percentiles: [0.5, 0.9, 0.95, 0.99]
+});
+
+app.use(metricsMiddleware);
 
 // Health check
 app.get('/health', (req, res) => res.json({ status: 'OK' }));
@@ -143,6 +160,7 @@ app.get('/game/:subject/:totalQuestions/:numberOptions', async (req, res) => {
     const data = await response.json();
     res.json(data);
   } catch (error) {
+    console.error('Error fetching questions:', error);
     res.status(500).json({ error: 'Hubo un problema al obtener las preguntas' });
   }
 });
@@ -188,6 +206,7 @@ app.get('/question/internal/:id', (req, res) =>
       const data = await response.json();
       res.json(data);
     } catch (error) {
+      console.error(`${errorMessage}: ${error.message}`, error);
       res.status(500).json({
         error: errorMessage,
       });
