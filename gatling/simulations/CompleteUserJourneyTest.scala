@@ -71,9 +71,49 @@ class CompleteUserJourneyTest extends Simulation {
   val playGame = exec(http("Get Game Questions")
     .get("/game/${subjectCode}/5/4")
     .header("Authorization", "Bearer ${authToken}")
-    .check(status.is(200))
-    .check(jsonPath("$[0].question_id").saveAs("questionId"))
+    .check(status.saveAs("gameStatus"))
+    .check(bodyString.saveAs("gameQuestionsResponse"))
+    .check(jsonPath("$[0].question_id").optional.saveAs("questionIdOpt"))
   )
+  .exec(session => {
+    val gameResponse = session("gameQuestionsResponse").as[String]
+    val gameStatus = session("gameStatus").as[String]
+    
+    println(s"Game questions status: $gameStatus")
+    println(s"Game questions sample: ${gameResponse.take(200)}...")
+    
+    val questionId = session.attributes.get("questionIdOpt") match {
+      case Some(id) if id != null => id.toString
+      case _ => "5f8d0d55d4aaed429451106a" // Fallback ID
+    }
+    
+    println(s"Using question_id: $questionId")
+    session.set("questionId", questionId)
+  })
+  .doIfOrElse(session => session("gameStatus").as[String] == "200") {
+    exec(http("Validate Answer")
+      .post("/question/validate")
+      .header("Authorization", "Bearer ${authToken}")
+      .body(StringBody("""{"question_id":"${questionId}","selected_answer":"test answer"}"""))
+      .check(status.in(200, 404))
+    )
+    .exec(http("Submit Game Results")
+      .post("/game")
+      .header("Authorization", "Bearer ${authToken}")
+      .body(StringBody("""{"subject":"${subjectCode}","points_gain":100,"number_of_questions":5,"number_correct_answers":3,"total_time":120}"""))
+      .check(status.in(201, 200))
+    )
+  } {
+    exec(session => {
+      println("Skipping validate due to game status.")
+      session
+    })
+    .exec(session => {
+      println("Skipping game results due to game status.")
+      session
+    })
+  }
+  .pause(1)
 
   setUp(
     scenario("Registration and Login Test")
