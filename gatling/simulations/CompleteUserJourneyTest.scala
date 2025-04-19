@@ -115,6 +115,34 @@ class CompleteUserJourneyTest extends Simulation {
   }
   .pause(1)
 
+  // View statistics
+  val viewStats = exec(http("Get Global Stats")
+    .get("/statistics/global")
+    .header("Authorization", "Bearer ${authToken}")
+    .check(status.is(200))
+  )
+  .pause(1)
+  .exec(http("Get Leaderboard")
+    .get("/leaderboard")
+    .header("Authorization", "Bearer ${authToken}")
+    .check(status.is(200))
+  )
+
+  // Create full user journey
+  val userScenario = scenario("User Journey")
+    .exec(registerScenario)
+    .pause(5.seconds)
+    .exec(loginScenario)
+    .pause(3.seconds)
+    .exec(browseTopics)
+    .pause(4.seconds)
+    .exec(viewTopicQuizzes) 
+    .pause(3.seconds)
+    .exec(playGame)
+    .pause(5.seconds)
+    .exec(viewStats)
+    .pause(10.seconds)
+
   setUp(
     scenario("Registration and Login Test")
       .exec(registerScenario)
@@ -124,6 +152,7 @@ class CompleteUserJourneyTest extends Simulation {
       .exec(browseTopics)
       .pause(2.seconds)
       .exec(viewTopicQuizzes)
-      .inject(atOnceUsers(10))
+      .inject(atOnceUsers(10)),
+    userScenario.inject(atOnceUsers(5))
   ).protocols(httpProtocol)
 }
