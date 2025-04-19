@@ -1,0 +1,9 @@
+groups:
+  - name: gateway_service
+    rules:
+      - record: gateway:request_rate_5m
+        expr: rate(http_request_duration_seconds_count{job="gateway-service"}[5m])
+      - record: gateway:error_rate_5m
+        expr: rate(http_request_duration_seconds_count{job="gateway-service",status_code=~"5.."}[5m])
+      - record: gateway:average_response_time_5m
+        expr: rate(http_request_duration_seconds_sum{job="gateway-service"}[5m]) / rate(http_request_duration_seconds_count{job="gateway-service"}[5m])
