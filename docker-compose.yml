@@ -2,7 +2,7 @@ services:
   mongodb:
     container_name: mongodb-wichat_en2b
     image: mongo
-    command: ["mongod", "--quiet"]
+    command: ["mongod", "--quiet", "--logpath", "/dev/null"]
     profiles: ["dev", "prod"]
     volumes:
      - mongodb_data:/data/db
@@ -10,6 +10,8 @@ services:
       - "27017:27017"
     networks:
       - mynetwork
+    logging:
+      driver: "none"
 
   authservice:
     container_name: authservice-wichat_en2b
