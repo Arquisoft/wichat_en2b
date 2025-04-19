@@ -1,6 +1,7 @@
 import io.gatling.core.Predef._
 import io.gatling.http.Predef._
 import scala.concurrent.duration._
+import java.util.UUID
 
 class CompleteUserJourneyTest extends Simulation {
 
@@ -9,8 +10,15 @@ class CompleteUserJourneyTest extends Simulation {
     .header("Content-Type", "application/json")
     .acceptHeader("application/json")
   
-  // Basic username generation
-  val feeder = Iterator.from(1).map(i => Map("username" -> s"testuser${i}", "password" -> "password123"))
+  // Update feeder with better user generation
+  val feeder = Iterator.continually {
+    val timestamp = System.currentTimeMillis()
+    val uuid = UUID.randomUUID().toString.take(8)
+    Map(
+      "username" -> s"test_${timestamp}_${uuid}",
+      "password" -> "password123"
+    )
+  }
   
   // Register scenario
   val registerScenario = feed(feeder)
