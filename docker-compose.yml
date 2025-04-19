@@ -2,6 +2,7 @@ services:
   mongodb:
     container_name: mongodb-wichat_en2b
     image: mongo
+    command: ["mongod", "--quiet"]
     profiles: ["dev", "prod"]
     volumes:
      - mongodb_data:/data/db
@@ -119,11 +120,14 @@ services:
       - "9090:9090"
     depends_on: 
       - gatewayservice
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--log.level=warn"
       
   grafana:
     image: grafana/grafana
     container_name: grafana-wichat_en2b
-    profiles: ["dev"]
+    profiles: ["dev"]      
     networks:
       - mynetwork
     volumes:
@@ -134,11 +138,14 @@ services:
       - GF_AUTH_DISABLE_LOGIN_FORM=true
       - GF_AUTH_ANONYMOUS_ENABLED=true
       - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_LOG_LEVEL=warn
+      - GF_LOG_FILTERS=alerting.notifier=warn rendering=error
     ports:
       - "9091:9091"
     depends_on: 
       - prometheus
-
+    logging:
+      driver: "none"
 
 volumes:
   mongodb_data:

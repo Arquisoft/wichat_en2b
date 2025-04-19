@@ -19,7 +19,7 @@ scrape_configs:
           environment: "production"
 
   - job_name: "gateway-service-health"
-    metrics_path: /health
+    metrics_path: /health-metrics
     scrape_interval: 5s
     static_configs:
       - targets: ["gatewayservice:8000"]

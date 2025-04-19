@@ -42,6 +42,14 @@ const metricsMiddleware = promBundle({
 
 app.use(metricsMiddleware);
 
+// Add to gateway-service.js where you configure your metrics
+app.get('/health-metrics', (req, res) => {
+  const healthStatus = 1; // 1 for healthy, 0 for unhealthy  
+  res.set('Content-Type', 'text/plain');
+  res.send(`# HELP gateway_health_status Service health status (1=up, 0=down) 
+    # TYPE gateway_health_status gauge gateway_health_status ${healthStatus}`);
+});
+
 // Health check
 app.get('/health', (req, res) => res.json({ status: 'OK' }));
 
