@@ -59,6 +59,14 @@ class CompleteUserJourneyTest extends Simulation {
     session.set("subjectCode", code)
   })
 
+  // Basic game playing scenario
+  val playGame = exec(http("Get Game Questions")
+    .get("/game/${subjectCode}/5/4")
+    .header("Authorization", "Bearer ${authToken}")
+    .check(status.is(200))
+    .check(jsonPath("$[0].question_id").saveAs("questionId"))
+  )
+
   setUp(
     scenario("Registration and Login Test")
       .exec(registerScenario)
