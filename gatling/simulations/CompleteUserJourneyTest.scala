@@ -19,9 +19,19 @@ class CompleteUserJourneyTest extends Simulation {
       .body(StringBody("""{"username":"${username}","password":"${password}","role":"USER"}"""))
       .check(status.in(200, 201))
     )
+  
+  // Login scenario
+  val loginScenario = exec(http("Login Request")
+    .post("/login")
+    .body(StringBody("""{"user":{"username":"${username}","password":"${password}"}}"""))
+    .check(jsonPath("$.token").saveAs("authToken"))
+  )
 
   setUp(
-    // Simple setup with few users
-    scenario("Registration Test").exec(registerScenario).inject(atOnceUsers(5))
+    scenario("Registration and Login Test")
+      .exec(registerScenario)
+      .pause(2.seconds)
+      .exec(loginScenario)
+      .inject(atOnceUsers(10))
   ).protocols(httpProtocol)
 }
