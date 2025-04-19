@@ -27,11 +27,27 @@ class CompleteUserJourneyTest extends Simulation {
     .check(jsonPath("$.token").saveAs("authToken"))
   )
 
+  // Browse available quiz topics
+  val browseTopics = exec(http("Get Quiz Topics")
+    .get("/quiz/allTopics")
+    .header("Authorization", "Bearer ${authToken}")
+    .check(status.is(200))
+    .check(bodyString.saveAs("topicsResponse"))
+    .check(regex("""["']([^"']+)["']""").findRandom.saveAs("firstTopic"))
+  )
+  .exec(session => {
+    println(s"Topics response: ${session("topicsResponse").as[String]}")
+    println(s"Selected topic: ${session("firstTopic").as[String]}")
+    session
+  })
+
   setUp(
     scenario("Registration and Login Test")
       .exec(registerScenario)
       .pause(2.seconds)
       .exec(loginScenario)
+      .pause(2.seconds)
+      .exec(browseTopics)
       .inject(atOnceUsers(10))
   ).protocols(httpProtocol)
 }
