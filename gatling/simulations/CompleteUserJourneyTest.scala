@@ -41,6 +41,24 @@ class CompleteUserJourneyTest extends Simulation {
     session
   })
 
+  // View quizzes for a specific topic
+  val viewTopicQuizzes = exec(http("Get Topic Quizzes")
+    .get("/quiz/${firstTopic}")
+    .header("Authorization", "Bearer ${authToken}")
+    .check(status.is(200))
+    .check(bodyString.saveAs("quizzesResponse"))
+    .check(jsonPath("$[0].wikidataCode").optional.saveAs("extractedCode"))
+  )
+  .exec(session => {
+    println(s"Quizzes response: ${session("quizzesResponse").as[String]}")
+    
+    val code = session.attributes.get("extractedCode") match {
+      case Some(value) => value.toString
+      case None => "Q2329" // Default to biology
+    }
+    session.set("subjectCode", code)
+  })
+
   setUp(
     scenario("Registration and Login Test")
       .exec(registerScenario)
@@ -48,6 +66,8 @@ class CompleteUserJourneyTest extends Simulation {
       .exec(loginScenario)
       .pause(2.seconds)
       .exec(browseTopics)
+      .pause(2.seconds)
+      .exec(viewTopicQuizzes)
       .inject(atOnceUsers(10))
   ).protocols(httpProtocol)
 }
