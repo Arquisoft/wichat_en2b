@@ -193,6 +193,7 @@ app.get('/game/:subject/:totalQuestions/:numberOptions', async (req, res) => {
     const data = await response.json();
     res.json(data);
   } catch (error) {
+    console.error('Error fetching questions:', error);
     res.status(500).json({ error: 'Hubo un problema al obtener las preguntas' });
   }
 });
@@ -238,6 +239,7 @@ app.get('/question/internal/:id', (req, res) =>
       const data = await response.json();
       res.json(data);
     } catch (error) {
+      console.error(`${errorMessage}: ${error.message}`, error);
       res.status(500).json({
         error: errorMessage,
       });

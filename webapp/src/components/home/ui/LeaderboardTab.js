@@ -6,7 +6,7 @@ import LoadingErrorHandler from "./LoadingErrorHandler";
 import { getAuthToken, getCurrentPlayerId } from "@/utils/auth";
 import GroupIcon from "@mui/icons-material/Group";
 import PublicIcon from "@mui/icons-material/Public";
-import PropTypes from 'prop-types';
+import PropTypes from "prop-types";
 import "../../../styles/home/LeaderboardTab.css";
 import axios from "axios";
 
