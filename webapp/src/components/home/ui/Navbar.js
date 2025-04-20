@@ -1,13 +1,12 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import PropTypes from "prop-types";
 import { AppBar, Toolbar, Avatar, IconButton, Button, Box, Typography, Dialog } from "@mui/material";
 import { Logout as LogoutIcon, Person as PersonIcon} from "@mui/icons-material";
 import { useRouter } from "next/navigation"; // Import useRouter for navigation
 import "../../../styles/home/Navbar.css";
 import ProfileForm from "./ProfileForm";
-import axios from "axios";
 
 const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://localhost:8000';
 
@@ -19,7 +18,6 @@ const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://local
  * @returns {JSX.Element} The rendered Navbar component.
  */
 const Navbar = ({ username = "Guest", profilePicture }) => {
-  console.log("Navbar component rendered with profilePicture:", profilePicture);
   if (!username || username === "") {
     username = "Guest"; 
   }

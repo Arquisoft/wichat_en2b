@@ -1,9 +1,8 @@
-import React from "react";
+import React, { act } from "react";
 import { render, screen, waitFor } from "@testing-library/react";
 import StatisticsCard from "../components/home/ui/StatisticsCard";
 import { fetchWithAuth } from "@/utils/api-fetch-auth";
 import { getAuthToken, getCurrentPlayerId } from "@/utils/auth";
-import { act } from "react";
 
 jest.mock("../utils/api-fetch-auth");
 jest.mock("../utils/auth");

@@ -2,9 +2,7 @@
 import { NextResponse } from "next/server";
 
 export function middleware(request) {
-  console.log("Middleware running for:", request.nextUrl.pathname);
   const token = request.cookies.get("token")?.value;
-  console.log("Token:", token);
 
   // If user is logged in (has token) and trying to access /login, redirect to home
   if (token && (request.nextUrl.pathname === "/login" || request.nextUrl.pathname === "/addUser")) {

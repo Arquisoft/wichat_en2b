@@ -3,7 +3,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import GroupPage from '../components/home/ui/GroupPage';
 import axios from 'axios';
-import { getAuthToken, getCurrentPlayerId } from '@/utils/auth';
+import { getCurrentPlayerId } from '@/utils/auth';
 
 // Mock de módulos y funciones externas
 jest.mock('axios');

@@ -1,4 +1,3 @@
-import PropTypes from "prop-types";
 import { useState, useEffect } from "react";
 import { Card, Grid, CardContent, Typography, Paper } from "@mui/material";
 import "../../../styles/home/StatisticsCard.css";

@@ -106,7 +106,6 @@ export default function ProfileForm({ username, profilePicture, onSave }) {
                 setOpenSnackbar(true);
             }
         } catch (error) {
-            console.error("Error updating username:", error);
             setSnackbarMessage(`Error: ${error.message}`);
             setOpenSnackbar(true);
         }
@@ -208,8 +207,8 @@ export default function ProfileForm({ username, profilePicture, onSave }) {
 
             const data = await response.json();
             setQrCodeUrl(data.imageUrl);
+
         } catch (error) {
-            console.error("Error configuring 2FA:", error);
             setSnackbarMessage(`Error configuring 2FA: ${error.message}`);
             setOpenSnackbar(true);
         }
@@ -237,8 +236,8 @@ export default function ProfileForm({ username, profilePicture, onSave }) {
 
             const data = JSON.parse(responseText);
             setAlready2fa(!!data.twoFactorEnabled);
+
         } catch (error) {
-            console.error("Error checking 2FA status:", error);
             setSnackbarMessage(`Error checking 2FA: ${error.message}`);
             setOpenSnackbar(true);
         }
@@ -296,7 +295,6 @@ export default function ProfileForm({ username, profilePicture, onSave }) {
                 }));
 
             } catch (error) {
-                console.error("Error uploading profile picture:", error);
                 setSnackbarMessage(`Error: ${error.message}`);
                 setOpenSnackbar(true);
             }

@@ -73,8 +73,6 @@ export default function GroupPage() {
         } catch (error) {
             if (error.response && error.response.status === 404) {
                 setLoggedUserGroup(null);
-            }else {
-                console.error("Error fetching user group:", error);
             }
         }
     };
@@ -95,6 +93,7 @@ export default function GroupPage() {
             
         } catch (error) {
             console.error("Error fetching group members:", error);
+            setGroupMembers([]); // Set empty array as fallback
         }
     };
 
@@ -111,11 +110,11 @@ export default function GroupPage() {
         } catch (error) {
             if (error.response && error.response.status === 204) {
                 setDoesJoinGroupExist(false);
-                return false;
             } else {
-                console.error("Error searching for groups:", error);
-                return false;
+                console.error("Error searching for groups");                
             }
+
+            return false;
         }
     };
     
@@ -123,15 +122,16 @@ export default function GroupPage() {
         try {
             const data = await abstractSearch(groupName);
             setDoesCreateGroupExist(!!data);
-            return !!data; // Devuelve si existe o no
+            return !!data; 
+            
         } catch (error) {
             if (error.response && error.response.status === 204) {
                 setDoesCreateGroupExist(false);
-                return false;
             } else {
                 console.error("Error searching for groups:", error);
-                return false;
             }
+
+            return false;
         }
     };
 
@@ -260,14 +260,14 @@ export default function GroupPage() {
                 }
             );
             updateEverything(response.status);
-            setNewGroupName(""); // Limpia el campo después de una actualización exitosa
+            setNewGroupName(""); 
+
         } catch (error) {
-            if (error.response && error.response.data && error.response.data.error) {
+            if (error.response?.data?.error) {
                 setErrorMessage(error.response.data.error);
             } else {
-                setErrorMessage("Error al modificar el grupo");
+                setErrorMessage("Error modifying group");
             }
-            console.error("Error modifying group:", error);
         }
     }
 
@@ -337,7 +337,7 @@ export default function GroupPage() {
                                     joinGroup();
                                 }
                             }} 
-                            disabled={!(groupName.trim() !== "")}
+                            disabled={groupName.trim() === ""}
                         >  
                             Join Group
                         </Button>
@@ -363,7 +363,7 @@ export default function GroupPage() {
                                     createGroup();
                                 }
                             }}
-                            disabled={!(groupName.trim() !== "")}
+                            disabled={groupName.trim() === ""}
                         >  
                             Create Group
                         </Button>

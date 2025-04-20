@@ -59,7 +59,7 @@ export default function LeaderboardTab() {
         try {
             // 1. Obtener datos del leaderboard
             const data = await fetchWithAuth("/leaderboard");
-            if (!data || !data.leaderboard) {
+            if (!data?.leaderboard) {
                 setError("No leaderboard data available.");
                 return;
             }
@@ -139,7 +139,6 @@ export default function LeaderboardTab() {
     // Función auxiliar para obtener detalles de usuarios
     const fetchUserDetails = async (userIds) => {
         if (!userIds || userIds.length === 0) {
-            console.log("No user IDs to fetch");
             return;
         }
         
