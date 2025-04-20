@@ -200,19 +200,20 @@ export default function LeaderboardTab() {
     </div>
   );
 }
+
 function LeaderboardTable({ leaderboard, usersLeaderboard, player, getUsernameById }) {
   if (!leaderboard || !usersLeaderboard) return null;
 
   return (
     <TableContainer component={Paper} className="leaderboard-table-container">
-      <Table aria-label="leaderboard table" className="leaderboard-table">
+      <Table aria-label="leaderboard table" className="leaderboard-table" size="medium">
         <TableHead>
           <TableRow>
-            <TableCell className="table-header">Rank</TableCell>
-            <TableCell className="table-header">Username</TableCell>
-            <TableCell align="right" className="table-header">Total Score</TableCell>
-            <TableCell align="right" className="table-header">Games Played</TableCell>
-            <TableCell align="right" className="table-header">Average Score</TableCell>
+            <TableCell className="table-header" width="10%">Rank</TableCell>
+            <TableCell className="table-header" width="30%">Username</TableCell>
+            <TableCell align="right" className="table-header" width="20%">Total Score</TableCell>
+            <TableCell align="right" className="table-header" width="20%">Games Played</TableCell>
+            <TableCell align="right" className="table-header" width="20%">Average Score</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -222,7 +223,7 @@ function LeaderboardTable({ leaderboard, usersLeaderboard, player, getUsernameBy
 
             return (
               <TableRow key={entry._id} className={`leaderboard-entry ${isCurrentPlayer ? "current-player" : ""}`}>
-                <TableCell className="rank">#{entry.rank}</TableCell>
+                <TableCell component="th" scope="row" className="rank">#{entry.rank}</TableCell>
                 <TableCell className="player-name">
                   {isCurrentPlayer ? (
                     <Typography component="span" fontWeight="bold">

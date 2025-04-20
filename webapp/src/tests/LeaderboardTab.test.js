@@ -147,7 +147,7 @@ describe('LeaderboardTab Group Component', () => {
     it('renders the group tab', async () => {
       render(<LeaderboardTab />);
       await waitFor(() => {
-        expect(screen.getAllByText('WiChat Leaderboard').length).toBeGreaterThan(0);
+        expect(screen.getAllByText('Global Leaderboard').length).toBeGreaterThan(0);
         expect(screen.getAllByText('Group Leaderboard').length).toBeGreaterThan(0);
       });
     });
@@ -160,7 +160,7 @@ describe('LeaderboardTab Group Component', () => {
       render(<LeaderboardTab />);
   
       await waitFor(() => {
-        expect(screen.getAllByText('WiChat Leaderboard').length).toBeGreaterThan(0);
+        expect(screen.getAllByText('Global Leaderboard').length).toBeGreaterThan(0);
       });
   
       // Click on group leaderboard tab
@@ -199,7 +199,7 @@ describe('LeaderboardTab Group Component', () => {
       });
   
       await waitFor(() => {
-        expect(screen.getByText('You do not belong to any group!')).toBeInTheDocument();
+        expect(screen.getByText('You do not belong to any group! Join a group to see the group leaderboard.')).toBeInTheDocument();
       });
     });
   
@@ -240,7 +240,7 @@ describe('LeaderboardTab Group Component', () => {
     
       // Esperar a que cargue inicialmente
       await waitFor(() => {
-        expect(screen.getAllByText('WiChat Leaderboard').length).toBeGreaterThan(0);
+        expect(screen.getAllByText('Global Leaderboard').length).toBeGreaterThan(0);
       });
       
       // Hacer clic en la pestaña del grupo
@@ -298,7 +298,7 @@ describe('LeaderboardTab Group Component', () => {
       });
   
       // Then switch back to global leaderboard
-      const globalTab = screen.getAllByText('WiChat Leaderboard')[0];
+      const globalTab = screen.getAllByText('Global Leaderboard')[0];
       act(() => {
         fireEvent.click(globalTab);
       });

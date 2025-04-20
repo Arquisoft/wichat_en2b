@@ -81,7 +81,7 @@ describe('HomePage Component', () => {
 		jest.advanceTimersByTime(0);
 
 		await waitFor(() => {
-			expect(screen.getAllByText('WiChat Leaderboard').length).toBeGreaterThan(0);
+			expect(screen.getAllByText('Global Leaderboard').length).toBeGreaterThan(0);
 		});
   	});
 
