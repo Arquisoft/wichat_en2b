@@ -137,3 +137,8 @@ async function configGameInfoAddition(){
         throw err;
     }
 }
+
+// Comment this to show the output.
+global.console.log = jest.fn();
+global.console.error = jest.fn();
+global.console.warn = jest.fn();
