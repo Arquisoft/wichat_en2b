@@ -88,7 +88,6 @@ export default function StatsTab() {
 					},
 				  });
 				  const data = await response.json();
-				  console.log("Fetched categories:", data);
 				if (Array.isArray(data)) {
 					setCategories(data);
 				}

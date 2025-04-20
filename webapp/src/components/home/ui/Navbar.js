@@ -18,7 +18,6 @@ const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://local
  * @returns {JSX.Element} The rendered Navbar component.
  */
 const Navbar = ({ username = "Guest", profilePicture }) => {
-  console.log("Navbar component rendered with profilePicture:", profilePicture);
   if (!username || username === "") {
     username = "Guest"; 
   }
