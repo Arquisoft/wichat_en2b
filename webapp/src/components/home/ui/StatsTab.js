@@ -58,6 +58,8 @@ export default function StatsTab() {
 	const [selectedSubject, setSelectedSubject] = useState("all")
 	const [categories, setCategories] = useState([]);
 
+	const isDesktop = window.innerWidth >= 960
+
 	useEffect(() => {
 		const fetchStatistics = async () => {
 			setLoading(true);
@@ -109,7 +111,7 @@ export default function StatsTab() {
 		if (!statistics || !statistics.totalQuestions)
 			return null;
 		return (
-			<Box sx={{ display: 'flex', justifyContent: 'center', my: 3 }}>
+			<Box sx={{ width: "100%", height: 280 }}>
 				<PieChart
 					series={[
 						{
@@ -118,7 +120,7 @@ export default function StatsTab() {
 									id: 0,
 									value: statistics.totalCorrectAnswers,
 									label: 'Correct',
-									color: "#48d511"
+									color: "#178ee4"
 								},
 								{
 									id: 1,
@@ -127,19 +129,27 @@ export default function StatsTab() {
 									color: "#e6296f"
 								},
 							],
-							highlightScope: { faded: 'global' },
+							highlightScope: { faded: "global", highlighted: "item" },
+							innerRadius: 30,
+							outerRadius: 100,
+							paddingAngle: 2,
+							cornerRadius: 4,
 						},
 					]}
 					slotProps={{
 						legend: {
 							direction: 'row',
 							position: { vertical: 'bottom', horizontal: 'middle' },
-							padding: 20
+							padding: 20,
+							itemMarkWidth: 20,
+							itemMarkHeight: 20,
+							markGap: 8,
+							itemGap: 20,
 						},
 					}}
-					margin={{ top: 10, bottom: 70, left: 0, right: -20 }}
-					width={200}
-					height={200}
+					margin={{ top: 10, bottom: 50, left: 0, right: 0 }}
+					width={400}
+					height={280}
 				/>
 			</Box>
 		);
@@ -148,16 +158,23 @@ export default function StatsTab() {
 	function StatsArc() {
 		if (!statistics || !statistics.totalQuestions)
 			return null;
+		const accuracy = (statistics.successRatio * 100).toFixed(1)
 		const settings = {
-			width: 200,
-			height: 200,
-			value: (statistics.successRatio * 100).toFixed(1),
-		};
+			width: 220,
+			height: 220,
+			value: accuracy,
+		}
+		let arcColor = "#e6296f" // Red for low accuracy
+		if (accuracy >= 70)
+			arcColor = "#178ee4" // Green for high accuracy
+		else if (accuracy >= 40) arcColor = "#f5a623" // Yellow for medium accuracy
 		return (
 			<Box sx={{ display: 'flex',
 				flexDirection: 'column',
 				alignItems: 'center',
-				justifyContent: 'center'
+				justifyContent: 'center',
+				width: "100%",
+				mt: 1,
 			}}>
 				<Gauge
 					{...settings}
@@ -165,9 +182,11 @@ export default function StatsTab() {
 					sx={() => ({
 						[`& .${gaugeClasses.valueText}`]: {
 							fontSize: 40,
+							fontWeight: "bold",
 						},
 						[`& .${gaugeClasses.valueArc}`]: {
-							fill: '#48d511',
+							fill: arcColor,
+							transition: "fill 0.5s",
 						},
 						[`& .${gaugeClasses.referenceArc}`]: {
 							fill: '#d1dad1',
@@ -177,7 +196,7 @@ export default function StatsTab() {
 						({ value }) => `${value} %`
 					}
 				/>
-				<Typography variant="body1" sx={{ mt: 1 }}>
+				<Typography variant="body1" sx={{ mt: 1, fontWeight: "medium" }}>
 					Accuracy
 				</Typography>
 			</Box>
@@ -188,9 +207,31 @@ export default function StatsTab() {
 		<Card>
 			<CardHeader
 				title={
-					<Box className={"stats-header"} display="flex" justifyContent="space-between" alignItems="center">
-						<Typography variant="h5" id='title-quiz-statistics'>Quiz Statistics</Typography>
-						<Typography variant="body2" color="textSecondary">
+					<Box className={"stats-header"}
+						 sx={{
+							 display: "flex",
+							 justifyContent: "space-between",
+							 alignItems: "center",
+							 flexWrap: "wrap",
+							 gap: 2,
+						 }}>
+						<Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+							<Typography variant="h5" id="title-quiz-statistics" sx={{ fontWeight: "bold" }}>
+								Quiz Statistics
+							</Typography>
+						</Box>
+						<Typography
+							variant="body2"
+							color="textSecondary"
+							sx={{
+								bgcolor: "background.paper",
+								px: 2,
+								py: 0.5,
+								borderRadius: 4,
+								border: "1px solid",
+								borderColor: "divider",
+							}}
+						>
 							Based on {statistics ? statistics.totalGames : 0} completed quizzes
 						</Typography>
 						<FormControl variant="outlined" size="small" sx={{ minWidth: 180 }}>
@@ -200,7 +241,9 @@ export default function StatsTab() {
 								value={selectedSubject}
 								onChange={handleSubjectChange}
 								label="Filter by subject"
-								variant={"outlined"}>
+								variant={"outlined"}
+								sx={{ borderRadius: 2 }}
+							>
 								<MenuItem value="all">All Subjects</MenuItem>
 								{categories.map((category) => (
 									<MenuItem key={category} value={category}>
@@ -211,50 +254,99 @@ export default function StatsTab() {
 						</FormControl>
 					</Box>
 				}
+				sx={{
+					borderBottom: "1px solid",
+					borderColor: "divider",
+					pb: 2,
+				}}
 			/>
 			<CardContent>
 				<LoadingErrorHandler loading={loading} error={error}>
 					{ statistics && (
-						<>{/*NOSONAR*/}
-							<Box sx={{
-								display: 'flex',
-								flexDirection: 'row',
-								justifyContent: 'center',
-								alignItems: 'center',
-								gap: 0,
-								mb: 4
-							}}>
-									<StatsPie />
-									<StatsArc />
+						<Box sx={{ display: "flex", flexDirection: { xs: "column", md: "row" }, gap: 3 }}>
+							{/* Left side - Statistics Cards */}
+							<Box sx={{ flex: 1, order: { xs: 2, md: 1 } }}>
+								<Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
+								</Box>
+								<Grid container spacing={2}>
+									<StatCard id="total-games" title="Total Games" value={statistics.totalGames} />
+									<StatCard
+										id="avg-score"
+										title="Avg Score per Quiz"
+										value={`${statistics.avgScore.toFixed(1)} points`}
+									/>
+									<StatCard id="total-score" title="Total Score" value={`${statistics.totalScore} points`} />
+									<StatCard id="total-answ" title="Correct Answers" value={statistics.totalCorrectAnswers} />
+									<StatCard id="total-questions" title="Total Questions" value={statistics.totalQuestions} />
+									<StatCard id="accuracy" title="Accuracy" value={`${(statistics.successRatio * 100).toFixed(1)}%`} />
+									<StatCard id="avg-quiz-time" title="Avg Time per Quiz" value={`${statistics.avgTime.toFixed(1)} s`} />
+								</Grid>
 							</Box>
-							<Grid container spacing={2} className={"detailed-stats"}>
-								<StatCard id='total-games' title="Total Games" value={statistics.totalGames} />
-								<StatCard id='avg-score' title="Avg Score per Quiz" value={`${statistics.avgScore.toFixed(1)} points`} />
-								<StatCard id='total-score' title="Total Score" value={`${statistics.totalScore} points`} />
-								<StatCard id='total-answ' title="Correct Answers" value={statistics.totalCorrectAnswers} />
-								<StatCard id='total-questions' title="Total Questions" value={statistics.totalQuestions} />
-								<StatCard id='accuracy' title="Accuracy" value={`${(statistics.successRatio * 100).toFixed(1)}%`} />
-								<StatCard id='avg-quiz-time' title="Avg Time per Quiz" value={`${statistics.avgTime.toFixed(1)} s`} />
-							</Grid>
-						</>
+
+							{/* Right side - Charts */}
+							<Box sx={{ flex: 1,  order: { xs: 1, md: 2 } }}>
+								<Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
+								</Box>
+								<Paper
+									elevation={1}
+									sx={{
+										p: 2,
+										mb: 3,
+										borderRadius: 2,
+										boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
+									}}
+								>
+									<Typography variant="subtitle1" sx={{ mb: 1, fontWeight: "medium" }}>
+										Answer Distribution
+									</Typography>
+									<Box sx={{
+										display: 'flex',
+										flexDirection: 'row',
+										justifyContent: 'center',
+										alignItems: 'center',
+										gap: 2
+									}}>
+										<Box sx={{ width: '50%' }}>
+											<StatsPie />
+										</Box>
+										<Box sx={{ width: '50%' }}>
+											<StatsArc />
+										</Box>
+									</Box>
+								</Paper>
+							</Box>
+						</Box>
 					)}
 				</LoadingErrorHandler>
 			</CardContent>
-
 		</Card>
 	)
 }
 
 function StatCard({ id,title, value }) {
 	return (
-		<Grid xs={12} sm={6} md={4}>
-			<Paper id={id} elevation={2} sx={{ p: 2 }}>
-				<Typography variant="h5" component="div">
-					{value}
-				</Typography>
-				<Typography variant="body2" color="textSecondary">
-					{title}
-				</Typography>
+		<Grid item xs={12} sm={6}>
+			<Paper id={id} elevation={2} sx={{
+				p: 2,
+				borderRadius: 2,
+				transition: "all 0.2s",
+				"&:hover": {
+					transform: "translateY(-3px)",
+					boxShadow: 3,
+				},
+				height: "100%",
+				display: "flex",
+				alignItems: "center",
+				gap: 2,
+			}}>
+				<Box>
+					<Typography variant="h6" component="div" sx={{ fontWeight: "bold" }}>
+						{value}
+					</Typography>
+					<Typography variant="body2" color="textSecondary">
+						{title}
+					</Typography>
+				</Box>
 			</Paper>
 		</Grid>
 	)
