@@ -32,6 +32,9 @@ const StatisticsCard = () => {
 				const token = getAuthToken();
 				const currentPlayerId = await getCurrentPlayerId(token);
 				const playerRank = rankData.leaderboard.find(entry => entry._id === currentPlayerId)?.rank || 'N/A';
+				if (!statsData.stats || Object.keys(statsData.stats).length === 0) {
+					setError("Your global statistics will be displayed here after you start playing.");
+				}
 				setStatistics(statsData.stats);
 				setRank(playerRank);
 			} catch (error) {

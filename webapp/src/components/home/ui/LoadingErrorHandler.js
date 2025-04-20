@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { CircularProgress, Typography, Card, CardContent } from "@mui/material";
+import { CircularProgress, Card, CardContent, Alert } from "@mui/material";
 
 export default function LoadingErrorHandler({ loading, error, children }) {
     if (loading) {
@@ -17,7 +17,9 @@ export default function LoadingErrorHandler({ loading, error, children }) {
         return (
             <Card>
                 <CardContent>
-                    <Typography color="error">{error}</Typography>
+                    <Alert severity="info" className="group-alert">
+                    {error}
+                    </Alert>
                 </CardContent>
             </Card>
         );

@@ -142,6 +142,7 @@ export default function LeaderboardTab() {
   // Función auxiliar para obtener detalles de usuarios
   const fetchUserDetails = async (userIds) => {
     if (!userIds || userIds.length === 0) {
+      setError("No leaderboard data is available.")
       return
     }
 
