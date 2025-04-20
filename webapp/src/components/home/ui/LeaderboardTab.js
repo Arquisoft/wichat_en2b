@@ -1,260 +1,253 @@
-import React, {useEffect, useState} from "react";
+"use client";
+
+import { useEffect, useState } from "react";
 import { fetchWithAuth } from "@/utils/api-fetch-auth";
-import LoadingErrorHandler from ".//LoadingErrorHandler";
-import {getAuthToken, getCurrentPlayerId} from "@/utils/auth";
-import GroupIcon from '@mui/icons-material/Group';
-import PublicIcon from '@mui/icons-material/Public';
-import axios from "axios";
-import {
-    Card,
-    CardHeader,
-    CardContent,
-    Typography,
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableHead,
-    TableRow,
-    Paper,
-    Tabs,
-    Tab
-} from "@mui/material"
+import LoadingErrorHandler from "./LoadingErrorHandler";
+import { getAuthToken, getCurrentPlayerId } from "@/utils/auth";
+import GroupIcon from "@mui/icons-material/Group";
+import PublicIcon from "@mui/icons-material/Public";
+import PropTypes from 'prop-types';
 import "../../../styles/home/LeaderboardTab.css";
-const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://localhost:8000';
-/**
- * Displays a leaderboard of players.
- *
- * @returns {JSX.Element} The rendered component.
- */
+import axios from "axios";
+
+import {
+  Card,
+  CardHeader,
+  CardContent,
+  Typography,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Tabs,
+  Tab,
+  Box,
+  Alert,
+} from "@mui/material";
+
+const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || "http://localhost:8000";
+
 export default function LeaderboardTab() {
-    const [leaderboard, setLeaderboard] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [player, setPlayer] = useState(null);
-    const [tabIndex, setTabIndex] = useState(0);
-    const [doesGroupExist, setDoesGroupExist] = useState(false);
-    const [usersLeaderboard, setUsersLeaderboard] = useState(null);
+  const [leaderboard, setLeaderboard] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [player, setPlayer] = useState(null);
+  const [tabIndex, setTabIndex] = useState(0);
+  const [doesGroupExist, setDoesGroupExist] = useState(false);
+  const [usersLeaderboard, setUsersLeaderboard] = useState(null);
 
-    const getUsernameById = (id) => {
-        if (!usersLeaderboard) {
-            return "Loading..."; // O algún texto de carga
-        }
-        
-        if (Array.isArray(usersLeaderboard)) {
-            const user = usersLeaderboard.find((u) => u._id === id || u.id === id);
-            return user ? (user.username || "") : "";
-        }
-        
-        // Si no es un array, podría ser un objeto con propiedades id/username
-        return usersLeaderboard[id]?.username || "";
-    };
+  const getUsernameById = (id) => {
+    if (!usersLeaderboard) return "Loading...";
 
+    if (Array.isArray(usersLeaderboard)) {
+      const user = usersLeaderboard.find((u) => u._id === id || u.id === id);
+      return user ? user.username || "" : "";
+    }
 
-    // Función principal para obtener el leaderboard global
-    const fetchGlobalLeaderboard = async () => {
-        setLoading(true);
-        setError(null);
-        
-        try {
-            // 1. Obtener datos del leaderboard
-            const data = await fetchWithAuth("/leaderboard");
-            if (!data?.leaderboard) {
-                setError("No leaderboard data available.");
-                return;
-            }
-            
-            // 2. Guardar los datos del leaderboard
-            setLeaderboard(data.leaderboard);
-            
-            // 3. Obtener ID del jugador actual
-            const token = getAuthToken();
-            const currentPlayerId = await getCurrentPlayerId(token);
-            setPlayer(currentPlayerId);
-            
-            // 4. Obtener usuarios para los IDs del leaderboard
-            const userIds = data.leaderboard.map(entry => entry._id);
-            await fetchUserDetails(userIds);
-        } catch (error) {
-            setError(error.message || "Failed to fetch leaderboard data.");
-        } finally {
-            setLoading(false);
-        }
-    };
-    
-    // Función principal para obtener el leaderboard de grupo
-    const fetchGroupLeaderboard = async () => {
-        setLoading(true);
-        setError(null);
-        
-        const token = getAuthToken();
-        try {
-        // 1. Obtener datos del grupo
-            const groupFetch = await axios.get(
-                `${apiEndpoint}/groups/joined`,
-                {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    "Content-Type": "application/json",
-                },
-                }
-            );
-    
-            const group = groupFetch.data;
-            if (!group) {
-                setLeaderboard(null);
-                setDoesGroupExist(false);
-                return;
-            }
-            setDoesGroupExist(true);
-        
-            // 2. Obtener leaderboard del grupo
-            const playerIds = group.members;
-            const response = await axios.post(
-                `${apiEndpoint}/leaderboard/group`,
-                { players: playerIds },
-                {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    "Content-Type": "application/json",
-                },
-                }
-            );
-        
-            // 3. Guardar los datos del leaderboard
-            const leaderboardData = response.data.leaderboard;
-            setLeaderboard(leaderboardData);
-            
-            // 4. Obtener detalles de usuarios para el leaderboard
-            const userIds = leaderboardData.map(entry => entry._id);
-            await fetchUserDetails(userIds);
-        } catch (error) {
-            setLeaderboard(null);
-            setError(error.message || "Failed to fetch group leaderboard data.");
-        } finally {
-            setLoading(false);
-        }
-    };
-    
-    // Función auxiliar para obtener detalles de usuarios
-    const fetchUserDetails = async (userIds) => {
-        if (!userIds || userIds.length === 0) {
-            return;
-        }
-        
-        try {            
-            const response = await axios.post(
-                `${apiEndpoint}/users/by-ids`,
-                {users: userIds},
-                {
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                }
-            );
-            setUsersLeaderboard(response.data);
-        } catch (error) {
-            console.error("Error fetching leaderboard users:", error);
-        }
-    };
-    
-    // Tab handler simplificado
-    const handleTabChange = (event, newValue) => {
-        setTabIndex(newValue);
-        if (newValue === 0) {
-            fetchGlobalLeaderboard();
-        } else {
-            fetchGroupLeaderboard();
-        }
-    };
-    
-    // useEffect para cargar datos iniciales
-    useEffect(() => {
-        fetchGlobalLeaderboard();
-    }, []);
+    return usersLeaderboard[id]?.username || "";
+  };
 
+  const fetchGlobalLeaderboard = async () => {
+    setLoading(true);
+    setError(null);
 
-    return (
-        <div className="leaderboard-tab">
-            {/* Tabs */}
-            <div className="tabs-container">
-                <Tabs 
-                    value={tabIndex} 
-                    onChange={handleTabChange} 
-                    scrollButtons="auto"
-                    variant="scrollable"
-                    className={"tabs-header"}
-                >
-                    <Tab label="WiChat Leaderboard" icon={<PublicIcon/>} />
-                    <Tab label="Group Leaderboard" icon={<GroupIcon />} />
-                </Tabs>
-            </div>
-        
-            {tabIndex === 1 && (
-                <div className="group-leaderboard">
-                    {!doesGroupExist && (
-                        <CardHeader title="You do not belong to any group!" />
-                    )}
-                </div>
-            )}
-            
-            <Card>
-            <CardHeader title="WiChat Leaderboard" />
+    try {
+      const data = await fetchWithAuth("/leaderboard");
+      if (!data?.leaderboard) {
+        setError("No leaderboard data available.");
+        return;
+      }
+
+      setLeaderboard(data.leaderboard);
+
+      const token = getAuthToken();
+      const currentPlayerId = await getCurrentPlayerId(token);
+      setPlayer(currentPlayerId);
+
+      const userIds = data.leaderboard.map((entry) => entry._id);
+      await fetchUserDetails(userIds);
+    } catch (error) {
+      setError(error.message || "Failed to fetch leaderboard data.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchGroupLeaderboard = async () => {
+    setLoading(true);
+    setError(null);
+
+    const token = getAuthToken();
+    try {
+      const groupFetch = await axios.get(`${apiEndpoint}/groups/joined`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      const group = groupFetch.data;
+      if (!group) {
+        setLeaderboard(null);
+        setDoesGroupExist(false);
+        return;
+      }
+
+      setDoesGroupExist(true);
+
+      const playerIds = group.members;
+      const response = await axios.post(
+        `${apiEndpoint}/leaderboard/group`,
+        { players: playerIds },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const leaderboardData = response.data.leaderboard;
+      setLeaderboard(leaderboardData);
+
+      const userIds = leaderboardData.map((entry) => entry._id);
+      await fetchUserDetails(userIds);
+    } catch (error) {
+      setLeaderboard(null);
+      setError(error.message || "Failed to fetch group leaderboard data.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchUserDetails = async (userIds) => {
+    if (!userIds || userIds.length === 0) return;
+
+    try {
+      const response = await axios.post(
+        `${apiEndpoint}/users/by-ids`,
+        { users: userIds },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      setUsersLeaderboard(response.data);
+    } catch (error) {
+      console.error("Error fetching leaderboard users:", error);
+    }
+  };
+
+  const handleTabChange = (event, newValue) => {
+    setTabIndex(newValue);
+    if (newValue === 0) {
+      fetchGlobalLeaderboard();
+    } else {
+      fetchGroupLeaderboard();
+    }
+  };
+
+  useEffect(() => {
+    fetchGlobalLeaderboard();
+  }, []);
+
+  return (
+    <div className="leaderboard-container">
+      <Card className="card-root leaderboard-card">
+        <CardHeader title="Leaderboard" className="card-header leaderboard-main-header" />
+
+        <Box className="subtabs-container">
+          <Tabs value={tabIndex} onChange={handleTabChange} variant="fullWidth" className="leaderboard-subtabs">
+            <Tab label="Global Leaderboard" icon={<PublicIcon />} iconPosition="start" className="leaderboard-subtab" />
+            <Tab label="Group Leaderboard" icon={<GroupIcon />} iconPosition="start" className="leaderboard-subtab" />
+          </Tabs>
+        </Box>
+
+        <CardContent className="card-content">
+          {tabIndex === 0 ? (
             <LoadingErrorHandler loading={loading} error={error}>
-                <CardContent className="card-content">
-                    
-                        <TableContainer component={Paper}>
-                            <Table aria-label="leaderboard table">
-                                <TableHead>
-                                    <TableRow>
-                                        <TableCell>Rank</TableCell>
-                                        <TableCell>Username</TableCell>
-                                        <TableCell align="right">Total Score</TableCell>
-                                        <TableCell align="right">Games Played</TableCell>
-                                        <TableCell align="right">Average Score</TableCell>
-                                    </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                    {leaderboard && usersLeaderboard && //NOSONAR
-                                        leaderboard.map((entry) => {
-                                            const isCurrentPlayer =
-                                                player && (player === entry._id || (typeof player === "object" && player._id === entry._id))
-
-                                            return (
-                                                <TableRow
-                                                    key={entry._id}
-                                                    className={isCurrentPlayer ? "current-player" : ""}
-                                                    sx={{
-                                                        backgroundColor: isCurrentPlayer ? "rgba(144, 202, 249, 0.2)" : "inherit",
-                                                        "&:hover": {
-                                                            backgroundColor: isCurrentPlayer ? "rgba(144, 202, 249, 0.3)" : "rgba(0, 0, 0, 0.04)",
-                                                        },
-                                                    }}
-                                                >
-                                                    <TableCell>#{entry.rank}</TableCell>
-                                                    <TableCell>
-                                                        {isCurrentPlayer ? (
-                                                            <Typography component="span" fontWeight="bold">
-                                                                {getUsernameById(entry._id)} (You)
-                                                            </Typography>
-                                                        ) : (
-                                                            getUsernameById(entry._id)
-                                                        )}
-                                                    </TableCell>
-                                                    <TableCell align="right">{`${entry.totalScore.toLocaleString()} points`}</TableCell>
-                                                    <TableCell align="right">{entry.totalGames}</TableCell>
-                                                    <TableCell align="right">{`${entry.avgScore.toFixed(1)} points`}</TableCell>
-                                                </TableRow>
-                                            )
-                                        })}
-                                </TableBody>
-                            </Table>
-                        </TableContainer>
-                    
-                </CardContent>
+              <LeaderboardTable
+                leaderboard={leaderboard}
+                usersLeaderboard={usersLeaderboard}
+                player={player}
+                getUsernameById={getUsernameById}
+              />
             </LoadingErrorHandler>
-            </Card>
-            
-        </div>
-    )
+          ) : (
+            <>
+              {!doesGroupExist ? (
+                <Alert severity="info" className="group-alert">
+                  You do not belong to any group! Join a group to see the group leaderboard.
+                </Alert>
+              ) : (
+                <LoadingErrorHandler loading={loading} error={error}>
+                  <LeaderboardTable
+                    leaderboard={leaderboard}
+                    usersLeaderboard={usersLeaderboard}
+                    player={player}
+                    getUsernameById={getUsernameById}
+                  />
+                </LoadingErrorHandler>
+              )}
+            </>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
 }
+function LeaderboardTable({ leaderboard, usersLeaderboard, player, getUsernameById }) {
+  if (!leaderboard || !usersLeaderboard) return null;
+
+  return (
+    <TableContainer component={Paper} className="leaderboard-table-container">
+      <Table aria-label="leaderboard table" className="leaderboard-table">
+        <TableHead>
+          <TableRow>
+            <TableCell className="table-header">Rank</TableCell>
+            <TableCell className="table-header">Username</TableCell>
+            <TableCell align="right" className="table-header">Total Score</TableCell>
+            <TableCell align="right" className="table-header">Games Played</TableCell>
+            <TableCell align="right" className="table-header">Average Score</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {leaderboard.map((entry) => {
+            const isCurrentPlayer =
+              player && (player === entry._id || (typeof player === "object" && player._id === entry._id));
+
+            return (
+              <TableRow key={entry._id} className={`leaderboard-entry ${isCurrentPlayer ? "current-player" : ""}`}>
+                <TableCell className="rank">#{entry.rank}</TableCell>
+                <TableCell className="player-name">
+                  {isCurrentPlayer ? (
+                    <Typography component="span" fontWeight="bold">
+                      {getUsernameById(entry._id)} (You)
+                    </Typography>
+                  ) : (
+                    getUsernameById(entry._id)
+                  )}
+                </TableCell>
+                <TableCell align="right" className="score">{`${entry.totalScore.toLocaleString()} points`}</TableCell>
+                <TableCell align="right">{entry.totalGames}</TableCell>
+                <TableCell align="right">{`${entry.avgScore.toFixed(1)} points`}</TableCell>
+              </TableRow>
+            );
+          })}
+        </TableBody>
+      </Table>
+    </TableContainer>
+  );
+}
+
+LeaderboardTable.propTypes = {
+  leaderboard: PropTypes.array,
+  usersLeaderboard: PropTypes.oneOfType([PropTypes.array, PropTypes.object]),
+  player: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
+  getUsernameById: PropTypes.func.isRequired
+};
+
