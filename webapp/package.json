@@ -28,7 +28,7 @@
     "glob": "^9.3.5",
     "jest-fetch-mock": "^3.0.3",
     "lucide-react": "0.484.0",
-    "next": "^15.2.5",
+    "next": "^15.3.0",
     "puppeteer-core": "^24.4.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

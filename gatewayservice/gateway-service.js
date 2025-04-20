@@ -17,7 +17,8 @@ const serviceUrls = {
   auth: process.env.AUTH_SERVICE_URL || 'http://localhost:8002',
   user: process.env.USER_SERVICE_URL || 'http://localhost:8001',
   game: process.env.GAME_SERVICE_URL || 'http://localhost:8004',
-  wihoot: process.env.WIHOOT_SERVICE_URL || 'http://localhost:8005',
+  group: process.env.GROUP_SERVICE_URL || 'http://localhost:8005',
+    wihoot: process.env.WIHOOT_SERVICE_URL || 'http://localhost:8006',
 };
 
 // CORS setup
@@ -90,12 +91,61 @@ app.get('/users/:username', (req, res) => {
   forwardRequest('user', `/users/${req.params.username}`, req, res);
 });
 
-app.patch('/users/:username', (req, res) => {
-  forwardRequest('user', `/users/${req.params.username}`, req, res);
+app.patch('/users', (req, res) => {
+  forwardRequest('user', `/users`, req, res);
 });
 
-app.delete('/users/:username', (req, res) => {
-  forwardRequest('user', `/users/${req.params.username}`, req, res);
+app.delete('/users', (req, res) => {
+  forwardRequest('user', `/users`, req, res);
+});
+
+app.post('/users/by-ids', (req, res) => {
+  forwardRequest('user', `/users/by-ids`, req, res);
+});
+
+app.get('/users/id/:id', (req, res) => {
+  forwardRequest('user', `/users/id/${req.params.id}`, req, res);
+});
+
+// Group Management
+app.use('/groups', publicCors);
+app.get('/groups', (req, res) => {
+  forwardRequest('group', '/groups', req, res);
+});
+
+app.use('/groups/joined', publicCors);
+app.get('/groups/joined', (req, res) => {
+  forwardRequest('group', '/groups/joined', req, res);
+});
+
+app.use('/groups/:name', publicCors);
+app.get('/groups/:name', (req, res) => {
+  forwardRequest('group', `/groups/${req.params.name}`, req, res);
+});
+
+app.use('/groups', publicCors);
+app.post('/groups', (req, res) => {
+  forwardRequest('group', '/groups', req, res);
+});
+
+app.use('/groups', publicCors);
+app.patch('/groups', (req, res) => {
+  forwardRequest('group', `/groups`, req, res);
+});
+
+app.use('/groups', publicCors);
+app.delete('/groups', (req, res) => {
+  forwardRequest('group', `/groups`, req, res);
+});
+
+app.use('/groups/join', publicCors);
+app.post('/groups/join', (req, res) => {
+  forwardRequest('group', `/groups/join`, req, res);
+});
+
+app.use('/groups/leave', publicCors);
+app.post('/groups/leave', (req, res) => {
+  forwardRequest('group', `/groups/leave`, req, res);
 });
 
 // User Management
@@ -145,6 +195,7 @@ app.get('/game/:subject/:totalQuestions/:numberOptions', async (req, res) => {
     const data = await response.json();
     res.json(data);
   } catch (error) {
+    console.error('Error fetching questions:', error);
     res.status(500).json({ error: 'Hubo un problema al obtener las preguntas' });
   }
 });
@@ -190,11 +241,17 @@ app.get('/question/internal/:id', (req, res) =>
       const data = await response.json();
       res.json(data);
     } catch (error) {
+      console.error(`${errorMessage}: ${error.message}`, error);
       res.status(500).json({
         error: errorMessage,
       });
     }
   });
+});
+
+app.use('/leaderboard/group', publicCors);
+app.post('/leaderboard/group', (req, res) => {
+  forwardRequest('game', '/leaderboard/group', req, res);
 });
 
 // Username handling
@@ -213,19 +270,6 @@ app.patch('/users/:username',  async (req, res) => {
   forwardRequest("user", `/users/${req.params.username}`, req, res);
 });
 
-// Update game history when username changes
-const corsOptions = {
-  origin: serviceUrls.user,
-  methods: ['PATCH'],
-  allowedHeaders: ['Content-Type', 'Origin']
-};
-
-app.use('/game/update/:oldUsername', cors(corsOptions));
-
-app.patch('/game/update/:oldUsername', async (req, res) => {
-    forwardRequest("game", `/game/update/${req.params.oldUsername}`, req, res);
-});
-
 // Profile picture upload
 app.use('/user/profile/picture', publicCors);
 
@@ -234,10 +278,10 @@ app.post('/user/profile/picture', async (req, res) => {
 });
 
 // Profile picture retrieval
-app.use('/user/profile/picture/:username', publicCors);
+app.use('/user/profile/picture/:id', publicCors);
 
-app.get('/user/profile/picture/:username', async (req, res) => {
-    forwardRequest("user", `/user/profile/picture/${req.params.username}`, req, res);
+app.get('/user/profile/picture/:id', async (req, res) => {
+    forwardRequest("user", `/user/profile/picture/${req.params.id}`, req, res);
 });
 
 // Proxy for images
