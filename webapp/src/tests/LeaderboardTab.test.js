@@ -217,7 +217,7 @@ describe('LeaderboardTab Group Component', () => {
       });
   
       await waitFor(() => {
-        expect(screen.getByText('Failed to fetch group data')).toBeInTheDocument();
+        expect(screen.getByText('You do not belong to any group! Join a group to see the group leaderboard.')).toBeInTheDocument();
       });
     });
   
