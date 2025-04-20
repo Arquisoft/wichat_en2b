@@ -102,10 +102,12 @@ export default function ProfileForm({ username, profilePicture, onSave }) {
                 // Reload the page to reflect the new username
                 window.location.reload();
             } else {
+                console.error("Error updating username:", error);
                 setSnackbarMessage(responseData.error || "Error updating username");
                 setOpenSnackbar(true);
             }
         } catch (error) {
+            console.error("Error updating username:", error);
             setSnackbarMessage(`Error: ${error.message}`);
             setOpenSnackbar(true);
         }
@@ -209,6 +211,7 @@ export default function ProfileForm({ username, profilePicture, onSave }) {
             setQrCodeUrl(data.imageUrl);
 
         } catch (error) {
+            console.error("Error configuring 2FA:", error);
             setSnackbarMessage(`Error configuring 2FA: ${error.message}`);
             setOpenSnackbar(true);
         }
@@ -238,6 +241,7 @@ export default function ProfileForm({ username, profilePicture, onSave }) {
             setAlready2fa(!!data.twoFactorEnabled);
 
         } catch (error) {
+            console.error("Error checking 2FA status:", error);
             setSnackbarMessage(`Error checking 2FA: ${error.message}`);
             setOpenSnackbar(true);
         }
@@ -295,6 +299,7 @@ export default function ProfileForm({ username, profilePicture, onSave }) {
                 }));
 
             } catch (error) {
+                console.error("Error uploading profile picture:", error);
                 setSnackbarMessage(`Error: ${error.message}`);
                 setOpenSnackbar(true);
             }
