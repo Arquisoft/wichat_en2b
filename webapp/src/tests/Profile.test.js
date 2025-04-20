@@ -89,7 +89,7 @@ describe('ProfileForm', () => {
 	  
 		await waitFor(() => {
 		  expect(global.fetch).toHaveBeenCalledWith(
-			expect.stringContaining('/users/oldUsername'),
+			expect.stringContaining('/users'),
 			expect.objectContaining({
 			  method: 'PATCH',
 			  headers: expect.objectContaining({
@@ -126,7 +126,7 @@ describe('ProfileForm', () => {
 		
 		await waitFor(() => {
 			expect(global.fetch).toHaveBeenCalledWith(
-			expect.stringContaining('/users/username'),
+			expect.stringContaining('/users'),
 			expect.objectContaining({
 				method: 'PATCH',
 				headers: expect.objectContaining({
@@ -380,7 +380,7 @@ describe('ProfileForm', () => {
 		// Check that the API was called with the right parameters
 		await waitFor(() => {
 			expect(fetch).toHaveBeenCalledWith(
-				'http://localhost:8000/users/oldUsername', 
+				'http://localhost:8000/users', 
 				expect.objectContaining({
 					method: 'PATCH',
 					headers: expect.objectContaining({
@@ -490,7 +490,7 @@ describe('ProfileForm', () => {
 		// Verify that fetch was called with the correct parameters
 		await waitFor(() => {
 			expect(fetch).toHaveBeenCalledWith(
-				'http://localhost:8000/users/oldUsername', // URL with old username
+				'http://localhost:8000/users', // URL with old username
 				expect.objectContaining({
 					method: 'PATCH',
 					headers: expect.objectContaining({
@@ -575,7 +575,7 @@ describe('ProfileForm', () => {
 		// Verify the fetch was called
 		await waitFor(() => {
 			expect(fetch).toHaveBeenCalledWith(
-				'http://localhost:8000/users/oldUsername',
+				'http://localhost:8000/users',
 				expect.anything()
 			);
 		});

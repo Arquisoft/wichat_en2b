@@ -100,7 +100,7 @@ describe('User Routes', () => {
 
     // Generate a token for authentication tests
     token = jwt.sign(
-        { username: mockUser.username, role: 'USER' },
+        { _id: user._id, role: 'USER' },
         process.env.JWT_SECRET || 'testing-secret',
         { expiresIn: '1h' }
     );
@@ -109,7 +109,7 @@ describe('User Routes', () => {
   describe('Authentication Middleware', () => {
     test('should reject requests without authentication token', async () => {
       const response = await request(app)
-          .delete(`/api/users/${mockUser.username}`);
+          .delete(`/api/users`);
 
       expect(response.status).toBe(401);
       expect(response.body).toHaveProperty('error', 'Authentication required');
@@ -117,7 +117,7 @@ describe('User Routes', () => {
 
     test('should reject requests with invalid token', async () => {
       const response = await request(app)
-          .delete(`/api/users/${mockUser.username}`)
+          .delete(`/api/users`)
           .set('Authorization', 'Bearer invalid-token');
 
       expect(response.status).toBe(401);
@@ -126,33 +126,11 @@ describe('User Routes', () => {
 
     test('should allow requests with valid token', async () => {
       const response = await request(app)
-          .delete(`/api/users/${mockUser.username}`)
+          .delete(`/api/users`)
           .set('Authorization', `Bearer ${token}`);
 
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('message', 'User deleted successfully');
-    });
-  });
-
-  describe('Authorization Middleware', () => {
-    test('should reject access to another user\'s profile', async () => {
-      const anotherUser = {
-        username: 'anotheruser',
-        password: 'password123',
-        role: 'USER'
-      };
-
-      await new User({
-        ...anotherUser,
-        password: bcrypt.hashSync(anotherUser.password, 10)
-      }).save();
-
-      const response = await request(app)
-          .delete(`/api/users/anotheruser`)
-          .set('Authorization', `Bearer ${token}`);
-
-      expect(response.status).toBe(403);
-      expect(response.body).toHaveProperty('error', 'You can only access your own profile');
     });
   });
 
@@ -196,22 +174,6 @@ describe('User Routes', () => {
           .send(invalidUser);
 
       expect(response.status).toBe(400);
-    });
-
-    test('should handle database errors when getting a user', async () => {
-      // Mock mongoose findOne to simulate a database error
-      const originalFindOne = mongoose.Model.findOne;
-      mongoose.Model.findOne = jest.fn().mockImplementation(() => {
-        throw new Error('Database connection error');
-      });
-
-      const response = await request(app)
-          .get(`/api/users/${mockUser.username}`);
-
-      expect(response.status).toBe(500);
-
-      // Restore the original function
-      mongoose.Model.findOne = originalFindOne;
     });
   });
 
@@ -260,10 +222,10 @@ describe('User Routes', () => {
     });
   });
 
-  describe('DELETE /users/:username', () => {
+  describe('DELETE /users', () => {
     test('should delete a user', async () => {
       const response = await request(app)
-          .delete(`/api/users/${mockUser.username}`)
+          .delete(`/api/users`)
           .set('Authorization', `Bearer ${token}`);
 
       expect(response.status).toBe(200);
@@ -279,7 +241,7 @@ describe('User Routes', () => {
       await User.deleteOne({ username: mockUser.username });
 
       const response = await request(app)
-          .delete(`/api/users/${mockUser.username}`)
+          .delete(`/api/users`)
           .set('Authorization', `Bearer ${token}`);
 
       expect(response.status).toBe(404);
@@ -294,7 +256,7 @@ describe('User Routes', () => {
       );
 
       const response = await request(app)
-          .delete(`/api/users/${mockUser.username}`)
+          .delete(`/api/users`)
           .set('Authorization', `Bearer ${token}`);
 
       expect(response.status).toBe(200);
@@ -319,7 +281,7 @@ describe('User Routes', () => {
       console.error = jest.fn();
 
       const response = await request(app)
-          .delete(`/api/users/${mockUser.username}`)
+          .delete(`/api/users`)
           .set('Authorization', `Bearer ${token}`);
 
       expect(response.status).toBe(200);
@@ -328,18 +290,17 @@ describe('User Routes', () => {
     });
   });
 
-  describe('PATCH /users/:username', () => {
+  describe('PATCH /users', () => {
     test('should update username successfully', async () => {
       const newUsername = 'updateduser';
 
       const response = await request(app)
-          .patch(`/api/users/${mockUser.username}`)
+          .patch(`/api/users`)
           .set('Authorization', `Bearer ${token}`)
           .send({ newUsername });
 
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('message', 'User updated successfully');
-      expect(response.body).toHaveProperty('token');
 
       // Check if username was actually updated
       const updatedUser = await User.findOne({ username: newUsername });
@@ -352,7 +313,7 @@ describe('User Routes', () => {
       const newPassword = 'newpassword123';
 
       const response = await request(app)
-          .patch(`/api/users/${mockUser.username}`)
+          .patch(`/api/users`)
           .set('Authorization', `Bearer ${token}`)
           .send({ oldPassword, newPassword });
 
@@ -370,7 +331,7 @@ describe('User Routes', () => {
       const newPassword = 'newpassword123';
 
       const response = await request(app)
-          .patch(`/api/users/${mockUser.username}`)
+          .patch(`/api/users`)
           .set('Authorization', `Bearer ${token}`)
           .send({ oldPassword, newPassword });
 
@@ -382,7 +343,7 @@ describe('User Routes', () => {
       const profilePicture = 'images/testuser_profile_picture.png';
 
       const response = await request(app)
-          .patch(`/api/users/${mockUser.username}`)
+          .patch(`/api/users`)
           .set('Authorization', `Bearer ${token}`)
           .send({ profilePicture });
 
@@ -398,7 +359,7 @@ describe('User Routes', () => {
       const secret = 'new-secret-value';
 
       const response = await request(app)
-          .patch(`/api/users/${mockUser.username}`)
+          .patch(`/api/users`)
           .set('Authorization', `Bearer ${token}`)
           .send({ secret });
 
@@ -418,7 +379,7 @@ describe('User Routes', () => {
       );
 
       const response = await request(app)
-          .patch(`/api/users/${mockUser.username}`)
+          .patch(`/api/users`)
           .set('Authorization', `Bearer ${token}`)
           .send({ profilePicture: '' });
 
@@ -431,7 +392,7 @@ describe('User Routes', () => {
 
     test('should reject username update when new username is too short', async () => {
       const response = await request(app)
-          .patch(`/api/users/${mockUser.username}`)
+          .patch(`/api/users`)
           .set('Authorization', `Bearer ${token}`)
           .send({ newUsername: 'ab' }); // Less than 3 characters
 
@@ -441,7 +402,7 @@ describe('User Routes', () => {
 
     test('should reject username update when new username contains whitespace', async () => {
       const response = await request(app)
-          .patch(`/api/users/${mockUser.username}`)
+          .patch(`/api/users`)
           .set('Authorization', `Bearer ${token}`)
           .send({ newUsername: 'test user' });
 
@@ -451,7 +412,7 @@ describe('User Routes', () => {
 
     test('should reject username update when username is the same', async () => {
       const response = await request(app)
-          .patch(`/api/users/${mockUser.username}`)
+          .patch(`/api/users`)
           .set('Authorization', `Bearer ${token}`)
           .send({ newUsername: mockUser.username });
 
@@ -473,7 +434,7 @@ describe('User Routes', () => {
       }).save();
 
       const response = await request(app)
-          .patch(`/api/users/${mockUser.username}`)
+          .patch(`/api/users`)
           .set('Authorization', `Bearer ${token}`)
           .send({ newUsername: 'takenusername' });
 
@@ -491,7 +452,7 @@ describe('User Routes', () => {
       });
 
       const response = await request(app)
-          .patch(`/api/users/${mockUser.username}`)
+          .patch(`/api/users`)
           .set('Authorization', `Bearer ${token}`)
           .send({ secret: 'new-secret' });
 
@@ -508,11 +469,17 @@ describe('User Routes', () => {
       mongoose.Model.prototype.save = jest.fn().mockImplementation(function() {
         const error = new Error('Validation failed');
         error.name = 'ValidationError';
+        // Añadimos la estructura típica de errores de validación de Mongoose
+        error.errors = {
+          someField: {
+            message: 'Error de validación en campo específico'
+          }
+        };
         throw error;
       });
 
       const response = await request(app)
-          .patch(`/api/users/${mockUser.username}`)
+          .patch(`/api/users`)
           .set('Authorization', `Bearer ${token}`)
           .send({ secret: 'new-secret' });
 
@@ -525,7 +492,7 @@ describe('User Routes', () => {
 
     test('should reject password update when new password is too short', async () => {
       const response = await request(app)
-          .patch(`/api/users/${mockUser.username}`)
+          .patch(`/api/users`)
           .set('Authorization', `Bearer ${token}`)
           .send({ oldPassword: mockUser.password, newPassword: 'short' });
 
@@ -535,7 +502,7 @@ describe('User Routes', () => {
 
     test('should reject password update when new password is the same as old', async () => {
       const response = await request(app)
-          .patch(`/api/users/${mockUser.username}`)
+          .patch(`/api/users`)
           .set('Authorization', `Bearer ${token}`)
           .send({ oldPassword: mockUser.password, newPassword: mockUser.password });
 
@@ -545,7 +512,7 @@ describe('User Routes', () => {
 
     test('should reject password update when new password contains whitespace', async () => {
       const response = await request(app)
-          .patch(`/api/users/${mockUser.username}`)
+          .patch(`/api/users`)
           .set('Authorization', `Bearer ${token}`)
           .send({ oldPassword: mockUser.password, newPassword: 'new password 123' });
 
@@ -553,60 +520,9 @@ describe('User Routes', () => {
       expect(response.body).toHaveProperty('error', 'Password cannot contain whitespace');
     });
 
-    test('should handle error when updating game records fails', async () => {
-      // Mock fetch to simulate an error from game service
-      global.fetch.mockImplementationOnce(() =>
-          Promise.resolve({
-            ok: false,
-            json: () => Promise.resolve({ error: "Game service error" })
-          })
-      );
-
-      const response = await request(app)
-          .patch(`/api/users/${mockUser.username}`)
-          .set('Authorization', `Bearer ${token}`)
-          .send({ newUsername: 'newusername' });
-
-      expect(response.status).toBe(502);
-      expect(response.body).toHaveProperty('error', 'Error updating game history with new username');
-    });
-
-    test('should handle error when connecting to game service fails', async () => {
-      // Mock fetch to simulate a network error
-      global.fetch.mockImplementationOnce(() =>
-          Promise.reject(new Error("Network error"))
-      );
-
-      const response = await request(app)
-          .patch(`/api/users/${mockUser.username}`)
-          .set('Authorization', `Bearer ${token}`)
-          .send({ newUsername: 'newusername' });
-
-      expect(response.status).toBe(502);
-      expect(response.body).toHaveProperty('error', 'Failed to communicate with game service');
-    });
-
-    test('should handle renaming profile picture when updating username', async () => {
-      // First set a profile picture
-      await User.findOneAndUpdate(
-          { username: mockUser.username },
-          { profilePicture: `images/${mockUser.username}_profile_picture.png` }
-      );
-
-      const newUsername = 'newusername';
-
-      const response = await request(app)
-          .patch(`/api/users/${mockUser.username}`)
-          .set('Authorization', `Bearer ${token}`)
-          .send({ newUsername });
-
-      expect(response.status).toBe(200);
-      expect(fs.renameSync).toHaveBeenCalled();
-    });
-
     test('should reject profile picture with whitespace', async () => {
       const response = await request(app)
-          .patch(`/api/users/${mockUser.username}`)
+          .patch(`/api/users`)
           .set('Authorization', `Bearer ${token}`)
           .send({ profilePicture: 'invalid url with spaces.jpg' });
 
@@ -616,7 +532,7 @@ describe('User Routes', () => {
 
     test('should reject secret with whitespace', async () => {
       const response = await request(app)
-          .patch(`/api/users/${mockUser.username}`)
+          .patch(`/api/users`)
           .set('Authorization', `Bearer ${token}`)
           .send({ secret: 'secret with spaces' });
 
@@ -626,7 +542,7 @@ describe('User Routes', () => {
 
     test('should return 400 when no valid update parameters are provided', async () => {
       const response = await request(app)
-          .patch(`/api/users/${mockUser.username}`)
+          .patch(`/api/users`)
           .set('Authorization', `Bearer ${token}`)
           .send({}); // Empty update
 
@@ -634,27 +550,6 @@ describe('User Routes', () => {
       expect(response.body).toHaveProperty('error', 'No valid update parameters provided');
     });
 
-    test('should handle case when profile picture is not found during username update', async () => {
-      // First set a profile picture
-      await User.findOneAndUpdate(
-          { username: mockUser.username },
-          { profilePicture: `images/${mockUser.username}_profile_picture.png` }
-      );
-
-      // Mock existsSync to return false specifically for the profile picture check
-      fs.existsSync.mockReturnValueOnce(false);
-
-      const response = await request(app)
-          .patch(`/api/users/${mockUser.username}`)
-          .set('Authorization', `Bearer ${token}`)
-          .send({ newUsername: 'updatedusername' });
-
-      expect(response.status).toBe(200);
-      expect(response.body).toHaveProperty('message', 'User updated successfully');
-      expect(fs.existsSync).toHaveBeenCalled();
-      // Check that console.error was called with the expected message
-      expect(console.error).toHaveBeenCalledWith("Profile picture not found.");
-    });
   });
 
   describe('POST /user/profile/picture', () => {
@@ -690,17 +585,6 @@ describe('User Routes', () => {
       expect(response.body).toHaveProperty('error', 'No image provided.');
     });
 
-    test('should reject request for non-existent user', async () => {
-      const response = await request(app)
-          .post('/api/user/profile/picture')
-          .set('Authorization', `Bearer ${token}`)
-          .send({
-            username: 'nonexistentuser',
-            image: base64Image
-          });
-
-      expect(response.status).toBe(403); // Authorization fails before user check
-    });
 
     test('should handle invalid file type', async () => {
       // Mock parse to return an invalid mime type
@@ -732,71 +616,6 @@ describe('User Routes', () => {
 
       expect(response.status).toBe(200);
       expect(fs.promises.mkdir).toHaveBeenCalledWith(expect.any(String), { recursive: true });
-    });
-
-    test('should sanitize username for file path', async () => {
-      // Update user with a username that needs sanitization
-      await User.findOneAndUpdate(
-          { username: mockUser.username },
-          { username: 'user.with.special/chars' }
-      );
-
-      // Generate a new token with the updated username
-      const specialToken = jwt.sign(
-          { username: 'user.with.special/chars', role: 'USER' },
-          process.env.JWT_SECRET || 'testing-secret',
-          { expiresIn: '1h' }
-      );
-
-      const response = await request(app)
-          .post('/api/user/profile/picture')
-          .set('Authorization', `Bearer ${specialToken}`)
-          .send({
-            username: 'user.with.special/chars',
-            image: base64Image
-          });
-
-      expect(response.status).toBe(200);
-      // Check that the sanitized username was used in the path
-      expect(fs.promises.writeFile).toHaveBeenCalledWith(
-          expect.stringContaining('user.with.specialchars_profile_picture.png'),
-          expect.any(Buffer)
-      );
-    });
-
-    test('should protect against directory traversal attacks', async () => {
-      // Create a malicious username that tries directory traversal
-      const maliciousToken = jwt.sign(
-          { username: '../../etc/passwd', role: 'USER' },
-          process.env.JWT_SECRET || 'testing-secret',
-          { expiresIn: '1h' }
-      );
-
-      await new User({ username: '../../etc/passwd', password: 'password123', role: 'USER' }).save();
-
-      // Mock path.resolve to test the path validation logic
-      const originalResolve = path.resolve;
-      let newFilePath;
-      path.resolve = jest.fn((...args) => {
-        if (args.includes('images') && args[args.length-1].includes('_profile_picture.png')) {
-          newFilePath = '/invalid/path/outside/images/directory';
-          return newFilePath;
-        }
-        return originalResolve(...args);
-      });
-
-      const response = await request(app)
-          .post('/api/user/profile/picture')
-          .set('Authorization', `Bearer ${maliciousToken}`)
-          .send({
-            username: '../../etc/passwd',
-            image: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=='
-          });
-
-      expect(response.status).toBe(500);
-
-      // Restore original function
-      path.resolve = originalResolve;
     });
 
     test('should handle file type detection failure', async () => {
@@ -836,40 +655,19 @@ describe('User Routes', () => {
       expect(response.status).toBe(500);
       expect(response.body).toHaveProperty('error', 'Error uploading profile picture');
     });
-    test('should handle case when profile picture is not found during username update', async () => {
-      // First set a profile picture
-      await User.findOneAndUpdate(
-          { username: mockUser.username },
-          { profilePicture: `images/${mockUser.username}_profile_picture.png` }
-      );
-
-      // Mock existsSync to return false specifically for the profile picture check
-      fs.existsSync.mockReturnValueOnce(false);
-
-      const response = await request(app)
-          .patch(`/api/users/${mockUser.username}`)
-          .set('Authorization', `Bearer ${token}`)
-          .send({ newUsername: 'updatedusername' });
-
-      expect(response.status).toBe(200);
-      expect(response.body).toHaveProperty('message', 'User updated successfully');
-      expect(fs.existsSync).toHaveBeenCalled();
-      // Check that console.error was called with the expected message
-      expect(console.error).toHaveBeenCalledWith("Profile picture not found.");
-    });
   });
 
-  describe('GET /user/profile/picture/:username', () => {
+  describe('GET /user/profile/picture', () => {
     test('should get profile picture URL', async () => {
       // First set a profile picture
       const profilePicture = 'images/testuser_profile_picture.png';
-      await User.findOneAndUpdate(
+      const user = await User.findOneAndUpdate(
           { username: mockUser.username },
           { profilePicture }
       );
 
       const response = await request(app)
-          .get(`/api/user/profile/picture/${mockUser.username}`);
+          .get(`/api/user/profile/picture/${user._id}`);
 
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('profilePicture', profilePicture);
@@ -881,6 +679,149 @@ describe('User Routes', () => {
 
       expect(response.status).toBe(404);
       expect(response.body).toHaveProperty('error', 'User not found');
+    });
+  });
+
+  describe('POST /users/by-ids', () => {
+    const createValidId = () => new mongoose.Types.ObjectId();
+    // Test 1: Debería devolver usuarios encontrados por sus IDs
+    test('debería obtener usuarios por IDs válidos', async () => {
+      // Crear usuarios de prueba
+      const user1 = await User.create({ username: 'Usuario1', role: 'USER', password: 'testPassword' }); //NOSONAR
+      const user2 = await User.create({ username: 'Usuario2', role: 'USER', password: 'testPassword' }); //NOSONAR
+      
+      const userIds = [user1._id.toString(), user2._id.toString()];
+      
+      const response = await request(app)
+        .post('/api/users/by-ids')
+        .send({ users: userIds })
+        .expect(200);
+      
+      expect(response.body).toHaveLength(2);
+      expect(response.body[0]._id).toBe(user1._id.toString());
+      expect(response.body[1]._id).toBe(user2._id.toString());
+    });
+    
+    // Test 2: Debería manejar el caso de IDs inexistentes
+    test('debería manejar IDs que no existen en la base de datos', async () => {
+      const nonExistentId = createValidId().toString();
+      
+      const response = await request(app)
+        .post('/api/users/by-ids')
+        .send({ users: [nonExistentId] })
+        .expect(200);
+      
+      expect(response.body).toHaveLength(0);
+    });
+    
+    // Test 3: Debería devolver un subconjunto de usuarios cuando algunos IDs existen y otros no
+    test('debería devolver solo los usuarios que existen cuando se envían IDs mixtos', async () => {
+      const user = await User.create({ username: 'Usuario1', role: 'USER', password: 'testPassword' }); //NOSONAR
+      
+      const nonExistentId = createValidId().toString();
+      const userIds = [user._id.toString(), nonExistentId];
+      
+      const response = await request(app)
+        .post('/api/users/by-ids')
+        .send({ users: userIds })
+        .expect(200);
+      
+      expect(response.body).toHaveLength(1);
+      expect(response.body[0]._id).toBe(user._id.toString());
+    });
+    
+    // Test 4: Debería devolver error 400 si no se envía un array de usuarios
+    test('debería devolver error 400 si no se proporciona un array de usuarios', async () => {
+      await request(app)
+        .post('/api/users/by-ids')
+        .send({})
+        .expect(400);
+      
+      await request(app)
+        .post('/api/users/by-ids')
+        .send({ users: 'no-es-un-array' })
+        .expect(400);
+    });
+    
+    // Test 5: Debería filtrar IDs no válidos
+    test('debería filtrar IDs no válidos y solo buscar los válidos', async () => {
+      const user = await User.create({ username: 'Usuario1', role: 'USER', password: 'testPassword' }); //NOSONAR
+      
+      const userIds = [user._id.toString(), null, undefined, '', 123];
+      
+      const response = await request(app)
+        .post('/api/users/by-ids')
+        .send({ users: userIds })
+        .expect(200);
+      
+      expect(response.body).toHaveLength(1);
+      expect(response.body[0]._id).toBe(user._id.toString());
+    });
+    
+    // Test 6: Debería manejar errores internos del servidor
+    test('debería devolver un error 500 cuando ocurre una excepción', async () => {
+      // Mock de User.find para que lance un error
+      const originalFind = User.find;
+      User.find = jest.fn().mockImplementation(() => {
+        throw new Error('Error simulado de base de datos');
+      });
+      
+      await request(app)
+        .post('/api/users/by-ids')
+        .send({ users: [createValidId().toString()] })
+        .expect(500);
+      
+      // Restaurar la implementación original
+      User.find = originalFind;
+    });
+  });
+
+  describe('GET /users/id/:id', () => {
+    test('should get user by valid ID', async () => {
+      const user = await User.create({ username: 'Usuario1', role: 'USER', password: 'testPassword' }); //NOSONAR
+      const response = await request(app)
+        .get(`/api/users/id/${user._id}`);
+      
+      expect(response.status).toBe(200);
+      expect(response.body).toHaveProperty('_id', user._id.toString());
+      expect(response.body).toHaveProperty('username', user.username);
+    });
+    
+    test('should return 404 for non-existent user ID', async () => {
+      // ID con formato válido pero que no existe en la BD
+      const nonExistentId = new mongoose.Types.ObjectId();
+      
+      const response = await request(app)
+        .get(`/api/users/id/${nonExistentId}`);
+      
+      expect(response.status).toBe(404);
+      expect(response.body).toHaveProperty('error', 'User not found');
+    });
+    
+    test('should return 404 for invalid ID format', async () => {
+      const response = await request(app)
+        .get('/api/users/id/invalidIdFormat');
+      
+      expect(response.status).toBe(404);
+      expect(response.body).toHaveProperty('error', 'User not found');
+    });
+    
+    test('should handle database errors properly', async () => {
+      const user = await User.create({ username: 'Usuario1', role: 'USER', password: 'testPassword' }); //NOSONAR
+      // Mock para simular un error en la base de datos
+      const originalFindById = User.findById;
+      User.findById = jest.fn().mockImplementation(() => {
+        throw new Error('Database connection error');
+      });
+      
+      const response = await request(app)
+        .get(`/api/users/id/${user._id}`);
+      
+      expect(response.status).toBe(500);
+      expect(response.body).toHaveProperty('error', 'Internal Server Error');
+      
+      // Restaurar la función original
+      User.findById = originalFindById;
     });
   });
 });

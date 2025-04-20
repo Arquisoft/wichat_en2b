@@ -78,7 +78,7 @@ export default function ProfileForm({ username, profilePicture, onSave }) {
             const token = getToken();
             const payload = { newUsername: profileData.username };
 
-            const response = await fetch(`${apiEndpoint}/users/${username}`, {
+            const response = await fetch(`${apiEndpoint}/users`, {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",
@@ -88,11 +88,9 @@ export default function ProfileForm({ username, profilePicture, onSave }) {
             });
 
             const responseData = await response.json();
-            if (responseData.token) {
-                const updatedToken = responseData.token;
+            if (responseData) {
 
                 // Update the cookie with the new token
-                document.cookie = `token=${updatedToken}; path=/; max-age=3600`;
                 setProfileData((prev) => ({ ...prev, username: profileData.username }));
 
                 setSnackbarMessage("Username updated successfully.");
@@ -104,6 +102,7 @@ export default function ProfileForm({ username, profilePicture, onSave }) {
                 // Reload the page to reflect the new username
                 window.location.reload();
             } else {
+                console.error("Error updating username:", error);
                 setSnackbarMessage(responseData.error || "Error updating username");
                 setOpenSnackbar(true);
             }
@@ -157,7 +156,7 @@ export default function ProfileForm({ username, profilePicture, onSave }) {
                 newPassword: profileData.newPassword,
             };
 
-            const response = await fetch(`${apiEndpoint}/users/${username}`, {
+            const response = await fetch(`${apiEndpoint}/users`, {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",
@@ -210,6 +209,7 @@ export default function ProfileForm({ username, profilePicture, onSave }) {
 
             const data = await response.json();
             setQrCodeUrl(data.imageUrl);
+
         } catch (error) {
             console.error("Error configuring 2FA:", error);
             setSnackbarMessage(`Error configuring 2FA: ${error.message}`);
@@ -239,6 +239,7 @@ export default function ProfileForm({ username, profilePicture, onSave }) {
 
             const data = JSON.parse(responseText);
             setAlready2fa(!!data.twoFactorEnabled);
+
         } catch (error) {
             console.error("Error checking 2FA status:", error);
             setSnackbarMessage(`Error checking 2FA: ${error.message}`);

@@ -71,6 +71,8 @@ export default function StatsTab() {
 				}
 				setStatistics(data.stats);
 			} catch (error) {
+				console.error("Error fetching statistics:", error);
+				setError("Failed to fetch statistics. Please try again later.");
 			} finally {
 				setLoading(false);
 			}
@@ -88,7 +90,7 @@ export default function StatsTab() {
 					},
 				  });
 				  const data = await response.json();
-				  console.log("Fetched categories:", data);
+
 				if (Array.isArray(data)) {
 					setCategories(data);
 				}
@@ -153,7 +155,7 @@ export default function StatsTab() {
 	)
 }
 
-function StatCard({ id,title, value }) {
+function StatCard({ id, title, value }) {
 	return (
 		<Grid xs={12} sm={6} md={4}>
 			<Paper id={id} elevation={2} sx={{ p: 2 }}>
@@ -166,6 +168,12 @@ function StatCard({ id,title, value }) {
 			</Paper>
 		</Grid>
 	)
+}
+
+StatCard.propTypes = {
+	id: PropTypes.string,
+	title: PropTypes.string.isRequired,
+	value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired
 }
 
 

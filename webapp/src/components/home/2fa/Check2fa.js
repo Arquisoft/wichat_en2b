@@ -48,7 +48,6 @@ const Check2fa = ( username ) => {
       document.cookie = `token=${data.token}; path=/; max-age=3600`;
       router.push("/"); 
     } catch (err) {
-      console.error("2FA Error:", err.message);
       setError(err.message); // Update state to show error on UI
     } finally {
       setLoading(false);
