@@ -89,17 +89,15 @@ async function configUserAddition(){
 
 async function configGameInfoAddition(){
     try{
-
-
         const data = [{
-            user_id: global.userTestData.username,
+            user_id: global.userTestData._id,
             subject: "science",
             points_gain: 1400,
             number_of_questions: 10,
             number_correct_answers: 10,
             total_time: 50
         }, {
-            user_id: global.userTestData.username,
+            user_id: global.userTestData._id,
             subject: "science",
             points_gain: 1400,
             number_of_questions: 10,
@@ -108,7 +106,6 @@ async function configGameInfoAddition(){
         }];
         global.gameInfoTestData = data;
         if (mongooseDB.connection.readyState === 1) {
-
             const userSchema = require("../../gameservice/game-result-model.js").schema;
             const GameInfo = mongooseDB.model('GameInfo', userSchema);
 
