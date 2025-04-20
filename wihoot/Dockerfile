@@ -15,4 +15,4 @@ COPY ../gameservice ./gameservice
 EXPOSE 8005
 
 # Define the command to run your app
-CMD ["node", "wihoot.js"]
+CMD ["node", "./wihoot/wihoot.js"]

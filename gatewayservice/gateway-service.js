@@ -273,13 +273,13 @@ app.use('/wihoot',
 )
 
 // Proxy for create WebSocket connections
-const socketProxy = createProxyMiddleware('/socket.io', {
-    target: 'http://wihootservice:8005', // URL interna del servicio Wihoot
+app.get((req, res, next) => {
+  createProxyMiddleware('/socket.io', {
+    target: serviceUrls.wihoot, // URL interna del servicio Wihoot
     ws: true, // importante: habilitar WebSockets
     changeOrigin: true
+  })(req, res, next);
 });
-
-app.use(socketProxy);
 
 app.post('/wihoot/create',(req, res) => {
     forwardRequest('wihoot', '/wihoot/create', req, res)
