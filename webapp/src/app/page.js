@@ -10,9 +10,11 @@ import "../styles/globals.css";
 import "../styles/Page.css";
 
 /**
- * Main Page component that dynamically renders based on login status.
- *
- * @returns {JSX.Element} The rendered Page component.
+ * This is the main page of the application.
+ * It renders the HomePage component.
+ * It is wrapped in a Box component to apply styles from the CSS file.
+ * 
+ * @returns {JSX.Element}
  */
 export default function Page() {
     const router = useRouter();

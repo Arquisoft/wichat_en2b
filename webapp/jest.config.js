@@ -3,6 +3,7 @@ module.exports = {
   collectCoverage: true,
   coverageDirectory: "coverage",
   coverageReporters: ["text", "lcov"],
+  verbose: true,
   projects: [
     {
       displayName: 'unit',

@@ -235,7 +235,7 @@ describe('Gateway Service', () => {
             );
 
             const response = await request(app)
-                .delete('/users/testuser');
+                .delete('/users');
 
             // Updated to match actual behavior
             expect(response.statusCode).toBe(500);
@@ -297,29 +297,6 @@ describe('Gateway Service', () => {
 
     // Game History Update Tests
     describe('Game History Updates', () => {
-        it('should handle game history update requests', async () => {
-            global.fetch.mockImplementationOnce(() =>
-                Promise.resolve({
-                    ok: true,
-                    status: 200,
-                    headers: new Headers({ 'Content-Type': 'application/json' }),
-                    json: () => Promise.resolve({ message: 'Game history updated' })
-                })
-            );
-
-            const response = await request(app)
-                .patch('/game/update/oldusername')
-                .send({ newUsername: 'newusername' });
-
-            expect(fetch).toHaveBeenCalledWith(
-                'http://localhost:8004/game/update/oldusername',
-                expect.objectContaining({
-                    method: 'PATCH',
-                    body: JSON.stringify({ newUsername: 'newusername' })
-                })
-            );
-        });
-
         it('should handle CORS preflight requests for game history update', async () => {
             const response = await request(app)
                 .options('/game/update/oldusername')

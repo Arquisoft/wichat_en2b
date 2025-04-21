@@ -1,9 +1,7 @@
 import { NextResponse } from "next/server";
 
-export async function middleware(request) {
-  console.log("Middleware running for:", request.nextUrl.pathname);
+export function middleware(request) {
   const token = request.cookies.get("token")?.value;
-  console.log("Token:", token);
 
   const currentPath = request.nextUrl.pathname;
   const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://localhost:8000';
