@@ -4,11 +4,6 @@ import { PlayArrow as PlayIcon } from "@mui/icons-material";
 import Navbar from "./ui/Navbar";
 import "../../styles/home/IntroHomePage.css";
 
-/**
- * Displays the introductory home view for anonymous users.
- * 
- * @returns {JSX.Element} The rendered component.
- */
 function IntroHomePage() {
     const [openDialog, setOpenDialog] = useState(false);
     const currentYear = new Date().getFullYear();
@@ -49,7 +44,6 @@ function IntroHomePage() {
                         Connect, Learn, and Play with engaging quizzes!
                     </Typography>
 
-                    {/* Large Play Button */}
                     <Button
                         variant="contained"
                         color="primary"
@@ -61,12 +55,13 @@ function IntroHomePage() {
                             py: 2,
                             borderRadius: "50px",
                             boxShadow: "0px 4px 10px rgba(0,0,0,0.3)",
-                            backgroundColor: "#7d3cff", // Purple color
+                            backgroundColor: "#7d3cff",
                             "&:hover": {
-                                backgroundColor: "#6c2eb5", // Darker purple on hover
+                                backgroundColor: "#6c2eb5",
                             },
                         }}
                         onClick={handlePlayClick}
+                        data-testid="play-now-button"
                     >
                         Play Now
                     </Button>
@@ -74,10 +69,24 @@ function IntroHomePage() {
 
                 {/* Call-to-Action Section */}
                 <Box display="flex" justifyContent="center" gap={2} sx={{ mt: 6 }}>
-                    <Button variant="outlined" color="primary" size="large" onClick={handleLogin} sx={{ borderColor: "#7d3cff", color: "#7d3cff" }}>
+                    <Button
+                        variant="outlined"
+                        color="primary"
+                        size="large"
+                        onClick={handleLogin}
+                        sx={{ borderColor: "#7d3cff", color: "#7d3cff" }}
+                        data-testid="cta-login-button"
+                    >
                         Login
                     </Button>
-                    <Button variant="outlined" color="secondary" size="large" onClick={handleRegister} sx={{ borderColor: "#7d3cff", color: "#7d3cff" }}>
+                    <Button
+                        variant="outlined"
+                        color="secondary"
+                        size="large"
+                        onClick={handleRegister}
+                        sx={{ borderColor: "#7d3cff", color: "#7d3cff" }}
+                        data-testid="cta-register-button"
+                    >
                         Register
                     </Button>
                 </Box>
@@ -92,13 +101,25 @@ function IntroHomePage() {
                     You are about to play anonymously. Would you like to log in or register for a better experience?
                 </DialogContent>
                 <DialogActions sx={{ padding: "1rem", justifyContent: "space-between" }}>
-                    <Button onClick={handlePlayNow} sx={{ backgroundColor: "#7d3cff", color: "white", "&:hover": { backgroundColor: "#6c2eb5" } }}>
+                    <Button
+                        onClick={handlePlayNow}
+                        sx={{ backgroundColor: "#7d3cff", color: "white", "&:hover": { backgroundColor: "#6c2eb5" } }}
+                        data-testid="dialog-play-guest-button"
+                    >
                         Play as Guest
                     </Button>
-                    <Button onClick={handleLogin} sx={{ backgroundColor: "#7d3cff", color: "white", "&:hover": { backgroundColor: "#6c2eb5" } }}>
+                    <Button
+                        onClick={handleLogin}
+                        sx={{ backgroundColor: "#7d3cff", color: "white", "&:hover": { backgroundColor: "#6c2eb5" } }}
+                        data-testid="dialog-login-button"
+                    >
                         Login
                     </Button>
-                    <Button onClick={handleRegister} sx={{ backgroundColor: "#7d3cff", color: "white", "&:hover": { backgroundColor: "#6c2eb5" } }}>
+                    <Button
+                        onClick={handleRegister}
+                        sx={{ backgroundColor: "#7d3cff", color: "white", "&:hover": { backgroundColor: "#6c2eb5" } }}
+                        data-testid="dialog-register-button"
+                    >
                         Register
                     </Button>
                 </DialogActions>
@@ -107,7 +128,7 @@ function IntroHomePage() {
             {/* Footer */}
             <div className="footer-container">
                 <footer className={`footer`} style={{ backgroundColor: "#333", color: "white", padding: "1rem", textAlign: "center" }}>
-                    &copy; {currentYear} WiChat. All rights reserved.
+                    © {currentYear} WiChat. All rights reserved.
                 </footer>
             </div>
         </Box>
