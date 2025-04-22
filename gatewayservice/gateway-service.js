@@ -208,7 +208,7 @@ app.get('/question/internal/:id', (req, res) =>
     forwardRequest('game', `/question/internal/${req.params.id}`, req, res)
 );
 // Statistics Routes
-['/statistics/subject/:subject', '/statistics/global', '/leaderboard'].forEach(route => {
+['/statistics/subject/:subject', '/statistics/global', '/leaderboard', '/statistics/recent-quizzes'].forEach(route => {
   app.use(route, publicCors);
   app.get(route, async (req, res) => {
     // Extract the error message before the try block

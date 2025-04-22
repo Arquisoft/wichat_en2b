@@ -65,6 +65,19 @@ router.get('/statistics/global', verifyToken, async (req, res) => {
     }
 });
 
+router.get('/statistics/recent-quizzes', verifyToken, async (req, res) => {
+    try {
+        const recentQuizzes = await GameInfo.find({ user_id: req.user._id })
+            .sort({ createdAt: -1 })
+            .limit(5);
+
+        res.json({ recentQuizzes });
+    } catch (error) {
+        console.error('Error retrieving recent quizzes:', error);
+        res.status(500).json({ error: 'Error retrieving recent quizzes' });
+    }
+})
+
 // leaderboard
 router.get('/leaderboard', verifyToken, async (req, res) => {
     try {

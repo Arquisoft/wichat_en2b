@@ -14,6 +14,12 @@ import {
 	Select,
 	MenuItem,
 	Box,
+	Table,
+	TableBody,
+	TableCell,
+	TableContainer,
+	TableHead,
+	TableRow,
 } from "@mui/material"
 import "../../../styles/home/StatsTab.css"
 import { fetchWithAuth } from "@/utils/api-fetch-auth";
@@ -57,8 +63,7 @@ export default function StatsTab() {
 	const [error, setError] = useState(null)
 	const [selectedSubject, setSelectedSubject] = useState("all")
 	const [categories, setCategories] = useState([]);
-
-	const isDesktop = window.innerWidth >= 960
+	const [recentQuizzes, setRecentQuizzes] = useState([]);
 
 	useEffect(() => {
 		const fetchStatistics = async () => {
@@ -105,6 +110,20 @@ export default function StatsTab() {
 
 		fetchCategories();
 	}, []);
+
+	useEffect(() => {
+		const fetchRecentQuizzes = async () => {
+			try {
+				const data = await fetchWithAuth('/statistics/recent-quizzes');
+				setRecentQuizzes(data.recentQuizzes || []);
+			} catch (error) {
+				console.error("Error fetching recent quizzes:", error);
+			}
+		};
+
+		fetchRecentQuizzes();
+	}, []);
+
 	const handleSubjectChange = (event) => {
 		setSelectedSubject(event.target.value);
 	}
@@ -142,7 +161,7 @@ export default function StatsTab() {
 						legend: {
 							direction: 'row',
 							position: { vertical: 'bottom', horizontal: 'middle' },
-							padding: 20,
+							padding: 0,
 							itemMarkWidth: 20,
 							itemMarkHeight: 20,
 							markGap: 8,
@@ -348,16 +367,18 @@ export default function StatsTab() {
 									</TableRow>
 								</TableHead>
 								<TableBody>
-									<TableRow>
-										<TableCell>Math</TableCell>
-										<TableCell align="right">240</TableCell>
-										<TableCell align="right">10</TableCell>
-										<TableCell align="right">5</TableCell>
-										<TableCell align="right">
-											5
-										</TableCell>
-										<TableCell align="right">60 s</TableCell>
-									</TableRow>
+									{recentQuizzes?.map((quiz, index) => (
+										<TableRow key={index}>
+											<TableCell>{quiz.subject}</TableCell>
+											<TableCell align="right">{quiz.points_gain}</TableCell>
+											<TableCell align="right">{quiz.number_of_questions}</TableCell>
+											<TableCell align="right">{quiz.number_correct_answers}</TableCell>
+											<TableCell align="right">
+												{quiz.number_of_questions - quiz.number_correct_answers}
+											</TableCell>
+											<TableCell align="right">{`${quiz.total_time.toFixed(1)}s`}</TableCell>
+										</TableRow>
+									))}
 								</TableBody>
 							</Table>
 						</TableContainer>
