@@ -121,6 +121,7 @@ function CategoryComponent() {
         numberOptions: quiz.options, 
         timerDuration:  quiz.timeEstimate, 
         question: quiz.question,
+        fetchQuestionsURL: `/game/${quiz.wikidataCode}/${quiz.questions}/${quiz.options}`,
       });
       setShowQuiz(true);  
     };

@@ -6,143 +6,159 @@
     font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   }
   
-  body {
-    background-color: #f5f7fa;
-    color: #333;
-    line-height: 1.6;
+body {
+  background-color: #f5f7fa;
+  color: #333;
+  line-height: 1.6;
+}
+
+.app-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 30px;
+  color: #2c3e50;
+}
+
+/* Quiz Customizer Form */
+.quiz-customizer {
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 25px;
+  margin-bottom: 20px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+input[type="text"],
+input[type="number"],
+select {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 16px;
+  transition: border-color 0.3s;
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+select:focus {
+  border-color: #3498db;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+}
+
+.category-selection {
+  position: relative;
+}
+
+.new-category {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.radio-group {
+  display: flex;
+  gap: 20px;
+  margin-top: 10px;
+}
+
+.radio-label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.radio-label input {
+  margin-right: 8px;
+}
+
+.button {
+  position: relative;
+  background: linear-gradient(to right, #8a2be2, #d147a3);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 20px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+  overflow: hidden;
+  z-index: 1;
+  margin-bottom: 1rem;
+}
+
+.button::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to right, #7726c4, #a53981);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: -1;
+}
+
+.button:hover::after {
+  opacity: 1;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
   }
-  
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
   .app-container {
-    max-width: 800px;
-    margin: 0 auto;
+    padding: 15px;
+  }
+
+  .quiz-customizer {
     padding: 20px;
   }
-  
+
   h1 {
-    text-align: center;
-    margin-bottom: 30px;
-    color: #2c3e50;
+    font-size: 24px;
   }
-  
-  /* Quiz Customizer Form */
-  .quiz-customizer {
-    background-color: white;
-    border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    padding: 25px;
-    margin-bottom: 20px;
-  }
-  
-  .form-group {
-    margin-bottom: 20px;
-  }
-  
-  label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: 600;
-    color: #2c3e50;
-  }
-  
-  input[type="text"],
-  input[type="number"],
-  select {
-    width: 100%;
-    padding: 12px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    font-size: 16px;
-    transition: border-color 0.3s;
-  }
-  
-  input[type="text"]:focus,
-  input[type="number"]:focus,
-  select:focus {
-    border-color: #3498db;
-    outline: none;
-    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
-  }
-  
-  .category-selection {
-    position: relative;
-  }
-  
-  .new-category {
-    animation: fadeIn 0.3s ease-in-out;
-  }
-  
+}
+
+@media (max-width: 480px) {
   .radio-group {
-    display: flex;
-    gap: 20px;
-    margin-top: 10px;
+    flex-direction: column;
+    gap: 10px;
   }
-  
-  .radio-label {
-    display: flex;
-    align-items: center;
-    cursor: pointer;
-  }
-  
-  .radio-label input {
-    margin-right: 8px;
-  }
-  
+
   .submit-btn {
-    background-color: linear-gradient(to right,#8a2be2,#d147a3);
-    color: white;
-    border: none;
-    border-radius: 5px;
-    padding: 12px 20px;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    width: 100%;
-    transition: background-color 0.3s;
+    padding: 10px;
   }
-  
-  .submit-btn:hover {
-    background-color: linear-gradient(to right,#7726c4,#a53981);
+
+  .form-group {
+    margin-bottom: 15px;
   }
-  
-  /* Animations */
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-      transform: translateY(-10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-  
-  /* Responsive Design */
-  @media (max-width: 768px) {
-    .app-container {
-      padding: 15px;
-    }
-  
-    .quiz-customizer {
-      padding: 20px;
-    }
-  
-    h1 {
-      font-size: 24px;
-    }
-  }
-  
-  @media (max-width: 480px) {
-    .radio-group {
-      flex-direction: column;
-      gap: 10px;
-    }
-  
-    .submit-btn {
-      padding: 10px;
-    }
-  
-    .form-group {
-      margin-bottom: 15px;
-    }
-  }
+}
   

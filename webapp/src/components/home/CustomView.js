@@ -1,9 +1,11 @@
 import React from "react"
 import "../../styles/home/CustomView.css"
+import { useRouter } from "next/navigation";
 
 const { useState, useEffect } = React
 
 function CustomQuiz() {
+    const router = useRouter();
     const [categories, setCategories] = useState([])
     const [selectedCategory, setSelectedCategory] = useState("")
     const [newCategory, setNewCategory] = useState("")
@@ -11,25 +13,21 @@ function CustomQuiz() {
     const [numberOfQuestions, setNumberOfQuestions] = useState(10)
     const [gameMode, setGameMode] = useState("singleplayer")
     const [showNewCategoryInput, setShowNewCategoryInput] = useState(false)
+    const [numberOfAnswers, setNumberOfAnswers] = useState(4);
   
     useEffect(() => {
       // Fetch categories from the server
-        setCategories(["Custom"]);
+        setCategories(["Patata", "Geografía"]);
+        setSelectedCategory("custom");
     }, [])
   
     const handleSubmit = (e) => {
       e.preventDefault()
   
-      const quizConfig = {
-        category: showNewCategoryInput ? newCategory : selectedCategory,
-        timePerQuestion,
-        numberOfQuestions,
-        gameMode,
-      }
+      const category = showNewCategoryInput ? newCategory : selectedCategory
+      
   
       console.log("Quiz configuration:", quizConfig)
-      // Here you would typically send this data to your backend or start the quiz
-      alert("Quiz configuration saved! Ready to start the quiz.")
     }
   
     return (
@@ -45,7 +43,7 @@ function CustomQuiz() {
                 onChange={(e) => setSelectedCategory(e.target.value)}
                 disabled={showNewCategoryInput}
               >
-                <option value="custom">+ Add New Category</option>
+                <option value="custom">Custom category</option>
                 {categories.map((category, index) => (
                   <option key={index} value={category}>
                     {category}
@@ -66,6 +64,7 @@ function CustomQuiz() {
                 placeholder="Enter a new category"
                 required
               />
+            <p>⚠️ Disclaimer: these quizes will be AI generated so they will not contain images and will take some time!</p>
             </div>
           )}
   
@@ -92,6 +91,18 @@ function CustomQuiz() {
               onChange={(e) => setNumberOfQuestions(Number.parseInt(e.target.value))}
             />
           </div>
+
+          <div className="form-group">
+            <label htmlFor="number-of-answers">Number of answers per question:</label>
+            <input
+              type="number"
+              id="number-of-answers"
+              min="2"
+              max="10"
+              value={numberOfAnswers}
+              onChange={(e) => setNumberOfAnswers(Number.parseInt(e.target.value))}
+            />
+          </div>
   
           <div className="form-group">
             <label>Game Mode:</label>
@@ -113,16 +124,27 @@ function CustomQuiz() {
                   value="vsAI"
                   checked={gameMode === "vsAI"}
                   onChange={() => setGameMode("vsAI")}
+                  disabled
                 />
-                <span>Against AI</span>
+                <span>Against AI (Coming soon...)</span>
               </label>
             </div>
           </div>
   
-          <button type="submit" className="submit-btn">
+          <button type="submit" className="button">
             Start Quiz
           </button>
         </form>
+
+        <form>
+          <button
+            onClick={() => {router.push("/")}}
+            className="button"
+          >
+            Back
+          </button>
+        </form>
+
       </div>
     )
   }
