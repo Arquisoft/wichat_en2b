@@ -13,7 +13,13 @@ import {
 	InputLabel,
 	Select,
 	MenuItem,
-	Box
+	Box,
+	Table,
+	TableBody,
+	TableCell,
+	TableContainer,
+	TableHead,
+	TableRow,
 } from "@mui/material"
 import "../../../styles/home/StatsTab.css"
 import { fetchWithAuth } from "@/utils/api-fetch-auth";
@@ -147,7 +153,7 @@ export default function StatsTab() {
 							itemGap: 20,
 						},
 					}}
-					margin={{ top: 10, bottom: 50, left: 0, right: 0 }}
+					margin={{ top: 10, bottom: 70, left: 0, right: 0 }}
 					width={400}
 					height={280}
 				/>
@@ -166,7 +172,7 @@ export default function StatsTab() {
 		}
 		let arcColor = "#e6296f" // Red for low accuracy
 		if (accuracy >= 70)
-			arcColor = "#178ee4" // Green for high accuracy
+			arcColor = "#178ee4" // Blue for high accuracy
 		else if (accuracy >= 40) arcColor = "#f5a623" // Yellow for medium accuracy
 		return (
 			<Box sx={{ display: 'flex',
@@ -174,7 +180,7 @@ export default function StatsTab() {
 				alignItems: 'center',
 				justifyContent: 'center',
 				width: "100%",
-				mt: 1,
+				mt: 3,
 			}}>
 				<Gauge
 					{...settings}
@@ -296,7 +302,7 @@ export default function StatsTab() {
 										boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
 									}}
 								>
-									<Typography variant="subtitle1" sx={{ mb: 1, fontWeight: "medium" }}>
+									<Typography variant="subtitle1" sx={{ mb: 1, fontWeight: "bold" }}>
 										Answer Distribution
 									</Typography>
 									<Box sx={{
@@ -315,8 +321,51 @@ export default function StatsTab() {
 									</Box>
 								</Paper>
 							</Box>
-						</Box>
-					)}
+						</Box>)}
+						{/* Recent quizzes table */}
+						<Paper
+							elevation={1}
+							sx={{
+							mt: 2,
+							borderRadius: 2,
+								transition: "all 0.2s",
+								"&:hover": {
+									transform: "translateY(-3px)",
+									boxShadow: 3,
+								},
+							overflow: 'hidden'
+						}}
+						>
+						<Typography variant="subtitle1" sx={{ p: 2, fontWeight: "bold", borderBottom: 1, borderColor: 'divider' }}>
+							Recent Quizzes
+						</Typography>
+						<TableContainer>
+							<Table size="small" aria-label="recent quizzes table">
+								<TableHead>
+									<TableRow>
+										<TableCell>Subject</TableCell>
+										<TableCell align="right">Points</TableCell>
+										<TableCell align="right">Questions</TableCell>
+										<TableCell align="right">Correct</TableCell>
+										<TableCell align="right">Wrong</TableCell>
+										<TableCell align="right">Time</TableCell>
+									</TableRow>
+								</TableHead>
+								<TableBody>
+									<TableRow>
+										<TableCell>Math</TableCell>
+										<TableCell align="right">240</TableCell>
+										<TableCell align="right">10</TableCell>
+										<TableCell align="right">5</TableCell>
+										<TableCell align="right">
+											5
+										</TableCell>
+										<TableCell align="right">60 s</TableCell>
+									</TableRow>
+								</TableBody>
+							</Table>
+						</TableContainer>
+					</Paper>
 				</LoadingErrorHandler>
 			</CardContent>
 		</Card>
