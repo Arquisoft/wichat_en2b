@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import PropTypes from "prop-types";
 import { AppBar, Toolbar, Avatar, IconButton, Button, Box, Typography, Dialog } from "@mui/material";
-import { Logout as LogoutIcon, Person as PersonIcon } from "@mui/icons-material";
+import { Logout as LogoutIcon, Person as PersonIcon} from "@mui/icons-material";
 import { useRouter } from "next/navigation"; // Import useRouter for navigation
 import "../../../styles/home/Navbar.css";
 import ProfileForm from "./ProfileForm";
@@ -13,12 +13,11 @@ const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://local
 /**
  * Navigation bar for the application.
  *
- * @param {string} username - The username of the player.
+ * @param {string} username - The id of the player.
  *
  * @returns {JSX.Element} The rendered Navbar component.
  */
 const Navbar = ({ username = "Guest", profilePicture }) => {
-  console.log("Navbar component rendered with profilePicture:", profilePicture);
   if (!username || username === "") {
     username = "Guest"; 
   }
@@ -62,7 +61,7 @@ const Navbar = ({ username = "Guest", profilePicture }) => {
           </Box>
 
           <Box className="spacer" />
-
+      
           {/* Profile button */}
           <Box className="user-section">
             <Button

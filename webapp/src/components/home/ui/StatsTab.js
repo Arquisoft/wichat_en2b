@@ -14,12 +14,6 @@ import {
 	Select,
 	MenuItem,
 	Box,
-	Table,
-	TableBody,
-	TableCell,
-	TableContainer,
-	TableHead,
-	TableRow,
 } from "@mui/material"
 import "../../../styles/home/StatsTab.css"
 import { fetchWithAuth } from "@/utils/api-fetch-auth";
@@ -81,6 +75,8 @@ export default function StatsTab() {
 				}
 				setStatistics(data.stats);
 			} catch (error) {
+				console.error("Error fetching statistics:", error);
+				setError("Failed to fetch statistics. Please try again later.");
 			} finally {
 				setLoading(false);
 			}
@@ -96,9 +92,9 @@ export default function StatsTab() {
 					headers: {
 						"Content-Type": "application/json",
 					},
-				});
-				const data = await response.json();
-				console.log("Fetched categories:", data);
+				  });
+				  const data = await response.json();
+
 				if (Array.isArray(data)) {
 					setCategories(data);
 				}
@@ -368,11 +364,12 @@ export default function StatsTab() {
 					</Paper>
 				</LoadingErrorHandler>
 			</CardContent>
+
 		</Card>
 	)
 }
 
-function StatCard({ id,title, value }) {
+function StatCard({ id, title, value }) {
 	return (
 		<Grid item xs={12} sm={6}>
 			<Paper id={id} elevation={2} sx={{
@@ -399,6 +396,12 @@ function StatCard({ id,title, value }) {
 			</Paper>
 		</Grid>
 	)
+}
+
+StatCard.propTypes = {
+	id: PropTypes.string,
+	title: PropTypes.string.isRequired,
+	value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired
 }
 
 
