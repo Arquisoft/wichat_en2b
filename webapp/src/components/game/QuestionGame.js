@@ -7,7 +7,6 @@ import FinishGame from "@/components/game/FinishGame";
 const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://localhost:8000';
 
 export default function QuestionGame(params) {
-    console.log("aaaaa", params);
     const { topic, subject, totalQuestions, numberOptions, timerDuration, question, fetchQuestionsURL } = params;
     const [correctAnswer, setCorrectAnswer] = useState(null);
     const [currentQuestion, setCurrentQuestion] = useState(0);

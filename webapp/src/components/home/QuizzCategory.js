@@ -24,7 +24,7 @@ function CategoryComponent() {
 
     const router = useRouter();
     const { id } = router.query;
-
+    console.log("Id: ", id);
     useEffect(() => {
       if (!id) return;
       setLoading(true);
@@ -127,6 +127,7 @@ function CategoryComponent() {
     };
 
     if (showQuiz) {
+      console.log("Pepe: ", quizData)
       return <QuestionGame {...quizData} />; 
     }
     
