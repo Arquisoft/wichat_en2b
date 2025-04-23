@@ -84,7 +84,8 @@ export default function CreateGame() {
                         "Authorization": `Bearer ${token}`,
                     },
                     body: JSON.stringify({
-                        quizData: quizResponse,
+                        quizData: quizResponse,  //constains the questions and answers
+                        quizMetaData: quizRequested, //contains quiz question, time estimated, ...
                         hostId,
                         hostUsername
                     })

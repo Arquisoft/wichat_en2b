@@ -6,7 +6,7 @@ const { io } = require("../socket/socketHandler")
 // Create a new shared quiz session
 router.post("/create", async (req, res) => {
     try {
-        const { quizData, hostId, hostUsername } = req.body
+        const { quizData, quizMetaData, hostId, hostUsername } = req.body
 
         if (!quizData || !hostId || !hostUsername) {
             return res.status(400).json({ error: "Missing required fields" })
@@ -27,6 +27,7 @@ router.post("/create", async (req, res) => {
         const session = new SharedQuizSession({
             code,
             quizData,
+            quizMetaData,
             hostId,
             players: [], // Host doesn't play
         })
@@ -50,8 +51,11 @@ router.get('/internal/quizdata/:code', async (req, res) => {
         if (!session) {
             return res.status(404).json({ error: 'Session not found' });
         } else {
-            const quizData = session.quizData;
-            res.status(200).json(quizData);
+            const quiz = {
+                quizData: session.quizData,
+                quizMetaData: session.quizMetaData
+            };
+            res.status(200).json(quiz);
         }
     } catch (error){
         res.status(500).json({ error: 'Error retrieving quiz data' });

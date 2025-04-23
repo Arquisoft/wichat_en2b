@@ -70,26 +70,22 @@ export default function JoinGame() {
                 .find((row) => row.startsWith("token="))
                 ?.split("=")[1]
 
-            const headers = {
-                "Content-Type": "application/json"
-            };
-
-            // Only add Authorization if authenticated and token exists
-            if (isAuthenticated && token) {
-                headers.Authorization = `Bearer ${token}`;
-            }
-
-            const response = await axios.post(`${apiEndpoint}/shared-quiz/${gameCode}/join`,
-            { playerName: playerName, isGuest: !isAuthenticated },
-            { headers }
-            );
+            const response = await axios.post(`${apiEndpoint}/shared-quiz/${gameCode}/join`, {
+                data: {
+                    playerName: playerName, isGuest: !isAuthenticated, playerId: token
+                },
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`,
+                }
+            });
 
             if (response.status === 200) {
                 router.push({
                     pathname: "/wihoot/play",
                     query: {
                         code: gameCode,
-                        playerName: playerName,
+                        playerId: playerId,
                     },
                 })
             } else {
@@ -98,7 +94,7 @@ export default function JoinGame() {
                 setIsJoining(false)
             }
         } catch (error) {
-            console.error("Error joining game:", error)
+            console.error("Error joining game")
             setErrorMessage(error.response?.data?.error || "An error occurred while joining the game")
             setIsLoading(false)
             setIsJoining(false)

@@ -1,9 +1,10 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import React, { useState, useEffect } from "react"
 import { useRouter } from "next/router"
 import { fetchWithAuth } from "../../../utils/api-fetch-auth"
 import io from "socket.io-client"
+import {Alert} from "@mui/material";
 
 const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://localhost:8000';
 
@@ -18,7 +19,10 @@ export default function PlayerView() {
     const [players, setPlayers] = useState([])
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(-1)
     const [quiz, setQuiz] = useState(null)
+    const [quizMetadata, setQuizMetadata] = useState(null)
     const [selectedOption, setSelectedOption] = useState(null)
+    const [isCorrect, setIsCorrect] = useState(false)
+    const [correctAnswer, setCorrectAnswer] = useState(null)
     const [hasAnswered, setHasAnswered] = useState(false)
     const [startTime, setStartTime] = useState(null)
     const [error, setError] = useState("")
@@ -79,13 +83,14 @@ export default function PlayerView() {
         }
 
         const fetchQuizData = async (sessionData) => {
-            if (!sessionData || !sessionData.quizId) return
+            if (!sessionData) return
 
             try {
-                const response = await fetchWithAuth(`/quiz?id=${sessionData.quizId}`)
+                const response = await fetchWithAuth(`/internal/quizdata/${code}`)
                 if (response.ok) {
-                    const quizData = await response.json()
-                    setQuiz(quizData)
+                    const quiz = await response.json()
+                    setQuiz(quiz.quizData)
+                    setQuizMetadata(quiz.metadata)
                 } else {
                     throw new Error("Failed to fetch quiz data")
                 }
@@ -187,11 +192,10 @@ export default function PlayerView() {
     }, [code, playerId, username, isGuest])
 
     const getCurrentQuestion = () => {
-        if (!quiz || currentQuestionIndex < 0 || currentQuestionIndex >= quiz.questions.length) {
+        if (!quiz || currentQuestionIndex < 0 || currentQuestionIndex >= quiz.length) {
             return null
         }
-
-        return quiz.questions[currentQuestionIndex]
+        return quiz[currentQuestionIndex]
     }
 
     const handleAnswerSubmit = async (optionIndex) => {
@@ -204,13 +208,18 @@ export default function PlayerView() {
         setHasAnswered(true)
 
         const timeToAnswer = Date.now() - startTime
-        const isCorrect =  await fetch(`${apiEndpoint}/question/validate`, {
+        const validateOutput =  await fetch(`${apiEndpoint}/question/validate`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({question_id: currentQuestion.question_id, selected_answer: answerIndex}),
+            body: JSON.stringify({
+                question_id: currentQuestion.question_id,
+                selected_answer: currentQuestion.answers[optionIndex]
+            }),
         });
+        setIsCorrect(validateOutput.isCorrect);
+        setCorrectAnswer(validateOutput.correctAnswer);
         try {
             await fetchWithAuth(`/shared-quiz/${code}/answer`, {
                 method: "POST",
@@ -223,6 +232,7 @@ export default function PlayerView() {
                     answerId: optionIndex,
                     isCorrect,
                     timeToAnswer,
+                    numberOfQuestions: currentQuestion.answers.length
                 }),
             })
         } catch (err) {
@@ -275,6 +285,18 @@ export default function PlayerView() {
         return (
             <div className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
                 <div className="mb-6">
+
+                    {isCorrect && (
+                        <Alert id='message-success'severity="success" className="alert-box">
+                            Great job! You got it right!
+                        </Alert>
+                    )}
+                    {!isCorrect && (
+                        <Alert id='message-fail' severity="error" className="alert-box">
+                            Oops! You didn't guess this one.
+                        </Alert>
+                    )}
+
                     <div className="flex justify-between items-center mb-4">
                         <h2 className="text-2xl font-bold">Question {currentQuestionIndex + 1}</h2>
                         <div className="text-right">
@@ -283,50 +305,32 @@ export default function PlayerView() {
                         </div>
                     </div>
 
-                    <div className="bg-gray-100 p-4 rounded mb-6">
-                        <p className="text-lg font-medium mb-4">{currentQuestion.question}</p>
+                    <h2 id='title-question' className="question-title">{quizMetadata.quizName}</h2>
+
+                    <div className="image-box">
+                        <img
+                            src={`${apiEndpoint}${currentQuestion.image_name}`}
+                            alt="Question"
+                            className="quiz-image"
+                        />
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {currentQuestion.options.map((option, index) => (
+                        {currentQuestion.answers.map((option, index) => (
                             <button
                                 key={index}
                                 onClick={() => handleAnswerSubmit(index)}
                                 disabled={hasAnswered}
-                                className={`p-4 rounded text-left transition-colors ${
-                                    hasAnswered && selectedOption === index
-                                        ? selectedOption === currentQuestion.correctOptionIndex
-                                            ? "bg-green-100 border-green-500 border-2"
-                                            : "bg-red-100 border-red-500 border-2"
-                                        : hasAnswered && index === currentQuestion.correctOptionIndex
-                                            ? "bg-green-100 border-green-500 border-2"
-                                            : hasAnswered
-                                                ? "bg-gray-100 border-gray-300 border opacity-70"
-                                                : "bg-white border-gray-300 border hover:bg-gray-50"
-                                }`}
+                                className={`quiz-option 
+                                ${selectedOption === option ? "selected" : ""} 
+                                ${selectedOption === option && isCorrect ? "correct-answer" : ""}
+                                ${!isCorrect && correctAnswer === option ? "correct-answer" : ""}`}
+                                {option}
                             >
-                                <span className="font-medium">{option}</span>
-                                {hasAnswered && index === currentQuestion.correctOptionIndex && (
-                                    <span className="ml-2 text-green-600">✓</span>
-                                )}
-                                {hasAnswered && selectedOption === index && index !== currentQuestion.correctOptionIndex && (
-                                    <span className="ml-2 text-red-600">✗</span>
-                                )}
                             </button>
                         ))}
                     </div>
                 </div>
-
-                {hasAnswered && (
-                    <div className="text-center">
-                        <p className="text-lg">
-                            {selectedOption === currentQuestion.correctOptionIndex
-                                ? "✅ Correct! Well done!"
-                                : "❌ Incorrect. Better luck on the next question!"}
-                        </p>
-                        <p className="text-gray-500 mt-2">Waiting for the host to move to the next question...</p>
-                    </div>
-                )}
             </div>
         )
     }

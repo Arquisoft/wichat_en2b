@@ -24,6 +24,7 @@ const sharedQuizSessionSchema = new mongoose.Schema(
             index: true,
         },
         quizData: [],
+        quizMetadata: [],
         hostId: { type: String, required: true },
         status: {
             type: String,

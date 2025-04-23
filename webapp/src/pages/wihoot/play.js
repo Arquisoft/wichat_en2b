@@ -4,7 +4,7 @@ import { useRouter } from 'next/router';
 const WihootPlay= () => {
     const router = useRouter();
 
-    const { code, playerName } = router.query;
+    const { code, playerId } = router.query;
 
     return (<PlayerView />)
 }
