@@ -5,6 +5,8 @@ import { useRouter } from "next/router"
 import { fetchWithAuth } from "../../../utils/api-fetch-auth"
 import io from "socket.io-client"
 
+const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://localhost:8000';
+
 export default function PlayerView() {
     const router = useRouter()
     const { code, playerId } = router.query
@@ -202,8 +204,13 @@ export default function PlayerView() {
         setHasAnswered(true)
 
         const timeToAnswer = Date.now() - startTime
-        const isCorrect = optionIndex === currentQuestion.correctOptionIndex
-
+        const isCorrect =  await fetch(`${apiEndpoint}/question/validate`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({question_id: currentQuestion.question_id, selected_answer: answerIndex}),
+        });
         try {
             await fetchWithAuth(`/shared-quiz/${code}/answer`, {
                 method: "POST",
@@ -212,7 +219,7 @@ export default function PlayerView() {
                 },
                 body: JSON.stringify({
                     playerId,
-                    questionId: currentQuestion.id,
+                    questionId: currentQuestion.question_id,
                     answerId: optionIndex,
                     isCorrect,
                     timeToAnswer,

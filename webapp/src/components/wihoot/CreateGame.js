@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/router"
 import { fetchWithAuth } from "../../utils/api-fetch-auth"
+import axios from "axios";
 
 const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://localhost:8000';
 
@@ -11,6 +12,7 @@ export default function CreateGame() {
     const [selectedTopic, setSelectedTopic] = useState("")
     const [numberOfQuestions, setNumberOfQuestions] = useState(5)
     const [numberOfAnswers, setNumberOfAnswers] = useState(4)
+    const [difficultySelected, setDifficultySelected] = useState(1)
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState("")
     const router = useRouter()
@@ -49,37 +51,46 @@ export default function CreateGame() {
         setError("")
 
         try {
-            // First, create a quiz
-            const quizResponse = await fetchWithAuth(`${apiEndpoint}/game/${selectedTopic}/${numberOfQuestions}/${numberOfAnswers}`)
-
-            if (!quizResponse.ok) {
-                throw new Error("Failed to create quiz")
+            const quizzesForTopic = await fetch(`${apiEndpoint}/quiz/${selectedTopic}`);
+            const quizzes = await quizzesForTopic.json();
+            if (quizzes.length === 0) {
+                setError("No quizzes available for the selected topic.")
+                return
             }
-
-            const quizData = await quizResponse.json()
+            let quizRequested = quizzes.find(quiz => quiz.difficulty = difficultySelected);
+            if (quizRequested.length > 1) {
+                //Take one of the quizzes random
+                const randomIndex = Math.floor(Math.random() * quizRequested.length);
+                quizRequested = quizRequested[randomIndex];
+            }
+            // First, create a quiz
+            const quizResponse = await fetchWithAuth(`/game/${quizRequested.wikidataCode}/${numberOfQuestions}/${numberOfAnswers}`)
 
             // Get user info from token
-            const userResponse = await fetchWithAuth("/token/username")
-            if (!userResponse.ok) {
-                throw new Error("Failed to get user info")
-            }
+            const userData = await fetchWithAuth("/token/username")
 
-            const userData = await userResponse.json()
-            const hostId = userData.id
+            const hostId = userData._id
             const hostUsername = userData.username
+            const token = document.cookie
+                .split("; ")
+                .find((row) => row.startsWith("token="))
+                ?.split("=")[1];
 
             // Create a shared quiz session
-            const sessionResponse = await fetchWithAuth("/shared-quiz/create", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    quizData,
-                    hostId,
-                    hostUsername,
-                }),
-            })
+            const sessionResponse = await fetch(`${apiEndpoint}/shared-quiz/create`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({
+                        quizData: quizResponse,
+                        hostId,
+                        hostUsername
+                    })
+                }
+            );
+
 
             if (!sessionResponse.ok) {
                 throw new Error("Failed to create shared quiz session")
@@ -153,6 +164,22 @@ export default function CreateGame() {
                         max="6"
                         value={numberOfAnswers}
                         onChange={(e) => setNumberOfAnswers(Number.parseInt(e.target.value))}
+                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                        required
+                    />
+                </div>
+
+                <div className="mb-6">
+                    <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="questions">
+                        Difficulty of the Quiz
+                    </label>
+                    <input
+                        id="dificultySelected"
+                        type="number"
+                        min="1"
+                        max="5"
+                        value={difficultySelected}
+                        onChange={(e) => setDifficultySelected(Number.parseInt(e.target.value))}
                         className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                         required
                     />

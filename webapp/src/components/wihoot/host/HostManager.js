@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/router"
 import { fetchWithAuth } from "../../../utils/api-fetch-auth"
 import io from "socket.io-client"
+import axios from "axios";
 
 const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://localhost:8000';
 
@@ -26,10 +27,20 @@ export default function HostManager() {
 
         const fetchUserData = async () => {
             try {
-                const response = await fetchWithAuth("/token/username")
-                if (response.ok) {
-                    const userData = await response.json()
-                    setHostId(userData.id)
+                const token = document.cookie
+                    .split("; ")
+                    .find((row) => row.startsWith("token="))
+                    ?.split("=")[1];
+
+                const response = await axios.get(`${apiEndpoint}/token/username`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+
+                if (response.data) {
+                    const userData = await response.data
+                    setHostId(userData._id)
                     return userData.id
                 } else {
                     throw new Error("Failed to get user data")

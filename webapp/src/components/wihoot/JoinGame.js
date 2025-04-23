@@ -70,21 +70,19 @@ export default function JoinGame() {
                 .find((row) => row.startsWith("token="))
                 ?.split("=")[1]
 
-            const config = {
-                headers: {
-                    "Content-Type": "application/json",
-                    ...(isAuthenticated && token ? { Authorization: `Bearer ${token}` } : {}),
-                },
+            const headers = {
+                "Content-Type": "application/json"
+            };
+
+            // Only add Authorization if authenticated and token exists
+            if (isAuthenticated && token) {
+                headers.Authorization = `Bearer ${token}`;
             }
 
-            const response = await axios.post(
-                `${apiEndpoint}/wihoot/${gameCode}/join`,
-                {
-                    playerName: playerName,
-                    isGuest: !isAuthenticated,
-                },
-                config,
-            )
+            const response = await axios.post(`${apiEndpoint}/shared-quiz/${gameCode}/join`,
+            { playerName: playerName, isGuest: !isAuthenticated },
+            { headers }
+            );
 
             if (response.status === 200) {
                 router.push({
