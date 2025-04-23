@@ -12,7 +12,7 @@ COPY ../wihoot ./wihoot
 COPY ../gameservice ./gameservice
 
 # Expose the port the app runs on
-EXPOSE 8005
+EXPOSE 8006
 
 # Define the command to run your app
 CMD ["node", "./wihoot/wihoot.js"]

@@ -1,59 +1,103 @@
 const mongoose = require("mongoose")
 
-const PlayerSchema = new mongoose.Schema({
-    id: String,
-    name: String,
-    isGuest: {
-        type: Boolean,
-        default: false,
-    }
+const playerSchema = new mongoose.Schema({
+    id: { type: String, required: true },
+    username: { type: String, required: true },
+    isGuest: { type: Boolean, default: false },
+    score: { type: Number, default: 0 },
+    answers: [
+        {
+            questionId: String,
+            answerId: String,
+            isCorrect: Boolean,
+            timeToAnswer: Number,
+        },
+    ],
 })
 
-const SessionSchema = new mongoose.Schema(
+const sharedQuizSessionSchema = new mongoose.Schema(
     {
-        gameCode: {
+        code: {
             type: String,
             required: true,
             unique: true,
+            index: true,
         },
-        quizId: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Quiz",
-            required: true,
-        },
-        hostId: {
+        quizData: [],
+        hostId: { type: String, required: true },
+        status: {
             type: String,
-            required: true,
+            enum: ["waiting", "active", "finished"],
+            default: "waiting",
         },
-        players: [PlayerSchema],
-        currentQuestionIndex: {
-            type: Number,
-            default: -1, // -1 means in lobby
-        }, questions: {
-            type: Array,
-            default: new Array(),
-        },
-        timePerQuestion: {
-            type: Number,
-            default: 60,
-        },
-        started: {
-            type: Boolean,
-            default: false,
-        },
-        ended: {
-            type: Boolean,
-            default: false,
-        },
-        startedAt: Date,
-        endedAt: Date,
+        currentQuestionIndex: { type: Number, default: -1 },
+        players: [playerSchema],
+        createdAt: { type: Date, default: Date.now },
+        startedAt: { type: Date },
+        finishedAt: { type: Date },
     },
-    {
-        timestamps: true,
-    },
+    { timestamps: true },
 )
 
-const Session = mongoose.model('Session', SessionSchema);
-const Player = mongoose.model('Player', PlayerSchema);
+// Generate a random 6-character code
+sharedQuizSessionSchema.statics.generateCode = () => {
+    const characters = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
+    let code = ""
+    for (let i = 0; i < 6; i++) {
+        code += characters.charAt(Math.floor(Math.random() * characters.length))
+    }
+    return code
+}
 
-module.exports = { Session, Player }
+// Method to add a player to the session
+sharedQuizSessionSchema.methods.addPlayer = function (player) {
+    if (this.status !== "waiting") {
+        throw new Error("Cannot join a session that has already started")
+    }
+
+    // Check if player already exists
+    const existingPlayer = this.players.find((p) => p.id === player.id)
+    if (existingPlayer) {
+        return existingPlayer
+    }
+
+    this.players.push(player)
+    return player
+}
+
+// Method to start the session
+sharedQuizSessionSchema.methods.start = function () {
+    if (this.status !== "waiting") {
+        throw new Error("Session has already started or finished")
+    }
+
+    this.status = "active"
+    this.startedAt = new Date()
+    this.currentQuestionIndex = 0
+    return this
+}
+
+// Method to move to the next question
+sharedQuizSessionSchema.methods.nextQuestion = function () {
+    if (this.status !== "active") {
+        throw new Error("Session is not active")
+    }
+
+    this.currentQuestionIndex += 1
+    return this.currentQuestionIndex
+}
+
+// Method to finish the session
+sharedQuizSessionSchema.methods.finish = function () {
+    if (this.status !== "active") {
+        throw new Error("Session is not active")
+    }
+
+    this.status = "finished"
+    this.finishedAt = new Date()
+    return this
+}
+
+const SharedQuizSession = mongoose.model("SharedQuizSession", sharedQuizSessionSchema)
+
+module.exports = SharedQuizSession

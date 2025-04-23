@@ -1,101 +1,338 @@
-const express = require("express");
-const {v4: uuidv4} = require("uuid");
-const router = express.Router();
-const verifyToken = require('../../gameservice/routers/middleware/auth')
-const {Session, Player} = require('../models/session-model');
+const express = require("express")
+const router = express.Router()
+const SharedQuizSession = require("../models/session-model")
+const { io } = require("../socket/socketHandler")
 
-async function requestQuestions(subject, totalQuestions, numberOptions) {
+// Create a new shared quiz session
+router.post("/create", async (req, res) => {
     try {
-        const gatewayServiceUrl = process.env.GATEWAY_SERVICE_URL || 'http://gatewayservice:8000';
-        const response = await fetch(`${gatewayServiceUrl}/game/${subject}/${totalQuestions}/${numberOptions}`);
-        if (!response.ok) {
-            throw new Error('Failed to retrieve questions');
+        const { quizData, hostId, hostUsername } = req.body
+
+        if (!quizData || !hostId || !hostUsername) {
+            return res.status(400).json({ error: "Missing required fields" })
         }
-        return await response.json();
-    } catch(error) {
-        console.log('Error requesting the questions:', error.message);
-        return new Error('Error requesting the questions');
-    }
-}
 
-// Create a new game session with its code (This is available for logged users only)
-router.post("/wihoot/create", verifyToken, (req, res) => {
-    const {subject, totalQuestions, numberOptions, maxTimePerQuestion} = req.body;
+        // Generate a unique code
+        let code
+        let isUnique = false
 
-    if (!subject || !totalQuestions || !numberOptions) {
-        return res.status(400).json({error: "Missing required game parameters."});
-    }
+        while (!isUnique) {
+            code = SharedQuizSession.generateCode()
+            const existingSession = await SharedQuizSession.findOne({ code })
+            if (!existingSession) {
+                isUnique = true
+            }
+        }
 
-    const userId = req.user.id; // del token JWT
-    const gameCode = uuidv4().slice(0, 6).toUpperCase();
+        const session = new SharedQuizSession({
+            code,
+            quizData,
+            hostId,
+            players: [], // Host doesn't play
+        })
 
-    let questionsRequested;
-    try {
-        questionsRequested = requestQuestions(subject, totalQuestions, numberOptions);
+        await session.save()
+
+        res.status(201).json({
+            success: true,
+            code,
+            sessionId: session._id,
+        })
     } catch (error) {
-        return res.status(500).json({error: "Error requesting the questions."});
+        console.error("Error creating shared quiz session:", error)
+        res.status(500).json({ error: "Failed to create shared quiz session" })
     }
+})
 
-    const session = new Session({
-        gameCode: gameCode,
-        hostId: userId,
-        questions: questionsRequested, //Store the questions included in the session,
-        timePerQuestion: maxTimePerQuestion
-    })
-
-    session.save()
-
-    res.status(200).json({code: gameCode, questions: questionsRequested});
-});
-
-// Join to a game session using a code
-router.post("/wihoot/:code/join", async (req, res) => {
-    const joinData = {gameCode, playerName, isGuest}
-    joinData.playerName = req.body.playerName;
-    joinData.isGuest = req.body.isGuest;
-    joinData.gameCode = req.params.code;
-
-    //TODO: validate fields assigned in a external function
-
+router.get('/internal/quizdata/:code', async (req, res) => {
     try {
-        const session = await Session.findOne( {gameCode: joinData.gameCode});
+        const session = await SharedQuizSession.findOne({ code: req.params.code });
+        if (!session) {
+            return res.status(404).json({ error: 'Session not found' });
+        } else {
+            const quizData = session.quizData;
+            res.status(200).json(quizData);
+        }
+    } catch (error){
+        res.status(500).json({ error: 'Error retrieving quiz data' });
+    }
+})
+
+// Join a shared quiz session
+router.post("/:code/join", async (req, res) => {
+    try {
+        const { code } = req.params
+        const { playerId, username, isGuest } = req.body
+
+        if (!playerId || !username) {
+            return res.status(400).json({ error: "Missing required fields" })
+        }
+
+        const session = await SharedQuizSession.findOne({ code })
 
         if (!session) {
-            return res.status(404).json({error: "The session was not found."});
-        } else {
-            // Check if game has already started
-            if (session.started) {
-                res.status(403).json({error: "The game has already started."});
+            return res.status(404).json({ error: "Session not found" })
+        }
+
+        if (session.status !== "waiting") {
+            return res.status(400).json({ error: "Session has already started" })
+        }
+
+        try {
+            const player = {
+                id: playerId,
+                username,
+                isGuest: !!isGuest,
+                score: 0,
+                answers: [],
             }
 
-            if (session.hostId !== req.user.id) {
-                let idToUse = req.user.id === null ? uuidv4() : req.user.id;
-                const newPlayer = new Player({
-                    id: idToUse,
-                    name: joinData.playerName,
-                    isGuest: joinData.isGuest
-                });
+            session.addPlayer(player)
+            await session.save()
 
-                if (session.players.find(p => p.id === newPlayer.id)) {
-                    return res.status(400).json({error: "You have already joined to the session."});
-                }
-                if (session.players.find(p => p.name === newPlayer.name)) {
-                    return res.status(400).json({error: "The name "+newPlayer.name+" is already in use."});
-                }
+            // Notify all clients about the new player
+            io.to(code).emit("player-joined", {
+                playerId,
+                username,
+                isGuest: !!isGuest,
+            })
 
-                session.players.push(newPlayer);
-                session.save();
-
-                res.status(200).json({success: true, message: `You have joined to the session: ${joinData.gameCode}.`});
-            } else {
-                res.status(403).json({error: "You cannot join your own session."});
-            }
+            res.status(200).json({
+                success: true,
+                sessionId: session._id,
+                players: session.players,
+            })
+        } catch (error) {
+            return res.status(400).json({ error: error.message })
         }
     } catch (error) {
-        console.error("Error fetching session:", error)
-        res.status(500).json({ error: error.message })
+        console.error("Error joining shared quiz session:", error)
+        res.status(500).json({ error: "Failed to join shared quiz session" })
     }
-});
+})
 
+// Start a shared quiz session (host only)
+router.get("/:code/start", async (req, res) => {
+    try {
+        const { code } = req.params
+        const { hostId } = req.query
 
-module.exports = router;
+        if (!hostId) {
+            return res.status(400).json({ error: "Missing host ID" })
+        }
+
+        const session = await SharedQuizSession.findOne({ code })
+
+        if (!session) {
+            return res.status(404).json({ error: "Session not found" })
+        }
+
+        if (session.hostId !== hostId) {
+            return res.status(403).json({ error: "Only the host can start the session" })
+        }
+
+        try {
+            session.start()
+            await session.save()
+
+            // Notify all clients that the session has started
+            io.to(code).emit("session-started", {
+                currentQuestionIndex: session.currentQuestionIndex,
+            })
+
+            res.status(200).json({
+                success: true,
+                status: session.status,
+                currentQuestionIndex: session.currentQuestionIndex,
+            })
+        } catch (error) {
+            return res.status(400).json({ error: error.message })
+        }
+    } catch (error) {
+        console.error("Error starting shared quiz session:", error)
+        res.status(500).json({ error: "Failed to start shared quiz session" })
+    }
+})
+
+// Move to the next question (host only)
+router.get("/:code/next", async (req, res) => {
+    try {
+        const { code } = req.params
+        const { hostId } = req.query
+
+        if (!hostId) {
+            return res.status(400).json({ error: "Missing host ID" })
+        }
+
+        const session = await SharedQuizSession.findOne({ code })
+
+        if (!session) {
+            return res.status(404).json({ error: "Session not found" })
+        }
+
+        if (session.hostId !== hostId) {
+            return res.status(403).json({ error: "Only the host can navigate questions" })
+        }
+
+        try {
+            const nextQuestionIndex = session.nextQuestion()
+            await session.save()
+
+            // Notify all clients about the question change
+            io.to(code).emit("question-changed", {
+                currentQuestionIndex: nextQuestionIndex,
+            })
+
+            res.status(200).json({
+                success: true,
+                currentQuestionIndex: nextQuestionIndex,
+            })
+        } catch (error) {
+            return res.status(400).json({ error: error.message })
+        }
+    } catch (error) {
+        console.error("Error navigating to next question:", error)
+        res.status(500).json({ error: "Failed to navigate to next question" })
+    }
+})
+
+// Submit an answer for a question
+router.post("/:code/answer", async (req, res) => {
+    try {
+        const { code } = req.params
+        const { playerId, questionId, answerId, isCorrect, timeToAnswer } = req.body
+
+        if (!playerId || !questionId || !answerId) {
+            return res.status(400).json({ error: "Missing required fields" })
+        }
+
+        const session = await SharedQuizSession.findOne({ code })
+
+        if (!session) {
+            return res.status(404).json({ error: "Session not found" })
+        }
+
+        if (session.status !== "active") {
+            return res.status(400).json({ error: "Session is not active" })
+        }
+
+        // Find the player
+        const playerIndex = session.players.findIndex((p) => p.id === playerId)
+
+        if (playerIndex === -1) {
+            return res.status(404).json({ error: "Player not found in this session" })
+        }
+
+        // Add the answer
+        const scoreIncrement = isCorrect ? Math.max(1000 - timeToAnswer, 100) : 0
+
+        session.players[playerIndex].answers.push({
+            questionId,
+            answerId,
+            isCorrect: !!isCorrect,
+            timeToAnswer,
+        })
+
+        session.players[playerIndex].score += scoreIncrement
+
+        await session.save()
+
+        // Notify all clients about the answer
+        io.to(code).emit("answer-submitted", {
+            playerId,
+            score: session.players[playerIndex].score,
+            isCorrect: !!isCorrect,
+        })
+
+        res.status(200).json({
+            success: true,
+            score: session.players[playerIndex].score,
+        })
+    } catch (error) {
+        console.error("Error submitting answer:", error)
+        res.status(500).json({ error: "Failed to submit answer" })
+    }
+})
+
+// Get session status and players
+router.get("/:code/status", async (req, res) => {
+    try {
+        const { code } = req.params
+
+        const session = await SharedQuizSession.findOne({ code })
+
+        if (!session) {
+            return res.status(404).json({ error: "Session not found" })
+        }
+
+        res.status(200).json({
+            code: session.code,
+            status: session.status,
+            currentQuestionIndex: session.currentQuestionIndex,
+            players: session.players.map((p) => ({
+                id: p.id,
+                username: p.username,
+                isGuest: p.isGuest,
+                score: p.score,
+            })),
+        })
+    } catch (error) {
+        console.error("Error getting session status:", error)
+        res.status(500).json({ error: "Failed to get session status" })
+    }
+})
+
+// End the session (host only)
+router.get("/:code/end", async (req, res) => {
+    try {
+        const { code } = req.params
+        const { hostId } = req.query
+
+        if (!hostId) {
+            return res.status(400).json({ error: "Missing host ID" })
+        }
+
+        const session = await SharedQuizSession.findOne({ code })
+
+        if (!session) {
+            return res.status(404).json({ error: "Session not found" })
+        }
+
+        if (session.hostId !== hostId) {
+            return res.status(403).json({ error: "Only the host can end the session" })
+        }
+
+        try {
+            session.finish()
+            await session.save()
+
+            // Notify all clients that the session has ended
+            io.to(code).emit("session-ended", {
+                players: session.players.map((p) => ({
+                    id: p.id,
+                    username: p.username,
+                    isGuest: p.isGuest,
+                    score: p.score,
+                })),
+            })
+
+            res.status(200).json({
+                success: true,
+                status: session.status,
+                players: session.players.map((p) => ({
+                    id: p.id,
+                    username: p.username,
+                    isGuest: p.isGuest,
+                    score: p.score,
+                })),
+            })
+        } catch (error) {
+            return res.status(400).json({ error: error.message })
+        }
+    } catch (error) {
+        console.error("Error ending shared quiz session:", error)
+        res.status(500).json({ error: "Failed to end shared quiz session" })
+    }
+})
+
+module.exports = router

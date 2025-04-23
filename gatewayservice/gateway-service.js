@@ -18,7 +18,7 @@ const serviceUrls = {
   user: process.env.USER_SERVICE_URL || 'http://localhost:8001',
   game: process.env.GAME_SERVICE_URL || 'http://localhost:8004',
   group: process.env.GROUP_SERVICE_URL || 'http://localhost:8005',
-    wihoot: process.env.WIHOOT_SERVICE_URL || 'http://localhost:8006',
+  wihoot: process.env.WIHOOT_SERVICE_URL || 'http://localhost:8006',
 };
 
 // CORS setup
@@ -307,43 +307,40 @@ app.post('/game', (req, res) => {
   forwardRequest('game', '/game', req, res);
 });
 
-// Wihoot Routes
-app.use('/wihoot',
-    cors({
-      origin: '*',
-      credentials: true,
-      methods: ['GET', 'POST']
-    })
-)
-
 // Proxy for create WebSocket connections
-app.get((req, res, next) => {
+/*app.get((req, res, next) => {
   createProxyMiddleware('/socket.io', {
     target: serviceUrls.wihoot, // URL interna del servicio Wihoot
     ws: true, // importante: habilitar WebSockets
     changeOrigin: true
   })(req, res, next);
-});
+});*/
 
-app.post('/wihoot/create',(req, res) => {
-    forwardRequest('wihoot', '/wihoot/create', req, res)
-});
+// Shared quiz session routes
+app.use("/shared-quiz", publicCors)
 
-app.post('/wihoot/:code/join',(req, res) => {
-  forwardRequest('wihoot', `/wihoot/${req.params.code}/join`, req, res)
-});
+// Create a new shared quiz session
+app.post("/shared-quiz/create", (req, res) => {
+  forwardRequest("wihoot", "/wihoot/create", req, res)
+})
 
-app.get('/wihoot/:code/start', (req, res) => {
-    forwardRequest('wihoot', `/wihoot/${req.params.code}/start`, req, res)
-});
+// Join a shared quiz session
+app.post("/shared-quiz/:code/join", (req, res) => {
+  forwardRequest("wihoot", `/wihoot/${req.params.code}/join`, req, res)
+})
 
-app.get('/wihoot/:code/next', (req, res) => {
-  forwardRequest('wihoot', `/wihoot/${req.params.code}/next`, req, res)
-});
+// Start a shared quiz session (host only)
+app.get("/shared-quiz/:code/start", (req, res) => {
+  forwardRequest("wihoot", `/wihoot/${req.params.code}/start`, req, res)
+})
 
-app.post('/wihoot/:code/answer', (req, res) => {
-  forwardRequest('wihoot', `/wihoot/${req.params.code}/answer`, req, res)
-});
+// Move to the next question (host only)
+app.get("/shared-quiz/:code/next", (req, res) => {
+  forwardRequest("wihoot", `/wihoot/${req.params.code}/next`, req, res)
+})
+
+app.post("shared-quiz/play")
+
 
 // OpenAPI Documentation
 const openapiPath = './openapi.yaml';

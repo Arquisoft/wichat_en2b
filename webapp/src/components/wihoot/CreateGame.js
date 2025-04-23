@@ -1,251 +1,176 @@
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import {quizCategories, quizzesByCategory} from "@/components/home/data";
-import { Box, Typography, Button, TextField, Container, Paper, MenuItem, FormControl, InputLabel, Select, Grid, Slider, Divider } from "@mui/material";
-import axios from "axios";
+"use client"
+
+import { useState, useEffect } from "react"
+import { useRouter } from "next/router"
+import { fetchWithAuth } from "../../utils/api-fetch-auth"
 
 const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://localhost:8000';
 
-export default function CreateQuiz() {
-    const router = useRouter();
-    const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState("");
+export default function CreateGame() {
+    const [topics, setTopics] = useState([])
+    const [selectedTopic, setSelectedTopic] = useState("")
+    const [numberOfQuestions, setNumberOfQuestions] = useState(5)
+    const [numberOfAnswers, setNumberOfAnswers] = useState(4)
+    const [isLoading, setIsLoading] = useState(false)
+    const [error, setError] = useState("")
+    const router = useRouter()
 
-    // Default quiz data
-    const [quizData, setQuizData] = useState({
-        subject: "Science",
-        numberOfQuestions: 10,
-        timePerQuestion: 60,
-        numberOfAnswers: 4,
-        level: 1
-    });
-
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setQuizData({
-            ...quizData,
-            [name]: value
-        });
-    };
-
-    const handleSliderChange = (name) => (event, newValue) => {
-        setQuizData({
-            ...quizData,
-            [name]: newValue
-        });
-    };
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setError("");
-
-        if (!quizData.subject.trim()) {
-            setError("Select a subject for the quiz");
-            return;
+    useEffect(() => {
+        // Fetch available topics
+        const fetchTopics = async () => {
+            try {
+                const response = await fetch(`${apiEndpoint}/quiz/allTopics`,{
+                        method: "GET",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                    });
+                if (response.ok) {
+                    const data = await response.json()
+                    setTopics(data)
+                    if (data.length > 0) {
+                        setSelectedTopic(data[0])
+                    }
+                } else {
+                    setError("Failed to fetch topics")
+                }
+            } catch (err) {
+                setError("Error fetching topics")
+                console.error(err)
+            }
         }
 
-        if (quizCategories.find(c => c.name === quizData.subject) === undefined) {
-            setError("Invalid subject selected");
-            return;
-        }
+        fetchTopics()
+    }, [])
+
+    const handleCreateQuiz = async (e) => {
+        e.preventDefault()
+        setIsLoading(true)
+        setError("")
 
         try {
-            setIsLoading(true);
+            // First, create a quiz
+            const quizResponse = await fetchWithAuth(`${apiEndpoint}/game/${selectedTopic}/${numberOfQuestions}/${numberOfAnswers}`)
 
-            const token = document.cookie
-                .split("; ")
-                .find((row) => row.startsWith("token="))
-                ?.split("=")[1];
-
-            if (!token){
-                setError("You must be logged in to create a quiz");
-                return router.back();
+            if (!quizResponse.ok) {
+                throw new Error("Failed to create quiz")
             }
 
-            let quizId = quizCategories.find(c=> c.name === quizData.subject).id;
-            let quizCode = quizzesByCategory[quizId].find(c=>c.id === quizData.level).wikidataCode;
+            const quizData = await quizResponse.json()
 
-            const response = await axios(`${apiEndpoint}/wihoot/create`,
-                {
-                    subject: quizCode,
-                    totalQuestions: quizData.numberOfQuestions,
-                    numberOptions: quizData.numberOfAnswers,
-                    maxTimePerQuestion: quizData.timePerQuestion
+            // Get user info from token
+            const userResponse = await fetchWithAuth("/token/username")
+            if (!userResponse.ok) {
+                throw new Error("Failed to get user info")
+            }
+
+            const userData = await userResponse.json()
+            const hostId = userData.id
+            const hostUsername = userData.username
+
+            // Create a shared quiz session
+            const sessionResponse = await fetchWithAuth("/shared-quiz/create", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
                 },
-                {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        Authorization: `Bearer ${token}`
-                    }
-                });
-            if (response.status !== 200) {
-                throw new Error(response.data.error || "Error when creating the quiz. response status:" + response.status);
-            } else {
+                body: JSON.stringify({
+                    quizData,
+                    hostId,
+                    hostUsername,
+                }),
+            })
 
-                //TODO remove, dev only!
-                console.log("Quiz created successfully: code:", response.data.code," questions:", response.data.questions);
-
-                // Add the text question in each question to ease showing it in the game
-                let questionsList = response.data.questions.map(q=> {
-                    return {
-                        ...q,
-                        text: quizzesByCategory[quizId].find(c => c.id === q.level).description
-                    }
-                });
-
-                // Route the user to the play page
-                router.push(`/wihoot/${response.data.code}/manager`, {
-                    query: {
-                        questions: questionsList,
-                        time: quizData.timePerQuestion
-                    }
-                });
+            if (!sessionResponse.ok) {
+                throw new Error("Failed to create shared quiz session")
             }
 
-        } catch (error) {
-            console.error("Error al crear el quiz:", error);
-            setError(error.message || "Ocurrió un error al crear el quiz");
+            const sessionData = await sessionResponse.json()
+
+            // Redirect to host manager page
+            router.push(`/wihoot/host/${sessionData.code}/manager`)
+        } catch (err) {
+            setError(err.message || "Failed to create shared quiz")
+            console.error(err)
         } finally {
-            setIsLoading(false);
+            setIsLoading(false)
         }
-    };
+    }
 
     return (
-        <Container maxWidth="md">
-            <Box sx={{ my: 4 }}>
-                <Paper elevation={3} sx={{ p: 4, borderRadius: 2 }}>
-                    <Typography variant="h4" component="h1" gutterBottom align="center">
-                        Create a New Quiz
-                    </Typography>
+        <div className="container mx-auto px-4 py-8">
+            <h1 className="text-3xl font-bold mb-6">Create a Shared Quiz</h1>
 
-                    <Divider sx={{ my: 2 }} />
+            {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">{error}</div>}
 
-                    <Box component="form" onSubmit={handleSubmit}>
-                        <Grid container spacing={4}>
-                            {/* Quiz Subject */}
-                            <Grid item xs={12}>
-                                <TextField
-                                    fullWidth
-                                    required
-                                    id="subject"
-                                    name="subject"
-                                    label="Quiz subject"
-                                    placeholder="Science, History, ..."
-                                    value={quizData.subject}
-                                    onChange={handleInputChange}
-                                    variant="outlined"
-                                    disabled={isLoading}
-                                />
-                            </Grid>
+            <form onSubmit={handleCreateQuiz} className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+                <div className="mb-4">
+                    <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="topic">
+                        Topic
+                    </label>
+                    <select
+                        id="topic"
+                        value={selectedTopic}
+                        onChange={(e) => setSelectedTopic(e.target.value)}
+                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                        required
+                    >
+                        <option value="" disabled>
+                            Select a topic
+                        </option>
+                        {topics.map((topic) => (
+                            <option key={topic} value={topic}>
+                                {topic}
+                            </option>
+                        ))}
+                    </select>
+                </div>
 
-                            {/* question number */}
-                            <Grid item xs={12} sm={6}>
-                                <Typography id="questions-slider-label" gutterBottom>
-                                    Number of questions: {quizData.numberOfQuestions}
-                                </Typography>
-                                <Slider
-                                    aria-labelledby="questions-slider-label"
-                                    value={quizData.numberOfQuestions}
-                                    onChange={handleSliderChange("numberOfQuestions")}
-                                    step={1}
-                                    marks
-                                    min={1}
-                                    max={20}
-                                    valueLabelDisplay="auto"
-                                    disabled={isLoading}
-                                />
-                            </Grid>
+                <div className="mb-6">
+                    <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="questions">
+                        Number of Questions
+                    </label>
+                    <input
+                        id="questions"
+                        type="number"
+                        min="1"
+                        max="20"
+                        value={numberOfQuestions}
+                        onChange={(e) => setNumberOfQuestions(Number.parseInt(e.target.value))}
+                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                        required
+                    />
+                </div>
 
-                            {/* question time */}
-                            <Grid item xs={12} sm={6}>
-                                <Typography id="time-slider-label" gutterBottom>
-                                    Time/question: {quizData.timePerQuestion} seconds
-                                </Typography>
-                                <Slider
-                                    aria-labelledby="time-slider-label"
-                                    value={quizData.timePerQuestion}
-                                    onChange={handleSliderChange("timePerQuestion")}
-                                    step={5}
-                                    marks
-                                    min={10}
-                                    max={120}
-                                    valueLabelDisplay="auto"
-                                    disabled={isLoading}
-                                />
-                            </Grid>
+                <div className="mb-6">
+                    <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="questions">
+                        Number of Answers
+                    </label>
+                    <input
+                        id="answers"
+                        type="number"
+                        min="4"
+                        max="6"
+                        value={numberOfAnswers}
+                        onChange={(e) => setNumberOfAnswers(Number.parseInt(e.target.value))}
+                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                        required
+                    />
+                </div>
 
-                            {/* answers number */}
-                            <Grid item xs={12}>
-                                <FormControl fullWidth disabled={isLoading}>
-                                    <InputLabel id="number-of-answers-label">Number of answers per question</InputLabel>
-                                    <Select
-                                        labelId="number-of-answers-label"
-                                        id="numberOfAnswers"
-                                        name="numberOfAnswers"
-                                        value={quizData.numberOfAnswers}
-                                        label="Answers per question"
-                                        onChange={handleInputChange}
-                                    >
-                                        <MenuItem value={4}>4 answers</MenuItem>
-                                        <MenuItem value={5}>5 answers</MenuItem>
-                                        <MenuItem value={6}>6 answers</MenuItem>
-                                    </Select>
-                                </FormControl>
-                            </Grid>
+                <div className="flex items-center justify-between">
+                    <button
+                        type="submit"
+                        disabled={isLoading}
+                        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline disabled:opacity-50"
+                    >
+                        {isLoading ? "Creating..." : "Create Shared Quiz"}
+                    </button>
+                </div>
+            </form>
 
-                            {/* difficulty level */}
-                            <Grid item xs={12}>
-                                <FormControl fullWidth disabled={isLoading}>
-                                    <InputLabel id="difficuly-level-label">Quiz level</InputLabel>
-                                    <Select
-                                        labelId="difficuly-level-label"
-                                        id="level"
-                                        name="level"
-                                        value={quizData.level}
-                                        label="Quiz level"
-                                        onChange={handleInputChange}
-                                    >
-                                        <MenuItem value={1}>EASY</MenuItem>
-                                        <MenuItem value={2}>MEDIUM</MenuItem>
-                                        <MenuItem value={3}>HARD</MenuItem>
-                                        <MenuItem value={4}>HELL</MenuItem>
-                                    </Select>
-                                </FormControl>
-                            </Grid>
-
-                            {/* error msg */}
-                            {error && (
-                                <Grid item xs={12}>
-                                    <Typography color="error" variant="body2">
-                                        {error}
-                                    </Typography>
-                                </Grid>
-                            )}
-
-                            {/* buttons */}
-                            <Grid item xs={12}>
-                                <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 2 }}>
-                                    <Button
-                                        variant="outlined"
-                                        onClick={() => router.back()}
-                                        disabled={isLoading}
-                                    >
-                                        Cancel
-                                    </Button>
-                                    <Button
-                                        type="submit"
-                                        variant="contained"
-                                        color="primary"
-                                        disabled={isLoading}
-                                    >
-                                        {isLoading ? "Creating..." : "Create Quiz"}
-                                    </Button>
-                                </Box>
-                            </Grid>
-                        </Grid>
-                    </Box>
-                </Paper>
-            </Box>
-        </Container>
-    );
+            <p className="text-center text-gray-500 text-xs">Create a quiz and share it with friends using a unique
+                code.</p>
+        </div>
+    )
 }

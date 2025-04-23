@@ -1,13 +1,12 @@
-import WihootPage from '@/components/wihoot/WihootPage'
+import PlayerView from '@/components/wihoot/play/PlayerView'
 import { useRouter } from 'next/router';
 
-const WihootPlay = () => {
+const WihootPlay= () => {
     const router = useRouter();
-
 
     const { code, playerName } = router.query;
 
-    return (<WihootPage code={code} name={playerName}/>)
+    return (<PlayerView />)
 }
 
 export default WihootPlay;

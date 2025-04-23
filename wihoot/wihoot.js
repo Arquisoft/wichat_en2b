@@ -1,55 +1,39 @@
-const express = require('express');
-const http = require('http');
-const socketIo = require('socket.io');
-const mongoose = require('mongoose');
+const express = require("express")
+const http = require("http")
+const cors = require("cors")
+const mongoose = require("mongoose")
+const { initializeSocket } = require("./socket/socketHandler")
+const sharedQuizSessionRouter = require("./routers/RouterGameSession")
 
-const gamesessionRouter = require('./routers/RouterGameSession');
+const app = express()
+const server = http.createServer(app)
+const io = initializeSocket(server)
 
-const app = express();
-app.use(express.json());
-const port = 8005;
-const server = http.createServer(app);
+// Middleware
+app.use(cors())
+app.use(express.json())
 
-// Set up Socket.io with CORS
-const io = socketIo(server, {
-    cors: {
-        origin: process.env.GATEWAY_SERVICE_URL || "http://gatewayservice:3000",
-        methods: ["GET", "POST"],
-        credentials: true,
-    },
-    path: '/socket.io' // The same path as in the proxy
+// Connect to MongoDB
+mongoose
+    .connect(process.env.MONGODB_URI || "mongodb://mongodb:27017/game", {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+    })
+    .then(() => console.log("Connected to MongoDB"))
+    .catch((err) => console.error("MongoDB connection error:", err))
+
+// Routes
+app.use("/wihoot", sharedQuizSessionRouter)
+
+// Health check
+app.get("/health", (req, res) => {
+    res.json({ status: "OK" })
 })
 
-// Connection to MongoDB game database
-const connectWithRetry = () => {
-    const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/game';
-    mongoose.connect(mongoUri)
-        .then(() => console.log('✅ Connected to MongoDB'))
-        .catch(err => {
-            console.error('❌ Error when connecting to MongoDB:', err)
-            setTimeout(connectWithRetry, 5000)
-        });
-}
-// Handle MongoDB connection events
-mongoose.connection.on("error", (err) => {
-    console.error("MongoDB connection error:", err)
+// Start server
+const PORT = 8006
+server.listen(PORT, () => {
+    console.log(`Wihoot service running on port ${PORT}`)
 })
 
-mongoose.connection.on("disconnected", () => {
-    console.log("MongoDB disconnected, attempting to reconnect...")
-    connectWithRetry()
-})
-
-app.use(gamesessionRouter);
-require('./socket/socketHandler')(io)
-
-server.on('close', () => {
-    // Close the Mongoose connection
-    mongoose.connection.close();
-});
-
-server.listen(port, () => {
-    console.log(`🚀 Wihoot server running on: http://localhost:${port}`);
-});
-
-module.exports = server;
+module.exports = server
