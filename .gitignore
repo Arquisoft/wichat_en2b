@@ -7,3 +7,5 @@ gameservice/public/images/*
 users/authservice/logger.log
 .vscode/
 .idea/
+
+gatling/results
