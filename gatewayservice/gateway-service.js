@@ -32,7 +32,13 @@ app.get('/health', (req, res) => res.json({ status: 'OK' }));
 // Helper function for forwarding requests using fetch
 const forwardRequest = async (service, endpoint, req, res) => {
   try {
-    const response = await fetch(`${serviceUrls[service]}${endpoint}`, {
+    const url = new URL(`${serviceUrls[service]}${endpoint}`);
+    if (req.query) {
+      Object.keys(req.query).forEach(key => {
+        url.searchParams.append(key, req.query[key]);
+      });
+    }
+    const response = await fetch(url, {
       method: req.method,
       headers: {
         Authorization: req.headers.authorization,
@@ -207,8 +213,14 @@ app.use('/question/internal/:id', cors({
 app.get('/question/internal/:id', (req, res) =>
     forwardRequest('game', `/question/internal/${req.params.id}`, req, res)
 );
+
+app.use('/statistics/recent-quizzes', publicCors);
+app.get('/statistics/recent-quizzes', (req, res) => {
+  forwardRequest('game', '/statistics/recent-quizzes', req, res);
+});
+
 // Statistics Routes
-['/statistics/subject/:subject', '/statistics/global', '/leaderboard', '/statistics/recent-quizzes'].forEach(route => {
+['/statistics/subject/:subject', '/statistics/global', '/leaderboard'].forEach(route => {
   app.use(route, publicCors);
   app.get(route, async (req, res) => {
     // Extract the error message before the try block

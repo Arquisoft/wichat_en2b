@@ -20,6 +20,7 @@ import {
 	TableContainer,
 	TableHead,
 	TableRow,
+	Button,
 } from "@mui/material"
 import "../../../styles/home/StatsTab.css"
 import { fetchWithAuth } from "@/utils/api-fetch-auth";
@@ -64,6 +65,8 @@ export default function StatsTab() {
 	const [selectedSubject, setSelectedSubject] = useState("all")
 	const [categories, setCategories] = useState([]);
 	const [recentQuizzes, setRecentQuizzes] = useState([]);
+	const [page, setPage] = useState(0);
+	const [hasMoreQuizzes, setHasMoreQuizzes] = useState(true);
 
 	useEffect(() => {
 		const fetchStatistics = async () => {
@@ -111,18 +114,23 @@ export default function StatsTab() {
 		fetchCategories();
 	}, []);
 
-	useEffect(() => {
-		const fetchRecentQuizzes = async () => {
-			try {
-				const data = await fetchWithAuth('/statistics/recent-quizzes');
-				setRecentQuizzes(data.recentQuizzes || []);
-			} catch (error) {
-				console.error("Error fetching recent quizzes:", error);
+	const fetchRecentQuizzes = async (pageNum) => {
+		try {
+			const data = await fetchWithAuth(`/statistics/recent-quizzes?page=${pageNum}`);
+			if (pageNum === 0) {
+				setRecentQuizzes(data.recentQuizzes);
+			} else {
+				setRecentQuizzes(prev => [...prev, ...data.recentQuizzes]);
 			}
-		};
+			setHasMoreQuizzes(data.hasMoreQuizzes);
+		} catch (error) {
+			console.error("Error fetching recent quizzes:", error);
+		}
+	};
 
-		fetchRecentQuizzes();
-	}, []);
+	useEffect(() => {
+		fetchRecentQuizzes(page);
+	}, [page]);
 
 	const handleSubjectChange = (event) => {
 		setSelectedSubject(event.target.value);
@@ -354,34 +362,49 @@ export default function StatsTab() {
 						<Typography variant="subtitle1" sx={{ p: 2, fontWeight: "bold", borderBottom: 1, borderColor: 'divider' }}>
 							Recent Quizzes
 						</Typography>
-						<TableContainer>
+						<TableContainer sx={{ maxHeight: 400 }}>
 							<Table size="small" aria-label="recent quizzes table">
-								<TableHead>
+								<TableHead sx={{ bgcolor: "#178ee4" }}>
 									<TableRow>
-										<TableCell>Subject</TableCell>
-										<TableCell align="right">Points</TableCell>
-										<TableCell align="right">Questions</TableCell>
-										<TableCell align="right">Correct</TableCell>
-										<TableCell align="right">Wrong</TableCell>
-										<TableCell align="right">Time</TableCell>
+										<TableCell sx={{ color: "white", fontWeight: "bold" }}>Subject</TableCell>
+										<TableCell align="center" sx={{ color: "white", fontWeight: "bold" }}>Points</TableCell>
+										<TableCell align="center" sx={{ color: "white", fontWeight: "bold" }}>Questions</TableCell>
+										<TableCell align="center" sx={{ color: "white", fontWeight: "bold" }}>Correct</TableCell>
+										<TableCell align="center" sx={{ color: "white", fontWeight: "bold" }}>Wrong</TableCell>
+										<TableCell align="center" sx={{ color: "white", fontWeight: "bold" }}>Time</TableCell>
 									</TableRow>
 								</TableHead>
 								<TableBody>
 									{recentQuizzes?.map((quiz, index) => (
 										<TableRow key={index}>
-											<TableCell>{quiz.subject}</TableCell>
-											<TableCell align="right">{quiz.points_gain}</TableCell>
-											<TableCell align="right">{quiz.number_of_questions}</TableCell>
-											<TableCell align="right">{quiz.number_correct_answers}</TableCell>
-											<TableCell align="right">
+											<TableCell align="center" sx={{ fontWeight: "bold" }}>{quiz.subject}</TableCell>
+											<TableCell align="center">{quiz.points_gain}</TableCell>
+											<TableCell align="center">{quiz.number_of_questions}</TableCell>
+											<TableCell align="center">{quiz.number_correct_answers}</TableCell>
+											<TableCell align="center">
 												{quiz.number_of_questions - quiz.number_correct_answers}
 											</TableCell>
-											<TableCell align="right">{`${quiz.total_time.toFixed(1)}s`}</TableCell>
+											<TableCell align="center">{`${quiz.total_time.toFixed(1)}s`}</TableCell>
 										</TableRow>
 									))}
 								</TableBody>
 							</Table>
 						</TableContainer>
+							{hasMoreQuizzes && (
+								<Box sx={{ display: 'flex', justifyContent: 'center', p: 2 }}>
+									<Button
+										variant="outlined"
+										onClick={() => {
+											const nextPage = page + 1;
+											setPage(nextPage);
+											fetchRecentQuizzes(nextPage);
+										}}
+										disabled={loading}
+									>
+										{loading ? 'Loading...' : 'Load more'}
+									</Button>
+								</Box>
+							)}
 					</Paper>
 				</LoadingErrorHandler>
 			</CardContent>
