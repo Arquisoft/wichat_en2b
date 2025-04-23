@@ -55,7 +55,7 @@ function CategoryComponent() {
             setCategory({ name: id, color: mappedQuizzes[0]?.color || "#3f51b5" });
             setLoading(false);
           } catch (err) {
-            console.log(err);
+            console.error("Error fetching quizzes", err);
           }
         };
 

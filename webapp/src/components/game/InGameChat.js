@@ -69,6 +69,8 @@ export default function InGameChat(params) {
                 ]);
             }
         } catch (error) {
+            console.error("Error in handling the message:", error);
+
             setIsThinking(false);
             setMessages(prevMessages => [
                 ...prevMessages,
