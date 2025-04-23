@@ -7,6 +7,7 @@ import { theme } from "../theme/theme";
 import createEmotionCache from "../theme/createEmotionCache";
 import "../styles/Fullscreen.css";
 import "../styles/globals.css"; 
+import Head from 'next/head';
 
 // Client-side cache, shared for the whole session of the user in the browser.
 const clientSideEmotionCache = createEmotionCache();
@@ -19,18 +20,22 @@ const clientSideEmotionCache = createEmotionCache();
  * @returns {JSX.Element} - The rendered layout of the application.
  */
 export default function RootLayout({ children }) {
-	return (
-		<html lang="en">
-			<body> 
-				<CacheProvider value={clientSideEmotionCache}>
-					<ThemeProvider theme={theme}>
-						<CssBaseline />
-						{children}
-					</ThemeProvider>
-				</CacheProvider>
-			</body>
-		</html>
-	);
+    return (
+        <html lang="en">
+            <head>
+                <title>WiChat - Connect, Learn, and Play</title>
+                <meta name="description" content="Connect, Learn, and Play with WiChat" />
+            </head>
+            <body> 
+                <CacheProvider value={clientSideEmotionCache}>
+                    <ThemeProvider theme={theme}>
+                        <CssBaseline />
+                        {children}
+                    </ThemeProvider>
+                </CacheProvider>
+            </body>
+        </html>
+    );
 }
 
 RootLayout.propTypes = {
