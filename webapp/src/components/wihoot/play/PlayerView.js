@@ -212,7 +212,7 @@ export default function PlayerView() {
         setIsCorrect(validateOutput.isCorrect);
         setCorrectAnswer(validateOutput.correctAnswer);
         try {
-            await fetch(`/shared-quiz/${code}/answer`, {
+            await fetch(`${apiEndpoint}/shared-quiz/${code}/answer`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -262,32 +262,31 @@ export default function PlayerView() {
     )
 
     const renderActiveQuiz = () => {
-        const currentQuestion = getCurrentQuestion()
-        const player = players.find((p) => p.id === playerId)
-
+        const currentQuestion = getCurrentQuestion();
+        const player = players.find((p) => p.id === playerId);
+    
         if (!currentQuestion) {
             return (
                 <div className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
                     <p className="text-center text-xl">Loading question...</p>
                 </div>
-            )
+            );
         }
-
+    
         return (
             <div className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
                 <div className="mb-6">
-
-                    {isCorrect && (
-                        <Alert id='message-success'severity="success" className="alert-box">
+                    {hasAnswered && isCorrect && (
+                        <Alert id='message-success' severity="success" className="alert-box">
                             Great job! You got it right!
                         </Alert>
                     )}
-                    {!isCorrect && (
+                    {hasAnswered && !isCorrect && (
                         <Alert id='message-fail' severity="error" className="alert-box">
                             Oops! You didn't guess this one.
                         </Alert>
                     )}
-
+    
                     <div className="flex justify-between items-center mb-4">
                         <h2 className="text-2xl font-bold">Question {currentQuestionIndex + 1}</h2>
                         <div className="text-right">
@@ -295,9 +294,11 @@ export default function PlayerView() {
                             <p className="text-xl font-bold">{player?.score || 0}</p>
                         </div>
                     </div>
-
-                    <h2 id='title-question' className="question-title">{quizMetaData.quizName}</h2>
-
+    
+                    <h2 id='title-question' className="question-title">
+                        {quizMetaData?.quizName || "Untitled Quiz"}
+                    </h2>
+    
                     <div className="image-box">
                         <img
                             src={`${apiEndpoint}${currentQuestion.image_name}`}
@@ -305,7 +306,7 @@ export default function PlayerView() {
                             className="quiz-image"
                         />
                     </div>
-
+    
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {currentQuestion.answers.map((option, index) => (
                             <button
@@ -313,9 +314,9 @@ export default function PlayerView() {
                                 onClick={() => handleAnswerSubmit(index)}
                                 disabled={hasAnswered}
                                 className={`quiz-option 
-                                ${selectedOption === option ? "selected" : ""} 
-                                ${selectedOption === option && isCorrect ? "correct-answer" : ""}
-                                ${!isCorrect && correctAnswer === option ? "correct-answer" : ""}`}
+                                    ${selectedOption === index ? "selected" : ""} 
+                                    ${hasAnswered && selectedOption === index && isCorrect ? "correct-answer" : ""}
+                                    ${hasAnswered && !isCorrect && correctAnswer === option ? "correct-answer" : ""}`}
                             >
                                 {option}
                             </button>
@@ -323,8 +324,8 @@ export default function PlayerView() {
                     </div>
                 </div>
             </div>
-        )
-    }
+        );
+    };
 
     const renderFinishedQuiz = () => (
         <div className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
