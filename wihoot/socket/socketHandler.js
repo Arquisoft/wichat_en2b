@@ -141,7 +141,6 @@ module.exports = {
                 })
             })
 
-        console.log("was invoked here",this.io)
         return this.io
     }
 }

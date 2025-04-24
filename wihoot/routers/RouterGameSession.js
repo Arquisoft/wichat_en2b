@@ -98,8 +98,6 @@ router.post("/:code/join", async (req, res) => {
             session.addPlayer(player)
             await session.save()
 
-            console.log("io", socketHandlerObject.io)
-
             // Notify all clients about the new player, if io is initialized
             if (socketHandlerObject.io) {
                 socketHandlerObject.io.to(code).emit("player-joined", {

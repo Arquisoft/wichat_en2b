@@ -20,7 +20,7 @@ export default function CreateGame() {
         // Fetch available topics
         const fetchTopics = async () => {
             try {
-                const response = await fetchWithAuth(`${apiEndpoint}/quiz/allTopics`);
+                const response = await fetchWithAuth(`/quiz/allTopics`);
                 if (response) {
                     const data = response
                     setTopics(data)
@@ -45,8 +45,8 @@ export default function CreateGame() {
         setError("")
 
         try {
-            const quizzesForTopic = await fetch(`${apiEndpoint}/quiz/${selectedTopic}`);
-            const quizzes = await quizzesForTopic.json();
+            const quizzesForTopic = await fetchWithAuth(`/quiz/${selectedTopic}`);
+            const quizzes = quizzesForTopic
             if (quizzes.length === 0) {
                 setError("No quizzes available for the selected topic.")
                 return
@@ -94,7 +94,7 @@ export default function CreateGame() {
             const sessionData = await sessionResponse.json()
 
             // Redirect to host manager page
-            router.push(`/wihoot/host/${sessionData.code}/manager`)
+            router.push( { pathname: `/wihoot/host/manager`, query: { code: sessionData.code } } )
         } catch (err) {
             setError(err.message || "Failed to create shared quiz")
             console.error(err)
