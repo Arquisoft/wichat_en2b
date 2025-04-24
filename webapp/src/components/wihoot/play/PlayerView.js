@@ -190,8 +190,6 @@ export default function PlayerView() {
     }
 
     const handleAnswerSubmit = async (optionIndex) => {
-        console.log("Submitting answer:", optionIndex)
-
         if (hasAnswered) return
 
         const currentQuestion = getCurrentQuestion()
@@ -212,12 +210,6 @@ export default function PlayerView() {
             }),
         });
         const { isCorrect, correctAnswer } = await validateOutput.json();
-        
-        console.log("Question id:", currentQuestion.question_id)
-        console.log("Selected answer:", currentQuestion.answers[optionIndex])
-        console.log("Validate output:", validateOutput)
-        console.log("Is correct:", isCorrect)
-        console.log("Correct Anwser:", correctAnswer)
         setIsCorrect(isCorrect);
         setCorrectAnswer(correctAnswer);
         try {

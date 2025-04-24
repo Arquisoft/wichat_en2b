@@ -337,7 +337,7 @@ app.get("/shared-quiz/:code/start", (req, res) => {
 
 // Move to the next question (host only)
 app.get("/shared-quiz/:code/next", (req, res) => {
-  forwardRequest("wihoot", `/wihoot/${req.params.code}/next`, req, res)
+  forwardRequest("wihoot", `/wihoot/${req.params.code}/next?hostId=${req.query.hostId}`, req, res)
 })
 
 // Get session status
