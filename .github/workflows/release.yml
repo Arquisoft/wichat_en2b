@@ -214,7 +214,7 @@ jobs:
           username: ${{ secrets.DEPLOY_USER_ORACLE }}
           key: ${{ secrets.DEPLOY_KEY_ORACLE }}
           source: "./gatewayservice/monitoring/prometheus/"
-          target: "~/gatewayservice/monitoring/"
+          target: "~/"
           strip_components: 0
           overwrite: true
 
@@ -225,7 +225,7 @@ jobs:
           username: ${{ secrets.DEPLOY_USER_ORACLE }}
           key: ${{ secrets.DEPLOY_KEY_ORACLE }}
           source: "./gatewayservice/monitoring/grafana/"
-          target: "~/gatewayservice/monitoring/"
+          target: "~/"
           strip_components: 0
           overwrite: true
 
