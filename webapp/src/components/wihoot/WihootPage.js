@@ -19,6 +19,9 @@ const gatewayUrl = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://localh
 export default function PlayPage( code, name) {
     const router = useRouter();
 
+    const searchParams = useSearchParams();
+    const playerId = searchParams.get('playerId');
+
     const [socket, setSocket] = useState(null)
 
     const [gameState, setGameState] = useState("connecting");
@@ -47,19 +50,28 @@ export default function PlayPage( code, name) {
             .find((row) => row.startsWith("token="))
             ?.split("=")[1];
 
-        const config = token? {
-            path: '/socket.io',   // Use the proxy path
+        const config = token ? {
+            path: '/socket.io',
+            transports: ['websocket', 'polling'], // Prefer WebSocket, fallback to polling
             headers: {
                 'Content-Type': 'application/json',
                 Authorization: `Bearer ${token}`
             }
         } : {
-            path: 'socket.io'
+            path: '/socket.io',
+            transports: ['websocket', 'polling']
         }
 
-        setIsGuest(token? false : true);
-
         const newSocket = io(gatewayUrl, config);
+
+        newSocket.on('connect', () => {
+            console.log('Connected to Socket.IO server');
+        });
+
+        newSocket.on('connect_error', (error) => {
+            console.error('Socket.IO connection error:', error);
+            setErrorMessage('Failed to connect to the game server. Please try again.');
+        });
 
         setSocket(newSocket);
 
@@ -72,19 +84,51 @@ export default function PlayPage( code, name) {
 
     // Join game when socket is ready
     useEffect(() => {
-        if (socket && gameCode && playerName) {
-            setGameState("joining");
+        if (!socket || !gameCode || !playerName) return;
 
-            socket.emit("join-game", gameCode, playerName, isGuest, (response) => {
-                if (response.success) {
-                    setGameState("lobby");
-                } else {
-                    setErrorMessage(response.message || "Failed to join game");
-                    setGameState("error");
+        setGameState("joining");
+
+        socket.emit("join-session", { code: gameCode, playerId, username: playerName, isGuest }, (response) => {
+            if (response) {
+                setGameState("lobby");
+                // Fetch initial session status
+                fetchSessionStatus();
+            } else {
+                setErrorMessage(response.message || "Failed to join game");
+                setGameState("error");
+            }
+        });
+
+        // Periodically fetch session status
+        const statusInterval = setInterval(fetchSessionStatus, 5000); // Every 5 seconds
+
+        async function fetchSessionStatus() {
+            try {
+                const response = await fetch(`${gatewayUrl}/shared-quiz/${gameCode}/status`, {
+                    headers: token ? { Authorization: `Bearer ${token}` } : {},
+                });
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch status: ${response.status}`);
                 }
-            });
+                const data = await response.json();
+                // Update game state based on status
+                if (data.status === "active" && gameState === "lobby") {
+                    setGameState("waiting");
+                } else if (data.status === "finished") {
+                    setGameState("final");
+                    setFinalResults({ players: data.players });
+                }
+            } catch (error) {
+                console.error("Failed to fetch session status:", error);
+                setErrorMessage("Unable to fetch game status. Please check your connection.");
+            }
         }
-    }, [socket, gameCode, playerName]);
+
+        return () => {
+            clearInterval(statusInterval);
+            socket.off("join-session");
+        };
+    }, [socket, gameCode, playerName, playerId, isGuest, gameState, token]);
 
     // Socket event handlers added to the ones in the server
     useEffect(() => {

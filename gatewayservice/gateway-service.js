@@ -307,14 +307,15 @@ app.post('/game', (req, res) => {
   forwardRequest('game', '/game', req, res);
 });
 
-// Proxy for create WebSocket connections
-/*app.get((req, res, next) => {
-  createProxyMiddleware('/socket.io', {
-    target: serviceUrls.wihoot, // URL interna del servicio Wihoot
-    ws: true, // importante: habilitar WebSockets
-    changeOrigin: true
-  })(req, res, next);
-});*/
+// Proxy for Socket.IO WebSocket connections
+app.use('/socket.io', createProxyMiddleware({
+  target: serviceUrls.wihoot, // http://localhost:8006
+  ws: true,
+  changeOrigin: true,
+  pathRewrite: {
+    '^/socket.io': '/socket.io', // Ensure the path is preserved
+  },
+}));
 
 // Shared quiz session routes
 app.use("/shared-quiz", publicCors)
@@ -337,6 +338,11 @@ app.get("/shared-quiz/:code/start", (req, res) => {
 // Move to the next question (host only)
 app.get("/shared-quiz/:code/next", (req, res) => {
   forwardRequest("wihoot", `/wihoot/${req.params.code}/next`, req, res)
+})
+
+// Get session status
+app.get("/shared-quiz/:code/status", (req, res) => {
+  forwardRequest("wihoot", `/wihoot/${req.params.code}/status`, req, res)
 })
 
 app.post("shared-quiz/play")

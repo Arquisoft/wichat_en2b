@@ -6,8 +6,9 @@ let io
 function initializeSocket(server) {
     io = socketIo(server, {
         cors: {
-            origin: "*",
+            origin: "http://localhost:3000", // Adjust to match your Next.js app's origin
             methods: ["GET", "POST"],
+            credentials: true,
         },
     })
 
@@ -142,5 +143,5 @@ function initializeSocket(server) {
 }
 
 
-module.exports = {initializeSocket }
+module.exports = {initializeSocket , io}
 

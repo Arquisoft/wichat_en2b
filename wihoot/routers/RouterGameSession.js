@@ -94,12 +94,16 @@ router.post("/:code/join", async (req, res) => {
             session.addPlayer(player)
             await session.save()
 
-            // Notify all clients about the new player
-            io.to(code).emit("player-joined", {
-                playerId,
-                username,
-                isGuest: !!isGuest,
-            })
+            // Notify all clients about the new player, if io is initialized
+            if (io) {
+                io.to(code).emit("player-joined", {
+                    playerId,
+                    username,
+                    isGuest: !!isGuest,
+                })
+            } else {
+                console.warn("Socket.IO instance not initialized; skipping player-joined emit")
+            }
 
             res.status(200).json({
                 success: true,

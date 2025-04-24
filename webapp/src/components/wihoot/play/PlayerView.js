@@ -41,7 +41,7 @@ export default function PlayerView() {
 
             try {
                 const response = await fetchWithAuth("/token/username")
-                if (response.ok) {
+                if (response) {
                     const userData = await response.json()
                     setUsername(userData.username)
                     return userData
