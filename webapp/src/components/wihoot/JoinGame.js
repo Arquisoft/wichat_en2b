@@ -6,6 +6,7 @@ import Link from "next/link"
 import { Box, Typography, Button, TextField, Container, Paper, Alert } from "@mui/material"
 import GameConnecting from "@/components/wihoot/game/Connecting"
 import axios from "axios"
+import { v4 as uuidv4 } from "uuid"
 
 const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || "http://localhost:8000"
 
@@ -70,15 +71,32 @@ export default function JoinGame() {
                 .find((row) => row.startsWith("token="))
                 ?.split("=")[1]
 
-            const response = await axios.post(`${apiEndpoint}/shared-quiz/${gameCode}/join`, {
-                data: {
-                    playerName: playerName, isGuest: !isAuthenticated, playerId: token
+            let playerId
+            let headers = { "Content-Type": "application/json" }
+
+            if (isAuthenticated && token) {
+                // For authenticated users, fetch user ID
+                const userResponse = await axios.get(`${apiEndpoint}/token/username`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                })
+                playerId = userResponse.data._id
+                headers.Authorization = `Bearer ${token}`
+            } else {
+                // For guest users, generate a unique ID
+                playerId = uuidv4()
+            }
+
+            const response = await axios.post(
+                `${apiEndpoint}/shared-quiz/${gameCode}/join`,
+                {
+                    username: playerName, // Changed from playerName to username
+                    isGuest: !isAuthenticated,
+                    playerId: playerId,
                 },
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`,
-                }
-            });
+                { headers }
+            )
 
             if (response.status === 200) {
                 router.push({
@@ -94,7 +112,7 @@ export default function JoinGame() {
                 setIsJoining(false)
             }
         } catch (error) {
-            console.error("Error joining game")
+            console.error("Error joining game", error)
             setErrorMessage(error.response?.data?.error || "An error occurred while joining the game")
             setIsLoading(false)
             setIsJoining(false)

@@ -318,15 +318,15 @@ export default function PlayerView() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {currentQuestion.answers.map((option, index) => (
                             <button
-                                key={index}
+                                key={option}
                                 onClick={() => handleAnswerSubmit(index)}
                                 disabled={hasAnswered}
                                 className={`quiz-option 
                                 ${selectedOption === option ? "selected" : ""} 
                                 ${selectedOption === option && isCorrect ? "correct-answer" : ""}
                                 ${!isCorrect && correctAnswer === option ? "correct-answer" : ""}`}
-                                {option}
                             >
+                                {option}
                             </button>
                         ))}
                     </div>
