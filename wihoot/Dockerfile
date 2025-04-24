@@ -4,15 +4,13 @@ FROM node:23
 # Set the working directory in the container
 WORKDIR /usr/src/wihoot
 
-COPY ./wihoot/package*.json ./
+COPY package*.json ./
 RUN npm install
 
-COPY ../wihoot ./wihoot
-
-COPY ../gameservice ./gameservice
+COPY . .
 
 # Expose the port the app runs on
 EXPOSE 8006
 
 # Define the command to run your app
-CMD ["node", "./wihoot/wihoot.js"]
+CMD ["node", "./wihoot.js"]

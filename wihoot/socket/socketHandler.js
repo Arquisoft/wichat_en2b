@@ -1,147 +1,147 @@
 const socketIo = require("socket.io")
 const SharedQuizSession = require("../models/session-model")
 
-let io
+module.exports = {
+    io: null, // Initialize io to null
+    initializeSocket : function (server) {
+        // Check if io is already initialized
+        if (this.io == null){
+            this.io = socketIo(server, {
+                cors: {
+                    origin: "http://localhost:3000", // Adjust to match your Next.js app's origin
+                    methods: ["GET", "POST"],
+                    credentials: true,
+                },
+            })
+        }
+        this.io.on("connection", (socket) => {
+                console.log("New client connected:", socket.id)
 
-function initializeSocket(server) {
-    io = socketIo(server, {
-        cors: {
-            origin: "http://localhost:3000", // Adjust to match your Next.js app's origin
-            methods: ["GET", "POST"],
-            credentials: true,
-        },
-    })
+                // Join a session room
+                socket.on("join-session", async ({ code, playerId, username, isGuest }) => {
+                    try {
+                        // Find the session
+                        const session = await SharedQuizSession.findOne({ code })
 
-    io.on("connection", (socket) => {
-        console.log("New client connected:", socket.id)
+                        if (!session) {
+                            socket.emit("error", { message: "Session not found" })
+                            return
+                        }
 
-        // Join a session room
-        socket.on("join-session", async ({ code, playerId, username, isGuest }) => {
-            try {
-                // Find the session
-                const session = await SharedQuizSession.findOne({ code })
+                        // Join the room
+                        socket.join(code)
 
-                if (!session) {
-                    socket.emit("error", { message: "Session not found" })
-                    return
-                }
+                        // Store session code and player info in socket
+                        socket.sessionCode = code
+                        socket.playerId = playerId
+                        socket.username = username
+                        socket.isGuest = isGuest
 
-                // Join the room
-                socket.join(code)
+                        console.log(`Player ${username} (${playerId}) joined session ${code}`)
 
-                // Store session code and player info in socket
-                socket.sessionCode = code
-                socket.playerId = playerId
-                socket.username = username
-                socket.isGuest = isGuest
+                        // Notify the player about successful join
+                        socket.emit("joined-session", {
+                            code,
+                            status: session.status,
+                            currentQuestionIndex: session.currentQuestionIndex,
+                            players: session.players.map((p) => ({
+                                id: p.id,
+                                username: p.username,
+                                isGuest: p.isGuest,
+                                score: p.score,
+                            })),
+                        })
 
-                console.log(`Player ${username} (${playerId}) joined session ${code}`)
-
-                // Notify the player about successful join
-                socket.emit("joined-session", {
-                    code,
-                    status: session.status,
-                    currentQuestionIndex: session.currentQuestionIndex,
-                    players: session.players.map((p) => ({
-                        id: p.id,
-                        username: p.username,
-                        isGuest: p.isGuest,
-                        score: p.score,
-                    })),
+                        // Notify other players about the new player
+                        socket.to(code).emit("player-joined", {
+                            playerId,
+                            username,
+                            isGuest,
+                        })
+                    } catch (error) {
+                        console.error("Error joining session room:", error)
+                        socket.emit("error", { message: "Failed to join session" })
+                    }
                 })
 
-                // Notify other players about the new player
-                socket.to(code).emit("player-joined", {
-                    playerId,
-                    username,
-                    isGuest,
+                // Host joins a session
+                socket.on("host-session", async ({ code, hostId }) => {
+                    try {
+                        // Find the session
+                        const session = await SharedQuizSession.findOne({ code })
+
+                        if (!session) {
+                            socket.emit("error", { message: "Session not found" })
+                            return
+                        }
+
+                        if (session.hostId !== hostId) {
+                            socket.emit("error", { message: "You are not the host of this session" })
+                            return
+                        }
+
+                        // Join the room
+                        socket.join(code)
+
+                        // Store session code and host info in socket
+                        socket.sessionCode = code
+                        socket.isHost = true
+                        socket.hostId = hostId
+
+                        console.log(`Host (${hostId}) joined session ${code}`)
+
+                        // Notify the host about successful join
+                        socket.emit("hosting-session", {
+                            code,
+                            status: session.status,
+                            currentQuestionIndex: session.currentQuestionIndex,
+                            players: session.players.map((p) => ({
+                                id: p.id,
+                                username: p.username,
+                                isGuest: p.isGuest,
+                                score: p.score,
+                            })),
+                        })
+                    } catch (error) {
+                        console.error("Error hosting session:", error)
+                        socket.emit("error", { message: "Failed to host session" })
+                    }
                 })
-            } catch (error) {
-                console.error("Error joining session room:", error)
-                socket.emit("error", { message: "Failed to join session" })
-            }
-        })
 
-        // Host joins a session
-        socket.on("host-session", async ({ code, hostId }) => {
-            try {
-                // Find the session
-                const session = await SharedQuizSession.findOne({ code })
+                // Chat message
+                socket.on("send-message", ({ message }) => {
+                    if (!socket.sessionCode) {
+                        socket.emit("error", { message: "You are not in a session" })
+                        return
+                    }
 
-                if (!session) {
-                    socket.emit("error", { message: "Session not found" })
-                    return
-                }
+                    const messageData = {
+                        senderId: socket.playerId || socket.hostId,
+                        senderName: socket.username || "Host",
+                        isHost: !!socket.isHost,
+                        message,
+                        timestamp: new Date(),
+                    }
 
-                if (session.hostId !== hostId) {
-                    socket.emit("error", { message: "You are not the host of this session" })
-                    return
-                }
-
-                // Join the room
-                socket.join(code)
-
-                // Store session code and host info in socket
-                socket.sessionCode = code
-                socket.isHost = true
-                socket.hostId = hostId
-
-                console.log(`Host (${hostId}) joined session ${code}`)
-
-                // Notify the host about successful join
-                socket.emit("hosting-session", {
-                    code,
-                    status: session.status,
-                    currentQuestionIndex: session.currentQuestionIndex,
-                    players: session.players.map((p) => ({
-                        id: p.id,
-                        username: p.username,
-                        isGuest: p.isGuest,
-                        score: p.score,
-                    })),
+                    // Broadcast to everyone in the session including sender
+                    io.to(socket.sessionCode).emit("new-message", messageData)
                 })
-            } catch (error) {
-                console.error("Error hosting session:", error)
-                socket.emit("error", { message: "Failed to host session" })
-            }
-        })
 
-        // Chat message
-        socket.on("send-message", ({ message }) => {
-            if (!socket.sessionCode) {
-                socket.emit("error", { message: "You are not in a session" })
-                return
-            }
+                // Disconnect
+                socket.on("disconnect", async () => {
+                    console.log("Client disconnected:", socket.id)
 
-            const messageData = {
-                senderId: socket.playerId || socket.hostId,
-                senderName: socket.username || "Host",
-                isHost: !!socket.isHost,
-                message,
-                timestamp: new Date(),
-            }
-
-            // Broadcast to everyone in the session including sender
-            io.to(socket.sessionCode).emit("new-message", messageData)
-        })
-
-        // Disconnect
-        socket.on("disconnect", async () => {
-            console.log("Client disconnected:", socket.id)
-
-            if (socket.sessionCode && socket.playerId && !socket.isHost) {
-                // Notify others that player left
-                socket.to(socket.sessionCode).emit("player-left", {
-                    playerId: socket.playerId,
-                    username: socket.username,
+                    if (socket.sessionCode && socket.playerId && !socket.isHost) {
+                        // Notify others that player left
+                        socket.to(socket.sessionCode).emit("player-left", {
+                            playerId: socket.playerId,
+                            username: socket.username,
+                        })
+                    }
                 })
-            }
-        })
-    })
+            })
 
-    return io
+        console.log("was invoked here",this.io)
+        return this.io
+    }
 }
-
-
-module.exports = {initializeSocket , io}
-

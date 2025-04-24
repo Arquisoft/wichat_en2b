@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/router"
 import { fetchWithAuth } from "../../utils/api-fetch-auth"
-import axios from "axios";
 
 const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://localhost:8000';
 
@@ -21,14 +20,9 @@ export default function CreateGame() {
         // Fetch available topics
         const fetchTopics = async () => {
             try {
-                const response = await fetch(`${apiEndpoint}/quiz/allTopics`,{
-                        method: "GET",
-                        headers: {
-                            "Content-Type": "application/json",
-                        },
-                    });
-                if (response.ok) {
-                    const data = await response.json()
+                const response = await fetchWithAuth(`${apiEndpoint}/quiz/allTopics`);
+                if (response) {
+                    const data = response
                     setTopics(data)
                     if (data.length > 0) {
                         setSelectedTopic(data[0])
