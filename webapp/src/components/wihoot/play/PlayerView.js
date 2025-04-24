@@ -102,7 +102,7 @@ export default function PlayerView() {
 
         const initializeSocket = () => {
             // Connect to socket server
-            const newSocket = io(process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || "http://localhost:8000")
+            const newSocket = io(process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || "http://localhost:8006")
 
             newSocket.on("connect", () => {
                 console.log("Socket connected")
