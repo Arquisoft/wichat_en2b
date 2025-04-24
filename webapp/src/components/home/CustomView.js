@@ -21,6 +21,8 @@ function CustomQuiz() {
     const [numberOfOptions, setNumberOfOptions] = useState(4);
     const [showGame, setShowGame] = useState(false);
     const [quizData, setQuizData] = useState([]);
+    const [error, setError] = useState(null);
+    const [numberOfAvailableQuestions, setNumberOfAvailableQuestions] = useState(10);
   
     const mapDifficulty = (level) => {
       switch (level) {
@@ -34,7 +36,6 @@ function CustomQuiz() {
     };
     const fetchSubcategories = async (cat) => {
       try {
-        console.log("Selected category: ", cat);
         const response = await fetch(`${apiEndpoint}/quiz/${cat}`);
         const data = await response.json();
 
@@ -46,14 +47,33 @@ function CustomQuiz() {
           question: quiz.question,
         }));
 
-        console.log("Mapped quizes:", mappedQuizzes);
         setSubcategories(mappedQuizzes);
-        console.log("Mapped quiz selected:", mappedQuizzes[0]);
         setSelectedSubcategory(mappedQuizzes[0]);
       } catch (err) {
+        setError("There was an error fetching the quizzes.");
         console.error("Error fetching quizzes", err);
       }
     };
+
+    const validFields = () => {
+      let tempError = null;
+    
+      if (showNewCategoryInput && newCategory.trim() === "") {
+        tempError = "The new category cannot be empty.";
+      } else if (numberOfQuestions <= 0) {
+        tempError = "You cannot enter a negative amount of questions.";
+      } else if (!showNewCategoryInput && numberOfQuestions > numberOfAvailableQuestions) {
+        tempError = `There are only ${numberOfAvailableQuestions} questions for this quiz.`;
+      } else if (numberOfOptions < 2 || numberOfOptions > 10) {
+        tempError = "The valid range of options is from 2–10.";
+      } else if (timePerQuestion < 1 || timePerQuestion > 120) {
+        tempError = "You can only set a time from 1–120 seconds.";
+      }
+    
+      setError(tempError);
+      return tempError == null;
+    };
+    
 
     useEffect(() => {
         setSelectedCategory("custom");
@@ -62,7 +82,7 @@ function CustomQuiz() {
           try {
             const response = await fetch(`${apiEndpoint}/quiz`);
             const data = await response.json();
-            console.log(data);
+
             const formattedCategories = Object.values(
               data.reduce((acc, quiz) => {
                 const category = quiz.category;
@@ -74,8 +94,8 @@ function CustomQuiz() {
             );
     
             setCategories(formattedCategories);
-            console.log("Formatted: ", formattedCategories);
           } catch (error) {
+            setError("There was an error fetching the categories");
             console.error("Failed to fetch categories:", error);
           }
         };
@@ -84,16 +104,30 @@ function CustomQuiz() {
     }, []); 
   
     const handleSubmit = (e) => {
-      e.preventDefault()
-      const category = showNewCategoryInput ? newCategory : selectedCategory
+      e.preventDefault();
+
+      if (!validFields()) {
+        return;
+      }
+
+      const category = showNewCategoryInput ? newCategory : selectedCategory;
+
+      let question = showNewCategoryInput ? "":
+        selectedSubcategory.question;
+        
+      let url = showNewCategoryInput ? 
+        `/game/${newCategory}/${numberOfQuestions}/${numberOfOptions}/${question}`:
+        `/game/${selectedSubcategory.wikidataCode}/${numberOfQuestions}/${numberOfOptions}`;
+      
+
       let quizData = {
         topic: category, 
         subject: selectedSubcategory.wikidataCode, 
         totalQuestions: numberOfQuestions, 
         numberOptions: numberOfOptions, 
         timerDuration: timePerQuestion, 
-        question: selectedSubcategory.question,
-        fetchQuestionsURL: `/game/${selectedSubcategory.wikidataCode}/${numberOfQuestions}/${numberOfOptions}`,
+        question: question,
+        fetchQuestionsURL: url,
       };
       setQuizData(quizData);
       setShowGame(true);
@@ -116,7 +150,6 @@ function CustomQuiz() {
                 onChange={(e) => {
                   setSelectedCategory(e.target.value);
                   setShowNewCategoryInput(e.target.value == "custom");
-                  console.log("Selected category:", selectedCategory);
                   if (e.target.value != "custom"){
                     fetchSubcategories(e.target.value);
                   }
@@ -180,7 +213,6 @@ function CustomQuiz() {
                 value={selectedDifficulty}
                 onChange={(e) => {
                   setSelectedDifficulty(e.target.value);
-                  console.log(selectedDifficulty);
                 }}
               >
                 {showNewCategoryInput && [1, 2, 3, 5].map((i) => (
@@ -203,7 +235,7 @@ function CustomQuiz() {
             <input
               type="number"
               id="time-per-question"
-              min="5"
+              min="1"
               max="120"
               value={timePerQuestion}
               onChange={(e) => setTimePerQuestion(Number.parseInt(e.target.value))}
@@ -215,25 +247,25 @@ function CustomQuiz() {
             <input
               type="number"
               id="number-of-questions"
-              min="5"
-              max="50"
+              min="1"
               value={numberOfQuestions}
               onChange={(e) => setNumberOfQuestions(Number.parseInt(e.target.value))}
             />
           </div>
 
           <div className="form-group">
-            <label htmlFor="number-of-answers">Number of answers per question:</label>
+            <label htmlFor="number-of-answers">Number of options per question:</label>
             <input
               type="number"
               id="number-of-answers"
               min="2"
-              max="10"
               value={numberOfOptions}
               onChange={(e) => setNumberOfOptions(Number.parseInt(e.target.value))}
             />
           </div>
   
+          {error && <p className="error-message">{error}</p>}
+
           <div className="form-group">
             <label>Game Mode:</label>
             <div className="radio-group">

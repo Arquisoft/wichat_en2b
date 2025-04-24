@@ -165,4 +165,10 @@ select:focus {
     margin-bottom: 15px;
   }
 }
+
+.error-message{
+  color:#d32f2f;
+  font-size:.875rem;
+  margin:4px 0
+}
   
