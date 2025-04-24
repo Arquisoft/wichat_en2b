@@ -21,22 +21,22 @@ const Login = () => {
     e.preventDefault();
     setErrors({});
     setLoading(true);
-  
+
     try {
       // Fetch token from cookies if it's available
       const token = document.cookie
         .split("; ")
         .find((row) => row.startsWith("token="))
         ?.split("=")[1];
-  
-   
+
+
       const data = await loginUser(
         username,
         password,
         apiEndpoint,
         token
       );
-     
+
       // Redirect to the home page after login
       if(data.has2fa){
         setHas2fa(true);
@@ -75,11 +75,12 @@ const Login = () => {
       setLoading(false);
     }
   };
-  
+
 
   return (
     <div className="login-container">
       <div className="login-card">
+        <button onClick={() => window.location.href = '/'}></button>
         <h2>Welcome to WIChat</h2>
         <p>Login to start playing!</p>
         {errors.general && <p className="error-message">{errors.general}</p>}
@@ -87,7 +88,7 @@ const Login = () => {
           <Check2fa username={username}/>
         ) : (
           <form onSubmit={handleSubmit}>
-       
+
           <div className="input-group">
             <label htmlFor="username">Username</label>
             <input

@@ -151,6 +151,7 @@ const AddUser = () => {
   return (
       <div className="register-container">
         <div className="register-card">
+          <button onClick={() => window.location.href = '/'}></button>
           <h2>Create an Account</h2>
           <p>Enter your username and password below to sign up!</p>
 
