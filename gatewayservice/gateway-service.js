@@ -345,6 +345,12 @@ app.get("/shared-quiz/:code/status", (req, res) => {
   forwardRequest("wihoot", `/wihoot/${req.params.code}/status`, req, res)
 })
 
+app.use('/internal/quizdata/', publicCors);
+
+app.get('/internal/quizdata/:id', (req, res) => {
+  forwardRequest("wihoot", `/wihoot/internal/quizdata/${req.params.id}`, req, res)
+})
+
 app.post("shared-quiz/play")
 
 
