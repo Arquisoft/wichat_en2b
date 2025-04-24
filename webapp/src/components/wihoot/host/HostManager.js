@@ -52,7 +52,7 @@ export default function HostManager() {
             }
         }
 
-        const fetchSessionData = async (hostId) => {
+        const fetchSessionData = async () => {
             try {
                 const response = await fetchWithAuth(`${apiEndpoint}/shared-quiz/${code}/status`)
                 if (response) {
@@ -108,6 +108,7 @@ export default function HostManager() {
             })
 
             newSocket.on("player-joined", (data) => {
+                console.log("Player joined:", data)
                 setPlayers((prevPlayers) => [
                     ...prevPlayers,
                     {

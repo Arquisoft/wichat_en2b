@@ -3,11 +3,12 @@ const http = require("http")
 const cors = require("cors")
 const mongoose = require("mongoose")
 const { initializeSocket } = require("./socket/socketHandler")
-const sharedQuizSessionRouter = require("./routers/RouterGameSession")
 
 const app = express()
 const server = http.createServer(app)
 const io = initializeSocket(server)
+
+const sharedQuizSessionRouter = require("./routers/RouterGameSession")(io)
 
 // Middleware
 app.use(cors())
