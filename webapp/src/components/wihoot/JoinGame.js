@@ -28,8 +28,6 @@ export default function JoinGame() {
                 ?.split("=")[1]
 
             if (token) {
-                setIsAuthenticated(true)
-
                 try {
                     // Fetch username
                     const userResponse = await axios.get(`${apiEndpoint}/token/username`, {
@@ -37,8 +35,10 @@ export default function JoinGame() {
                             Authorization: `Bearer ${token}`,
                         },
                     })
-
-                    setPlayerName(userResponse.data.username)
+                    if (userResponse.data){
+                        setIsAuthenticated(true)
+                        setPlayerName(userResponse.data.username)
+                    }
                 } catch (error) {
                     console.error("Error fetching user data:", error)
                 }
@@ -75,14 +75,9 @@ export default function JoinGame() {
             let headers = { "Content-Type": "application/json" }
 
             if (isAuthenticated && token) {
-                // For authenticated users, fetch user ID
-                const userResponse = await axios.get(`${apiEndpoint}/token/username`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                })
-                playerId = userResponse.data._id
-                headers.Authorization = `Bearer ${token}`
+
+                playerId = playerName
+
             } else {
                 // For guest users, generate a unique ID
                 playerId = uuidv4()

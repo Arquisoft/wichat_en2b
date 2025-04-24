@@ -228,9 +228,7 @@ export default function HostManager() {
         }
 
         try {
-            const response = await fetchWithAuth(`/shared-quiz/${code}/start?hostId=${hostId}`, {
-                method: "POST",
-            });
+            const response = await fetchWithAuth(`/shared-quiz/${code}/start?hostId=${hostId}`);
             if (!response) {
                 throw new Error("Failed to start quiz");
             }
@@ -252,13 +250,7 @@ export default function HostManager() {
             }
 
             // Enviar la pregunta actual al endpoint para los jugadores
-            const response = await fetchWithAuth(`/shared-quiz/${code}/next?hostId=${hostId}`, {
-                method: "POST",
-                body: JSON.stringify({
-                    questionIndex: currentQuestionIndex,
-                    question: currentQuestion,
-                }),
-            });
+            const response = await fetchWithAuth(`/shared-quiz/${code}/next?hostId=${hostId}`);
 
             if (!response) {
                 throw new Error("Failed to move to next question");
@@ -279,9 +271,7 @@ export default function HostManager() {
 
     const handleEndQuiz = async () => {
         try {
-            const response = await fetchWithAuth(`/shared-quiz/${code}/end?hostId=${hostId}`, {
-                method: "POST",
-            });
+            const response = await fetchWithAuth(`/shared-quiz/${code}/end?hostId=${hostId}`);
 
             if (!response) {
                 throw new Error("Failed to end quiz");
