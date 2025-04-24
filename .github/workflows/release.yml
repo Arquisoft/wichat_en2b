@@ -216,7 +216,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
           registry: ghcr.io
-          dockerfile: ./gatewayservice/monitoring/prometheus/Dockerfile  # You may need to create this file
+          dockerfile: ./gatewayservice/monitoring/prometheus/Dockerfile
           platforms: linux/arm64
 
   docker-push-grafana:
@@ -237,7 +237,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
           registry: ghcr.io
-          dockerfile: ./gatewayservice/monitoring/grafana/Dockerfile  # You may need to create this file
+          dockerfile: ./gatewayservice/monitoring/grafana/Dockerfile
           platforms: linux/arm64
 
   deploy:
