@@ -355,4 +355,98 @@ describe("Register Component", () => {
             expect(screen.getByText("An error has occurred. Please try again later.")).toBeInTheDocument();
         });
     });
+
+    test("Registers user and saves guest game data if it exists", async () => {
+        jest.spyOn(require('next/navigation'), 'useRouter').mockReturnValue({ push: mockPush });
+      
+        const mockToken = "test-token";
+        const guestData = JSON.stringify({ level: 3, score: 1500 });
+      
+        // Setup localStorage mock
+        localStorage.setItem("guestGameData", guestData);
+      
+        // Mock fetch for loginUser
+        fetch.mockResponseOnce(JSON.stringify({ token: mockToken }), { status: 200 });
+      
+        // Mock fetch for /game post
+        fetch.mockResponseOnce("", { status: 200 });
+      
+        render(<Register />);
+      
+        // Fill out form
+        fireEvent.change(screen.getByPlaceholderText("Enter your username"), {
+          target: { value: "testUser" },
+        });
+        fireEvent.change(screen.getByPlaceholderText("Enter your password"), {
+          target: { value: "testPassword" },
+        });
+        fireEvent.change(screen.getByPlaceholderText("Confirm your password"), {
+          target: { value: "testPassword" },
+        });
+      
+        await act(async () => {
+          fireEvent.click(screen.getByText("Register"));
+          jest.advanceTimersByTime(1000);
+        });
+      
+        await waitFor(() => {
+          expect(fetch).toHaveBeenCalledWith(
+            expect.stringContaining("/game"),
+            expect.objectContaining({
+              method: "POST",
+              headers: expect.objectContaining({
+                Authorization: `Bearer ${mockToken}`,
+              }),
+              body: guestData,
+            })
+          );
+          expect(localStorage.getItem("guestGameData")).toBe(null);
+          expect(mockPush).toHaveBeenCalledWith("/");
+        });
+    });
+    test("Registers user but logs error if saving guest data fails", async () => {
+        jest.spyOn(require('next/navigation'), 'useRouter').mockReturnValue({ push: mockPush });
+      
+        const mockToken = "test-token";
+        const guestData = JSON.stringify({ level: 2, score: 900 });
+      
+        localStorage.setItem("guestGameData", guestData);
+      
+        // Mock login response
+        fetch.mockResponseOnce(JSON.stringify({ token: mockToken }), { status: 200 });
+      
+        // Mock failing guest game data POST
+        fetch.mockRejectOnce(new Error("Server error"));
+      
+        const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+      
+        render(<Register />);
+      
+        // Fill form
+        fireEvent.change(screen.getByPlaceholderText("Enter your username"), {
+          target: { value: "testUser" },
+        });
+        fireEvent.change(screen.getByPlaceholderText("Enter your password"), {
+          target: { value: "testPassword" },
+        });
+        fireEvent.change(screen.getByPlaceholderText("Confirm your password"), {
+          target: { value: "testPassword" },
+        });
+      
+        await act(async () => {
+          fireEvent.click(screen.getByText("Register"));
+          jest.advanceTimersByTime(1000);
+        });
+      
+        await waitFor(() => {
+          expect(consoleSpy).toHaveBeenCalledWith(
+            "Failed to save guest data after register:",
+            expect.any(Error)
+          );
+          expect(mockPush).toHaveBeenCalledWith("/");
+        });
+      
+        consoleSpy.mockRestore();
+    });
+      
 });
