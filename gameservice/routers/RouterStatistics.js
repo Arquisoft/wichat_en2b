@@ -67,9 +67,7 @@ router.get('/statistics/global', verifyToken, async (req, res) => {
 
 router.get('/statistics/recent-quizzes', verifyToken, async (req, res) => {
     try {
-        console.log(req.query.page);
         const page = parseInt(req.query.page) || 0;
-        console.log(page);
         const limit = 5;
         const recentQuizzes = await GameInfo.find({ user_id: req.user._id })
             .sort({ createdAt: -1 })

@@ -21,14 +21,31 @@ import {
 	TableHead,
 	TableRow,
 	Button,
+	Chip,
+	Avatar,
+	Tooltip,
+	IconButton,
 } from "@mui/material"
 import "../../../styles/home/StatsTab.css"
 import { fetchWithAuth } from "@/utils/api-fetch-auth";
 import LoadingErrorHandler from ".//LoadingErrorHandler";
 import { PieChart } from '@mui/x-charts/PieChart';
 import { Gauge, gaugeClasses } from '@mui/x-charts/Gauge';
+import { Info, AccessTime } from "@mui/icons-material"
 
 const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://localhost:8000';
+
+const performanceColor = (value) => {
+	if (value >= 70) return "#4caf50";
+	else if (value >= 40) return "#f5a623";
+	else return "#e6296f";
+}
+
+const performanceIcon = (value) => {
+	if (value >= 70) return ":)";
+	else if (value >= 40) return ":|";
+	else return ":(";
+}
 
 // TabPanel component for the tabs
 function TabPanel(props) {
@@ -193,17 +210,13 @@ export default function StatsTab() {
 			height: 220,
 			value: accuracy,
 		}
-		let arcColor = "#e6296f" // Red for low accuracy
-		if (accuracy >= 70)
-			arcColor = "#178ee4" // Blue for high accuracy
-		else if (accuracy >= 40) arcColor = "#f5a623" // Yellow for medium accuracy
+		let arcColor = performanceColor(accuracy);
 		return (
 			<Box sx={{ display: 'flex',
 				flexDirection: 'column',
 				alignItems: 'center',
 				justifyContent: 'center',
 				width: "100%",
-				mt: 3,
 			}}>
 				<Gauge
 					{...settings}
@@ -230,6 +243,233 @@ export default function StatsTab() {
 				</Typography>
 			</Box>
 		);
+	}
+
+	function QuizTable() {
+		return (
+			<Paper
+				elevation={3}
+				sx={{
+					borderRadius: 2,
+					overflow: "hidden",
+					mx: "auto",
+					boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
+				}}
+			>
+				<Box
+					sx={{
+						p: 2,
+						display: "flex",
+						justifyContent: "space-between",
+						alignItems: "center",
+						borderBottom: "1px solid rgba(0,0,0,0.1)",
+						bgcolor: "#f5f7fa",
+					}}
+				>
+					<Typography variant="h6" fontWeight="bold">
+						Recent Quizzes
+					</Typography>
+					<Tooltip title="View your recent quiz performance">
+						<IconButton size="small">
+							<Info />
+						</IconButton>
+					</Tooltip>
+				</Box>
+
+				<TableContainer sx={{ maxHeight: 400 }}>
+					<Table size="medium" aria-label="recent quizzes table" stickyHeader>
+						<TableHead>
+							<TableRow>
+								<TableCell
+									sx={{
+										bgcolor: "#178ee4",
+										color: "white",
+										fontWeight: "bold",
+										fontSize: "0.95rem",
+										borderBottom: "3px solid #1565c0",
+									}}
+								>
+									Subject
+								</TableCell>
+								<TableCell
+									align="center"
+									sx={{
+										bgcolor: "#178ee4",
+										color: "white",
+										fontWeight: "bold",
+										fontSize: "0.95rem",
+										borderBottom: "3px solid #1565c0",
+									}}
+								>
+									Points
+								</TableCell>
+								<TableCell
+									align="center"
+									sx={{
+										bgcolor: "#178ee4",
+										color: "white",
+										fontWeight: "bold",
+										fontSize: "0.95rem",
+										borderBottom: "3px solid #1565c0",
+									}}
+								>
+									Questions
+								</TableCell>
+								<TableCell
+									align="center"
+									sx={{
+										bgcolor: "#178ee4",
+										color: "white",
+										fontWeight: "bold",
+										fontSize: "0.95rem",
+										borderBottom: "3px solid #1565c0",
+									}}
+								>
+									Correct
+								</TableCell>
+								<TableCell
+									align="center"
+									sx={{
+										bgcolor: "#178ee4",
+										color: "white",
+										fontWeight: "bold",
+										fontSize: "0.95rem",
+										borderBottom: "3px solid #1565c0",
+									}}
+								>
+									Wrong
+								</TableCell>
+								<TableCell
+									align="center"
+									sx={{
+										bgcolor: "#178ee4",
+										color: "white",
+										fontWeight: "bold",
+										fontSize: "0.95rem",
+										borderBottom: "3px solid #1565c0",
+									}}
+								>
+									Time
+								</TableCell>
+							</TableRow>
+						</TableHead>
+						<TableBody>
+							{recentQuizzes.map((quiz, index) => {
+								const scoreColor = performanceColor((quiz.number_correct_answers/quiz.number_of_questions)*100);
+								const wrongAnswers = quiz.number_of_questions - quiz.number_correct_answers
+								const scoreIcon = performanceIcon((quiz.number_correct_answers/quiz.number_of_questions)*100);
+								return (
+									<TableRow
+										key={index}
+										sx={{
+											"&:nth-of-type(odd)": { bgcolor: "rgba(0, 0, 0, 0.02)" },
+											"&:hover": { bgcolor: "rgba(0, 0, 0, 0.04)" },
+											transition: "background-color 0.2s",
+											borderLeft: `4px solid ${scoreColor}`,
+										}}
+									>
+										<TableCell
+											sx={{
+												fontWeight: "bold",
+												display: "flex",
+												alignItems: "center",
+												gap: 1,
+											}}
+										>
+											<Avatar
+												sx={{
+													width: 32,
+													height: 32,
+													bgcolor: scoreColor,
+													fontSize: "0.875rem",
+												}}
+											>
+												${scoreIcon}
+											</Avatar>
+											{quiz.subject}
+										</TableCell>
+										<TableCell align="center">
+											<Chip
+												label={quiz.points_gain}
+												size="small"
+												sx={{
+													fontWeight: "bold",
+													bgcolor: "#e3f2fd",
+													color: "#1565c0",
+												}}
+											/>
+										</TableCell>
+										<TableCell align="center">{quiz.number_of_questions}</TableCell>
+										<TableCell align="center">
+											<Box
+												sx={{
+													color: "#4caf50",
+													fontWeight: "medium",
+													display: "inline-flex",
+													alignItems: "center",
+													gap: 0.5,
+												}}
+											>
+												{quiz.number_correct_answers}
+											</Box>
+										</TableCell>
+										<TableCell align="center">
+											<Box
+												sx={{
+													color: wrongAnswers > 0 ? "#f44336" : "#4caf50",
+													fontWeight: "medium",
+													display: "inline-flex",
+													alignItems: "center",
+													gap: 0.5,
+												}}
+											>
+												{wrongAnswers}
+											</Box>
+										</TableCell>
+										<TableCell align="center">
+											<Box
+												sx={{
+													display: "inline-flex",
+													alignItems: "center",
+													gap: 0.5,
+												}}
+											>
+												<AccessTime fontSize="small" color="action" />
+												{`${quiz.total_time.toFixed(1)}s`}
+											</Box>
+										</TableCell>
+									</TableRow>
+								)
+							})}
+						</TableBody>
+					</Table>
+				</TableContainer>
+
+				<Box
+					sx={{
+						p: 2,
+						display: "flex",
+						justifyContent: "space-between",
+						borderTop: "1px solid rgba(0,0,0,0.1)",
+						bgcolor: "#f5f7fa",
+					}}
+				>
+					<Typography variant="body2" color="text.secondary">
+						Showing {recentQuizzes.length} recent quizzes
+					</Typography>
+					<Typography variant="body2" color="text.secondary">
+						Average score:{" "}
+						{Math.round(
+							recentQuizzes.reduce(
+								(acc, quiz) => acc + (quiz.number_correct_answers / quiz.number_of_questions) * 100,
+								0,
+							) / recentQuizzes.length,
+						)}
+						%
+					</Typography>
+				</Box>
+			</Paper>
+		)
 	}
 
 	return (
@@ -334,7 +574,7 @@ export default function StatsTab() {
 										justifyContent: 'center',
 										alignItems: 'center',
 										gap: 2
-									}}>
+									}} className="stat-charts-container stats-charts">
 										<Box sx={{ width: '50%' }}>
 											<StatsPie />
 										</Box>
@@ -346,50 +586,7 @@ export default function StatsTab() {
 							</Box>
 						</Box>)}
 						{/* Recent quizzes table */}
-						<Paper
-							elevation={1}
-							sx={{
-							mt: 2,
-							borderRadius: 2,
-								transition: "all 0.2s",
-								"&:hover": {
-									transform: "translateY(-3px)",
-									boxShadow: 3,
-								},
-							overflow: 'hidden'
-						}}
-						>
-						<Typography variant="subtitle1" sx={{ p: 2, fontWeight: "bold", borderBottom: 1, borderColor: 'divider' }}>
-							Recent Quizzes
-						</Typography>
-						<TableContainer sx={{ maxHeight: 400 }}>
-							<Table size="small" aria-label="recent quizzes table">
-								<TableHead sx={{ bgcolor: "#178ee4" }}>
-									<TableRow>
-										<TableCell sx={{ color: "white", fontWeight: "bold" }}>Subject</TableCell>
-										<TableCell align="center" sx={{ color: "white", fontWeight: "bold" }}>Points</TableCell>
-										<TableCell align="center" sx={{ color: "white", fontWeight: "bold" }}>Questions</TableCell>
-										<TableCell align="center" sx={{ color: "white", fontWeight: "bold" }}>Correct</TableCell>
-										<TableCell align="center" sx={{ color: "white", fontWeight: "bold" }}>Wrong</TableCell>
-										<TableCell align="center" sx={{ color: "white", fontWeight: "bold" }}>Time</TableCell>
-									</TableRow>
-								</TableHead>
-								<TableBody>
-									{recentQuizzes?.map((quiz, index) => (
-										<TableRow key={index}>
-											<TableCell align="center" sx={{ fontWeight: "bold" }}>{quiz.subject}</TableCell>
-											<TableCell align="center">{quiz.points_gain}</TableCell>
-											<TableCell align="center">{quiz.number_of_questions}</TableCell>
-											<TableCell align="center">{quiz.number_correct_answers}</TableCell>
-											<TableCell align="center">
-												{quiz.number_of_questions - quiz.number_correct_answers}
-											</TableCell>
-											<TableCell align="center">{`${quiz.total_time.toFixed(1)}s`}</TableCell>
-										</TableRow>
-									))}
-								</TableBody>
-							</Table>
-						</TableContainer>
+						<QuizTable/>
 							{hasMoreQuizzes && (
 								<Box sx={{ display: 'flex', justifyContent: 'center', p: 2 }}>
 									<Button
@@ -405,7 +602,6 @@ export default function StatsTab() {
 									</Button>
 								</Box>
 							)}
-					</Paper>
 				</LoadingErrorHandler>
 			</CardContent>
 
