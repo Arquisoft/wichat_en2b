@@ -1,0 +1,20 @@
+groups:
+  - name: gateway_alerts
+    rules:
+      - alert: HighErrorRate
+        expr: sum(rate(http_request_duration_seconds_count{job="gateway-service",status_code=~"5.."}[5m])) / sum(rate(http_request_duration_seconds_count{job="gateway-service"}[5m])) > 0.05
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High error rate on Gateway Service"
+          description: "Gateway service error rate is above 5% ({{ $value | humanizePercentage }}) for the past 1m"
+          
+      - alert: HighResponseTime
+        expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job="gateway-service"}[5m])) by (le)) > 1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Slow response time on Gateway Service"
+          description: "Gateway service 95th percentile response time is above 1s ({{ $value }}s) for the past 5m"
