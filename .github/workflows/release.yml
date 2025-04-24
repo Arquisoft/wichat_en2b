@@ -216,6 +216,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
           registry: ghcr.io
+          context: ./gatewayservice/monitoring/prometheus
           dockerfile: ./gatewayservice/monitoring/prometheus/Dockerfile
           platforms: linux/arm64
 
@@ -237,6 +238,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
           registry: ghcr.io
+          context: ./gatewayservice/monitoring/grafana
           dockerfile: ./gatewayservice/monitoring/grafana/Dockerfile
           platforms: linux/arm64
 
