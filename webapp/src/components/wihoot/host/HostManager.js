@@ -117,19 +117,11 @@ export default function HostManager() {
 
             newSocket.on("player-joined", (data) => {
                 console.log("Player joined:", data);
-                setPlayers((prevPlayers) => [
-                    ...prevPlayers,
-                    {
-                        id: data.playerId,
-                        username: data.username,
-                        isGuest: data.isGuest,
-                        score: 0,
-                    },
-                ]);
+                fetchSessionData()
             });
 
             newSocket.on("player-left", (data) => {
-                setPlayers((prevPlayers) => prevPlayers.filter((player) => player.id !== data.playerId));
+                fetchSessionData()
                 console.log("Player left:", data);
             });
 
