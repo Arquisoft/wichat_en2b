@@ -7,6 +7,8 @@ import { Logout as LogoutIcon, Person as PersonIcon} from "@mui/icons-material";
 import { useRouter } from "next/navigation"; // Import useRouter for navigation
 import "../../../styles/home/Navbar.css";
 import ProfileForm from "./ProfileForm";
+import ConnectWithoutContactOutlinedIcon from '@mui/icons-material/ConnectWithoutContactOutlined';
+import PlayCircleFilledWhiteOutlinedIcon from '@mui/icons-material/PlayCircleFilledWhiteOutlined';
 
 const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://localhost:8000';
 
@@ -48,6 +50,14 @@ const Navbar = ({ username = "Guest", profilePicture }) => {
     router.push("/login");
   };
 
+  const handleCreateCodeGame = () => {
+    router.push("/wihoot/create");
+  }
+
+  const handleJoinCodeame = () => {
+    router.push("/wihoot/join");
+  }
+
   return (
     <>
       <AppBar position="sticky" className="app-bar">
@@ -61,7 +71,38 @@ const Navbar = ({ username = "Guest", profilePicture }) => {
           </Box>
 
           <Box className="spacer" />
-      
+
+          <Box className="user-section">
+            {/*Join Game Code*/}
+            <Button
+                id={'navbar-join-game-button'}
+                onClick={handleJoinCodeame}
+                variant={"contained"}
+                color="primary"
+                startIcon={<ConnectWithoutContactOutlinedIcon />}
+                className="joingame"
+                aria-label="Join Game"
+                size="small"
+            >
+              Join Game
+            </Button>
+
+            {/*Create Game Code*/}
+            <Button
+                id={'navbar-create-game-button'}
+                onClick={handleCreateCodeGame}
+                variant={"contained"}
+                color="primary"
+                startIcon={<PlayCircleFilledWhiteOutlinedIcon />}
+                className="creategame"
+                aria-label="Start Game Session"
+                size="small"
+            >
+              Start Session
+            </Button>
+
+          </Box>
+
           {/* Profile button */}
           <Box className="user-section">
             <Button
