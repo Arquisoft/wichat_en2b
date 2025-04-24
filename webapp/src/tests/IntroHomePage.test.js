@@ -40,18 +40,6 @@ describe("IntroHomePage Component", () => {
         });
     });
 
-    test("renders the footer with the current year", async () => {
-        await act(async () => {
-            render(<IntroHomePage />);
-        });
-
-        const currentYear = new Date().getFullYear();
-
-        await waitFor(() => {
-            expect(screen.getByText(`© ${currentYear} WiChat. All rights reserved.`)).toBeInTheDocument();
-        });
-    });
-
     test("navbar renders correctly", async () => {
         await act(async () => {
             render(<IntroHomePage />);
@@ -102,7 +90,7 @@ describe("IntroHomePage Component", () => {
         });
 
         await waitFor(() => {
-            expect(mockLocation).toHaveBeenCalledWith("/guest/home");
+            expect(mockRouter.asPath).toBe('/guest/home');
         });
     });
 
@@ -124,7 +112,7 @@ describe("IntroHomePage Component", () => {
         });
 
         await waitFor(() => {
-            expect(mockLocation).toHaveBeenCalledWith("/login");
+            expect(mockRouter.asPath).toBe('/login');
         });
     });
 
@@ -146,7 +134,7 @@ describe("IntroHomePage Component", () => {
         });
 
         await waitFor(() => {
-            expect(mockLocation).toHaveBeenCalledWith("/addUser");
+            expect(mockRouter.asPath).toBe('/addUser');
         });
     });
 
@@ -160,7 +148,7 @@ describe("IntroHomePage Component", () => {
         });
 
         await waitFor(() => {
-            expect(mockLocation).toHaveBeenCalledWith("/login");
+            expect(mockRouter.asPath).toBe('/login');
         });
     });
 
@@ -174,7 +162,7 @@ describe("IntroHomePage Component", () => {
         });
 
         await waitFor(() => {
-            expect(mockLocation).toHaveBeenCalledWith("/addUser");
+            expect(mockRouter.asPath).toBe('/addUser');
         });
     });
 });

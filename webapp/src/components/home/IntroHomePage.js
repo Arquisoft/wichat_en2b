@@ -10,12 +10,13 @@ import {
     DialogActions
 } from "@mui/material";
 import { PlayArrow as PlayIcon } from "@mui/icons-material";
-import Navbar from "./ui/Navbar";
 import "../../styles/home/IntroHomePage.css";
+import { useRouter } from "next/navigation";
 
 function IntroHomePage() {
+    const router = useRouter();
+
     const [openDialog, setOpenDialog] = useState(false);
-    const currentYear = new Date().getFullYear();
 
     const handlePlayClick = () => {
         setOpenDialog(true);
@@ -23,17 +24,17 @@ function IntroHomePage() {
 
     const handlePlayNow = () => {
         setOpenDialog(false);
-        window.location.href = "/guest/home";
+        router.push("/guest/home");
     };
 
     const handleLogin = () => {
         setOpenDialog(false);
-        window.location.href = "/login";
+        router.push("/login");
     };
 
     const handleRegister = () => {
         setOpenDialog(false);
-        window.location.href = "/addUser";
+        router.push("/addUser");
     };
 
     return (

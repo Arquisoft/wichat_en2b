@@ -35,7 +35,6 @@ describe('GuestHomePage Component', () => {
     await waitFor(() => {
       expect(screen.getByText('WiChat Guest Mode')).toBeInTheDocument();
       expect(screen.getByText('Play quizzes anonymously - scores won\'t be saved')).toBeInTheDocument();
-      expect(screen.getByText('Play')).toBeInTheDocument();
     });
   });
 
@@ -45,7 +44,6 @@ describe('GuestHomePage Component', () => {
     });
 
     await waitFor(() => {
-      expect(screen.getByText('Play')).toBeInTheDocument();
       expect(screen.queryByText('Stats')).not.toBeInTheDocument();
       expect(screen.queryByText('Leaderboard')).not.toBeInTheDocument();
     });

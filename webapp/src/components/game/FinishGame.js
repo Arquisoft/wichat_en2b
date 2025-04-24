@@ -1,8 +1,11 @@
-import { Alert, Button } from "@mui/material";
+import { Alert } from "@mui/material";
 import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function FinishGame(params) {
     const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://localhost:8000';
+
+    const router = useRouter();
     
     const answers = params.answers;
     const fetchQuestions = params.callback;
@@ -104,12 +107,12 @@ export default function FinishGame(params) {
                     </Alert>
                     <button
                         className="back-home-button"
-                        onClick={() => (location.href = '/login')}
+                        onClick={() => (router.push('/login'))}
                     >
                         Log In
                     </button>
                     <button
-                        onClick={() => (location.href = '/addUser')}
+                        onClick={() => (router.push('/addUser'))}
                         className="play-again-button"
                     >
                         Register

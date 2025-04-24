@@ -99,7 +99,7 @@ const Navbar = ({ username = "Guest", profilePicture }) => {
                             <Button
                                 variant="outlined"
                                 color="primary"
-                                onClick={() => (window.location.href = "/login")}
+                                onClick={() => (router.push("/login"))}
                                 className="login-button"
                             >
                                 Login
@@ -107,7 +107,7 @@ const Navbar = ({ username = "Guest", profilePicture }) => {
                             <Button
                                 variant="contained"
                                 color="secondary"
-                                onClick={() => (window.location.href = "/addUser")}
+                                onClick={() => (router.push("/addUser"))}
                                 className="register-button"
                             >
                                 Register
