@@ -126,8 +126,8 @@ router.post("/:code/join", async (req, res) => {
 // Start a shared quiz session (host only)
 router.get("/:code/start", async (req, res) => {
     try {
-        const { code } = req.params
-        const { hostId } = req.query
+        let code = req.params.code
+        let hostId  = req.query.hostId
 
         if (!hostId) {
             return res.status(400).json({ error: "Missing host ID" })
@@ -146,12 +146,12 @@ router.get("/:code/start", async (req, res) => {
         try {
             session.start()
             await session.save()
-
+            
             // Notify all clients that the session has started
             socketHandlerObject.io.to(code).emit("session-started", {
                 currentQuestionIndex: session.currentQuestionIndex,
             })
-
+            
             res.status(200).json({
                 success: true,
                 status: session.status,
@@ -304,7 +304,7 @@ router.get("/:code/end", async (req, res) => {
             return res.status(400).json({ error: "Missing host ID" })
         }
 
-        const session = await SharedQuizSession.findOne({ code })
+        const session = await SharedQuizSestartssion.findOne({ code })
 
         if (!session) {
             return res.status(404).json({ error: "Session not found" })
