@@ -51,6 +51,7 @@ function CategoryComponent() {
               category: quiz.category,
             }));
 
+            console.log("Mapped quizes:", mappedQuizzes);
             setQuizzes(mappedQuizzes);
             setCategory({ name: id, color: mappedQuizzes[0]?.color || "#3f51b5" });
             setLoading(false);
@@ -127,7 +128,6 @@ function CategoryComponent() {
     };
 
     if (showQuiz) {
-      console.log("Pepe: ", quizData)
       return <QuestionGame {...quizData} />; 
     }
     

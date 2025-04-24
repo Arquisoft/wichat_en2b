@@ -1,34 +1,63 @@
 import React from "react"
 import "../../styles/home/CustomView.css"
 import { useRouter } from "next/navigation";
+import QuestionGame from "../game/QuestionGame"; 
 
 const { useState, useEffect } = React
 const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://localhost:8000';
 
 function CustomQuiz() {
     const router = useRouter();
-    const [categories, setCategories] = useState([])
-    const [selectedCategory, setSelectedCategory] = useState("");
+    const [categories, setCategories] = useState([]);
+    const [selectedCategory, setSelectedCategory] = useState(null);
+    const [subcategories, setSubcategories] = useState([]);
+    const [selectedSubcategory, setSelectedSubcategory] = useState("");
     const [selectedDifficulty, setSelectedDifficulty] = useState(1);
-    const [newCategory, setNewCategory] = useState("")
-    const [timePerQuestion, setTimePerQuestion] = useState(30)
-    const [numberOfQuestions, setNumberOfQuestions] = useState(10)
-    const [gameMode, setGameMode] = useState("singleplayer")
-    const [showNewCategoryInput, setShowNewCategoryInput] = useState(false)
+    const [newCategory, setNewCategory] = useState("");
+    const [timePerQuestion, setTimePerQuestion] = useState(30);
+    const [numberOfQuestions, setNumberOfQuestions] = useState(10);
+    const [gameMode, setGameMode] = useState("singleplayer");
+    const [showNewCategoryInput, setShowNewCategoryInput] = useState(true);
     const [numberOfOptions, setNumberOfOptions] = useState(4);
+    const [showGame, setShowGame] = useState(false);
+    const [quizData, setQuizData] = useState([]);
   
     const mapDifficulty = (level) => {
       switch (level) {
         case 1: return "easy";
         case 2: return "medium";
         case 3: return "hard";
-        case 4: return "hell";
+        case 4: return "hard";
+        case 5: return "hell";
         default: return "unknown";
       }
     };
-    
+    const fetchSubcategories = async (cat) => {
+      try {
+        console.log("Selected category: ", cat);
+        const response = await fetch(`${apiEndpoint}/quiz/${cat}`);
+        const data = await response.json();
+
+        // Map data to fit frontend expectations
+        const mappedQuizzes = data.map((quiz) => ({//NOSONAR
+          title: quiz.quizName,
+          difficulty: quiz.difficulty,
+          wikidataCode: quiz.wikidataCode,
+          question: quiz.question,
+        }));
+
+        console.log("Mapped quizes:", mappedQuizzes);
+        setSubcategories(mappedQuizzes);
+        console.log("Mapped quiz selected:", mappedQuizzes[0]);
+        setSelectedSubcategory(mappedQuizzes[0]);
+      } catch (err) {
+        console.error("Error fetching quizzes", err);
+      }
+    };
+
     useEffect(() => {
         setSelectedCategory("custom");
+        setSelectedSubcategory("");
         const fetchCategories = async () => {
           try {
             const response = await fetch(`${apiEndpoint}/quiz`);
@@ -52,24 +81,28 @@ function CustomQuiz() {
         };
     
         fetchCategories();
-      }, []); 
+    }, []); 
   
     const handleSubmit = (e) => {
       e.preventDefault()
       const category = showNewCategoryInput ? newCategory : selectedCategory
       let quizData = {
         topic: category, 
-        subject: quiz.wikidataCode, 
+        subject: selectedSubcategory.wikidataCode, 
         totalQuestions: numberOfQuestions, 
         numberOptions: numberOfOptions, 
         timerDuration: timePerQuestion, 
-        question: quiz.question,
-        fetchQuestionsURL: `/game/${quiz.wikidataCode}/${numberOfQuestions}/${numberOfOptions}`,
+        question: selectedSubcategory.question,
+        fetchQuestionsURL: `/game/${selectedSubcategory.wikidataCode}/${numberOfQuestions}/${numberOfOptions}`,
       };
-      console.log(quizData)
-      //return <QuestionGame {...quizData} />;
+      setQuizData(quizData);
+      setShowGame(true);
     }
-  
+
+    if(showGame){
+      return <QuestionGame {...quizData} />;
+    }
+    
     return (
       <div className="quiz-customizer">
         <h1>Customize your quiz!</h1>
@@ -83,20 +116,48 @@ function CustomQuiz() {
                 onChange={(e) => {
                   setSelectedCategory(e.target.value);
                   setShowNewCategoryInput(e.target.value == "custom");
+                  console.log("Selected category:", selectedCategory);
+                  if (e.target.value != "custom"){
+                    fetchSubcategories(e.target.value);
+                  }
                 }}
-                disabled={showNewCategoryInput}
               >
                 <option value="custom">Custom category</option>
                 {categories.map((category, index) => (
-                  <option key={index} value={category}>
+                  <option key={index} value={category.name}>
                     {category.name}
                   </option>
                 ))}
               </select>
             </div>
           </div>
+
+          <div className="form-group">
+            {!showNewCategoryInput && (
+              <>
+                <label htmlFor="quiz-select">Select quiz:</label>
+                <div className="subcategory-selection">
+                  <select
+                    id="quiz-select"
+                    value={selectedSubcategory.title}
+                    onChange={(e) => {
+                      setSelectedSubcategory(subcategories.find(element => element.title == e.target.value));
+                    }}
+                    disabled={showNewCategoryInput}
+                    >
+                    {subcategories.map((quiz, index) => (
+                      <option key={index} value={quiz.title}>
+                        {quiz.title}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </>
+
+            )}
+          </div>
   
-          {selectedCategory.toLowerCase() === "custom" && (
+          {showNewCategoryInput && (
             <div className="form-group new-category">
               <label htmlFor="new-category">Enter New Category:</label>
               <input
@@ -110,19 +171,29 @@ function CustomQuiz() {
             <p>⚠️ Disclaimer: these quizes will be AI generated so they will not contain images and will take some time!</p>
             </div>
           )}
+
           <div className="form-group">
             <label htmlFor="difficulty-select">Select Difficulty:</label>
             <div className="difficulty-selection">
               <select
                 id="difficulty-select"
                 value={selectedDifficulty}
-                onChange={(e) => setSelectedDifficulty(e.target.value)}
+                onChange={(e) => {
+                  setSelectedDifficulty(e.target.value);
+                  console.log(selectedDifficulty);
+                }}
               >
-                {[1, 2, 3, 4].map((i) => (
-                  <option key={i} value={mapDifficulty(i)}>
+                {showNewCategoryInput && [1, 2, 3, 5].map((i) => (
+                  <option key={i} value={i}>
                     {mapDifficulty(i)}
                   </option>
                 ))}
+
+                {!showNewCategoryInput && (
+                  <option key={selectedSubcategory.difficulty} value={selectedSubcategory.difficulty}>
+                    {mapDifficulty(selectedSubcategory.difficulty)}
+                  </option>
+                )}
               </select>
             </div>
           </div>

@@ -67,6 +67,10 @@ select:focus {
   position: relative;
 }
 
+.subcategory-selection {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
 .new-category {
   animation: fadeIn 0.3s ease-in-out;
 }
