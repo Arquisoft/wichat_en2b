@@ -117,25 +117,15 @@ export default function PlayerView() {
             })
 
             newSocket.on("joined-session", (data) => {
-                setSessionStatus(data.status)
-                setPlayers(data.players)
-                setCurrentQuestionIndex(data.currentQuestionIndex)
+                fetchSessionData()
             })
 
             newSocket.on("player-joined", (data) => {
-                setPlayers((prevPlayers) => [
-                    ...prevPlayers,
-                    {
-                        id: data.playerId,
-                        username: data.username,
-                        isGuest: data.isGuest,
-                        score: 0,
-                    },
-                ])
+                fetchSessionData();
             })
 
             newSocket.on("player-left", (data) => {
-                setPlayers((prevPlayers) => prevPlayers.filter((player) => player.id !== data.playerId))
+                fetchSessionData()
             })
 
             newSocket.on("session-started", (data) => {
@@ -221,7 +211,7 @@ export default function PlayerView() {
         setIsCorrect(validateOutput.isCorrect);
         setCorrectAnswer(validateOutput.correctAnswer);
         try {
-            await fetchWithAuth(`/shared-quiz/${code}/answer`, {
+            await fetch(`/shared-quiz/${code}/answer`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
