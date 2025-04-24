@@ -42,7 +42,7 @@ export default function PlayerView() {
             try {
                 const response = await fetchWithAuth("/token/username")
                 if (response) {
-                    const userData = await response.json()
+                    const userData = response
                     setUsername(userData.username)
                     return userData
                 } else {
@@ -58,8 +58,8 @@ export default function PlayerView() {
         const fetchSessionData = async () => {
             try {
                 const response = await fetchWithAuth(`/shared-quiz/${code}/status`)
-                if (response.ok) {
-                    const sessionData = await response.json()
+                if (response) {
+                    const sessionData = response
                     setSessionStatus(sessionData.status)
                     setPlayers(sessionData.players)
                     setCurrentQuestionIndex(sessionData.currentQuestionIndex)
@@ -87,8 +87,8 @@ export default function PlayerView() {
 
             try {
                 const response = await fetchWithAuth(`/internal/quizdata/${code}`)
-                if (response.ok) {
-                    const quiz = await response.json()
+                if (response) {
+                    const quiz = response
                     setQuiz(quiz.quizData)
                     setQuizMetadata(quiz.metadata)
                 } else {

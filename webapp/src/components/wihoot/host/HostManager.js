@@ -39,7 +39,7 @@ export default function HostManager() {
                 });
 
                 if (response.data) {
-                    const userData = await response.data
+                    const userData = response.data
                     setHostId(userData._id)
                     return userData.id
                 } else {
@@ -55,8 +55,8 @@ export default function HostManager() {
         const fetchSessionData = async (hostId) => {
             try {
                 const response = await fetchWithAuth(`${apiEndpoint}/shared-quiz/${code}/status`)
-                if (response.ok) {
-                    const sessionData = await response.json()
+                if (response) {
+                    const sessionData = await response
                     setSessionStatus(sessionData.status)
                     setPlayers(sessionData.players)
                     setCurrentQuestionIndex(sessionData.currentQuestionIndex)
@@ -76,8 +76,8 @@ export default function HostManager() {
 
             try {
                 const response = await fetchWithAuth(`${apiEndpoint}/internal/quizdata/${code}`)
-                if (response.ok) {
-                    const quizData = await response.json()
+                if (response) {
+                    const quizData = response
                     setQuiz(quizData)
                 } else {
                     throw new Error("Failed to fetch quiz data")
@@ -172,12 +172,12 @@ export default function HostManager() {
 
         try {
             const response = await fetchWithAuth(`/shared-quiz/${code}/start?hostId=${hostId}`)
-            if (!response.ok) {
-                const errorData = await response.json()
+            if (!response) {
+                const errorData = response
                 throw new Error(errorData.error || "Failed to start quiz")
             }
 
-            const data = await response.json()
+            const data = response
             setSessionStatus(data.status)
             setCurrentQuestionIndex(data.currentQuestionIndex)
         } catch (err) {
@@ -190,11 +190,11 @@ export default function HostManager() {
         try {
             const response = await fetchWithAuth(`/shared-quiz/${code}/next?hostId=${hostId}`)
             if (!response.ok) {
-                const errorData = await response.json()
+                const errorData = response
                 throw new Error(errorData.error || "Failed to move to next question")
             }
 
-            const data = await response.json()
+            const data = response
             setCurrentQuestionIndex(data.currentQuestionIndex)
 
             // Check if we've reached the end of the quiz
@@ -211,11 +211,11 @@ export default function HostManager() {
         try {
             const response = await fetchWithAuth(`/shared-quiz/${code}/end?hostId=${hostId}`)
             if (!response.ok) {
-                const errorData = await response.json()
+                const errorData = response
                 throw new Error(errorData.error || "Failed to end quiz")
             }
 
-            const data = await response.json()
+            const data = response
             setSessionStatus(data.status)
             setPlayers(data.players)
         } catch (err) {
@@ -279,27 +279,6 @@ export default function HostManager() {
                         Question {currentQuestionIndex + 1} of {quiz?.questions.length}
                     </h2>
 
-                    {currentQuestion && (
-                        <div className="bg-gray-100 p-4 rounded mb-4">
-                            <p className="text-lg font-medium mb-2">{currentQuestion.question}</p>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-4">
-                                {currentQuestion.options.map((option, index) => (
-                                    <div
-                                        key={index}
-                                        className={`p-3 rounded border ${
-                                            currentQuestion.correctOptionIndex === index
-                                                ? "bg-green-100 border-green-500"
-                                                : "bg-white border-gray-300"
-                                        }`}
-                                    >
-                                        <span className="font-medium">{option}</span>
-                                        {currentQuestion.correctOptionIndex === index && <span className="ml-2 text-green-600">✓</span>}
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
                 </div>
 
                 <div className="mb-6">
