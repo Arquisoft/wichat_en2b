@@ -209,8 +209,21 @@ jobs:
           host: ${{ secrets.DEPLOY_HOST_ORACLE }}
           username: ${{ secrets.DEPLOY_USER_ORACLE }}
           key: ${{ secrets.DEPLOY_KEY_ORACLE }}
-          source: "gatewayservice/monitoring/prometheus/**"
-          target: "~/wichat_en2b/gatewayservice/monitoring"
+          source: "./gatewayservice/monitoring/prometheus/"
+          target: "~/wichat_en2b/gatewayservice/monitoring/"
+          strip_components: 0
+          overwrite: true
+
+      - name: Upload Grafana provisioning to server
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.DEPLOY_HOST_ORACLE }}
+          username: ${{ secrets.DEPLOY_USER_ORACLE }}
+          key: ${{ secrets.DEPLOY_KEY_ORACLE }}
+          source: "./gatewayservice/monitoring/grafana/"
+          target: "~/wichat_en2b/gatewayservice/monitoring/"
+          strip_components: 0
+          overwrite: true
 
       - name: Upload Grafana provisioning to server
         uses: appleboy/scp-action@master
