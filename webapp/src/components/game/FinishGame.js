@@ -96,29 +96,26 @@ export default function FinishGame(params) {
                 >
                     Play again
                 </button>
-                {isGuest && (
-                    <div className="guest-options">
-                        <Alert severity="info" sx={{ marginTop: "1rem" }}>
-                            Want to save your score? Log in or register now!
-                        </Alert>
-                        <Button
-                            variant="contained"
-                            color="success"
-                            onClick={() => (location.href = '/login')}
-                            sx={{ marginRight: "1rem" }}
-                        >
-                            Log In
-                        </Button>
-                        <Button
-                            variant="outlined"
-                            color="success"
-                            onClick={() => (location.href = '/register')}
-                        >
-                            Register
-                        </Button>
-                    </div>
-                )}
             </div>
+            {isGuest && (
+                <div className="buttons">
+                    <Alert severity="info" sx={{ width: "100%" }}>
+                        Want to save your score? Log in or register now!
+                    </Alert>
+                    <button
+                        className="back-home-button"
+                        onClick={() => (location.href = '/login')}
+                    >
+                        Log In
+                    </button>
+                    <button
+                        onClick={() => (location.href = '/addUser')}
+                        className="play-again-button"
+                    >
+                        Register
+                    </button>
+                </div>
+            )}
         </div>
     );
 }

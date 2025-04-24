@@ -43,20 +43,6 @@ function GuestHomePage() {
                     Play quizzes anonymously - scores won't be saved
                 </Typography>
 
-                {/* Tabs for Guest */}
-                <Tabs
-                    value={tabValue}
-                    onChange={handleTabChange}
-                    variant="fullWidth"
-                    className="tabs-container"
-                >
-                    <Tab
-                        icon={<BrainIcon />}
-                        label="Play"
-                        className="tab-content"
-                    />
-                </Tabs>
-
                 {/* Only show PlayTab */}
                 {tabValue === 0 && <PlayTab isGuest={true} />}
             </Container>
