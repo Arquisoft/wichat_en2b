@@ -288,6 +288,7 @@ export default function StatsTab() {
 						<TableHead>
 							<TableRow>
 								<TableCell
+									align="center"
 									sx={{
 										bgcolor: "#178ee4",
 										color: "white",
