@@ -252,7 +252,7 @@ export default function HostManager() {
             setCurrentQuestionIndex(data.currentQuestionIndex);
 
             // Verificar si hemos llegado al final del quiz
-            if (quiz && data.currentQuestionIndex >= quiz.questions.length) {
+            if (quiz && data.currentQuestionIndex >= quiz.quizData.length) {
                 await handleEndQuiz();
             }
         } catch (err) {
@@ -279,7 +279,7 @@ export default function HostManager() {
     };
 
     const getCurrentQuestion = () => {
-        if (!quiz || currentQuestionIndex < 0 || currentQuestionIndex >= quiz.questions.length) {
+        if (!quiz || currentQuestionIndex < 0 || currentQuestionIndex >= quiz.quizData.length) {
             return null;
         }
         return quiz.quizData[currentQuestionIndex];
@@ -341,7 +341,7 @@ export default function HostManager() {
                     <h2 className="text-2xl font-bold mb-2">
                         Question {currentQuestionIndex + 1} of {quiz?.quizData.length}
                     </h2>
-                    <p className="text-lg mb-4">{quiz.quizMetadata.quizName}</p>
+                    <p className="text-lg mb-4">{quiz.quizMetaData.quizName}</p>
                     <ul className="space-y-2">
                         {currentQuestion.answers.map((option, index) => (
                             <li key={index} className="bg-gray-100 p-3 rounded">

@@ -19,7 +19,7 @@ export default function PlayerView() {
     const [players, setPlayers] = useState([])
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(-1)
     const [quiz, setQuiz] = useState(null)
-    const [quizMetadata, setQuizMetadata] = useState(null)
+    const [quizMetaData, setQuizMetaData] = useState(null)
     const [selectedOption, setSelectedOption] = useState(null)
     const [isCorrect, setIsCorrect] = useState(false)
     const [correctAnswer, setCorrectAnswer] = useState(null)
@@ -90,7 +90,8 @@ export default function PlayerView() {
                 if (response) {
                     const quiz = response
                     setQuiz(quiz.quizData)
-                    setQuizMetadata(quiz.metadata)
+                    setQuizMetaData(quiz.quizMetaData)
+                    console.log("Quiz data fetched:", quiz)
                 } else {
                     throw new Error("Failed to fetch quiz data")
                 }
@@ -295,7 +296,7 @@ export default function PlayerView() {
                         </div>
                     </div>
 
-                    <h2 id='title-question' className="question-title">{quizMetadata.quizName}</h2>
+                    <h2 id='title-question' className="question-title">{quizMetaData.quizName}</h2>
 
                     <div className="image-box">
                         <img
