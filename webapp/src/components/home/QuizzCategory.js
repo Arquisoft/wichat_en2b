@@ -24,7 +24,6 @@ function CategoryComponent() {
 
     const router = useRouter();
     const { id } = router.query;
-    console.log("Id: ", id);
     useEffect(() => {
       if (!id) return;
       setLoading(true);
@@ -51,7 +50,6 @@ function CategoryComponent() {
               category: quiz.category,
             }));
 
-            console.log("Mapped quizes:", mappedQuizzes);
             setQuizzes(mappedQuizzes);
             setCategory({ name: id, color: mappedQuizzes[0]?.color || "#3f51b5" });
             setLoading(false);
@@ -117,7 +115,6 @@ function CategoryComponent() {
     const handleStartQuiz = (quiz) => {
       setQuizData({
         topic: id, 
-        subject: quiz.wikidataCode, 
         totalQuestions: quiz.questions, 
         numberOptions: quiz.options, 
         timerDuration:  quiz.timeEstimate, 

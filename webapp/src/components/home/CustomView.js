@@ -49,9 +49,21 @@ function CustomQuiz() {
 
         setSubcategories(mappedQuizzes);
         setSelectedSubcategory(mappedQuizzes[0]);
+        fetchAvailableQuestions(mappedQuizzes[0].wikidataCode);
       } catch (err) {
         setError("There was an error fetching the quizzes.");
         console.error("Error fetching quizzes", err);
+      }
+    };
+
+    const fetchAvailableQuestions = async (wikidataCode) => {
+      try{
+        const response = await fetch(`${apiEndpoint}/question/amount/${wikidataCode}`);
+        const data = await response.json();
+        setNumberOfAvailableQuestions(data);
+      } catch (error){
+        setError("There was an error fetching the amount of questions we have");
+        console.error("Error fetching available questions: ", error);
       }
     };
 
@@ -122,7 +134,6 @@ function CustomQuiz() {
 
       let quizData = {
         topic: category, 
-        subject: selectedSubcategory.wikidataCode, 
         totalQuestions: numberOfQuestions, 
         numberOptions: numberOfOptions, 
         timerDuration: timePerQuestion, 
@@ -174,7 +185,9 @@ function CustomQuiz() {
                     id="quiz-select"
                     value={selectedSubcategory.title}
                     onChange={(e) => {
-                      setSelectedSubcategory(subcategories.find(element => element.title == e.target.value));
+                      const s = subcategories.find(element => element.title == e.target.value);
+                      setSelectedSubcategory(s);
+                      fetchAvailableQuestions(s.wikidataCode);
                     }}
                     disabled={showNewCategoryInput}
                     >
