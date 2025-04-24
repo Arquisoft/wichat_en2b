@@ -332,7 +332,7 @@ app.post("/shared-quiz/:code/join", (req, res) => {
 
 // Start a shared quiz session (host only)
 app.get("/shared-quiz/:code/start", (req, res) => {
-  forwardRequest("wihoot", `/wihoot/${req.params.code}/start`, req, res)
+  forwardRequest("wihoot", `/wihoot/${req.params.code}/start?hostId=${req.query.hostId}`, req, res)
 })
 
 // Move to the next question (host only)
