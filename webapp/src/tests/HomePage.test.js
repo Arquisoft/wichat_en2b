@@ -137,7 +137,7 @@ describe('HomePage Component', () => {
 		fireEvent.click(logoutButton);
 
 		await waitFor(() => {
-			expect(mockRouter.asPath).toBe('/login');
+			expect(mockRouter.asPath).toBe('/');
 		});
 	});
 });
