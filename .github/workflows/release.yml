@@ -209,7 +209,7 @@ jobs:
           host: ${{ secrets.DEPLOY_HOST_ORACLE }}
           username: ${{ secrets.DEPLOY_USER_ORACLE }}
           key: ${{ secrets.DEPLOY_KEY_ORACLE }}
-          source: "gatewayservice/monitoring/prometheus"
+          source: "gatewayservice/monitoring/prometheus/**"
           target: "~/wichat_en2b/gatewayservice/monitoring"
 
       - name: Upload Grafana provisioning to server
@@ -218,7 +218,7 @@ jobs:
           host: ${{ secrets.DEPLOY_HOST_ORACLE }}
           username: ${{ secrets.DEPLOY_USER_ORACLE }}
           key: ${{ secrets.DEPLOY_KEY_ORACLE }}
-          source: "gatewayservice/monitoring/grafana/provisioning"
+          source: "gatewayservice/monitoring/grafana/provisioning/**"
           target: "~/wichat_en2b/gatewayservice/monitoring/grafana"
 
       - name: Deploy over SSH
