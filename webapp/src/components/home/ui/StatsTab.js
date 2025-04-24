@@ -156,8 +156,14 @@ export default function StatsTab() {
 	function StatsPie() {
 		if (!statistics || !statistics.totalQuestions)
 			return null;
+
 		return (
-			<Box sx={{ width: "100%", height: 280 }}>
+			<Box sx={{
+				width: "100%",
+				height: 280,
+				display: "flex",
+				justifyContent: "center",
+			}}>
 				<PieChart
 					series={[
 						{
@@ -194,7 +200,7 @@ export default function StatsTab() {
 						},
 					}}
 					margin={{ top: 10, bottom: 70, left: 0, right: 0 }}
-					width={400}
+					width={280}
 					height={280}
 				/>
 			</Box>
@@ -205,6 +211,7 @@ export default function StatsTab() {
 		if (!statistics || !statistics.totalQuestions)
 			return null;
 		const accuracy = (statistics.successRatio * 100).toFixed(1)
+
 		const settings = {
 			width: 220,
 			height: 220,
@@ -384,7 +391,7 @@ export default function StatsTab() {
 													fontSize: "0.875rem",
 												}}
 											>
-												${scoreIcon}
+												{scoreIcon}
 											</Avatar>
 											{quiz.subject}
 										</TableCell>
@@ -461,11 +468,10 @@ export default function StatsTab() {
 						Average score:{" "}
 						{Math.round(
 							recentQuizzes.reduce(
-								(acc, quiz) => acc + (quiz.number_correct_answers / quiz.number_of_questions) * 100,
+								(acc, quiz) => acc + quiz.points_gain,
 								0,
 							) / recentQuizzes.length,
 						)}
-						%
 					</Typography>
 				</Box>
 			</Paper>
@@ -570,15 +576,23 @@ export default function StatsTab() {
 									</Typography>
 									<Box sx={{
 										display: 'flex',
-										flexDirection: 'row',
+										flexDirection: { xs: "column", sm: "row" },
 										justifyContent: 'center',
 										alignItems: 'center',
-										gap: 2
+										gap: { xs: 4, sm: 2 },
 									}} className="stat-charts-container stats-charts">
-										<Box sx={{ width: '50%' }}>
+										<Box sx={{
+											width: { xs: "100%", sm: "50%" },
+											display: "flex",
+											justifyContent: "center",
+										}}>
 											<StatsPie />
 										</Box>
-										<Box sx={{ width: '50%' }}>
+										<Box sx={{
+											width: { xs: "100%", sm: "50%" },
+											display: "flex",
+											justifyContent: "center",
+										}}>
 											<StatsArc />
 										</Box>
 									</Box>
