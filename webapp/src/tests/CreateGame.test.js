@@ -103,9 +103,9 @@ describe("CreateGame Component", () => {
             // Wait for the dropdown options to appear
             await waitFor(
                 () => {
-                    console.log("Listbox present:", !!screen.queryByRole("listbox"));
+
                     const scienceOption = screen.getByRole("option", { name: "Science" });
-                    console.log("Science option found:", !!scienceOption);
+
                     fireEvent.click(scienceOption);
                 },{ timeout: 3000 });
 
@@ -266,12 +266,6 @@ describe("CreateGame Component", () => {
 
         await waitFor(
             () => {
-                console.log("Button text:", submitButton.textContent);
-                console.log("topicSelect disabled:", topicSelect.querySelector(".MuiSelect-nativeInput")?.getAttribute("disabled"));
-                console.log("questionsInput disabled:", questionsInput?.getAttribute("disabled"));
-                console.log("answersInput disabled:", answersInput?.getAttribute("disabled"));
-                console.log("difficultyInput disabled:", difficultyInput?.getAttribute("disabled"));
-                console.log("submitButton disabled:", submitButton.disabled);
                 expect(screen.getByText("Creating...")).toBeInTheDocument();
                 expect(topicSelect.querySelector(".MuiSelect-nativeInput")).toHaveAttribute("disabled");
                 expect(questionsInput).toHaveAttribute("disabled");
