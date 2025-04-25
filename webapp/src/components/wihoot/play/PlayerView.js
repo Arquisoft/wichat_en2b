@@ -4,7 +4,25 @@ import React, { useState, useEffect } from "react"
 import { useRouter } from "next/router"
 import { fetchWithAuth } from "../../../utils/api-fetch-auth"
 import io from "socket.io-client"
-import {Alert} from "@mui/material";
+import {
+    Box,
+    Container,
+    Typography,
+    Card,
+    CardContent,
+    CardHeader,
+    Button,
+    Alert,
+    List,
+    ListItem,
+    ListItemText,
+    Badge,
+    Grid,
+    CircularProgress,
+} from "@mui/material";
+import InGameChat from "@/components/game/InGameChat";
+import "../../../styles/wihoot/PlayerView.css"
+import "../../styles/QuestionGame.css";
 
 const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://localhost:8000';
 
@@ -91,6 +109,7 @@ export default function PlayerView() {
                     const quiz = response
                     setQuiz(quiz.quizData)
                     setQuizMetaData(quiz.quizMetaData)
+                    console.log("quizMetadata hook TEST_:", quizMetaData)
                     console.log("Quiz data fetched:", quiz)
                 } else {
                     throw new Error("Failed to fetch quiz data")
@@ -239,161 +258,197 @@ export default function PlayerView() {
     }
 
     const renderWaitingRoom = () => (
-        <div className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
-            <h2 className="text-2xl font-bold mb-4">Waiting for host to start</h2>
-
-            <div className="mb-6">
-                <p className="text-lg mb-2">You've joined with code:</p>
-                <div className="bg-gray-100 p-4 text-center text-3xl font-bold tracking-wider">{code}</div>
-            </div>
-
-            <div className="mb-6">
-                <h3 className="text-xl font-bold mb-2">Players ({players.length})</h3>
-                <ul className="bg-gray-100 p-4 rounded">
-                    {players.map((player) => (
-                        <li key={player.id} className="mb-2 flex items-center">
-                            <span className="font-medium">{player.username}</span>
-                            {player.isGuest && (
-                                <span className="ml-2 bg-gray-200 text-gray-700 text-xs px-2 py-1 rounded">Guest</span>
-                            )}
-                            {player.id === playerId && (
-                                <span className="ml-2 bg-blue-200 text-blue-700 text-xs px-2 py-1 rounded">You</span>
-                            )}
-                        </li>
-                    ))}
-                </ul>
-            </div>
-
-            <p className="text-center text-gray-500">The host will start the quiz soon. Get ready!</p>
-        </div>
-    )
+        <Card className="player-view-card">
+            <CardHeader title="Waiting for Host to Start" />
+            <CardContent>
+                <Box className="code-display" mb={3}>
+                    <Typography variant="h6">You've joined with code:</Typography>
+                    <Typography variant="h4" className="code-text">
+                        {code}
+                    </Typography>
+                </Box>
+                <Box mb={3}>
+                    <Typography variant="h6">Players ({players.length})</Typography>
+                    <List className="players-list">
+                        {players.map((player) => (
+                            <ListItem key={player.id} className="player-item">
+                                <ListItemText primary={player.username} />
+                                {player.isGuest && (
+                                    <Badge badgeContent="Guest" color="secondary" sx={{ mr: 1 }} />
+                                )}
+                                {player.id === playerId && (
+                                    <Badge badgeContent="You" color="primary" />
+                                )}
+                            </ListItem>
+                        ))}
+                    </List>
+                </Box>
+                <Typography variant="body2" color="textSecondary" align="center">
+                    The host will start the quiz soon. Get ready!
+                </Typography>
+            </CardContent>
+        </Card>
+    );
 
     const renderActiveQuiz = () => {
         const currentQuestion = getCurrentQuestion();
         const player = players.find((p) => p.id === playerId);
-    
+
         if (!currentQuestion) {
             return (
-                <div className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
-                    <p className="text-center text-xl">Loading question...</p>
-                </div>
+                <Card className="player-view-card">
+                    <CardContent>
+                        <Typography variant="h6" align="center">
+                            Loading question...
+                        </Typography>
+                    </CardContent>
+                </Card>
             );
         }
-    
+
         return (
-            <div className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
-                <div className="mb-6">
+            <Card className="content-box">
+                <CardContent>
                     {hasAnswered && isCorrect && (
-                        <Alert id='message-success' severity="success" className="alert-box">
+                        <Alert severity="success" className="alert-box" sx={{ mb: 2 }}>
                             Great job! You got it right!
                         </Alert>
                     )}
                     {hasAnswered && !isCorrect && (
-                        <Alert id='message-fail' severity="error" className="alert-box">
+                        <Alert severity="error" className="alert-box" sx={{ mb: 2 }}>
                             Oops! You didn't guess this one.
                         </Alert>
                     )}
-    
-                    <div className="flex justify-between items-center mb-4">
-                        <h2 className="text-2xl font-bold">Question {currentQuestionIndex + 1}</h2>
-                        <div className="text-right">
-                            <p className="text-sm text-gray-600">Your Score</p>
-                            <p className="text-xl font-bold">{player?.score || 0}</p>
-                        </div>
-                    </div>
-    
-                    <h2 id='title-question' className="question-title">
-                        {quizMetaData?.quizName || "Untitled Quiz"}
-                    </h2>
-    
-                    <div className="image-box">
+                    <Box display="flex" justifyContent="space-between" mb={2}>
+                        <Typography variant="h5">
+                            Question {currentQuestionIndex + 1}
+                        </Typography>
+                        <Box textAlign="right">
+                            <Typography variant="body2" color="textSecondary">
+                                Your Score
+                            </Typography>
+                            <Typography variant="h6">{player?.score || 0}</Typography>
+                        </Box>
+                    </Box>
+                    <Typography variant="h6" className="question-title" mb={2}>
+                        {quizMetaData?.question || "Untitled Quiz"}
+                    </Typography>
+                    <Box className="image-box" mb={3}>
                         <img
                             src={`${apiEndpoint}${currentQuestion.image_name}`}
                             alt="Question"
                             className="quiz-image"
                         />
-                    </div>
-    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    </Box>
+                    <Grid container spacing={2}>
                         {currentQuestion.answers.map((option, index) => (
-                            <button
-                                key={option}
-                                onClick={() => handleAnswerSubmit(index)}
-                                disabled={hasAnswered}
-                                className={`quiz-option 
-                                    ${selectedOption === index ? "selected" : ""} 
-                                    ${hasAnswered && selectedOption === index && isCorrect ? "correct-answer" : ""}
-                                    ${hasAnswered && !isCorrect && correctAnswer === option ? "correct-answer" : ""}`}
-                            >
-                                {option}
-                            </button>
+                            <Grid item xs={12} md={6} key={option}>
+                                <Button
+                                    variant="outlined"
+                                    fullWidth
+                                    onClick={() => handleAnswerSubmit(index)}
+                                    disabled={hasAnswered}
+                                    className={`quiz-option ${
+                                        selectedOption === index ? "selected" : ""
+                                    } ${
+                                        hasAnswered && selectedOption === index && isCorrect
+                                            ? "correct-answer"
+                                            : ""
+                                    } ${
+                                        hasAnswered && !isCorrect && correctAnswer === option
+                                            ? "correct-answer"
+                                            : ""
+                                    }`}
+                                >
+                                    {option}
+                                </Button>
+                            </Grid>
                         ))}
-                    </div>
-                </div>
-            </div>
+                    </Grid>
+
+                    <InGameChat initialMessages={[]} question={currentQuestion} />
+                </CardContent>
+            </Card>
         );
     };
 
     const renderFinishedQuiz = () => (
-        <div className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
-            <h2 className="text-2xl font-bold mb-4">Quiz Completed</h2>
-
-            <div className="mb-6">
-                <h3 className="text-xl font-bold mb-2">Final Results</h3>
-                <ul className="bg-gray-100 p-4 rounded">
-                    {[...players]
-                        .sort((a, b) => b.score - a.score)
-                        .map((player, index) => (
-                            <li
-                                key={player.id}
-                                className={`mb-2 flex justify-between items-center p-2 rounded ${
-                                    player.id === playerId ? "bg-blue-50" : ""
-                                }`}
-                            >
-                                <div>
-                                    <span className="font-bold mr-2">#{index + 1}</span>
-                                    <span className="font-medium">{player.username}</span>
-                                    {player.isGuest && (
-                                        <span className="ml-2 bg-gray-200 text-gray-700 text-xs px-2 py-1 rounded">Guest</span>
-                                    )}
-                                    {player.id === playerId && (
-                                        <span className="ml-2 bg-blue-200 text-blue-700 text-xs px-2 py-1 rounded">You</span>
-                                    )}
-                                </div>
-                                <span className="font-bold">{player.score}</span>
-                            </li>
-                        ))}
-                </ul>
-            </div>
-
-            <button
-                onClick={() => router.push("/shared-quiz/join")}
-                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-            >
-                Join Another Quiz
-            </button>
-        </div>
-    )
+        <Card className="player-view-card">
+            <CardHeader title="Quiz Completed" />
+            <CardContent>
+                <Box mb={3}>
+                    <Typography variant="h6">Final Results</Typography>
+                    <List className="results-list">
+                        {[...players]
+                            .sort((a, b) => b.score - a.score)
+                            .map((player, index) => (
+                                <ListItem
+                                    key={player.id}
+                                    className={`result-item ${
+                                        player.id === playerId ? "current-player" : ""
+                                    }`}
+                                >
+                                    <ListItemText
+                                        primary={`#${index + 1} ${player.username}`}
+                                        secondary={
+                                            <>
+                                                {player.isGuest && (
+                                                    <Badge
+                                                        badgeContent="Guest"
+                                                        color="secondary"
+                                                        sx={{ mr: 1 }}
+                                                    />
+                                                )}
+                                                {player.id === playerId && (
+                                                    <Badge badgeContent="You" color="primary" />
+                                                )}
+                                            </>
+                                        }
+                                    />
+                                    <Typography variant="body1" fontWeight="bold">
+                                        {player.score}
+                                    </Typography>
+                                </ListItem>
+                            ))}
+                    </List>
+                </Box>
+                <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => router.push("/shared-quiz/join")}
+                >
+                    Join Another Quiz
+                </Button>
+            </CardContent>
+        </Card>
+    );
 
     if (isLoading) {
         return (
-            <div className="container mx-auto px-4 py-8">
-                <div className="text-center">
-                    <p className="text-xl">Loading...</p>
-                </div>
-            </div>
-        )
+            <Container maxWidth="lg" sx={{ py: 8 }}>
+                <Box textAlign="center">
+                    <CircularProgress />
+                    <Typography variant="h6" mt={2}>
+                        Loading...
+                    </Typography>
+                </Box>
+            </Container>
+        );
     }
 
     return (
-        <div className="container mx-auto px-4 py-8">
-            <h1 className="text-3xl font-bold mb-6">Quiz Player - {username}</h1>
-
-            {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">{error}</div>}
-
+        <Container maxWidth="lg" sx={{ py: 8 }}>
+            <Typography variant="h4" gutterBottom>
+                Quiz Player - {username}
+            </Typography>
+            {error && (
+                <Alert severity="error" sx={{ mb: 2 }}>
+                    {error}
+                </Alert>
+            )}
             {sessionStatus === "waiting" && renderWaitingRoom()}
             {sessionStatus === "active" && renderActiveQuiz()}
             {sessionStatus === "finished" && renderFinishedQuiz()}
-        </div>
-    )
+        </Container>
+    );
 }
