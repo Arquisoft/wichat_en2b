@@ -468,7 +468,7 @@ describe("HostManager Component", () => {
         });
 
         await waitFor(() => {
-            expect(mockRouter.asPath).toBe("/shared-quiz/create");
+            expect(mockRouter.asPath).toBe("/wihoot/create");
         });
     });
 });
