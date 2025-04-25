@@ -26,6 +26,9 @@ import {
 	Tooltip,
 	IconButton,
 } from "@mui/material"
+import SentimentSatisfiedAltIcon from '@mui/icons-material/SentimentSatisfiedAlt';
+import SentimentVeryDissatisfiedIcon from '@mui/icons-material/SentimentVeryDissatisfied';
+import SentimentNeutralIcon from '@mui/icons-material/SentimentNeutral';
 import "../../../styles/home/StatsTab.css"
 import { fetchWithAuth } from "@/utils/api-fetch-auth";
 import LoadingErrorHandler from ".//LoadingErrorHandler";
@@ -42,9 +45,9 @@ const performanceColor = (value) => {
 }
 
 const performanceIcon = (value) => {
-	if (value >= 70) return ":)";
-	else if (value >= 40) return ":|";
-	else return ":(";
+	if (value >= 70) return <SentimentSatisfiedAltIcon fontSize="small" />;
+	else if (value >= 40) return <SentimentNeutralIcon fontSize="small" />;
+	else return <SentimentVeryDissatisfiedIcon fontSize="small" />;
 }
 
 // TabPanel component for the tabs
@@ -265,24 +268,10 @@ export default function StatsTab() {
 		return (
 			<Paper
 				elevation={3}
-				sx={{
-					borderRadius: 2,
-					overflow: "hidden",
-					mx: "auto",
-					boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
-				}}
+				className="quiz-table-container"
 			>
-				<Box
-					sx={{
-						p: 2,
-						display: "flex",
-						justifyContent: "space-between",
-						alignItems: "center",
-						borderBottom: "1px solid rgba(0,0,0,0.1)",
-						bgcolor: "#f5f7fa",
-					}}
-				>
-					<Typography variant="h6" fontWeight="bold">
+				<Box className="quiz-table-header">
+					<Typography variant="h6" className="quiz-table-title">
 						Recent Quizzes
 					</Typography>
 					<Tooltip title="View your recent quiz performance">
@@ -296,78 +285,15 @@ export default function StatsTab() {
 					<Table size="medium" aria-label="recent quizzes table" stickyHeader>
 						<TableHead>
 							<TableRow>
-								<TableCell
-									align="center"
-									sx={{
-										bgcolor: "#178ee4",
-										color: "white",
-										fontWeight: "bold",
-										fontSize: "0.95rem",
-										borderBottom: "3px solid #1565c0",
-									}}
-								>
-									Subject
-								</TableCell>
-								<TableCell
-									align="center"
-									sx={{
-										bgcolor: "#178ee4",
-										color: "white",
-										fontWeight: "bold",
-										fontSize: "0.95rem",
-										borderBottom: "3px solid #1565c0",
-									}}
-								>
-									Points
-								</TableCell>
-								<TableCell
-									align="center"
-									sx={{
-										bgcolor: "#178ee4",
-										color: "white",
-										fontWeight: "bold",
-										fontSize: "0.95rem",
-										borderBottom: "3px solid #1565c0",
-									}}
-								>
-									Questions
-								</TableCell>
-								<TableCell
-									align="center"
-									sx={{
-										bgcolor: "#178ee4",
-										color: "white",
-										fontWeight: "bold",
-										fontSize: "0.95rem",
-										borderBottom: "3px solid #1565c0",
-									}}
-								>
-									Correct
-								</TableCell>
-								<TableCell
-									align="center"
-									sx={{
-										bgcolor: "#178ee4",
-										color: "white",
-										fontWeight: "bold",
-										fontSize: "0.95rem",
-										borderBottom: "3px solid #1565c0",
-									}}
-								>
-									Wrong
-								</TableCell>
-								<TableCell
-									align="center"
-									sx={{
-										bgcolor: "#178ee4",
-										color: "white",
-										fontWeight: "bold",
-										fontSize: "0.95rem",
-										borderBottom: "3px solid #1565c0",
-									}}
-								>
-									Time
-								</TableCell>
+								{['Subject', 'Points', 'Questions', 'Correct', 'Wrong', 'Time'].map((header) => (
+									<TableCell
+										key={header}
+										align="center"
+										className="quiz-table-cell-header"
+									>
+										{header}
+									</TableCell>
+								))}
 							</TableRow>
 						</TableHead>
 						<TableBody>
@@ -378,43 +304,28 @@ export default function StatsTab() {
 								return (
 									<TableRow
 										key={index}
-										sx={{
-											"&:nth-of-type(odd)": { bgcolor: "rgba(0, 0, 0, 0.02)" },
-											"&:hover": { bgcolor: "rgba(0, 0, 0, 0.04)" },
-											transition: "background-color 0.2s",
-											borderLeft: `4px solid ${scoreColor}`,
-										}}
+										className="quiz-table-row"
+										sx={{ borderLeft: `4px solid ${scoreColor}` }}
 									>
-										<TableCell
-											sx={{
-												fontWeight: "bold",
-												display: "flex",
-												alignItems: "center",
-												gap: 1,
-											}}
-										align="center">
-											<Avatar
-												sx={{
-													width: 32,
-													height: 32,
-													bgcolor: scoreColor,
-													fontSize: "0.875rem",
-												}}
-											>
-												{scoreIcon}
-											</Avatar>
-											{quiz.subject}
+										<TableCell align="center" className="quiz-subject-cell">
+											<div className="quiz-subject-content">
+												<Avatar
+													sx={{
+														width: 32,
+														height: 32,
+														bgcolor: scoreColor,
+														fontSize: "0.875rem",
+													}}
+												>
+													{scoreIcon}
+												</Avatar>
+												<span className="quiz-subject-text">
+            										{quiz.subject}
+        										</span>
+											</div>
 										</TableCell>
 										<TableCell align="center">
-											<Chip
-												label={quiz.points_gain}
-												size="small"
-												sx={{
-													fontWeight: "bold",
-													bgcolor: "#e3f2fd",
-													color: "#1565c0",
-												}}
-											/>
+											<Chip label={quiz.points_gain} size="small" className="quiz-score-chip"/>
 										</TableCell>
 										<TableCell align="center">{quiz.number_of_questions}</TableCell>
 										<TableCell align="center">
@@ -444,13 +355,7 @@ export default function StatsTab() {
 											</Box>
 										</TableCell>
 										<TableCell align="center">
-											<Box
-												sx={{
-													display: "inline-flex",
-													alignItems: "center",
-													gap: 0.5,
-												}}
-											>
+											<Box className="quiz-time-display">
 												<AccessTime fontSize="small" color="action" />
 												{`${quiz.total_time.toFixed(1)}s`}
 											</Box>
@@ -462,15 +367,7 @@ export default function StatsTab() {
 					</Table>
 				</TableContainer>
 
-				<Box
-					sx={{
-						p: 2,
-						display: "flex",
-						justifyContent: "space-between",
-						borderTop: "1px solid rgba(0,0,0,0.1)",
-						bgcolor: "#f5f7fa",
-					}}
-				>
+				<Box className="quiz-table-footer">
 					<Typography variant="body2" color="text.secondary">
 						Showing {recentQuizzes.length} recent quizzes
 					</Typography>
