@@ -158,6 +158,7 @@ export default function HostManager() {
             return newSocket;
         };
 
+        let cleanupFn;
         const setup = async () => {
             setIsLoading(true);
             try {
@@ -183,13 +184,16 @@ export default function HostManager() {
             }
         };
 
-        const cleanup = setup();
-        return () => {
-            if (cleanup && typeof cleanup === "function") {
-                cleanup();
-                console.log("Cleanup executed");
-            }
-        };
+      setup().then((fn) => {
+          cleanupFn = fn; // Store the cleanup function once the promise resolves
+      });
+
+      return () => {
+          if (cleanupFn && typeof cleanupFn === "function") {
+              cleanupFn();
+              console.log("Cleanup executed");
+          }
+      };
     }, [code, router.isReady]);
 
     // Manejo de router.isReady y code no disponible
