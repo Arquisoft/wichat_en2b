@@ -13,6 +13,7 @@ const playerSchema = new mongoose.Schema({
             timeToAnswer: Number,
         },
     ],
+    total_time: Number
 })
 
 const sharedQuizSessionSchema = new mongoose.Schema(

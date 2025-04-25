@@ -212,7 +212,7 @@ router.get("/:code/next", async (req, res) => {
 router.post("/:code/answer", async (req, res) => {
     try {
         const { code } = req.params
-        const { playerId, questionId, answerId, isCorrect, timeToAnswer } = req.body
+        const { playerId, questionId, answerId, isCorrect, timeToAnswer, timeOfTheResponse } = req.body //TODO add in the body of the request .../end the time that the user took to answer
 
         if (!playerId || !questionId || answerId === undefined || isCorrect === undefined || timeToAnswer === undefined) {
             return res.status(400).json({ error: "Missing required fields" })
@@ -246,6 +246,7 @@ router.post("/:code/answer", async (req, res) => {
         })
 
         session.players[playerIndex].score += scoreIncrement
+        session.players[playerIndex].total_time += timeOfTheResponse
 
         await session.save()
 
@@ -325,6 +326,7 @@ router.get("/:code/end", async (req, res) => {
                     score: p.score,
                 })),
             })
+
 
             res.status(200).json({
                 success: true,

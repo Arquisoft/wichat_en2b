@@ -265,6 +265,33 @@ export default function HostManager() {
                 throw new Error("Failed to end quiz");
             }
 
+            const token = document.cookie
+                .split("; ")
+                .find((row) => row.startsWith("token="))
+                ?.split("=")[1];
+
+            const authUsers = response.players.filter(p=>p.isGuest === false)
+
+            //TODO check if the fetch called inside the Primise all has problems with the forEach that is sync
+            await Promise.all(authUsers.forEach((player) => {
+                const numberOfCorrectAnswers = player.answers.reduce((count, answer) => answer.isCorrect ? count + 1 : count, 0);
+                fetch(`${apiEndpoint}/game`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        user_id: player.id,
+                        subject: quiz.quizMetaData.category,
+                        points_gain: player.score,
+                        number_of_questions: quiz.quizData.length,
+                        number_correct_answers: numberOfCorrectAnswers,
+                        total_time: player.total_time
+                    }),
+                });
+            }));
+
             const data = response;
             setSessionStatus(data.status);
             setPlayers(data.players);
