@@ -416,7 +416,7 @@ export default function PlayerView() {
                 <Button
                     variant="contained"
                     color="primary"
-                    onClick={() => router.push("/shared-quiz/join")}
+                    onClick={() => router.push("/wihoot/join")}
                 >
                     Join Another Quiz
                 </Button>

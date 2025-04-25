@@ -304,12 +304,10 @@ router.get("/:code/end", async (req, res) => {
             return res.status(400).json({ error: "Missing host ID" })
         }
 
-        const session = await SharedQuizSestartssion.findOne({ code })
-
+        const session = await SharedQuizSession.findOne({ code })
         if (!session) {
             return res.status(404).json({ error: "Session not found" })
         }
-
         if (session.hostId !== hostId) {
             return res.status(403).json({ error: "Only the host can end the session" })
         }

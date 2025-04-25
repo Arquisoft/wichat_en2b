@@ -448,7 +448,7 @@ export default function HostManager() {
                 <Button
                     variant="contained"
                     color="primary"
-                    onClick={() => router.push("/shared-quiz/create")}
+                    onClick={() => router.push("/wihoot/create")}
                     className="action-button"
                 >
                     Create New Quiz

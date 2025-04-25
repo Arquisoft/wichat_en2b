@@ -340,6 +340,11 @@ app.get("/shared-quiz/:code/next", (req, res) => {
   forwardRequest("wihoot", `/wihoot/${req.params.code}/next?hostId=${req.query.hostId}`, req, res)
 })
 
+app.get("/shared-quiz/:code/end", (req, res) => {
+  forwardRequest("wihoot", `/wihoot/${req.params.code}/end?hostId=${req.query.hostId}`, req, res)
+})
+
+
 // Get session status
 app.get("/shared-quiz/:code/status", (req, res) => {
   forwardRequest("wihoot", `/wihoot/${req.params.code}/status`, req, res)
