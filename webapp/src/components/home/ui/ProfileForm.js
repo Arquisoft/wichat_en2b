@@ -410,8 +410,8 @@ export default function ProfileForm({ username, profilePicture, onSave }) {
                     </Box>
                 )}
 
-                                {/* Pestaña Security */}
-                                {tabIndex === 1 && (
+                {/* Pestaña Security */}
+                {tabIndex === 1 && (
                     <Box className="form-section">
                         <form onSubmit={(e) => {
                             e.preventDefault();
