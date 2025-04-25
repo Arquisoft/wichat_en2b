@@ -214,7 +214,7 @@ router.post("/:code/answer", async (req, res) => {
         const { code } = req.params
         const { playerId, questionId, answerId, isCorrect, timeToAnswer } = req.body
 
-        if (!playerId || !questionId || !answerId) {
+        if (!playerId || !questionId || answerId === undefined || isCorrect === undefined || timeToAnswer === undefined) {
             return res.status(400).json({ error: "Missing required fields" })
         }
 
