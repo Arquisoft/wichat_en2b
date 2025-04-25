@@ -212,6 +212,12 @@ export default function PlayerView() {
         const { isCorrect, correctAnswer } = await validateOutput.json();
         setIsCorrect(isCorrect);
         setCorrectAnswer(correctAnswer);
+        console.log("Player id:", playerId)
+        console.log("Question id:", currentQuestion.question_id)
+        console.log("Answer id:", optionIndex)
+        console.log("Time to answer:", timeToAnswer)
+        console.log("Number of questions:", currentQuestion.answers.length)
+        
         try {
             await fetch(`${apiEndpoint}/shared-quiz/${code}/answer`, {
                 method: "POST",
