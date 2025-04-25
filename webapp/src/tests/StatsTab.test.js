@@ -36,7 +36,7 @@ describe("StatsTab Component", () => {
             },
             {
                 subject: "Math",
-                points_gain: 80,
+                points_gain: 69,
                 number_of_questions: 10,
                 number_correct_answers: 6,
                 total_time: 50.2
@@ -133,70 +133,61 @@ describe("StatsTab Component", () => {
             expect(screen.getByText("History")).toBeInTheDocument();
             expect(screen.getByText("Math")).toBeInTheDocument();
             expect(screen.getByText("100")).toBeInTheDocument();
-            expect(screen.getByText("80")).toBeInTheDocument();
+            expect(screen.getByText("69")).toBeInTheDocument();
         });
     });
 
     test("loads more recent quizzes when button is clicked", async () => {
-        fetchWithAuth.mockResolvedValueOnce(mockStats);
-        fetch.mockResolvedValueOnce({
-            json: () => Promise.resolve(mockCategories)
-        });
-        fetch.mockResolvedValueOnce({
-            json: () => Promise.resolve(mockRecentQuizzes)
-        });
-
         const secondPageQuizzes = {
             recentQuizzes: [
-                {
-                    subject: "Science",
-                    points_gain: 90,
-                    number_of_questions: 10,
-                    number_correct_answers: 7,
-                    total_time: 40.0
-                },
-                {
-                    subject: "Science",
-                    points_gain: 90,
-                    number_of_questions: 10,
-                    number_correct_answers: 7,
-                    total_time: 40.0
-                },
-                {
-                    subject: "Science",
-                    points_gain: 90,
-                    number_of_questions: 10,
-                    number_correct_answers: 7,
-                    total_time: 40.0
-                },
                 {
                     subject: "Art",
                     points_gain: 90,
                     number_of_questions: 10,
                     number_correct_answers: 7,
-                    total_time: 40.0
-                }
+                    total_time: 40.0,
+                },
             ],
-            hasMoreQuizzes: false
-        };
+            hasMoreQuizzes: false,
+        }
+        fetchWithAuth.mockReset()
+        fetch.mockReset()
 
-        fetchWithAuth
-            .mockResolvedValueOnce(mockStats)
-            .mockResolvedValueOnce(mockRecentQuizzes)
-            .mockResolvedValueOnce(secondPageQuizzes);
+        fetch.mockResolvedValueOnce({
+            json: () => Promise.resolve(mockCategories),
+        })
 
-        render(<StatsTab />);
+        fetchWithAuth.mockImplementation((endpoint) => {
+            if (endpoint === "/statistics/global") {
+                return Promise.resolve(mockStats)
+            } else if (endpoint === "/statistics/recent-quizzes?page=0") {
+                return Promise.resolve(mockRecentQuizzes)
+            } else if (endpoint === "/statistics/recent-quizzes?page=1") {
+                return Promise.resolve(secondPageQuizzes)
+            }
+            return Promise.resolve({})
+        })
+
+        render(<StatsTab />)
 
         await waitFor(() => {
-            expect(screen.getByText("Load more")).toBeInTheDocument();
-        });
-
-        fireEvent.click(screen.getByText("Load more"));
+            const baseText = screen.getByText(/Based on.*completed quizzes/i)
+            expect(baseText).toBeInTheDocument()
+        })
 
         await waitFor(() => {
-            expect(screen.getByText("Art")).toBeInTheDocument();
-            expect(fetchWithAuth).toHaveBeenCalledWith("/statistics/recent-quizzes?page=1");
-        });
+            expect(screen.getByText("History")).toBeInTheDocument()
+            expect(screen.getByText("Math")).toBeInTheDocument()
+        })
+
+        const loadMoreButton = await screen.findByText("Load more")
+        expect(loadMoreButton).toBeInTheDocument()
+
+        fireEvent.click(loadMoreButton)
+
+        await waitFor(() => {
+            expect(screen.getByText("Art")).toBeInTheDocument()
+        })
     });
 
     test("display correctly the graphs when there's statistics", async () => {
@@ -211,7 +202,7 @@ describe("StatsTab Component", () => {
 
         await waitFor(() => {
             expect(screen.getByText("Answer Distribution")).toBeInTheDocument();
-            expect(screen.getByText("Accuracy")).toBeInTheDocument();
+            expect(screen.getByText("Overall Accuracy")).toBeInTheDocument();
         });
     });
 
@@ -254,7 +245,6 @@ describe("StatsTab Component", () => {
             ],
             hasMoreQuizzes: false
         };
-
         fetchWithAuth
             .mockResolvedValueOnce(mockStats)
             .mockResolvedValueOnce(quizzes);

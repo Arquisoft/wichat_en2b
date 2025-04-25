@@ -137,7 +137,16 @@ export default function StatsTab() {
 			if (pageNum === 0) {
 				setRecentQuizzes(data.recentQuizzes);
 			} else {
-				setRecentQuizzes(prev => [...prev, ...data.recentQuizzes]);
+				setRecentQuizzes(prevQuizzes => {
+					const allQuizzes = [...prevQuizzes, ...data.recentQuizzes];
+					const uniqueQuizzes = Array.from(new Map( // avoid duplicates
+						allQuizzes.map(quiz => [
+							`${quiz._id}`,
+							quiz
+						])
+					).values());
+					return uniqueQuizzes;
+				});
 			}
 			setHasMoreQuizzes(data.hasMoreQuizzes);
 		} catch (error) {
@@ -246,7 +255,7 @@ export default function StatsTab() {
 					}
 				/>
 				<Typography variant="body1" sx={{ mt: 1, fontWeight: "medium" }}>
-					Accuracy
+					Overall Accuracy
 				</Typography>
 			</Box>
 		);
@@ -383,7 +392,7 @@ export default function StatsTab() {
 												alignItems: "center",
 												gap: 1,
 											}}
-										>
+										align="center">
 											<Avatar
 												sx={{
 													width: 32,

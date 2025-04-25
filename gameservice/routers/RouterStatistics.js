@@ -70,7 +70,7 @@ router.get('/statistics/recent-quizzes', verifyToken, async (req, res) => {
         const page = parseInt(req.query.page) || 0;
         const limit = 5;
         const recentQuizzes = await GameInfo.find({ user_id: req.user._id })
-            .sort({ createdAt: -1 })
+            .sort({ _id: -1 })
             .skip(page * limit)
             .limit(limit);
 
