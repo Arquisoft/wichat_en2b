@@ -67,7 +67,7 @@ export default function CreateGame() {
                 setError("No quizzes available for the selected topic.")
                 return
             }
-            let quizRequested = quizzes.find(quiz => quiz.difficulty = difficultySelected);
+            let quizRequested = quizzes.find(quiz => quiz.difficulty === difficultySelected);
             if (quizRequested.length > 1) {
                 //Take one of the quizzes random
                 const randomIndex = Math.floor(Math.random() * quizRequested.length);
@@ -139,12 +139,14 @@ export default function CreateGame() {
                         <FormControl fullWidth required>
                             <InputLabel id="topic-label">Topic</InputLabel>
                             <Select
+                                data-testid="topic-select"
                                 className="create-game-select"
                                 labelId="topic-label"
                                 id="topic"
                                 value={selectedTopic}
                                 label="Topic"
                                 onChange={(e) => setSelectedTopic(e.target.value)}
+                                disabled={isLoading}
                             >
                                 <MenuItem value="" disabled>Select a topic</MenuItem>
                                 {topics.map((topic) => (
@@ -156,6 +158,7 @@ export default function CreateGame() {
                         </FormControl>
 
                         <TextField
+                            data-testid="questions-input"
                             className="create-game-textfield"
                             id="questions"
                             label="Number of Questions"
@@ -164,10 +167,12 @@ export default function CreateGame() {
                             value={numberOfQuestions}
                             onChange={(e) => setNumberOfQuestions(Number.parseInt(e.target.value))}
                             fullWidth
+                            disabled={isLoading}
                             required
                         />
 
                         <TextField
+                            data-testid="answers-input"
                             className="create-game-textfield"
                             id="answers"
                             label="Number of Answers"
@@ -176,10 +181,12 @@ export default function CreateGame() {
                             value={numberOfAnswers}
                             onChange={(e) => setNumberOfAnswers(Number.parseInt(e.target.value))}
                             fullWidth
+                            disabled={isLoading}
                             required
                         />
 
                         <TextField
+                            data-testid="difficulty-input"
                             className="create-game-textfield"
                             id="difficultySelected"
                             label="Difficulty of the Quiz"
@@ -188,10 +195,12 @@ export default function CreateGame() {
                             value={difficultySelected}
                             onChange={(e) => setDifficultySelected(Number.parseInt(e.target.value))}
                             fullWidth
+                            disabled={isLoading}
                             required
                         />
 
                         <Button
+                            data-testid="create-quiz-button"
                             className="create-game-button"
                             type="submit"
                             variant="contained"
