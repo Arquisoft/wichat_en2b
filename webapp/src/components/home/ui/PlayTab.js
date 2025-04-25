@@ -61,7 +61,8 @@ function PlayTab({ isGuest }) {
 								Custom
 							</>
 						}
-						className="custom-category-header"
+						className="category-header custom-category-header"
+
 					/>
 					<CardContent className="category-content">
 						<Typography className="quiz-count">
@@ -71,9 +72,9 @@ function PlayTab({ isGuest }) {
 							<Button
 								variant="text"
 								fullWidth
-								className={`start-button button-custom`}
+								className={`button-custom`}
 							>
-								Enter Category
+								Customize quiz
 							</Button>
 						</Link>
 					</CardContent>
