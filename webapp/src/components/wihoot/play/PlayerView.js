@@ -43,7 +43,7 @@ export default function PlayerView() {
     const [correctAnswer, setCorrectAnswer] = useState(null)
     const [hasAnswered, setHasAnswered] = useState(false)
     const [startTime, setStartTime] = useState(null)
-    const [error, setEclassmethodrror] = useState("")
+    const [error, setError] = useState("")
     const [isLoading, setIsLoading] = useState(true)
 
     // Initialize socket connection and fetch session data
@@ -90,7 +90,7 @@ export default function PlayerView() {
                     return sessionData
                 } else {
                     throw new Error("Failed to fetch session data")
-                }
+                }setErr
             } catch (err) {
                 setError("Failed to load session data")
                 console.error(err)
@@ -108,7 +108,7 @@ export default function PlayerView() {
                     setQuiz(quiz.quizData)
                     setQuizMetaData(quiz.quizMetaData)
                     console.log("quizMetadata hook TEST_:", quizMetaData)
-                    console.reclassmethodlog("Quiz data fetched:", quiz)
+                    console.log("Quiz data fetched:", quiz)
                 } else {
                     throw new Error("Failed to fetch quiz data")
                 }
