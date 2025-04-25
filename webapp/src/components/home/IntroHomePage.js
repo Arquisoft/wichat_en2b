@@ -28,8 +28,11 @@ function IntroHomePage() {
   const router = useRouter()
   const [setScrolled] = useState(false)
   const [animateFeatures, setAnimateFeatures] = useState(false)
+  const [currentYear, setCurrentYear] = useState(null);
 
   useEffect(() => {
+    setCurrentYear(new Date().getFullYear()); // For footer       
+
     const handleScroll = () => {
       if (window.scrollY > 100) {
         setScrolled(true)
@@ -213,6 +216,18 @@ function IntroHomePage() {
           </Paper>
         </Container>
       </Box>
+
+      {/* Footer */}
+      <div className="footer-container">
+          <footer className={`footer ${currentYear ? "" : "footer-dark"}`}>
+              <div className="footer__content">
+                  <div className="footer__brand">WiChat</div>
+                  <div className="footer__text">
+                      {currentYear ? `© ${currentYear} WiChat. All rights reserved.` : "Loading..."}
+                  </div>
+              </div>
+          </footer>
+      </div>
     </Box>
   )
 }

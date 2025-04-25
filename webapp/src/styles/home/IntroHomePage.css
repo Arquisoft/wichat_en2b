@@ -80,8 +80,7 @@
     padding: 0.8rem 2.5rem;
     font-size: 1.2rem;
     border-radius: 50px;
-    background: linear-gradient(45deg, #ff2070 0%, #ff8a00 100%);
-    box-shadow: 0 4px 20px rgba(255, 32, 112, 0.4);
+    background: linear-gradient(45deg, #5f2c82 0%, #5018dd 80%);
     transition: all 0.3s ease;
 }
 
@@ -135,6 +134,7 @@
 
 /* Features Section */
 .features-section {
+    height: 90vh;
     padding: 6rem 0;
     background-color: #f8f9fa;
 }
