@@ -36,10 +36,9 @@ export default function HostManager() {
     const [quiz, setQuiz] = useState(null);
     const [error, setError] = useState("");
     const [isLoading, setIsLoading] = useState(true);
+    const [showLeaderboard, setShowLeaderboard] = useState(false);
 
-
-      useEffect(() => {
-
+    useEffect(() => {
         if (!router.isReady || !code) {
             return;
         }
@@ -133,11 +132,11 @@ export default function HostManager() {
 
             newSocket.on("player-joined", (data) => {
                 console.log("Player joined:", data);
-                fetchSessionData()
+                fetchSessionData();
             });
 
             newSocket.on("player-left", (data) => {
-                fetchSessionData()
+                fetchSessionData();
                 console.log("Player left:", data);
             });
 
@@ -184,54 +183,17 @@ export default function HostManager() {
             }
         };
 
-      setup().then((fn) => {
-          cleanupFn = fn; // Store the cleanup function once the promise resolves
-      });
+        setup().then((fn) => {
+            cleanupFn = fn;
+        });
 
-      return () => {
-          if (cleanupFn && typeof cleanupFn === "function") {
-              cleanupFn();
-              console.log("Cleanup executed");
-          }
-      };
+        return () => {
+            if (cleanupFn && typeof cleanupFn === "function") {
+                cleanupFn();
+                console.log("Cleanup executed");
+            }
+        };
     }, [code, router.isReady]);
-
-    // Manejo de router.isReady y code no disponible
-    if (!router.isReady) {
-        return (
-            <div className="container mx-auto px-4 py-8">
-                <div className="text-center">
-                    <p className="text-xl">Loading quiz data...</p>
-                </div>
-            </div>
-        );
-    }
-
-    if (!code) {
-        return (
-            <div className="container mx-auto px-4 py-8">
-                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-                    Error: No valid quiz code provided.
-                </div>
-                <button
-                    onClick={() => router.push("/wihoot/create")}
-                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                >
-                    Create New Quiz
-                </button>
-            </div>
-        );
-    }
-
-    if (isLoading) {
-        return (
-            <div className="container mx-auto px-4 py-8">
-                <div className="text-center">
-                    <p className="text-xl">Loading...</p>
-                </div>
-            </div>
-        );
-    }
 
     const handleStartQuiz = async () => {
         if (players.length === 0) {
@@ -261,19 +223,10 @@ export default function HostManager() {
                 throw new Error("No current question available");
             }
 
-            // Enviar la pregunta actual al endpoint para los jugadores
-            const response = await fetchWithAuth(`/shared-quiz/${code}/next?hostId=${hostId}`);
-
-            if (!response) {
-                throw new Error("Failed to move to next question");
-            }
-
-            const data = response;
-            setCurrentQuestionIndex(data.currentQuestionIndex);
-
-            // Verificar si hemos llegado al final del quiz
-            if (quiz && data.currentQuestionIndex >= quiz.quizData.length) {
+            if (currentQuestionIndex + 1 >= quiz.quizData.length) {
                 await handleEndQuiz();
+            } else {
+                setShowLeaderboard(true);
             }
         } catch (err) {
             setError(err.message || "Failed to move to next question");
@@ -281,10 +234,29 @@ export default function HostManager() {
         }
     };
 
+    const handleLeaderboardNext = async () => {
+        try {
+            const response = await fetchWithAuth(`/shared-quiz/${code}/next?hostId=${hostId}`);
+            if (!response) {
+                throw new Error("Failed to move to next question");
+            }
+
+            const data = response;
+            setCurrentQuestionIndex(data.currentQuestionIndex);
+            setShowLeaderboard(false);
+
+            if (quiz && data.currentQuestionIndex >= quiz.quizData.length) {
+                await handleEndQuiz();
+            }
+        } catch (err) {
+            setError(err.message || "Failed to move to next question");
+            console.error("Error in handleLeaderboardNext:", err);
+        }
+    };
+
     const handleEndQuiz = async () => {
         try {
             const response = await fetchWithAuth(`/shared-quiz/${code}/end?hostId=${hostId}`);
-
             if (!response) {
                 throw new Error("Failed to end quiz");
             }
@@ -292,6 +264,7 @@ export default function HostManager() {
             const data = response;
             setSessionStatus(data.status);
             setPlayers(data.players);
+            setShowLeaderboard(false);
         } catch (err) {
             setError(err.message || "Failed to end quiz");
             console.error("Error in handleEndQuiz:", err);
@@ -340,6 +313,50 @@ export default function HostManager() {
                     className="action-button"
                 >
                     Start Quiz
+                </Button>
+            </CardContent>
+        </Card>
+    );
+
+    const renderLeaderboardView = () => (
+        <Card className="host-manager-card">
+            <CardHeader title={`Leaderboard - Question ${currentQuestionIndex + 1} Results`} />
+            <CardContent>
+                <Box mb={3}>
+                    <Typography variant="h6">Current Standings</Typography>
+                    {players.length === 0 ? (
+                        <Typography variant="body2" color="textSecondary">
+                            No players
+                        </Typography>
+                    ) : (
+                        <List className="leaderboard-list">
+                            {[...players]
+                                .sort((a, b) => b.score - a.score)
+                                .map((player, index) => (
+                                    <ListItem key={player.id} className="leaderboard-item">
+                                        <ListItemText
+                                            primary={`#${index + 1} ${player.username}`}
+                                            secondary={
+                                                player.isGuest && (
+                                                    <Badge badgeContent="Guest" color="secondary" />
+                                                )
+                                            }
+                                        />
+                                        <Typography variant="body1" fontWeight="bold">
+                                            {player.score}
+                                        </Typography>
+                                    </ListItem>
+                                ))}
+                        </List>
+                    )}
+                </Box>
+                <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={handleLeaderboardNext}
+                    className="action-button"
+                >
+                    {currentQuestionIndex + 1 < quiz?.quizData.length ? "Next Question" : "End Quiz"}
                 </Button>
             </CardContent>
         </Card>
@@ -515,7 +532,7 @@ export default function HostManager() {
                 </Alert>
             )}
             {sessionStatus === "waiting" && renderWaitingRoom()}
-            {sessionStatus === "active" && renderActiveQuiz()}
+            {sessionStatus === "active" && (showLeaderboard ? renderLeaderboardView() : renderActiveQuiz())}
             {sessionStatus === "finished" && renderFinishedQuiz()}
         </Container>
     );
