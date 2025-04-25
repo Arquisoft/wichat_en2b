@@ -285,7 +285,7 @@ export default function HostManager() {
                     },
                     body: JSON.stringify({
                         user_id: player.id,
-                        subject: quiz.quizMetaData.category,
+                        subject: quiz.quizMetaData[0].category,
                         points_gain: player.score,
                         number_of_questions: quiz.quizData.length,
                         number_correct_answers: numberOfCorrectAnswers,
