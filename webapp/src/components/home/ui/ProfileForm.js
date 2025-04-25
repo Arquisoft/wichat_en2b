@@ -311,9 +311,11 @@ export default function ProfileForm({ username, profilePicture, onSave }) {
 
     return (
         <Card className="profile-container">
-            <CardContent>
+            <CardContent>               
                 {/* Header with Avatar and Name */}
                 <Box className="profile-header">
+                    <button onClick={() => window.location.href = '/'}></button>
+
                     <Avatar
                         className="profile-avatar"
                         src={profileData.profilePicture || ""}
