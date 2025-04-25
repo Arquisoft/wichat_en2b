@@ -69,8 +69,9 @@ function CustomQuiz() {
 
     const validFields = () => {
       let tempError = null;
-    
-      if (showNewCategoryInput && newCategory.trim() === "") {
+      if (showNewCategoryInput) {
+        tempError = "We are currently experimenting issues with this option and it is not available."
+      } else if (showNewCategoryInput && newCategory.trim() === "") {
         tempError = "The new category cannot be empty.";
       } else if (numberOfQuestions <= 0) {
         tempError = "You cannot enter a negative amount of questions.";
@@ -249,7 +250,6 @@ function CustomQuiz() {
               type="number"
               id="time-per-question"
               min="1"
-              max="120"
               value={timePerQuestion}
               onChange={(e) => setTimePerQuestion(Number.parseInt(e.target.value))}
             />
@@ -260,7 +260,6 @@ function CustomQuiz() {
             <input
               type="number"
               id="number-of-questions"
-              min="1"
               value={numberOfQuestions}
               onChange={(e) => setNumberOfQuestions(Number.parseInt(e.target.value))}
             />

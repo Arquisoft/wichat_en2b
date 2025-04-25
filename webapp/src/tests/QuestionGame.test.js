@@ -35,7 +35,7 @@ describe('QuestionGame component', () => {
 
     it('fetches and displays questions correctly', async () => {
         fetchMock.mockResponseOnce(JSON.stringify(mockQuestions));
-        render(<QuestionGame topic="1" subject="test" totalQuestions={2} numberOptions={4} timerDuration={30}/>);
+        render(<QuestionGame topic="1" fetchQuestionsURL="/game/test/2/4" totalQuestions={2} numberOptions={4} timerDuration={30}/>);
 
         await waitFor(() => expect(screen.getByText(/Question 1 of/)).toBeInTheDocument());
         expect(screen.getByRole('img')).toHaveAttribute('src', 'http://localhost:8000/images/sample1.jpg');
@@ -49,7 +49,7 @@ describe('QuestionGame component', () => {
         // Mock the API call to reject
         fetchMock.mockReject(new Error("Failed to fetch"));
 
-        render(<QuestionGame topic="1" subject="test" totalQuestions={2} numberOptions={4} timerDuration={30}/>);
+        render(<QuestionGame topic="1" fetchQuestionsURL="/game/test/2/4" totalQuestions={2} numberOptions={4} timerDuration={30}/>);
 
         // Ensure console.error was called
         await waitFor(() => {
@@ -64,7 +64,7 @@ describe('QuestionGame component', () => {
         fetchMock.mockResponseOnce(JSON.stringify(mockQuestions));
         fetchMock.mockResponseOnce(JSON.stringify({isCorrect: true, correctAnswer: null}));
 
-        render(<QuestionGame topic="1" subject="test" totalQuestions={2} numberOptions={4} timerDuration={30}/>);
+        render(<QuestionGame topic="1" fetchQuestionsURL="/game/test/2/4" totalQuestions={2} numberOptions={4} timerDuration={30}/>);
 
         await waitFor(() => screen.getByText(/Question 1 of/));
 
@@ -79,7 +79,7 @@ describe('QuestionGame component', () => {
         fetchMock.mockResponseOnce(JSON.stringify(mockQuestions));
         fetchMock.mockResponseOnce(JSON.stringify({isCorrect: false, correctAnswer: 'Option 1'}));
 
-        render(<QuestionGame topic="1" subject="test" totalQuestions={2} numberOptions={4} timerDuration={30}/>);
+        render(<QuestionGame topic="1" fetchQuestionsURL="/game/test/2/4" totalQuestions={2} numberOptions={4} timerDuration={30}/>);
 
         await waitFor(() => screen.getByText(/Question 1 of/));
 
@@ -91,7 +91,7 @@ describe('QuestionGame component', () => {
         fetchMock.mockResponseOnce(JSON.stringify(mockQuestions));
 
         render(<MemoryRouterProvider>
-            <QuestionGame topic="1" subject="test" totalQuestions={2} numberOptions={4} timerDuration={30}/>
+            <QuestionGame topic="1" fetchQuestionsURL="/game/test/2/4" totalQuestions={2} numberOptions={4} timerDuration={30}/>
         </MemoryRouterProvider>);
 
         await waitFor(() => screen.getByText(/Question 1 of/));
@@ -119,7 +119,7 @@ describe('QuestionGame component', () => {
         jest.useFakeTimers(); // Enable fake timers
         fetchMock.mockResponseOnce(JSON.stringify(mockQuestions));
         fetchMock.mockResponseOnce(JSON.stringify({isCorrect: false, correctAnswer: 'Option 1'}));
-        render(<QuestionGame topic="1" subject="test" totalQuestions={2} numberOptions={4} timerDuration={5}/>);
+        render(<QuestionGame topic="1" fetchQuestionsURL="/game/test/2/4" totalQuestions={2} numberOptions={4} timerDuration={5}/>);
 
         // Wait for the first question to appear
         await waitFor(() => screen.getByText(/Question 1 of/));
@@ -138,7 +138,7 @@ describe('QuestionGame component', () => {
             .mockResponseOnce(JSON.stringify({})) // Save game results mock
             .mockResponseOnce(JSON.stringify(mockQuestions));
 
-        render(<MemoryRouterProvider><QuestionGame topic="1" subject="test" totalQuestions={2} numberOptions={4} timerDuration={30}/></MemoryRouterProvider>);
+        render(<MemoryRouterProvider><QuestionGame topic="1" fetchQuestionsURL="/game/test/2/4" totalQuestions={2} numberOptions={4} timerDuration={30}/></MemoryRouterProvider>);
 
         await waitFor(() => screen.getByText(/Question 1 of/));
         fireEvent.click(screen.getByText('Option 1'));
