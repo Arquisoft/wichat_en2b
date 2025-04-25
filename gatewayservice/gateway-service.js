@@ -57,13 +57,7 @@ app.get('/health', (req, res) => res.json({ status: 'OK' }));
 // Helper function for forwarding requests using fetch
 const forwardRequest = async (service, endpoint, req, res) => {
   try {
-    const url = new URL(`${serviceUrls[service]}${endpoint}`);
-    if (req.query) {
-      Object.keys(req.query).forEach(key => {
-        url.searchParams.append(key, req.query[key]);
-      });
-    }
-    const response = await fetch(url, {
+    const response = await fetch(`${serviceUrls[service]}${endpoint}`, {
       method: req.method,
       headers: {
         Authorization: req.headers.authorization,
@@ -98,7 +92,6 @@ const forwardRequest = async (service, endpoint, req, res) => {
     res.status(500).json({ error: 'Hubo un problema al procesar la solicitud' });
   }
 };
-
 // Authentication
 app.use('/login', publicCors);
 app.post('/login', (req, res) => forwardRequest('auth', '/auth/login', req, res));
@@ -239,9 +232,11 @@ app.get('/question/internal/:id', (req, res) =>
     forwardRequest('game', `/question/internal/${req.params.id}`, req, res)
 );
 
+// I cannot use the general forwardRequest function due to pagination.
 app.use('/statistics/recent-quizzes', publicCors);
-app.get('/statistics/recent-quizzes', (req, res) => {
-  forwardRequest('game', '/statistics/recent-quizzes', req, res);
+app.get('/statistics/recent-quizzes', async (req, res) => {
+    const page = req.query.page || 0;
+    forwardRequest('game', `/statistics/recent-quizzes?page=${page}`, req, res);
 });
 
 // Statistics Routes

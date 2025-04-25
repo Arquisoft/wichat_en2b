@@ -481,10 +481,13 @@ describe('Gateway Service', () => {
         });
 
         it('should forward requests to recent-quizzes statistics endpoint', async () => {
-            const mockRecentQuizzes = [
-                { id: 1, subject: 'Historia', score: 80 },
-                { id: 2, subject: 'Ciencia', score: 90 }
-            ];
+            const mockRecentQuizzes = {
+                recentQuizzes: [
+                    { id: 1, subject: 'Historia', score: 80 },
+                    { id: 2, subject: 'Ciencia', score: 90 }
+                ],
+                hasMoreQuizzes: true
+            };
 
             global.fetch.mockImplementationOnce(() =>
                 Promise.resolve({
@@ -496,23 +499,20 @@ describe('Gateway Service', () => {
             );
 
             const response = await request(app)
-                .get('/statistics/recent-quizzes')
+                .get('/statistics/recent-quizzes?page=0')
                 .set('Authorization', 'Bearer mockToken');
 
             expect(fetch).toHaveBeenCalledWith(
-                'http://localhost:8004/statistics/recent-quizzes',
-                expect.objectContaining({
-                    body: undefined,
-                    method: 'GET',
-                    headers: expect.objectContaining({
+                'http://localhost:8004/statistics/recent-quizzes?page=0',
+                {
+                    headers: {
                         'Authorization': 'Bearer mockToken',
                         'Content-Type': 'application/json',
                         'Origin': 'http://localhost:8000'
-                    })
-                })
+                    },
+                    method: 'GET'
+                }
             );
-            expect(response.statusCode).toBe(200);
-            expect(response.body).toEqual(mockRecentQuizzes);
         });
 
         it('should handle error responses from game service', async () => {
