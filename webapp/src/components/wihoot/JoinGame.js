@@ -3,10 +3,21 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/router"
 import Link from "next/link"
-import { Box, Typography, Button, TextField, Container, Paper, Alert } from "@mui/material"
+import {
+    Box,
+    Card,
+    CardHeader,
+    CardContent,
+    Typography,
+    TextField,
+    Button,
+    Alert,
+    CircularProgress,
+} from "@mui/material"
 import GameConnecting from "@/components/wihoot/game/Connecting"
 import axios from "axios"
 import { v4 as uuidv4 } from "uuid"
+import "../../styles/wihoot/JoinGame.css"
 
 const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || "http://localhost:8000"
 
@@ -119,84 +130,69 @@ export default function JoinGame() {
     }
 
     return (
-        <Container maxWidth="md">
-            <Box
-                sx={{
-                    my: 4,
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                }}
-                className="home-container"
-            >
-                <Paper
-                    elevation={3}
-                    sx={{
-                        p: 4,
-                        width: "100%",
-                        borderRadius: 2,
-                        textAlign: "center",
-                    }}
-                >
-                    <Box component="div" sx={{ mb: 4 }}>
-                        <Typography variant="h5" component="h2" gutterBottom>
-                            Join a Game
-                        </Typography>
-
-                        {errorMessage && (
-                            <Alert severity="error" sx={{ mb: 2 }}>
-                                {errorMessage}
-                            </Alert>
-                        )}
-
-                        <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
-                            <TextField
-                                fullWidth
-                                label="Game Code"
-                                variant="outlined"
-                                placeholder="Enter 6-digit game code"
-                                value={gameCode}
-                                onChange={(e) => setGameCode(e.target.value.toUpperCase())}
-                                inputProps={{
-                                    maxLength: 6,
-                                }}
-                                disabled={isJoining}
-                                margin="normal"
-                            />
-
-                            <TextField
-                                fullWidth
-                                label="Your Name"
-                                variant="outlined"
-                                placeholder={isAuthenticated ? "Your name (pre-filled)" : "Your name"}
-                                value={playerName}
-                                onChange={(e) => setPlayerName(e.target.value)}
-                                disabled={isJoining || isAuthenticated}
-                                margin="normal"
-                                sx={{ mb: 2 }}
-                            />
-
-                            <Button type="submit" variant="contained" color="primary" fullWidth disabled={isJoining} sx={{ py: 1.5 }}>
-                                {isJoining ? "Joining..." : "Join Game"}
-                            </Button>
-                        </Box>
+        <Box className="join-game-container" sx={{ minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', bgcolor: '#f5f5f5' }}>
+            <Card className="join-game-card" sx={{ maxWidth: 600, width: '100%', m: 2, boxShadow: 3 }}>
+                <CardHeader
+                    className="join-game-header"
+                    title={<Typography className="join-game-title" variant="h4" component="h1" align="center">Join a Game</Typography>}
+                    subheader={<Typography className="join-game-subheader" variant="body2" color="textSecondary" align="center">
+                        Enter a 6-digit game code to join a shared quiz.
+                    </Typography>}
+                />
+                <CardContent className="join-game-content">
+                    {errorMessage && (
+                        <Alert className="join-game-error" severity="error" sx={{ mb: 2 }}>
+                            {errorMessage}
+                        </Alert>
+                    )}
+                    <Box component="form" className="join-game-form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                        <TextField
+                            className="join-game-textfield"
+                            fullWidth
+                            label="Game Code"
+                            variant="outlined"
+                            placeholder="Enter 6-digit game code"
+                            value={gameCode}
+                            onChange={(e) => setGameCode(e.target.value.toUpperCase())}
+                            inputProps={{ maxLength: 6 }}
+                            disabled={isJoining}
+                        />
+                        <TextField
+                            className="join-game-textfield"
+                            fullWidth
+                            label="Your Name"
+                            variant="outlined"
+                            placeholder={isAuthenticated ? "Your name (pre-filled)" : "Your name"}
+                            value={playerName}
+                            onChange={(e) => setPlayerName(e.target.value)}
+                            disabled={isJoining || isAuthenticated}
+                        />
+                        <Button
+                            className="join-game-button"
+                            type="submit"
+                            variant="contained"
+                            color="primary"
+                            disabled={isJoining}
+                            startIcon={isJoining && <CircularProgress size={20} />}
+                            sx={{ py: 1.5 }}
+                        >
+                            {isJoining ? "Joining..." : "Join Game"}
+                        </Button>
                     </Box>
-
                     {!isAuthenticated && (
-                        <Box sx={{ mt: 4 }}>
+                        <Box className="join-game-login" sx={{ mt: 4, textAlign: 'center' }}>
                             <Typography variant="body1" gutterBottom>
                                 Want to create your own quizzes?
                             </Typography>
-
                             <Link href="/login" passHref>
-                                <Button variant="outlined" color="primary">
+                                <Button className="join-game-login-button" variant="outlined" color="primary">
                                     Log In
                                 </Button>
                             </Link>
                         </Box>
                     )}
-                </Paper>
-            </Box>
-        </Container>
+                </CardContent>
+            </Card>
+        </Box>
     )
 }

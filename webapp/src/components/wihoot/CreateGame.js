@@ -3,6 +3,22 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/router"
 import { fetchWithAuth } from "../../utils/api-fetch-auth"
+import {
+    Box,
+    Card,
+    CardHeader,
+    CardContent,
+    Typography,
+    TextField,
+    Select,
+    MenuItem,
+    Button,
+    FormControl,
+    InputLabel,
+    Alert,
+    CircularProgress,
+} from "@mui/material"
+import "../../styles/wihoot/CreateGame.css"
 
 const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://localhost:8000';
 
@@ -104,95 +120,91 @@ export default function CreateGame() {
     }
 
     return (
-        <div className="container mx-auto px-4 py-8">
-            <h1 className="text-3xl font-bold mb-6">Create a Shared Quiz</h1>
+        <Box className="create-game-container" sx={{ minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', bgcolor: '#f5f5f5' }}>
+            <Card className="create-game-card" sx={{ maxWidth: 600, width: '100%', m: 2, boxShadow: 3 }}>
+                <CardHeader
+                    className="create-game-header"
+                    title={<Typography className="create-game-title" variant="h4" component="h1" align="center">Create a Shared Quiz</Typography>}
+                    subheader={<Typography className="create-game-subheader" variant="body2" color="textSecondary" align="center">
+                        Create a quiz and share it with friends using a unique code.
+                    </Typography>}
+                />
+                <CardContent className="create-game-content">
+                    {error && (
+                        <Alert className="create-game-error" severity="error" sx={{ mb: 2 }}>
+                            {error}
+                        </Alert>
+                    )}
+                    <Box component="form" className="create-game-form" onSubmit={handleCreateQuiz} sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                        <FormControl fullWidth required>
+                            <InputLabel id="topic-label">Topic</InputLabel>
+                            <Select
+                                className="create-game-select"
+                                labelId="topic-label"
+                                id="topic"
+                                value={selectedTopic}
+                                label="Topic"
+                                onChange={(e) => setSelectedTopic(e.target.value)}
+                            >
+                                <MenuItem value="" disabled>Select a topic</MenuItem>
+                                {topics.map((topic) => (
+                                    <MenuItem key={topic} value={topic}>
+                                        {topic}
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
 
-            {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">{error}</div>}
+                        <TextField
+                            className="create-game-textfield"
+                            id="questions"
+                            label="Number of Questions"
+                            type="number"
+                            InputProps={{ inputProps: { min: 1, max: 20 } }}
+                            value={numberOfQuestions}
+                            onChange={(e) => setNumberOfQuestions(Number.parseInt(e.target.value))}
+                            fullWidth
+                            required
+                        />
 
-            <form onSubmit={handleCreateQuiz} className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
-                <div className="mb-4">
-                    <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="topic">
-                        Topic
-                    </label>
-                    <select
-                        id="topic"
-                        value={selectedTopic}
-                        onChange={(e) => setSelectedTopic(e.target.value)}
-                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                        required
-                    >
-                        <option value="" disabled>
-                            Select a topic
-                        </option>
-                        {topics.map((topic) => (
-                            <option key={topic} value={topic}>
-                                {topic}
-                            </option>
-                        ))}
-                    </select>
-                </div>
+                        <TextField
+                            className="create-game-textfield"
+                            id="answers"
+                            label="Number of Answers"
+                            type="number"
+                            InputProps={{ inputProps: { min: 4, max: 6 } }}
+                            value={numberOfAnswers}
+                            onChange={(e) => setNumberOfAnswers(Number.parseInt(e.target.value))}
+                            fullWidth
+                            required
+                        />
 
-                <div className="mb-6">
-                    <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="questions">
-                        Number of Questions
-                    </label>
-                    <input
-                        id="questions"
-                        type="number"
-                        min="1"
-                        max="20"
-                        value={numberOfQuestions}
-                        onChange={(e) => setNumberOfQuestions(Number.parseInt(e.target.value))}
-                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                        required
-                    />
-                </div>
+                        <TextField
+                            className="create-game-textfield"
+                            id="difficultySelected"
+                            label="Difficulty of the Quiz"
+                            type="number"
+                            InputProps={{ inputProps: { min: 1, max: 5 } }}
+                            value={difficultySelected}
+                            onChange={(e) => setDifficultySelected(Number.parseInt(e.target.value))}
+                            fullWidth
+                            required
+                        />
 
-                <div className="mb-6">
-                    <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="questions">
-                        Number of Answers
-                    </label>
-                    <input
-                        id="answers"
-                        type="number"
-                        min="4"
-                        max="6"
-                        value={numberOfAnswers}
-                        onChange={(e) => setNumberOfAnswers(Number.parseInt(e.target.value))}
-                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                        required
-                    />
-                </div>
-
-                <div className="mb-6">
-                    <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="questions">
-                        Difficulty of the Quiz
-                    </label>
-                    <input
-                        id="dificultySelected"
-                        type="number"
-                        min="1"
-                        max="5"
-                        value={difficultySelected}
-                        onChange={(e) => setDifficultySelected(Number.parseInt(e.target.value))}
-                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                        required
-                    />
-                </div>
-
-                <div className="flex items-center justify-between">
-                    <button
-                        type="submit"
-                        disabled={isLoading}
-                        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline disabled:opacity-50"
-                    >
-                        {isLoading ? "Creating..." : "Create Shared Quiz"}
-                    </button>
-                </div>
-            </form>
-
-            <p className="text-center text-gray-500 text-xs">Create a quiz and share it with friends using a unique
-                code.</p>
-        </div>
+                        <Button
+                            className="create-game-button"
+                            type="submit"
+                            variant="contained"
+                            color="primary"
+                            disabled={isLoading}
+                            startIcon={isLoading && <CircularProgress size={20} />}
+                            sx={{ mt: 2, py: 1.5 }}
+                        >
+                            {isLoading ? "Creating..." : "Create Shared Quiz"}
+                        </Button>
+                    </Box>
+                </CardContent>
+            </Card>
+        </Box>
     )
 }
