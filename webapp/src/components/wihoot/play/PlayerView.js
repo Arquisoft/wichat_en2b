@@ -22,7 +22,7 @@ import {
 } from "@mui/material";
 import InGameChat from "@/components/game/InGameChat";
 import "../../../styles/wihoot/PlayerView.css"
-import "../../styles/QuestionGame.css";
+import "../../../styles/QuestionGame.css";
 
 const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://localhost:8000';
 
