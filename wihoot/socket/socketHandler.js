@@ -139,6 +139,20 @@ module.exports = {
                         })
                     }
                 })
+
+                socket.on("waiting-for-next", async ({ code }) => {
+                    try {
+                        const session = await SharedQuizSession.findOne({ code });
+                        if (!session) {
+                            socket.emit("error", { message: "Session not found" });
+                            return;
+                        }
+                        socket.to(code).emit("waiting-for-next");
+                    } catch (error) {
+                        console.error("Error in waiting-for-next:", error);
+                        socket.emit("error", { message: "Failed to process waiting-for-next" });
+                    }
+                });
             })
 
         return this.io

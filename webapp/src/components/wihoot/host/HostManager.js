@@ -100,7 +100,6 @@ export default function HostManager() {
                 if (response) {
                     const quizData = response;
                     setQuiz(quizData);
-                    console.log("Quiz data fetched:", quizData);
                 } else {
                     throw new Error("Failed to fetch quiz data");
                 }
@@ -154,6 +153,7 @@ export default function HostManager() {
 
             setSocket(newSocket);
             console.log("Socket initialized:", newSocket);
+            setSocket(newSocket);
             return newSocket;
         };
 
@@ -226,6 +226,10 @@ export default function HostManager() {
             if (currentQuestionIndex + 1 >= quiz.quizData.length) {
                 await handleEndQuiz();
             } else {
+                // Emit waiting-for-next to trigger leaderboard for all clients
+                if (socket) {
+                    socket.emit("waiting-for-next", { code });
+                }
                 setShowLeaderboard(true);
             }
         } catch (err) {
@@ -384,7 +388,7 @@ export default function HostManager() {
                 />
                 <CardContent>
                     <Typography variant="h6" mb={2}>
-                        {quiz.quizMetaData.quizName}
+                        {quiz?.quizMetaData?.quizName || "Untitled Quiz"}
                     </Typography>
                     <List className="options-list">
                         {currentQuestion.answers.map((option, index) => (

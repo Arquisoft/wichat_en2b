@@ -45,6 +45,8 @@ export default function PlayerView() {
     const [startTime, setStartTime] = useState(null)
     const [error, setError] = useState("")
     const [isLoading, setIsLoading] = useState(true)
+    const [waitingForNext, setWaitingForNext] = useState(false)
+
 
     // Initialize socket connection and fetch session data
     useEffect(() => {
@@ -148,6 +150,7 @@ export default function PlayerView() {
                 setStartTime(Date.now())
                 setHasAnswered(false)
                 setSelectedOption(null)
+                setWaitingForNext(false)
             })
 
             newSocket.on("question-changed", (data) => {
@@ -155,11 +158,17 @@ export default function PlayerView() {
                 setStartTime(Date.now())
                 setHasAnswered(false)
                 setSelectedOption(null)
+                setWaitingForNext(false)
+            })
+
+            newSocket.on("waiting-for-next", () => {
+                setWaitingForNext(true)
             })
 
             newSocket.on("session-ended", (data) => {
                 setSessionStatus("finished")
                 setPlayers(data.players)
+                setWaitingForNext(false)
             })
 
             newSocket.on("score-updated", (data) => {
@@ -250,7 +259,6 @@ export default function PlayerView() {
             if (sessionData) {
                 setPlayers(sessionData.players)
             }
-
         } catch (err) {
             console.error("Failed to submit answer or fetch session data:", err)
         }
@@ -284,6 +292,59 @@ export default function PlayerView() {
                 </Box>
                 <Typography variant="body2" color="textSecondary" align="center">
                     The host will start the quiz soon. Get ready!
+                </Typography>
+            </CardContent>
+        </Card>
+    )
+
+    const renderLeaderboardView = () => (
+        <Card className="player-view-card">
+            <CardHeader title={`Leaderboard - Question ${currentQuestionIndex + 1} Results`} />
+            <CardContent>
+                <Box mb={3}>
+                    <Typography variant="h6">Current Standings</Typography>
+                    {players.length === 0 ? (
+                        <Typography variant="body2" color="textSecondary">
+                            No players
+                        </Typography>
+                    ) : (
+                        <List className="results-list">
+                            {[...players]
+                                .sort((a, b) => b.score - a.score)
+                                .map((player, index) => (
+                                    <ListItem
+                                        key={player.id}
+                                        className={`result-item ${
+                                            player.id === playerId ? "current-player" : ""
+                                        }`}
+                                    >
+                                        <ListItemText
+                                            primary={`#${index + 1} ${player.username}`}
+                                            secondary={
+                                                <>
+                                                    {player.isGuest && (
+                                                        <Badge
+                                                            badgeContent="Guest"
+                                                            color="secondary"
+                                                            sx={{ mr: 1 }}
+                                                        />
+                                                    )}
+                                                    {player.id === playerId && (
+                                                        <Badge badgeContent="You" color="primary" />
+                                                    )}
+                                                </>
+                                            }
+                                        />
+                                        <Typography variant="body1" fontWeight="bold">
+                                            {player.score}
+                                        </Typography>
+                                    </ListItem>
+                                ))}
+                        </List>
+                    )}
+                </Box>
+                <Typography variant="body2" color="textSecondary" align="center">
+                    Waiting for the host to proceed to the next question...
                 </Typography>
             </CardContent>
         </Card>
@@ -377,39 +438,45 @@ export default function PlayerView() {
             <CardContent>
                 <Box mb={3}>
                     <Typography variant="h6">Final Results</Typography>
-                    <List className="results-list">
-                        {[...players]
-                            .sort((a, b) => b.score - a.score)
-                            .map((player, index) => (
-                                <ListItem
-                                    key={player.id}
-                                    className={`result-item ${
-                                        player.id === playerId ? "current-player" : ""
-                                    }`}
-                                >
-                                    <ListItemText
-                                        primary={`#${index + 1} ${player.username}`}
-                                        secondary={
-                                            <>
-                                                {player.isGuest && (
-                                                    <Badge
-                                                        badgeContent="Guest"
-                                                        color="secondary"
-                                                        sx={{ mr: 1 }}
-                                                    />
-                                                )}
-                                                {player.id === playerId && (
-                                                    <Badge badgeContent="You" color="primary" />
-                                                )}
-                                            </>
-                                        }
-                                    />
-                                    <Typography variant="body1" fontWeight="bold">
-                                        {player.score}
-                                    </Typography>
-                                </ListItem>
-                            ))}
-                    </List>
+                    {players.length === 0 ? (
+                        <Typography variant="body2" color="textSecondary">
+                            No players participated
+                        </Typography>
+                    ) : (
+                        <List className="results-list">
+                            {[...players]
+                                .sort((a, b) => b.score - a.score)
+                                .map((player, index) => (
+                                    <ListItem
+                                        key={player.id}
+                                        className={`result-item ${
+                                            player.id === playerId ? "current-player" : ""
+                                        }`}
+                                    >
+                                        <ListItemText
+                                            primary={`#${index + 1} ${player.username}`}
+                                            secondary={
+                                                <>
+                                                    {player.isGuest && (
+                                                        <Badge
+                                                            badgeContent="Guest"
+                                                            color="secondary"
+                                                            sx={{ mr: 1 }}
+                                                        />
+                                                    )}
+                                                    {player.id === playerId && (
+                                                        <Badge badgeContent="You" color="primary" />
+                                                    )}
+                                                </>
+                                            }
+                                        />
+                                        <Typography variant="body1" fontWeight="bold">
+                                            {player.score}
+                                        </Typography>
+                                    </ListItem>
+                                ))}
+                        </List>
+                    )}
                 </Box>
                 <Button
                     variant="contained"
@@ -446,7 +513,7 @@ export default function PlayerView() {
                 </Alert>
             )}
             {sessionStatus === "waiting" && renderWaitingRoom()}
-            {sessionStatus === "active" && renderActiveQuiz()}
+            {sessionStatus === "active" && (waitingForNext ? renderLeaderboardView() : renderActiveQuiz())}
             {sessionStatus === "finished" && renderFinishedQuiz()}
         </Container>
     );
