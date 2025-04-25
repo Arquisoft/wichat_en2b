@@ -1,12 +1,12 @@
 /* Main Container */
-.intro-home-container {
+body .intro-home-container {
     min-height: 100vh;
     overflow-x: hidden;
     font-family: "Roboto", "Helvetica", "Arial", sans-serif;
 }
 
 /* Hero Section */
-.hero-background {
+body .hero-background {
     background: linear-gradient(135deg, #6a11cb 0%, #aa25fc 100%);
     min-height: 100vh;
     display: flex;
@@ -16,7 +16,7 @@
     color: white;
 }
 
-.hero-background::before {
+body .hero-background::before {
     content: "";
     position: absolute;
     top: 0;
@@ -30,19 +30,19 @@
     z-index: 0;
 }
 
-.hero-content {
+body .hero-content {
     position: relative;
     z-index: 1;
     padding: 4rem 1rem;
     text-align: center;
 }
 
-.hero-text-container {
+body .hero-text-container {
     max-width: 800px;
     margin: 0 auto;
 }
 
-.hero-title {
+body .hero-title {
     font-size: 4rem;
     font-weight: 700;
     margin-bottom: 1.5rem;
@@ -50,7 +50,7 @@
     letter-spacing: -0.5px;
 }
 
-.hero-title .highlight {
+body .hero-title .highlight {
     background: linear-gradient(to right, #ff8a00, #ff2070);
     -webkit-background-clip: text;
     background-clip: text;
@@ -59,7 +59,7 @@
     padding: 0 0.5rem;
 }
 
-.hero-subtitle {
+body .hero-subtitle {
     font-size: 1.5rem;
     margin-bottom: 3rem;
     opacity: 0.9;
@@ -68,7 +68,7 @@
     margin-right: auto;
 }
 
-.hero-buttons {
+body .hero-buttons {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -76,7 +76,7 @@
     margin-bottom: 3rem;
 }
 
-.play-now-button {
+body .play-now-button {
     padding: 0.8rem 2.5rem;
     font-size: 1.2rem;
     border-radius: 50px;
@@ -84,19 +84,19 @@
     transition: all 0.3s ease;
 }
 
-.play-now-button:hover {
+body .play-now-button:hover {
     transform: translateY(-3px);
     box-shadow: 0 6px 25px rgba(255, 32, 112, 0.6);
 }
 
-.auth-buttons {
+body .auth-buttons {
     display: flex;
     gap: 1rem;
     flex-wrap: wrap;
     justify-content: center;
 }
 
-.auth-button {
+body .auth-button {
     border-radius: 50px;
     padding: 0.6rem 2rem;
     border-width: 2px;
@@ -104,42 +104,42 @@
     transition: all 0.3s ease;
 }
 
-.login-button {
+body .login-button {
     color: white;
     background-color: #6a11cb;
     border-color: #6a11cb;
 }
 
-.register-button {
+body .register-button {
     color: #6a11cb;
     background-color: white;
     border-color: white;
 }
 
-.auth-button:hover {
+body .auth-button:hover {
     background-color: rgba(255, 255, 255, 0.1);
 }
 
-.scroll-button {
+body .scroll-button {
     color: white;
     opacity: 0.8;
     transition: all 0.3s ease;
     margin-top: 2rem;
-  }
+}
   
-  .scroll-button:hover {
+body .scroll-button:hover {
     opacity: 1;
     transform: translateY(3px);
 }
 
 /* Features Section */
-.features-section {
+body .features-section {
     height: 90vh;
     padding: 6rem 0;
     background-color: #f8f9fa;
 }
 
-.section-title {
+body .section-title {
     text-align: center;
     margin-bottom: 4rem;
     font-weight: 700;
@@ -147,7 +147,7 @@
     position: relative;
 }
 
-.section-title::after {
+body .section-title::after {
     content: "";
     position: absolute;
     bottom: -15px;
@@ -159,11 +159,11 @@
     border-radius: 2px;
 }
 
-.features-grid {
+body .features-grid {
     margin-top: 2rem;
 }
 
-.feature-card {
+body .feature-card {
     padding: 2.5rem 2rem;
     height: 100%;
     text-align: center;
@@ -171,30 +171,30 @@
     transition: all 0.3s ease;
 }
 
-.feature-card:hover {
+body .feature-card:hover {
     transform: translateY(-10px);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
 }
 
-.feature-icon {
+body .feature-icon {
     font-size: 3.5rem;
     margin-bottom: 1.5rem;
     color: #6a11cb;
 }
 
-.feature-title {
+body .feature-title {
     margin-bottom: 1rem;
     font-weight: 600;
     color: #333;
 }
 
-.feature-description {
+body .feature-description {
     color: #666;
     line-height: 1.6;
 }
 
 /* Bottom CTA Section */
-.bottom-cta-section {
+body .bottom-cta-section {
     padding: 5rem 0;
     background: linear-gradient(180deg, 
                 #ffffff 0%, 
@@ -202,20 +202,20 @@
                 #ffffff 100%);
 }
 
-.cta-paper {
+body .cta-paper {
 padding: 3rem;
     text-align: center;
     border-radius: 16px;
     background: white;
 }
 
-.cta-title {
+body .cta-title {
     margin-bottom: 1.5rem;
     font-weight: 700;
     color: #333;
 }
 
-.cta-description {
+body .cta-description {
     margin-bottom: 2.5rem;
     max-width: 600px;
     margin-left: auto;
@@ -223,14 +223,14 @@ padding: 3rem;
     color: #666;
 }
 
-.cta-buttons {
+body .cta-buttons {
     display: flex;
     gap: 1.5rem;
     justify-content: center;
     flex-wrap: wrap;
 }
 
-.cta-main-button {
+body .cta-main-button {
     padding: 0.8rem 2.5rem;
     font-size: 1.1rem;
     border-radius: 50px;
@@ -238,7 +238,7 @@ padding: 3rem;
     box-shadow: 0 4px 15px rgba(106, 17, 203, 0.4);
 }
 
-.cta-secondary-button {
+body .cta-secondary-button {
     padding: 0.8rem 2.5rem;
     font-size: 1.1rem;
     border-radius: 50px;
@@ -246,23 +246,23 @@ padding: 3rem;
 }
   
 /* Dialog */
-.dialog-container {
+body .dialog-container {
     border-radius: 16px;
     padding: 1rem;
 }
 
-.dialog-title {
+body .dialog-title {
     text-align: center;
     font-weight: 600;
     color: #333;
 }
 
-.dialog-content {
+body .dialog-content {
     padding: 1.5rem 2rem;
     text-align: center;
 }
 
-.dialog-actions {
+body .dialog-actions {
     padding: 1rem 1.5rem 1.5rem;
     display: flex;
     justify-content: center;
@@ -270,52 +270,52 @@ padding: 3rem;
     gap: 1rem;
 }
 
-.dialog-button {
+body .dialog-button {
     border-radius: 50px;
     padding: 0.5rem 1.5rem;
 }
 
 /* Responsive Adjustments */
 @media (max-width: 960px) {
-    .hero-title {
+    body .hero-title {
       font-size: 3rem;
     }
   
-    .hero-subtitle {
+    body .hero-subtitle {
       font-size: 1.25rem;
     }
   
-    .feature-card {
+    body .feature-card {
       padding: 2rem 1.5rem;
     }
 }
   
 @media (max-width: 600px) {
-    .hero-title {
+    body .hero-title {
       font-size: 2.5rem;
     }
   
-    .hero-subtitle {
+    body .hero-subtitle {
       font-size: 1.1rem;
     }
   
-    .play-now-button {
+    body .play-now-button {
       padding: 0.7rem 2rem;
       font-size: 1.1rem;
     }
   
-    .auth-buttons {
+    body .auth-buttons {
       flex-direction: column;
       width: 100%;
       max-width: 250px;
       margin: 0 auto;
     }
   
-    .auth-button {
+    body .auth-button {
       width: 100%;
     }
   
-    .cta-paper {
+    body .cta-paper {
       padding: 2rem 1.5rem;
     }
 }

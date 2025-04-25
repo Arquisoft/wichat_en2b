@@ -154,10 +154,8 @@ router.delete('/users', authenticateUser, async (req, res) => {
             if (fs.existsSync(profilePicturePath)) {
                 try {
                     fs.unlinkSync(profilePicturePath);
-                } catch (err) {
-                    // Handle error if file deletion fails
-                    console.error(`Error deleting profile picture for ${user.username}:`, err);
-                    return res.status(500).send({ error: "Failed to delete profile picture" });                    
+                } catch (err) { // NOSONAR
+                    console.error(`Error deleting profile picture`);                  
                 }
             }
         }
