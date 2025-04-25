@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { fetchWithAuth } from "../../../utils/api-fetch-auth";
 import io from "socket.io-client";
@@ -270,10 +270,12 @@ export default function HostManager() {
                 .find((row) => row.startsWith("token="))
                 ?.split("=")[1];
 
+            console.log("GET /end reponse", response)
             const authUsers = response.players.filter(p=>p.isGuest === false)
 
             //TODO check if the fetch called inside the Primise all has problems with the forEach that is sync
-            await Promise.all(authUsers.forEach((player) => {
+            authUsers.forEach((player) => {
+                console.log("authUser answers : ", player.answers)
                 const numberOfCorrectAnswers = player.answers.reduce((count, answer) => answer.isCorrect ? count + 1 : count, 0);
                 fetch(`${apiEndpoint}/game`, {
                     method: 'POST',
@@ -290,7 +292,7 @@ export default function HostManager() {
                         total_time: player.total_time
                     }),
                 });
-            }));
+            });
 
             const data = response;
             setSessionStatus(data.status);
@@ -415,8 +417,15 @@ export default function HostManager() {
                 />
                 <CardContent>
                     <Typography variant="h6" mb={2}>
-                        {quiz?.quizMetaData?.quizName || "Untitled Quiz"}
+                        {quiz.quizMetaData[0]?.quizName || "Untitled Quiz"}
                     </Typography>
+                    <Box className="image-box" mb={3}>
+                        <img
+                            src={`${apiEndpoint}${currentQuestion.image_name}`}
+                            alt="Question"
+                            className="quiz-image"
+                        />
+                    </Box>
                     <List className="options-list">
                         {currentQuestion.answers.map((option, index) => (
                             <ListItem key={index} className="option-item">

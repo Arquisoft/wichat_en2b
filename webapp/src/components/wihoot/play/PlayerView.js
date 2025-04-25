@@ -250,8 +250,7 @@ export default function PlayerView() {
                     questionId: currentQuestion.question_id,
                     answerId: optionIndex,
                     isCorrect,
-                    timeToAnswer,
-                    numberOfQuestions: currentQuestion.answers.length
+                    timeToAnswer
                 }),
             })
 
