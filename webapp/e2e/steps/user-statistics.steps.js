@@ -52,7 +52,7 @@ defineFeature(feature, test => {
 
             console.log("🥒 Game Info Test Data: ", global.gameInfoTestData);
 
-            const tScore = await page.$eval('#total-score > div', el => el.textContent.trim());
+            const tScore = await page.$eval('#total-score > div span.value', el => el.textContent.trim());
             const totalPoints = global.gameInfoTestData.reduce((sum, data) => sum + data.points_gain, 0) || undefined;
             console.log("🥒 Score text obtained: ", tScore, "Expected: ", totalPoints);
             expect(tScore).toBe(""+totalPoints+" points");
