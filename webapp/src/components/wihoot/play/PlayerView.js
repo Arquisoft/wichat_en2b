@@ -36,7 +36,7 @@ export default function PlayerView() {
     const [sessionStatus, setSessionStatus] = useState("waiting")
     const [players, setPlayers] = useState([])
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(-1)
-    const [quiz, setQuiz] = useState(null)
+    const [quizData, setQuizData] = useState(null)
     const [quizMetaData, setQuizMetaData] = useState(null)
     const [selectedOption, setSelectedOption] = useState(null)
     const [isCorrect, setIsCorrect] = useState(false)
@@ -90,7 +90,7 @@ export default function PlayerView() {
                     return sessionData
                 } else {
                     throw new Error("Failed to fetch session data")
-                }setErr
+                }
             } catch (err) {
                 setError("Failed to load session data")
                 console.error(err)
@@ -105,10 +105,8 @@ export default function PlayerView() {
                 const response = await fetchWithAuth(`/internal/quizdata/${code}`)
                 if (response) {
                     const quiz = response
-                    setQuiz(quiz.quizData)
+                    setQuizData(quiz.quizData)
                     setQuizMetaData(quiz.quizMetaData)
-                    console.log("quizMetadata hook TEST_:", quizMetaData)
-                    console.log("Quiz data fetched:", quiz)
                 } else {
                     throw new Error("Failed to fetch quiz data")
                 }
@@ -202,10 +200,10 @@ export default function PlayerView() {
     }, [code, playerId, username, isGuest])
 
     const getCurrentQuestion = () => {
-        if (!quiz || currentQuestionIndex < 0 || currentQuestionIndex >= quiz.length) {
+        if (!quizData || currentQuestionIndex < 0 || currentQuestionIndex >= quizData.length) {
             return null
         }
-        return quiz[currentQuestionIndex]
+        return quizData[currentQuestionIndex]
     }
 
     const handleAnswerSubmit = async (optionIndex) => {
@@ -332,7 +330,7 @@ export default function PlayerView() {
                         </Box>
                     </Box>
                     <Typography variant="h6" className="question-title" mb={2}>
-                        {quizMetaData?.question || "Untitled Quiz"}
+                        {quizMetaData[0].question || "Untitled Quiz"}
                     </Typography>
                     <Box className="image-box" mb={3}>
                         <img
