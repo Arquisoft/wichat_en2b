@@ -8,15 +8,30 @@
 <p float="left">
 <img src="https://blog.wildix.com/wp-content/uploads/2020/06/react-logo.jpg" height="100">
 <img src="https://miro.medium.com/max/365/1*Jr3NFSKTfQWRUyjblBSKeg.png" height="100">
+
+## Members
+
+| Name | GitHub Profile|
+|------|---------------|
+|| <a href="https://github.com/HovanRojasIgnacio"><img src="https://img.shields.io/badge/UO295341-HovanRojasIgnacio-blue"></a>
+|| <a href="https://github.com/adrianmfuentes"><img src="https://img.shields.io/badge/UO295341-adrianmfuentes-green"></a>
+|| <a href="https://github.com/carlosfernandezmartinez"><img src="https://img.shields.io/badge/UO295341-carlosfernandezmartinez-red"></a>
+|| <a href="https://github.com/DavidPedregal"><img src="https://img.shields.io/badge/UO295341-DavidPedregal-orange"></a>
+|| <a href="https://github.com/franCimadevilla"><img src="https://img.shields.io/badge/UO295341-franCimadevilla-yellow"></a>
+|| <a href="https://github.com/sergio-riesco"><img src="https://img.shields.io/badge/UO295341-sergio--riesco-purple"></a>
+|| <a href="https://github.com/pelayosl"><img src="https://img.shields.io/badge/UO295341-pelayosl-cyan"></a>
+
 </p>
 
-This is a base project for the Software Architecture course in 2024/2025. It is a basic application composed of several components.
+
 
 - **User service**. Express service that handles the insertion of new users in the system.
 - **Auth service**. Express service that handles the authentication of users.
 - **LLM service**. Express service that handles the communication with the LLM.
 - **Gateway service**. Express service that is exposed to the public and serves as a proxy to the two previous ones.
 - **Webapp**. React web application that uses the gateway service to allow basic login and new user features.
+- **Game service**. Express service that handles the retrieval and saving of the games, questions and statistics.
+- **Group service**. Express service that handles the creation and state of the groups.
 
 Both the user and auth service share a Mongo database that is accessed with mongoose.
 
