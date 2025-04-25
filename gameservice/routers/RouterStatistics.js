@@ -69,13 +69,13 @@ router.get('/statistics/recent-quizzes', verifyToken, async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 0;
         const limit = 5;
-        const recentQuizzes = await GameInfo.find({ user_id: req.user._id })
+        const retrievedQuizzes = await GameInfo.find({ user_id: req.user._id })
             .sort({ _id: -1 })
             .skip(page * limit)
-            .limit(limit);
+            .limit(limit+1);
 
-        const hasMoreQuizzes = recentQuizzes.length === limit;
-
+        const hasMoreQuizzes = retrievedQuizzes.length > limit;
+        const recentQuizzes = retrievedQuizzes.slice(0, limit);
         res.json({ recentQuizzes, hasMoreQuizzes });
     } catch (error) {
         console.error('Error retrieving recent quizzes:', error);
