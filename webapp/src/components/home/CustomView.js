@@ -70,9 +70,7 @@ function CustomQuiz() {
     const validFields = () => {
       let tempError = null;
       if (showNewCategoryInput) {
-        tempError = "We are currently experimenting issues with this option and it is not available."
-      } else if (showNewCategoryInput && newCategory.trim() === "") {
-        tempError = "The new category cannot be empty.";
+        tempError = "We are currently experimenting issues with this option and it is not available.";
       } else if (numberOfQuestions <= 0) {
         tempError = "You cannot enter a negative amount of questions.";
       } else if (!showNewCategoryInput && numberOfQuestions > numberOfAvailableQuestions) {
