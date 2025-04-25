@@ -22,7 +22,7 @@ import {
 } from "@mui/material";
 import InGameChat from "@/components/game/InGameChat";
 import "../../../styles/wihoot/PlayerView.css"
-import "../../styles/QuestionGame.css";
+import "../../../styles/QuestionGame.css";
 
 const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://localhost:8000';
 
@@ -43,7 +43,7 @@ export default function PlayerView() {
     const [correctAnswer, setCorrectAnswer] = useState(null)
     const [hasAnswered, setHasAnswered] = useState(false)
     const [startTime, setStartTime] = useState(null)
-    const [error, setError] = useState("")
+    const [error, setEclassmethodrror] = useState("")
     const [isLoading, setIsLoading] = useState(true)
 
     // Initialize socket connection and fetch session data
@@ -52,7 +52,6 @@ export default function PlayerView() {
 
         const fetchUserData = async () => {
             if (playerId.startsWith("guest_")) {
-                // For guest users, we don't need to fetch user data
                 setIsGuest(true)
                 return
             }
@@ -82,7 +81,6 @@ export default function PlayerView() {
                     setPlayers(sessionData.players)
                     setCurrentQuestionIndex(sessionData.currentQuestionIndex)
 
-                    // Find player in the session
                     const player = sessionData.players.find((p) => p.id === playerId)
                     if (player) {
                         setUsername(player.username)
@@ -110,7 +108,7 @@ export default function PlayerView() {
                     setQuiz(quiz.quizData)
                     setQuizMetaData(quiz.quizMetaData)
                     console.log("quizMetadata hook TEST_:", quizMetaData)
-                    console.log("Quiz data fetched:", quiz)
+                    console.reclassmethodlog("Quiz data fetched:", quiz)
                 } else {
                     throw new Error("Failed to fetch quiz data")
                 }
@@ -121,13 +119,11 @@ export default function PlayerView() {
         }
 
         const initializeSocket = () => {
-            // Connect to socket server
             const newSocket = io(process.env.SOCKET_SERVER || "http://localhost:8006")
 
             newSocket.on("connect", () => {
                 console.log("Socket connected")
 
-                // Join as player
                 newSocket.emit("join-session", {
                     code,
                     playerId,
@@ -141,7 +137,7 @@ export default function PlayerView() {
             })
 
             newSocket.on("player-joined", (data) => {
-                fetchSessionData();
+                fetchSessionData()
             })
 
             newSocket.on("player-left", (data) => {
@@ -165,6 +161,10 @@ export default function PlayerView() {
 
             newSocket.on("session-ended", (data) => {
                 setSessionStatus("finished")
+                setPlayers(data.players)
+            })
+
+            newSocket.on("score-updated", (data) => {
                 setPlayers(data.players)
             })
 
@@ -218,7 +218,7 @@ export default function PlayerView() {
         setHasAnswered(true)
 
         const timeToAnswer = Date.now() - startTime
-        const validateOutput =  await fetch(`${apiEndpoint}/question/validate`, {
+        const validateOutput = await fetch(`${apiEndpoint}/question/validate`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -227,15 +227,10 @@ export default function PlayerView() {
                 question_id: currentQuestion.question_id,
                 selected_answer: currentQuestion.answers[optionIndex]
             }),
-        });
-        const { isCorrect, correctAnswer } = await validateOutput.json();
-        setIsCorrect(isCorrect);
-        setCorrectAnswer(correctAnswer);
-        console.log("Player id:", playerId)
-        console.log("Question id:", currentQuestion.question_id)
-        console.log("Answer id:", optionIndex)
-        console.log("Time to answer:", timeToAnswer)
-        console.log("Number of questions:", currentQuestion.answers.length)
+        })
+        const { isCorrect, correctAnswer } = await validateOutput.json()
+        setIsCorrect(isCorrect)
+        setCorrectAnswer(correctAnswer)
         
         try {
             await fetch(`${apiEndpoint}/shared-quiz/${code}/answer`, {
@@ -252,8 +247,14 @@ export default function PlayerView() {
                     numberOfQuestions: currentQuestion.answers.length
                 }),
             })
+
+            const sessionData = await fetchWithAuth(`/shared-quiz/${code}/status`)
+            if (sessionData) {
+                setPlayers(sessionData.players)
+            }
+
         } catch (err) {
-            console.error("Failed to submit answer:", err)
+            console.error("Failed to submit answer or fetch session data:", err)
         }
     }
 
@@ -288,11 +289,11 @@ export default function PlayerView() {
                 </Typography>
             </CardContent>
         </Card>
-    );
+    )
 
     const renderActiveQuiz = () => {
-        const currentQuestion = getCurrentQuestion();
-        const player = players.find((p) => p.id === playerId);
+        const currentQuestion = getCurrentQuestion()
+        const player = players.find((p) => p.id === playerId)
 
         if (!currentQuestion) {
             return (
