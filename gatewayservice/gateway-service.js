@@ -92,7 +92,6 @@ const forwardRequest = async (service, endpoint, req, res) => {
     res.status(500).json({ error: 'Hubo un problema al procesar la solicitud' });
   }
 };
-
 // Authentication
 app.use('/login', publicCors);
 app.post('/login', (req, res) => forwardRequest('auth', '/auth/login', req, res));
@@ -232,6 +231,14 @@ app.use('/question/internal/:id', cors({
 app.get('/question/internal/:id', (req, res) =>
     forwardRequest('game', `/question/internal/${req.params.id}`, req, res)
 );
+
+// I cannot use the general forwardRequest function due to pagination.
+app.use('/statistics/recent-quizzes', publicCors);
+app.get('/statistics/recent-quizzes', async (req, res) => {
+    const page = req.query.page || 0;
+    forwardRequest('game', `/statistics/recent-quizzes?page=${page}`, req, res);
+});
+
 // Statistics Routes
 ['/statistics/subject/:subject', '/statistics/global', '/leaderboard'].forEach(route => {
   app.use(route, publicCors);
