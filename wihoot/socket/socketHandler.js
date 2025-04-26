@@ -143,11 +143,11 @@ module.exports = {
                 socket.on("waiting-for-next", async ({ code }) => {
                     try {
                         const session = await SharedQuizSession.findOne({ code });
-                        session.waitingForNext = true;
                         if (!session) {
                             socket.emit("error", { message: "Session not found" });
                             return;
                         }
+                        session.waitingForNext = true;
                         await session.save();
                         socket.to(code).emit("waiting-for-next");
                     } catch (error) {
