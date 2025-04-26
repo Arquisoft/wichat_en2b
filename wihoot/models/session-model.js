@@ -24,6 +24,7 @@ const sharedQuizSessionSchema = new mongoose.Schema(
             unique: true,
             index: true,
         },
+        waitingForNext: { type: Boolean, default: false },
         quizData: [],
         quizMetaData: [],
         hostId: { type: String, required: true },
@@ -98,6 +99,27 @@ sharedQuizSessionSchema.methods.finish = function () {
     this.status = "finished"
     this.finishedAt = new Date()
     return this
+}
+
+// Method to update the player that didn't answer before /next to incorrect
+sharedQuizSessionSchema.methods.checkForNoAnswer = function () {
+    if (this.status !== "active") {
+        throw new Error("Session is not active")
+    }
+    this.players.forEach((p) => {
+       try {
+           if (p.answers[this.currentQuestionIndex] == null){
+               p.answers.push({
+                   questionId: -1,
+                   answerId: -1,
+                   isCorrect: false,
+                   timeToAnswer: -1,
+               })
+           }
+       } catch (error) {
+           throw new Error("Error when checking incorrect answers")
+       }
+    });
 }
 
 const SharedQuizSession = mongoose.model("SharedQuizSession", sharedQuizSessionSchema)

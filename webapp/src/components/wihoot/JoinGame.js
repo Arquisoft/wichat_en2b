@@ -91,7 +91,7 @@ export default function JoinGame() {
 
             } else {
                 // For guest users, generate a unique ID
-                playerId = uuidv4()
+                playerId = "guest_"+uuidv4()
             }
 
             const response = await axios.post(

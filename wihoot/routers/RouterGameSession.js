@@ -144,6 +144,7 @@ router.get("/:code/start", async (req, res) => {
         }
 
         try {
+            session.waitingForNext = false;
             session.start()
             await session.save()
             
@@ -187,6 +188,10 @@ router.get("/:code/next", async (req, res) => {
         }
 
         try {
+            session.waitingForNext = false;
+            //Set the answer of the users that did not answer before /next to incorrect
+            await session.checkForNoAnswer()
+
             const nextQuestionIndex = session.nextQuestion()
             await session.save()
 
@@ -284,6 +289,7 @@ router.get("/:code/status", async (req, res) => {
         }
 
         res.status(200).json({
+            waitingForNext: session.waitingForNext,
             code: session.code,
             status: session.status,
             currentQuestionIndex: session.currentQuestionIndex,
