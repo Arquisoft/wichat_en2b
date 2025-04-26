@@ -377,7 +377,10 @@ export default function ProfileForm({ username, profilePicture, onSave }) {
                             )}
                         </Box>
 
-                        <form onSubmit={handleSaveUsername}>
+                        <form onSubmit={(e) => {
+                            e.preventDefault();
+                            handleSaveUsername();
+                        }}>
                             {/* Campo para cambiar el nombre de usuario */}
                             <TextField
                                 fullWidth
