@@ -14,12 +14,41 @@ import {
 	Select,
 	MenuItem,
 	Box,
+	Table,
+	TableBody,
+	TableCell,
+	TableContainer,
+	TableHead,
+	TableRow,
+	Button,
+	Chip,
+	Avatar,
+	Tooltip,
+	IconButton,
 } from "@mui/material"
+import SentimentSatisfiedAltIcon from '@mui/icons-material/SentimentSatisfiedAlt';
+import SentimentVeryDissatisfiedIcon from '@mui/icons-material/SentimentVeryDissatisfied';
+import SentimentNeutralIcon from '@mui/icons-material/SentimentNeutral';
 import "../../../styles/home/StatsTab.css"
 import { fetchWithAuth } from "@/utils/api-fetch-auth";
 import LoadingErrorHandler from ".//LoadingErrorHandler";
+import { PieChart } from '@mui/x-charts/PieChart';
+import { Gauge, gaugeClasses } from '@mui/x-charts/Gauge';
+import { Info, AccessTime } from "@mui/icons-material"
 
 const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://localhost:8000';
+
+const performanceColor = (value) => {
+	if (value >= 70) return "#4caf50";
+	else if (value >= 40) return "#f5a623";
+	else return "#e6296f";
+}
+
+const performanceIcon = (value) => {
+	if (value >= 70) return <SentimentSatisfiedAltIcon fontSize="small" />;
+	else if (value >= 40) return <SentimentNeutralIcon fontSize="small" />;
+	else return <SentimentVeryDissatisfiedIcon fontSize="small" />;
+}
 
 // TabPanel component for the tabs
 function TabPanel(props) {
@@ -55,7 +84,10 @@ export default function StatsTab() {
 	const [error, setError] = useState(null)
 	const [selectedSubject, setSelectedSubject] = useState("all")
 	const [categories, setCategories] = useState([]);
-	
+	const [recentQuizzes, setRecentQuizzes] = useState([]);
+	const [page, setPage] = useState(0);
+	const [hasMoreQuizzes, setHasMoreQuizzes] = useState(true);
+
 	useEffect(() => {
 		const fetchStatistics = async () => {
 			setLoading(true);
@@ -86,7 +118,7 @@ export default function StatsTab() {
 				const response = await fetch(`${apiEndpoint}/quiz/allTopics`, {
 					method: "GET",
 					headers: {
-					  "Content-Type": "application/json",
+						"Content-Type": "application/json",
 					},
 				  });
 				  const data = await response.json();
@@ -98,20 +130,290 @@ export default function StatsTab() {
 				console.error("Failed to fetch categories", error);
 			}
 		};
-	
+
 		fetchCategories();
 	}, []);
+
+	const fetchRecentQuizzes = async (pageNum) => {
+		try {
+			const data = await fetchWithAuth(`/statistics/recent-quizzes?page=${pageNum}`);
+			if (pageNum === 0) {
+				setRecentQuizzes(data.recentQuizzes);
+			} else {
+				setRecentQuizzes(prevQuizzes => {
+					const allQuizzes = [...prevQuizzes, ...data.recentQuizzes];
+					const uniqueQuizzes = Array.from(new Map( // avoid duplicates
+						allQuizzes.map(quiz => [
+							`${quiz._id}`,
+							quiz
+						])
+					).values());
+					return uniqueQuizzes;
+				});
+			}
+			setHasMoreQuizzes(data.hasMoreQuizzes);
+		} catch (error) {
+			console.error("Error fetching recent quizzes:", error);
+		}
+	};
+
+	useEffect(() => {
+		fetchRecentQuizzes(page);
+	}, [page]);
+
 	const handleSubjectChange = (event) => {
 		setSelectedSubject(event.target.value);
+	}
+
+	function StatsPie() {
+		if (!statistics || !statistics.totalQuestions)
+			return null;
+
+		return (
+			<Box sx={{
+				width: "100%",
+				height: 280,
+				display: "flex",
+				justifyContent: "center",
+			}}>
+				<PieChart
+					series={[
+						{
+							data: [
+								{
+									id: 0,
+									value: statistics.totalCorrectAnswers,
+									label: 'Correct',
+									color: "#178ee4"
+								},
+								{
+									id: 1,
+									value: statistics.totalQuestions - statistics.totalCorrectAnswers,
+									label: 'Incorrect',
+									color: "#e6296f"
+								},
+							],
+							highlightScope: { faded: "global", highlighted: "item" },
+							innerRadius: 30,
+							outerRadius: 100,
+							paddingAngle: 2,
+							cornerRadius: 4,
+						},
+					]}
+					slotProps={{
+						legend: {
+							direction: 'row',
+							position: { vertical: 'bottom', horizontal: 'middle' },
+							padding: 0,
+							itemMarkWidth: 20,
+							itemMarkHeight: 20,
+							markGap: 8,
+							itemGap: 20,
+						},
+					}}
+					margin={{ top: 10, bottom: 70, left: 0, right: 0 }}
+					width={280}
+					height={280}
+				/>
+			</Box>
+		);
+	}
+
+	function StatsArc() {
+		if (!statistics || !statistics.totalQuestions)
+			return null;
+		const accuracy = (statistics.successRatio * 100).toFixed(1)
+
+		const settings = {
+			width: 220,
+			height: 220,
+			value: accuracy,
+		}
+		let arcColor = performanceColor(accuracy);
+		return (
+			<Box sx={{ display: 'flex',
+				flexDirection: 'column',
+				alignItems: 'center',
+				justifyContent: 'center',
+				width: "100%",
+			}}>
+				<Gauge
+					{...settings}
+					cornerRadius="50%"
+					sx={() => ({
+						[`& .${gaugeClasses.valueText}`]: {
+							fontSize: 40,
+							fontWeight: "bold",
+						},
+						[`& .${gaugeClasses.valueArc}`]: {
+							fill: arcColor,
+							transition: "fill 0.5s",
+						},
+						[`& .${gaugeClasses.referenceArc}`]: {
+							fill: '#d1dad1',
+						},
+					})}
+					text={
+						({ value }) => `${value} %`
+					}
+				/>
+				<Typography variant="body1" sx={{ mt: 1, fontWeight: "medium" }}>
+					Overall Accuracy
+				</Typography>
+			</Box>
+		);
+	}
+
+	function QuizTable() {
+		return (
+			<Paper
+				elevation={3}
+				className="quiz-table-container"
+			>
+				<Box className="quiz-table-header">
+					<Typography variant="h6" className="quiz-table-title">
+						Recent Quizzes
+					</Typography>
+					<Tooltip title="View your recent quiz performance">
+						<IconButton size="small">
+							<Info />
+						</IconButton>
+					</Tooltip>
+				</Box>
+
+				<TableContainer sx={{ maxHeight: 400 }}>
+					<Table size="medium" aria-label="recent quizzes table" stickyHeader>
+						<TableHead>
+							<TableRow>
+								{['Subject', 'Points', 'Questions', 'Correct', 'Wrong', 'Time'].map((header) => (
+									<TableCell
+										key={header}
+										align="center"
+										className="quiz-table-cell-header"
+									>
+										{header}
+									</TableCell>
+								))}
+							</TableRow>
+						</TableHead>
+						<TableBody>
+							{recentQuizzes.map((quiz, index) => {
+								const scoreColor = performanceColor((quiz.number_correct_answers/quiz.number_of_questions)*100);
+								const wrongAnswers = quiz.number_of_questions - quiz.number_correct_answers
+								const scoreIcon = performanceIcon((quiz.number_correct_answers/quiz.number_of_questions)*100);
+								return (
+									<TableRow
+										key={index}
+										className="quiz-table-row"
+										sx={{ borderLeft: `4px solid ${scoreColor}` }}
+									>
+										<TableCell align="center" className="quiz-subject-cell">
+											<div className="quiz-subject-content">
+												<Avatar
+													sx={{
+														width: 32,
+														height: 32,
+														bgcolor: scoreColor,
+														fontSize: "0.875rem",
+													}}
+												>
+													{scoreIcon}
+												</Avatar>
+												<span className="quiz-subject-text">
+            										{quiz.subject}
+        										</span>
+											</div>
+										</TableCell>
+										<TableCell align="center">
+											<Chip label={quiz.points_gain} size="small" className="quiz-score-chip"/>
+										</TableCell>
+										<TableCell align="center">{quiz.number_of_questions}</TableCell>
+										<TableCell align="center">
+											<Box
+												sx={{
+													color: "#4caf50",
+													fontWeight: "medium",
+													display: "inline-flex",
+													alignItems: "center",
+													gap: 0.5,
+												}}
+											>
+												{quiz.number_correct_answers}
+											</Box>
+										</TableCell>
+										<TableCell align="center">
+											<Box
+												sx={{
+													color: wrongAnswers > 0 ? "#f44336" : "#4caf50",
+													fontWeight: "medium",
+													display: "inline-flex",
+													alignItems: "center",
+													gap: 0.5,
+												}}
+											>
+												{wrongAnswers}
+											</Box>
+										</TableCell>
+										<TableCell align="center">
+											<Box className="quiz-time-display">
+												<AccessTime fontSize="small" color="action" />
+												{`${quiz.total_time.toFixed(1)}s`}
+											</Box>
+										</TableCell>
+									</TableRow>
+								)
+							})}
+						</TableBody>
+					</Table>
+				</TableContainer>
+
+				<Box className="quiz-table-footer">
+					<Typography variant="body2" color="text.secondary">
+						Showing {recentQuizzes.length} recent quizzes
+					</Typography>
+					<Typography variant="body2" color="text.secondary">
+						Average score:{" "}
+						{Math.round(
+							recentQuizzes.reduce(
+								(acc, quiz) => acc + quiz.points_gain,
+								0,
+							) / recentQuizzes.length,
+						)}
+					</Typography>
+				</Box>
+			</Paper>
+		)
 	}
 
 	return (
 		<Card>
 			<CardHeader
 				title={
-					<Box className={"stats-header"} display="flex" justifyContent="space-between" alignItems="center">
-						<Typography variant="h5" id='title-quiz-statistics'>Quiz Statistics</Typography>
-						<Typography variant="body2" color="textSecondary">
+					<Box className={"stats-header"}
+						 sx={{
+							 display: "flex",
+							 justifyContent: "space-between",
+							 alignItems: "center",
+							 flexWrap: "wrap",
+							 gap: 2,
+						 }}>
+						<Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+							<Typography variant="h5" id="title-quiz-statistics" sx={{ fontWeight: "bold" }}>
+								Quiz Statistics
+							</Typography>
+						</Box>
+						<Typography
+							variant="body2"
+							color="textSecondary"
+							sx={{
+								bgcolor: "background.paper",
+								px: 2,
+								py: 0.5,
+								borderRadius: 4,
+								border: "1px solid",
+								borderColor: "divider",
+							}}
+						>
 							Based on {statistics ? statistics.totalGames : 0} completed quizzes
 						</Typography>
 						<FormControl variant="outlined" size="small" sx={{ minWidth: 180 }}>
@@ -121,7 +423,9 @@ export default function StatsTab() {
 								value={selectedSubject}
 								onChange={handleSubjectChange}
 								label="Filter by subject"
-							 variant={"outlined"}>
+								variant={"outlined"}
+								sx={{ borderRadius: 2 }}
+							>
 								<MenuItem value="all">All Subjects</MenuItem>
 								{categories.map((category) => (
 									<MenuItem key={category} value={category}>
@@ -132,23 +436,94 @@ export default function StatsTab() {
 						</FormControl>
 					</Box>
 				}
+				sx={{
+					borderBottom: "1px solid",
+					borderColor: "divider",
+					pb: 2,
+				}}
 			/>
 			<CardContent>
 				<LoadingErrorHandler loading={loading} error={error}>
-				{ statistics && (
-					<>{/*NOSONAR*/}
-						<Grid container spacing={2} className={"detailed-stats"}>
-							<StatCard id='total-games' title="Total Games" value={statistics.totalGames} />
-							<StatCard id='avg-score' title="Avg Score per Quiz" value={`${statistics.avgScore.toFixed(1)} points`} />
-							<StatCard id='total-score' title="Total Score" value={`${statistics.totalScore} points`} />
-							<StatCard id='total-answ' title="Correct Answers" value={statistics.totalCorrectAnswers} />
-							<StatCard id='total-questions' title="Total Questions" value={statistics.totalQuestions} />
-							<StatCard id='accuracy' title="Accuracy" value={`${(statistics.successRatio * 100).toFixed(1)}%`} />
-							<StatCard id='avg-quiz-time' title="Avg Time per Quiz" value={`${statistics.avgTime.toFixed(1)} s`} />
-						</Grid>
-					</>
-				)}
-			</LoadingErrorHandler>
+					{ statistics && (
+						<Box sx={{ display: "flex", flexDirection: { xs: "column", md: "row" }, gap: 3 }}>
+							{/* Left side - Statistics Cards */}
+							<Box sx={{ flex: 1, order: { xs: 2, md: 1 } }}>
+								<Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
+								</Box>
+								<Grid container spacing={2}>
+									<StatCard id="total-games" title="Total Games" value={statistics.totalGames} />
+									<StatCard
+										id="avg-score"
+										title="Avg Score per Quiz"
+										value={`${statistics.avgScore.toFixed(1)} points`}
+									/>
+									<StatCard id="total-score" title="Total Score" value={`${statistics.totalScore} points`} />
+									<StatCard id="total-answ" title="Correct Answers" value={statistics.totalCorrectAnswers} />
+									<StatCard id="total-questions" title="Total Questions" value={statistics.totalQuestions} />
+									<StatCard id="accuracy" title="Accuracy" value={`${(statistics.successRatio * 100).toFixed(1)}%`} />
+									<StatCard id="avg-quiz-time" title="Avg Time per Quiz" value={`${statistics.avgTime.toFixed(1)} s`} />
+								</Grid>
+							</Box>
+
+							{/* Right side - Charts */}
+							<Box sx={{ flex: 1,  order: { xs: 1, md: 2 } }}>
+								<Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
+								</Box>
+								<Paper
+									elevation={1}
+									sx={{
+										p: 2,
+										mb: 3,
+										borderRadius: 2,
+										boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
+									}}
+								>
+									<Typography variant="subtitle1" sx={{ mb: 1, fontWeight: "bold" }}>
+										Answer Distribution
+									</Typography>
+									<Box sx={{
+										display: 'flex',
+										flexDirection: { xs: "column", sm: "row" },
+										justifyContent: 'center',
+										alignItems: 'center',
+										gap: { xs: 4, sm: 2 },
+									}} className="stat-charts-container stats-charts">
+										<Box sx={{
+											width: { xs: "100%", sm: "50%" },
+											display: "flex",
+											justifyContent: "center",
+										}}>
+											<StatsPie />
+										</Box>
+										<Box sx={{
+											width: { xs: "100%", sm: "50%" },
+											display: "flex",
+											justifyContent: "center",
+										}}>
+											<StatsArc />
+										</Box>
+									</Box>
+								</Paper>
+							</Box>
+						</Box>)}
+						{/* Recent quizzes table */}
+						<QuizTable/>
+							{hasMoreQuizzes && (
+								<Box sx={{ display: 'flex', justifyContent: 'center', p: 2 }}>
+									<Button
+										variant="outlined"
+										onClick={() => {
+											const nextPage = page + 1;
+											setPage(nextPage);
+											fetchRecentQuizzes(nextPage);
+										}}
+										disabled={loading}
+									>
+										{loading ? 'Loading...' : 'Load more'}
+									</Button>
+								</Box>
+							)}
+				</LoadingErrorHandler>
 			</CardContent>
 
 		</Card>
@@ -157,14 +532,28 @@ export default function StatsTab() {
 
 function StatCard({ id, title, value }) {
 	return (
-		<Grid xs={12} sm={6} md={4}>
-			<Paper id={id} elevation={2} sx={{ p: 2 }}>
-				<Typography variant="h5" component="div">
-					{value}
-				</Typography>
-				<Typography variant="body2" color="textSecondary">
-					{title}
-				</Typography>
+		<Grid item xs={12} sm={6}>
+			<Paper id={id} elevation={2} sx={{
+				p: 2,
+				borderRadius: 2,
+				transition: "all 0.2s",
+				"&:hover": {
+					transform: "translateY(-3px)",
+					boxShadow: 3,
+				},
+				height: "100%",
+				display: "flex",
+				alignItems: "center",
+				gap: 2,
+			}}>
+				<Box>
+					<Typography variant="h6" component="div" sx={{ fontWeight: "bold" }}>
+						{value}
+					</Typography>
+					<Typography variant="body2" color="textSecondary">
+						{title}
+					</Typography>
+				</Box>
 			</Paper>
 		</Grid>
 	)

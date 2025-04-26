@@ -67,12 +67,12 @@ describe('GuestHomePage Component', () => {
     });
 
     await waitFor(() => {
-      expect(screen.getByText('Login')).toBeInTheDocument();
+      expect(screen.getByText('Exit')).toBeInTheDocument();
       expect(screen.queryByText('Profile')).not.toBeInTheDocument();
     });
   });
 
-  test('redirects to login page when login button is clicked', async () => {
+  test('redirects to landing page when exit button is pressed', async () => {
     await act(async () => {
       render(
         <MemoryRouterProvider>
@@ -81,11 +81,11 @@ describe('GuestHomePage Component', () => {
       );
     });
 
-    const loginButton = screen.getByText('Login');
+    const loginButton = screen.getByText('Exit');
     fireEvent.click(loginButton);
 
     await waitFor(() => {
-      expect(mockRouter.asPath).toBe('/login');
+      expect(mockRouter.asPath).toBe('/');
     });
   });
 });

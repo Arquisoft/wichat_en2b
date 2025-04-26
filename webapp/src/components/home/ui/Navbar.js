@@ -44,7 +44,7 @@ const Navbar = ({ username = "Guest", profilePicture }) => {
     };
 
     const handleSaveProfile = (profileData) => {
-        setIsProfileOpen(false); // To be updated with actual save logic
+        setIsProfileOpen(false); 
     };
 
     const handleLogout = () => {
@@ -99,19 +99,11 @@ const Navbar = ({ username = "Guest", profilePicture }) => {
                             <Button
                                 variant="outlined"
                                 color="primary"
-                                onClick={() => (router.push("/login"))}
+                                onClick={() => (router.push("/"))}
                                 className="login-button"
                             >
-                                Login
-                            </Button>
-                            <Button
-                                variant="contained"
-                                color="secondary"
-                                onClick={() => (router.push("/addUser"))}
-                                className="register-button"
-                            >
-                                Register
-                            </Button>
+                                Exit
+                            </Button>                            
                         </Box>
                     )}
                 </Toolbar>

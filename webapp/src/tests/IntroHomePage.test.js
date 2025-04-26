@@ -32,7 +32,7 @@ describe("IntroHomePage Component", () => {
         });
 
         await waitFor(() => {
-            expect(screen.getByText("Welcome to WiChat")).toBeInTheDocument();
+            expect(screen.getByText("Welcome to")).toBeInTheDocument();
             expect(screen.getByText("Connect, Learn, and Play with engaging quizzes!")).toBeInTheDocument();
             expect(screen.getByTestId("play-now-button")).toBeInTheDocument();
             expect(screen.getByTestId("cta-login-button")).toBeInTheDocument();
@@ -51,42 +51,13 @@ describe("IntroHomePage Component", () => {
         });
     });
 
-    test("opens dialog when Play Now button is clicked", async () => {
-        await act(async  () => {
-            render(<IntroHomePage />);
-        });
-
-        await waitFor(() => {
-            expect(screen.queryByTestId("dialog-play-guest-button")).not.toBeInTheDocument();
-        });
-
-        act(() => {
-            fireEvent.click(screen.getByTestId("play-now-button"));
-        });
-
-        await waitFor(() => {
-            expect(screen.getByTestId("dialog-play-guest-button")).toBeInTheDocument();
-            expect(
-                screen.getByText("You are about to play anonymously. Would you like to log in or register for a better experience?")
-            ).toBeInTheDocument();
-        });
-    });
-
-    test("redirects to guest home when Play as Guest is clicked in dialog", async () => {
+    test("redirects to guest home when Play as Guest is clicked", async () => {
         await act(async () => {
             render(<IntroHomePage />);
         });
 
         act(() => {
             fireEvent.click(screen.getByTestId("play-now-button"));
-        });
-
-        await waitFor(() => {
-            expect(screen.getByTestId("dialog-play-guest-button")).toBeInTheDocument();
-        });
-
-        act(() => {
-            fireEvent.click(screen.getByTestId("dialog-play-guest-button"));
         });
 
         await waitFor(() => {
@@ -94,21 +65,13 @@ describe("IntroHomePage Component", () => {
         });
     });
 
-    test("redirects to login page when Login is clicked in dialog", async () => {
+    test("redirects to login page when Login button is clicked", async () => {
         await act(async () => {
             render(<IntroHomePage />);
         });
 
         act(() => {
-            fireEvent.click(screen.getByTestId("play-now-button"));
-        });
-
-        await waitFor(() => {
-            expect(screen.getByTestId("dialog-login-button")).toBeInTheDocument();
-        });
-
-        act(() => {
-            fireEvent.click(screen.getByTestId("dialog-login-button"));
+            fireEvent.click(screen.getByTestId("cta-login-button"));
         });
 
         await waitFor(() => {
@@ -116,21 +79,13 @@ describe("IntroHomePage Component", () => {
         });
     });
 
-    test("redirects to register page when Register is clicked in dialog", async () => {
+    test("redirects to register page when Register button is clicked", async () => {
         await act(async () => {
             render(<IntroHomePage />);
         });
 
         act(() => {
-            fireEvent.click(screen.getByTestId("play-now-button"));
-        });
-
-        await waitFor(() => {
-            expect(screen.getByTestId("dialog-register-button")).toBeInTheDocument();
-        });
-
-        act(() => {
-            fireEvent.click(screen.getByTestId("dialog-register-button"));
+            fireEvent.click(screen.getByTestId("cta-register-button"));
         });
 
         await waitFor(() => {

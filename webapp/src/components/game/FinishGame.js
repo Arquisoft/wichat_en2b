@@ -30,7 +30,6 @@ export default function FinishGame(params) {
         
         const guest = !token;
         setIsGuest(guest);
-
         localStorage.removeItem('guestGameData');
         fetch(`${apiEndpoint}/game`, {
             method: 'POST',
@@ -43,7 +42,7 @@ export default function FinishGame(params) {
         console.log('Game data saved successfully');
         
 
-        if (isGuest) {
+        if (guest) {
             // If guest, store game data locally
             localStorage.setItem('guestGameData', JSON.stringify(gameData));
             console.log('Game data saved locally for guest');

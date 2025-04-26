@@ -272,6 +272,114 @@ describe('Statistics Router', function() {
             }
         });
     });
+
+    describe('Recent Quizzes Endpoint', () => {
+        const testUserId = new mongoose.Types.ObjectId();
+        let validToken;
+
+        beforeAll(async () => {
+            validToken = jwt.sign(
+                { _id: testUserId, role: 'USER' },
+                'testing-secret',
+                { expiresIn: '1h' }
+            );
+        });
+
+        beforeEach(async () => {
+            await GameInfo.deleteMany({});
+
+            const testGames = Array.from({ length: 12 }, (_, i) => ({
+                user_id: testUserId,
+                subject: `subject${i + 1}`,
+                points_gain: 100 + i,
+                number_of_questions: 10,
+                number_correct_answers: 8,
+                total_time: 300,
+                _id: new mongoose.Types.ObjectId()
+            }));
+
+            await GameInfo.insertMany(testGames);
+        });
+
+        it('should return first page of recent quizzes with hasMoreQuizzes flag', async () => {
+            const response = await request(app)
+                .get('/statistics/recent-quizzes')
+                .query({ page: 0 })
+                .set('Authorization', `Bearer ${validToken}`);
+
+            expect(response.status).toBe(200);
+            expect(response.body).toHaveProperty('recentQuizzes');
+            expect(response.body).toHaveProperty('hasMoreQuizzes', true);
+            expect(response.body.recentQuizzes).toHaveLength(5);
+        });
+
+        it('should return second page of recent quizzes', async () => {
+            const response = await request(app)
+                .get('/statistics/recent-quizzes')
+                .query({ page: 1 })
+                .set('Authorization', `Bearer ${validToken}`);
+
+            expect(response.status).toBe(200);
+            expect(response.body).toHaveProperty('recentQuizzes');
+            expect(response.body).toHaveProperty('hasMoreQuizzes', true);
+            expect(response.body.recentQuizzes).toHaveLength(5);
+        });
+
+        it('should return last page with remaining quizzes', async () => {
+            const response = await request(app)
+                .get('/statistics/recent-quizzes')
+                .query({ page: 2 })
+                .set('Authorization', `Bearer ${validToken}`);
+
+            expect(response.status).toBe(200);
+            expect(response.body).toHaveProperty('recentQuizzes');
+            expect(response.body).toHaveProperty('hasMoreQuizzes', false);
+            expect(response.body.recentQuizzes).toHaveLength(2);
+        });
+
+        it('should return empty array for page beyond available data', async () => {
+            const response = await request(app)
+                .get('/statistics/recent-quizzes')
+                .query({ page: 10 })
+                .set('Authorization', `Bearer ${validToken}`);
+
+            expect(response.status).toBe(200);
+            expect(response.body).toHaveProperty('recentQuizzes');
+            expect(response.body).toHaveProperty('hasMoreQuizzes', false);
+            expect(response.body.recentQuizzes).toHaveLength(0);
+        });
+
+        it('should return quizzes sorted by most recent first', async () => {
+            const response = await request(app)
+                .get('/statistics/recent-quizzes')
+                .query({ page: 0 })
+                .set('Authorization', `Bearer ${validToken}`);
+
+            const quizzes = response.body.recentQuizzes;
+            for (let i = 0; i < quizzes.length - 1; i++) {
+                expect(quizzes[i]._id > quizzes[i + 1]._id).toBe(true);
+            }
+        });
+
+        it('should return 401 without authorization token', async () => {
+            const response = await request(app)
+                .get('/statistics/recent-quizzes')
+                .query({ page: 0 });
+
+            expect(response.status).toBe(401);
+        });
+
+        it('should handle invalid page parameter gracefully', async () => {
+            const response = await request(app)
+                .get('/statistics/recent-quizzes')
+                .query({ page: 'invalid' })
+                .set('Authorization', `Bearer ${validToken}`);
+
+            expect(response.status).toBe(200);
+            expect(response.body).toHaveProperty('recentQuizzes');
+            expect(response.body.recentQuizzes).toHaveLength(5);
+        });
+    });
 });
 
 describe('Group Leaderboard API', () => {
