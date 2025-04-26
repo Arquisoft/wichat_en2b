@@ -315,14 +315,14 @@ export default function PlayerView() {
                     Authorization: `Bearer ${token}`,
                 },
                 body: JSON.stringify({
-                    subject: quizMetaData?.subject || quizMetaData?.quizName || "Unknown",
+                    subject: quizMetaData[0]?.category.toLowerCase() || quizMetaData[0]?.quizName.toLowerCase() || "unknown",
                     points_gain: pointsGain,
                     number_of_questions: numberOfQuestions,
                     number_correct_answers: numberCorrectAnswers,
                     total_time: totalTime,
-                }),
+                })
             });
-
+            
             if (!response.ok) {
                 throw new Error("Failed to save game data");
             }
