@@ -529,91 +529,74 @@ export default function PlayerView() {
 
         if (!currentQuestion) {
             return (
-                <Card className="player-view-card">
-                    <CardContent>
-                        <Typography variant="h6" align="center">
-                            Loading question...
-                        </Typography>
-                    </CardContent>
-                </Card>
+                <div className="loading-container">
+                    <CircularProgress className="loading-spinner" />
+                    <p className="loading-text">Loading your quiz...</p>
+                </div>
             );
         }
 
         return (
-            <Card className="content-box">
-                <CardContent>
-                    {/* Timer and progress bar */}
-                    <Box className="timer-container" >
-                        <Typography variant="body2" className="timer-text" id='quiz-timer'>
-                            Time left: {Math.ceil(timeLeft)}s
-                        </Typography>
-                        <LinearProgress
-                            className="progress-bar"
-                            variant="determinate"
-                            value={(timeLeft / (quizMetaData?.[0]?.timerDuration || 60)) * 100}
-                        />
-                    </Box>
+            <div className="quiz-wrapper">
+                {/* Timer and progress bar */}
+                <Box className="timer-container">
+                    <Typography variant="body2" className="timer-text" id="quiz-timer">
+                        Time left: {Math.ceil(timeLeft)}s
+                    </Typography>
+                    <LinearProgress
+                        className="progress-bar"
+                        variant="determinate"
+                        value={(timeLeft / (quizMetaData?.[0]?.timerDuration || 60)) * 100}
+                    />
+                </Box>
+
+                <div className="content-box">
                     {hasAnswered && isCorrect && (
-                        <Alert severity="success" className="alert-box" sx={{ mb: 2 }}>
+                        <Alert id="message-success" severity="success" className="alert-box">
                             Great job! You got it right!
                         </Alert>
                     )}
                     {hasAnswered && !isCorrect && (
-                        <Alert severity="error" className="alert-box" sx={{ mb: 2 }}>
+                        <Alert id="message-fail" severity="error" className="alert-box">
                             Oops! You didn't guess this one.
                         </Alert>
                     )}
-                    <Box display="flex" justifyContent="space-between" mb={2}>
-                        <Typography variant="h5">
-                            Question {currentQuestionIndex + 1}
-                        </Typography>
-                        <Box textAlign="right">
-                            <Typography variant="body2" color="textSecondary">
-                                Your Score
-                            </Typography>
-                            <Typography variant="h6">{player?.score || 0}</Typography>
-                        </Box>
-                    </Box>
-                    <Typography variant="h6" className="question-title" mb={2}>
-                        {quizMetaData?.[0]?.question || "Untitled Quiz"}
-                    </Typography>
-                    <Box className="image-box" mb={3}>
-                        <img
-                            src={`${apiEndpoint}${currentQuestion.image_name}`}
-                            alt="Question"
-                            className="quiz-image"
-                        />
-                    </Box>
-                    <Grid container spacing={2}>
+
+                    <div className="progress-indicator">
+                        Question {currentQuestionIndex + 1} of {quizData?.length || 0}
+                    </div>
+
+                    <h2 id="title-question" className="question-title">
+                        {currentQuestion.question || quizMetaData?.[0]?.question || "Untitled Quiz"}
+                    </h2>
+
+                    <div className="image-box">
+                        <img src={`${apiEndpoint}${currentQuestion.image_name}`} alt="Question" className="quiz-image" />
+                    </div>
+
+                    <div className="options-box">
                         {currentQuestion.answers.map((option, index) => (
-                            <Grid item xs={12} md={6} key={option}>
-                                <Button
-                                    variant="outlined"
-                                    fullWidth
-                                    onClick={() => handleAnswerSubmit(index)}
-                                    disabled={hasAnswered}
-                                    className={`quiz-option ${
-                                        selectedOption === index ? "selected" : ""
-                                    } ${
-                                        hasAnswered && selectedOption === index && isCorrect
-                                            ? "correct-answer"
-                                            : ""
-                                    } ${
-                                        hasAnswered && !isCorrect && correctAnswer === option
-                                            ? "correct-answer"
-                                            : ""
-                                    }`}
-                                >
-                                    {option}
-                                </Button>
-                            </Grid>
+                            <button
+                                id={`option-${index}`}
+                                key={option}
+                                className={`quiz-option 
+                  ${selectedOption === index ? "selected" : ""} 
+                  ${hasAnswered && selectedOption === index && isCorrect ? "correct-answer" : ""}
+                  ${hasAnswered && !isCorrect && correctAnswer === option ? "correct-answer" : ""}`}
+                                onClick={() => handleAnswerSubmit(index)}
+                                disabled={hasAnswered}
+                            >
+                                {option}
+                            </button>
                         ))}
-                    </Grid>
+                    </div>
 
                     <InGameChat initialMessages={[]} question={currentQuestion} />
-                </CardContent>
-            </Card>
-        );
+                </div>
+
+                <div className="divider"></div>
+            </div>
+        )
     };
 
     const renderFinishedQuiz = () => (
@@ -689,7 +672,7 @@ export default function PlayerView() {
     return (
         <Container maxWidth="lg" sx={{ py: 8 }}>
             <Typography variant="h4" className="quiz-player-header">
-                Quiz Player - {username}
+                Wihoot - {username}
             </Typography>
             {error && (
                 <Alert severity="error" sx={{ mb: 2 }}>

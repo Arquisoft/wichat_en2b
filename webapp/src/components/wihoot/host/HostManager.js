@@ -622,7 +622,7 @@ export default function HostManager() {
     return (
         <Container maxWidth="lg" sx={{ py: 8 }}>
             <Typography variant="h4" className="quiz-player-header">
-                Quiz Host - {code}
+                WiHoot
             </Typography>
             {error && (
                 <Alert severity="error" sx={{ mb: 2 }}>
