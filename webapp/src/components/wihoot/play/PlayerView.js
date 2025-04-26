@@ -123,7 +123,7 @@ export default function PlayerView() {
                     }
                 });
                 if (response.ok) {
-                    const quiz = response;
+                    const quiz = await response.json();
                     setQuizData(quiz.quizData);
                     setQuizMetaData(quiz.quizMetaData);
                 } else {
