@@ -68,6 +68,11 @@ export default function CreateGame() {
                 return
             }
             let quizRequested = quizzes.find(quiz => quiz.difficulty === difficultySelected);
+
+            if (!quizRequested) {
+                setError("No quiz found for the difficulty selected.")
+            }
+
             if (quizRequested.length > 1) {
                 //Take one of the quizzes random
                 const randomIndex = Math.floor(Math.random() * quizRequested.length);

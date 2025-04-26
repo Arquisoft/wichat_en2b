@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/router";
 import { fetchWithAuth } from "../../../utils/api-fetch-auth";
 import io from "socket.io-client";
@@ -18,8 +18,9 @@ import {
     ListItem,
     ListItemText,
     Badge,
-    CircularProgress,
+    CircularProgress, LinearProgress,
 } from "@mui/material";
+import "../../../styles/wihoot/PlayerView.css"
 import "../../../styles/wihoot/HostManager.css"
 
 const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || "http://localhost:8000";
@@ -37,6 +38,10 @@ export default function HostManager() {
     const [error, setError] = useState("");
     const [isLoading, setIsLoading] = useState(true);
     const [showLeaderboard, setShowLeaderboard] = useState(false);
+
+    // Timer hooks and ref
+    const [timeLeft, setTimeLeft] = useState(null);
+    const timerIntervalRef = useRef(null);
 
     useEffect(() => {
         if (!router.isReady || !code) {
@@ -100,6 +105,7 @@ export default function HostManager() {
                 if (response) {
                     const quizData = response;
                     setQuiz(quizData);
+                    setTimeLeft(quizData.quizMetaData[0]?.timePerQuestion || 60);
                 } else {
                     throw new Error("Failed to fetch quiz data");
                 }
@@ -195,6 +201,35 @@ export default function HostManager() {
         };
     }, [code, router.isReady]);
 
+    // Timer logic
+    useEffect(() => {
+        if (
+            sessionStatus !== "active" ||
+            showLeaderboard ||
+            timeLeft === null ||
+            currentQuestionIndex < 0
+        ) {
+            clearInterval(timerIntervalRef.current);
+            return;
+        }
+
+        timerIntervalRef.current = setInterval(() => {
+            setTimeLeft((prevTime) => {
+                if (prevTime <= 0) {
+                    clearInterval(timerIntervalRef.current);
+                    // Automatically move to next question or end quiz
+                    handleNextQuestion();
+                    return 0;
+                }
+                return prevTime - 0.01;
+            });
+        }, 10);
+
+        return () => {
+            clearInterval(timerIntervalRef.current);
+        };
+    }, [sessionStatus, showLeaderboard, timeLeft, currentQuestionIndex]);
+
     const handleStartQuiz = async () => {
         if (players.length === 0) {
             setError("Cannot start quiz with no players");
@@ -210,6 +245,7 @@ export default function HostManager() {
             const data = response;
             setSessionStatus(data.status);
             setCurrentQuestionIndex(data.currentQuestionIndex);
+            setTimeLeft(quiz?.quizMetaData[0]?.timerDuration || 60); // timer
         } catch (err) {
             setError(err.message || "Failed to start quiz");
             console.error("Error in handleStartQuiz:", err);
@@ -248,6 +284,7 @@ export default function HostManager() {
             const data = response;
             setCurrentQuestionIndex(data.currentQuestionIndex);
             setShowLeaderboard(false);
+            setTimeLeft(quiz?.quizMetaData[0]?.timerDuration || 60);
 
             if (quiz && data.currentQuestionIndex >= quiz.quizData.length) {
                 await handleEndQuiz();
@@ -388,6 +425,17 @@ export default function HostManager() {
                     title={`Question ${currentQuestionIndex + 1} of ${quiz?.quizData.length}`}
                 />
                 <CardContent>
+                    {/* Timer and progress bar */}
+                    <Box className="timer-container" >
+                        <Typography variant="body2" className="timer-text" id='quiz-timer'>
+                            Time left: {Math.ceil(timeLeft)}s
+                        </Typography>
+                        <LinearProgress
+                            className="progress-bar"
+                            variant="determinate"
+                            value={(timeLeft / (quiz?.quizMetaData[0]?.timerDuration || 60)) * 100}
+                        />
+                    </Box>
                     <Typography variant="h6" mb={2}>
                         {quiz.quizMetaData[0]?.quizName || "Untitled Quiz"}
                     </Typography>
