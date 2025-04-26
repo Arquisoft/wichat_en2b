@@ -7,6 +7,16 @@ body .navbar{background-color:#3f51b5;box-shadow:none;border-bottom:2px solid #e
 }
 
 .joingame, .creategame, .navbar-profile-button {
-    font-weight: 600;
+    font-weight: 700;
     font-size: 0.875rem;
 }
+
+.joingame {
+    background: linear-gradient(90deg, #9c27b0, #e91e63);
+}
+
+.user-section {
+    display: flex;
+    gap: 8px;
+}
+
