@@ -90,7 +90,7 @@ const Navbar = ({ username = "Guest", profilePicture }) => {
                                 <Button
                                     id={'navbar-join-game-button'}
                                     onClick={handleJoinCodeame}
-                                    variant={"contained"}
+                                    variant="contained"
                                     color="primary"
                                     startIcon={<ConnectWithoutContactOutlinedIcon />}
                                     className="joingame"
@@ -103,7 +103,7 @@ const Navbar = ({ username = "Guest", profilePicture }) => {
                                 <Button
                                     id={'navbar-create-game-button'}
                                     onClick={handleCreateCodeGame}
-                                    variant={"contained"}
+                                    variant="contained"
                                     color="primary"
                                     startIcon={<PlayCircleFilledWhiteOutlinedIcon />}
                                     className="creategame"
@@ -111,32 +111,30 @@ const Navbar = ({ username = "Guest", profilePicture }) => {
                                 >
                                     Start Session
                                 </Button>
+
+                                <Button
+                                        id="navbar-profile-button"
+                                        variant="contained"
+                                        color="secondary"
+                                        startIcon={<PersonIcon />}
+                                        onClick={handleProfileClick}
+                                        className="navbar-profile-button"
+                                    >
+                                        Profile
+                                </Button>
+
+                                    <IconButton
+                                        aria-label="logout"
+                                        onClick={handleLogout}
+                                        className="logout-button"
+                                    >
+                                        <LogoutIcon />
+                                    </IconButton>
                             </>
                         )}
                     </Box>
 
-                    {isGuest ? (
-                        <Box className="user-section">
-                            <Button
-                                id="navbar-profile-button"
-                                variant="contained"
-                                color="secondary"
-                                startIcon={<PersonIcon />}
-                                onClick={handleProfileClick}
-                                className="navbar-profile-button"
-                            >
-                                Profile
-                            </Button>
-
-                            <IconButton
-                                aria-label="logout"
-                                onClick={handleLogout}
-                                className="logout-button"
-                            >
-                                <LogoutIcon />
-                            </IconButton>
-                        </Box>
-                    ) : (
+                    {!isGuest && (
                         <Box className="user-section">
                             <Button
                                 variant="outlined"
