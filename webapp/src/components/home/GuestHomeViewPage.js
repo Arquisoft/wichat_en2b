@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Container, Box, Typography, Tabs, Tab } from "@mui/material";
-import { Psychology as BrainIcon } from "@mui/icons-material";
+import { Container, Box, Typography } from "@mui/material";
 import PlayTab from "./ui/PlayTab";
 import "../../styles/home/HomePage.css";
 import Navbar from "./ui/Navbar";
@@ -12,15 +11,13 @@ import "../../styles/Footer.css";
  * @returns {JSX.Element} The rendered guest home component.
  */
 function GuestHomePage() {
-    const [tabValue, setTabValue] = useState(0);
+    const [tabValue] = useState(0);
     const [currentYear, setCurrentYear] = useState(null);
 
     useEffect(() => {
         setCurrentYear(new Date().getFullYear());
         return () => clearTimeout(10);
     }, []);
-
-    const handleTabChange = (_, newValue) => setTabValue(newValue);
 
     return (
         <Box className="home-container">

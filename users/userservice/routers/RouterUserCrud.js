@@ -9,7 +9,10 @@ import jwt from 'jsonwebtoken';
 import mongoose from 'mongoose';
 
 const router = express.Router();
-router.use(express.json());
+
+router.use(express.json({ limit: '2MB' }));
+router.use(express.urlencoded({ extended: true, limit: '2MB' }));
+
 const gatewayServiceUrl = process.env.GATEWAY_SERVICE_URL || 'http://gatewayservice:8000'; // NOSONAR
 
 // Authentication middleware
@@ -27,6 +30,7 @@ const authenticateUser = async (req, res, next) => {
         try {
             decodedToken = jwt.verify(token, process.env.JWT_SECRET || 'testing-secret');
         } catch (err) {
+            console.error("Token verification error:", err);
             return res.status(401).json({ error: "Invalid or expired token" });
         }
 
@@ -153,8 +157,8 @@ router.delete('/users', authenticateUser, async (req, res) => {
             if (fs.existsSync(profilePicturePath)) {
                 try {
                     fs.unlinkSync(profilePicturePath);
-                } catch (err) {
-                    console.error(`Error deleting profile picture for ${user.username}`);
+                } catch (err) { // NOSONAR
+                    console.error(`Error deleting profile picture`);                  
                 }
             }
         }
@@ -296,7 +300,7 @@ router.patch('/users', authenticateUser, async (req, res) => {
 // Upload profile picture
 router.post('/user/profile/picture', authenticateUser, async (req, res) => {
     try {
-        const { image, username } = req.body;
+        const { image } = req.body;
         const userID = req.user._id;
 
         if (!image) {
@@ -309,47 +313,39 @@ router.post('/user/profile/picture', authenticateUser, async (req, res) => {
         const __dirname = path.resolve();
         const imagesDir = path.resolve(__dirname, 'public', 'images');
 
-        const filePath = path.join(imagesDir, `${userID}_profile_picture.png`);
-        // Verify that the path is within the allowed directory
+        // Change extension to webp for better web performance
+        const filePath = path.join(imagesDir, `${userID}_profile_picture.webp`);
+
         if (!path.resolve(filePath).startsWith(imagesDir)) {
-            console.log(`Access Denied: ${username} is outside of images folder`);
+            console.log(`Access Denied: ${userID} is outside of images folder`);
             throw new Error("Access denied to files outside the images folder");
         }
-       
-        // Process the base64 image
+
         const buffer = Buffer.from(image, 'base64');
         const arrayBuffer = buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
 
-        // Detect the MIME type using file-type-mime
         const fileTypeResult = parse(arrayBuffer);
-        if (!fileTypeResult || !['image/jpeg', 'image/png'].includes(fileTypeResult.mime)) {
-            return res.status(400).json({ error: "Invalid file type. Only JPEG and PNG allowed." });
+        if (!fileTypeResult || !['image/jpeg', 'image/png', 'image/webp'].includes(fileTypeResult.mime)) {
+            return res.status(400).json({ error: "Invalid file type. Only JPEG, PNG and WebP allowed." });
         }
 
-        // Use sharp to process the image (resize and convert to PNG)
         const processedBuffer = await sharp(buffer)
             .resize({ width: 500, height: 500, fit: 'inside' })
-            .toFormat('png')
+            .webp({ quality: 85 }) // Usar WebP con buena calidad
             .toBuffer();
 
-        // Ensure the directory exists
         if (!fs.existsSync(imagesDir)) {
             await fs.promises.mkdir(imagesDir, { recursive: true });
         }
 
-        // Save the processed image to the file system
         await fs.promises.writeFile(filePath, processedBuffer);
 
-        // Generate the URL for the image
-        const imageUrl = `images/${userID}_profile_picture.png`;
+        const imageUrl = `images/${userID}_profile_picture.webp`;
 
-        // Update the user's profile with the new image URL
         user.profilePicture = imageUrl;
         await user.save();
 
-        // Respond with the image URL
         res.status(200).json({ profilePicture: imageUrl });
-
     } catch (error) {
         console.error('Error uploading profile picture:', error);
         res.status(500).json({ error: 'Error uploading profile picture' });

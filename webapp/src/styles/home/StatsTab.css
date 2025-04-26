@@ -1,1 +1,81 @@
 body .card-root{border-radius:16px;box-shadow:0 4px 8px rgba(0,0,0,.1);background-color:#fff;overflow:hidden;transition:all .3s ease}body .card-root:hover{transform:translateY(-8px);box-shadow:0 8px 16px rgba(0,0,0,.2)}body .card-header{background-color:#f4f6f8;color:#333;border-bottom:1px solid #e0e0e0;padding:16px}body .card-content{padding:16px}body .list-item{padding:12px;border-bottom:1px solid #e0e0e0}body .list-item:last-child{border-bottom:none}body .list-item-text{font-weight:500;color:#333}body .score{font-size:1.1rem;font-weight:600;color:#4caf50;text-align:right}body .date{font-size:.875rem;color:#888}body .typography{margin-top:8px;font-size:1rem;color:#616161}body .typography span{color:#ff9800}body .detailed-stats{justify-content:center}@media screen and (max-width:670px){body .stats-header{flex-direction:column;row-gap:1rem;width:100%}}
+.quiz-table-container {
+    border-radius: 8px;
+    overflow: hidden;
+    margin: 0 auto;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+.quiz-table-header {
+    padding: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+    background-color: #f5f7fa;
+}
+.quiz-table-title {
+    font-weight: bold;
+}
+.quiz-table-cell-header {
+    background-color: #178ee4 !important;
+    color: white !important;
+    font-weight: bold !important;
+    font-size: 0.95rem !important;
+    border-bottom: 3px solid #1565c0 !important;
+}
+
+.quiz-table-row {
+    transition: background-color 0.2s;
+}
+
+.quiz-table-row:nth-of-type(odd) {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+.quiz-table-row:hover {
+    background-color: rgba(0, 0, 0, 0.04);
+}
+
+.quiz-table-footer {
+    padding: 16px;
+    display: flex;
+    justify-content: space-between;
+    border-top: 1px solid rgba(0,0,0,0.1);
+    background-color: #f5f7fa;
+}
+
+.quiz-score-chip {
+    font-weight: bold !important;
+    background-color: #e3f2fd !important;
+    color: #1565c0 !important;
+    border: 1px solid #1565c0 !important;
+}
+
+.quiz-time-display {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.quiz-subject-cell {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    padding-left: 24px !important;
+}
+
+.quiz-subject-content {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    max-width: 200px;
+}
+
+.quiz-subject-text {
+    text-align: left !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    flex: 1;
+}
