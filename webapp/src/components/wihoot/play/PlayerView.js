@@ -161,6 +161,9 @@ export default function PlayerView() {
       });
 
       newSocket.on("session-started", (data) => {
+        const now = Date.now();
+        setStartTime(now);
+        localStorage.setItem(`startTime-${code}-${playerId}`, now.toString());
         setSessionStatus("active");
         setCurrentQuestionIndex(data.currentQuestionIndex);
         setHasAnswered(false);
@@ -169,6 +172,9 @@ export default function PlayerView() {
       });
 
       newSocket.on("question-changed", (data) => {
+        const now = Date.now();
+        setStartTime(now);
+        localStorage.setItem(`startTime-${code}-${playerId}`, now.toString());
         setCurrentQuestionIndex(data.currentQuestionIndex);
         setHasAnswered(false);
         setSelectedOption(null);
@@ -180,6 +186,7 @@ export default function PlayerView() {
       });
 
       newSocket.on("session-ended", (data) => {
+        localStorage.removeItem(`startTime-${code}-${playerId}`);
         setSessionStatus("finished");
         setPlayers(data.players);
         setWaitingForNext(false);
@@ -245,101 +252,116 @@ export default function PlayerView() {
     }
   }, [sessionStatus, waitingForNext, hasAnswered, currentQuestionIndex, quizMetaData]);
 
-  // Timer logic
-  useEffect(() => {
-    if (
-      sessionStatus !== "active" ||
-      waitingForNext ||
-      hasAnswered ||
-      timeLeft === null ||
-      currentQuestionIndex < 0
-    ) {
-      clearInterval(timerIntervalRef.current);
-      return;
-    }
+    useEffect(() => {
+        if (!quizMetaData || !code || !playerId) return;
 
-    timerIntervalRef.current = setInterval(() => {
-      setTimeLeft((prevTime) => {
-        if (prevTime <= 0) {
-          clearInterval(timerIntervalRef.current);
-          return 0;
+        const storedStartTime = localStorage.getItem(`startTime-${code}-${playerId}`);
+        if (storedStartTime) {
+            const elapsedSeconds = (Date.now() - Number(storedStartTime)) / 1000;
+            const timerDuration = quizMetaData[0]?.timePerQuestion || 60;
+            const remainingTime = Math.max(timerDuration - elapsedSeconds, 0);
+            setTimeLeft(remainingTime);
         }
-        return prevTime - 0.01; // Update every 100ms for smoother progress
-      });
-    }, 10); // Use 100ms interval for smoother updates
+    }, [quizMetaData, code, playerId]);
 
-    return () => {
-      clearInterval(timerIntervalRef.current);
+  // Timer logic
+    useEffect(() => {
+        if (
+        sessionStatus !== "active" ||
+        waitingForNext ||
+        hasAnswered ||
+        timeLeft === null ||
+        currentQuestionIndex < 0
+        ) {
+        clearInterval(timerIntervalRef.current);
+        return;
+        }
+
+        timerIntervalRef.current = setInterval(() => {
+        setTimeLeft((prevTime) => {
+            if (prevTime <= 0) {
+            clearInterval(timerIntervalRef.current);
+            return 0;
+            }
+            return prevTime - 0.1; // Update every 100ms for smoother progress
+        });
+        }, 100); // Use 100ms interval for smoother updates
+
+        return () => {
+        clearInterval(timerIntervalRef.current);
+        };
+    }, [sessionStatus, waitingForNext, hasAnswered, timeLeft, currentQuestionIndex]);
+
+    const getCurrentQuestion = () => {
+        if (!quizData || currentQuestionIndex < 0 || currentQuestionIndex >= quizData.length) {
+        return null;
+        }
+        return quizData[currentQuestionIndex];
     };
-  }, [sessionStatus, waitingForNext, hasAnswered, timeLeft, currentQuestionIndex]);
 
-  const getCurrentQuestion = () => {
-    if (!quizData || currentQuestionIndex < 0 || currentQuestionIndex >= quizData.length) {
-      return null;
-    }
-    return quizData[currentQuestionIndex];
-  };
+    const handleAnswerSubmit = async (optionIndex) => {
+        if (hasAnswered) return;
 
-  const handleAnswerSubmit = async (optionIndex) => {
-    if (hasAnswered) return;
+        const currentQuestion = getCurrentQuestion();
+        if (!currentQuestion) return;
 
-    const currentQuestion = getCurrentQuestion();
-    if (!currentQuestion) return;
+        setSelectedOption(optionIndex);
+        setHasAnswered(true);
+        const storedStartTime = localStorage.getItem(`startTime-${code}-${playerId}`);
+        if (storedStartTime) 
+            startTime = Number(storedStartTime);
+        
+        const timeToAnswer = (Date.now() - startTime) / 1000;
 
-    setSelectedOption(optionIndex);
-    setHasAnswered(true);
-
-    const timeToAnswer = (Date.now() - startTime) / 1000;
-
-    const validateOutput = await fetch(`${apiEndpoint}/question/validate`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        question_id: currentQuestion.question_id,
-        selected_answer: currentQuestion.answers[optionIndex],
-      }),
-    });
-    const { isCorrect, correctAnswer } = await validateOutput.json();
-    setIsCorrect(isCorrect);
-    setCorrectAnswer(correctAnswer);
-
-    let numAnswers = quizData[0].answers;
-    const numberOptions = numAnswers.length;
-    const timerDuration = quizMetaData[0].timePerQuestion;
-    const timeLeft = timerDuration - timeToAnswer;
-    // Add the points to render in the score
-    const points = isCorrect
-      ? Math.ceil((10 * (80 * numberOptions / timerDuration) * (timeLeft / timerDuration)))
-      : 0;
-
-    // Store answer
-    setAnswers((prev) => [
-      ...prev,
-      {
-        questionId: currentQuestion.question_id,
-        answerId: optionIndex,
-        isCorrect,
-        timeSpent: timeToAnswer,
-        points,
-      },
-    ]);
-
-    try {
-      await fetch(`${apiEndpoint}/shared-quiz/${code}/answer`, {
+        const validateOutput = await fetch(`${apiEndpoint}/question/validate`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
+            "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          playerId,
-          questionId: currentQuestion.question_id,
-          answerId: optionIndex,
-          isCorrect,
-          timeToAnswer,
+            question_id: currentQuestion.question_id,
+            selected_answer: currentQuestion.answers[optionIndex],
         }),
-      });
+        });
+        const { isCorrect, correctAnswer } = await validateOutput.json();
+        setIsCorrect(isCorrect);
+        setCorrectAnswer(correctAnswer);
+
+        let numAnswers = quizData[0].answers;
+        const numberOptions = numAnswers.length;
+        const timerDuration = quizMetaData[0].timePerQuestion;
+        const timeLeft = timerDuration - timeToAnswer;
+        // Add the points to render in the score
+        const points = isCorrect
+        ? Math.ceil((10 * (80 * numberOptions / timerDuration) * (timeLeft / timerDuration)))
+        : 0;
+
+        // Store answer
+        setAnswers((prev) => [
+        ...prev,
+        {
+            questionId: currentQuestion.question_id,
+            answerId: optionIndex,
+            isCorrect,
+            timeSpent: timeToAnswer,
+            points,
+        },
+        ]);
+
+        try {
+        await fetch(`${apiEndpoint}/shared-quiz/${code}/answer`, {
+            method: "POST",
+            headers: {
+            "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+            playerId,
+            questionId: currentQuestion.question_id,
+            answerId: optionIndex,
+            isCorrect,
+            timeToAnswer,
+            }),
+    });
 
             const sessionData = await fetch(`${apiEndpoint}/shared-quiz/${code}/status`, {
                 headers: {

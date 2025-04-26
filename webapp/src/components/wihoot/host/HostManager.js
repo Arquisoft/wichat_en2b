@@ -44,6 +44,26 @@ export default function HostManager() {
     const [timeLeft, setTimeLeft] = useState(null);
     const timerIntervalRef = useRef(null);
 
+  // Helper functions for timer persistence
+  const getStoredTimerData = () => {
+    const data = localStorage.getItem(`quizTimer_${code}_${hostId}`);
+    return data ? JSON.parse(data) : null;
+  };
+
+  const storeTimerData = (questionIndex, startTime) => {
+    localStorage.setItem(
+      `quizTimer_${code}_${hostId}`,
+      JSON.stringify({
+        questionIndex,
+        startTime,
+      })
+    );
+  };
+
+  const clearTimerData = () => {
+    localStorage.removeItem(`quizTimer_${code}_${hostId}`);
+  };
+
   // Initialize socket connection and fetch session data
   useEffect(() => {
     if (!router.isReady || !code) {
@@ -132,6 +152,10 @@ export default function HostManager() {
         setSessionStatus(data.status);
         setPlayers(data.players);
         setCurrentQuestionIndex(data.currentQuestionIndex);
+        if (data.status === "active" && data.currentQuestionIndex >= 0) {
+          const newStartTime = Date.now();
+          storeTimerData(data.currentQuestionIndex, newStartTime);
+        }
       });
 
       newSocket.on("player-joined", (data) => {
@@ -189,6 +213,7 @@ export default function HostManager() {
       if (cleanupFn && typeof cleanupFn === "function") {
         cleanupFn();
       }
+      clearTimerData();
     };
   }, [code, router.isReady]);
 
@@ -201,7 +226,21 @@ export default function HostManager() {
       quiz
     ) {
       const timePerQuestion = quiz.quizMetaData?.[0]?.timePerQuestion || 60;
-      setTimeLeft(timePerQuestion);
+      const storedTimer = getStoredTimerData();
+
+      if (
+        storedTimer &&
+        storedTimer.questionIndex === currentQuestionIndex &&
+        storedTimer.startTime
+      ) {
+        const elapsedTime = (Date.now() - storedTimer.startTime) / 1000;
+        const remainingTime = Math.max(0, timePerQuestion - elapsedTime);
+        setTimeLeft(remainingTime);
+      } else {
+        setTimeLeft(timePerQuestion);
+        const newStartTime = Date.now();
+        storeTimerData(currentQuestionIndex, newStartTime);
+      }
     }
   }, [sessionStatus, showLeaderboard, currentQuestionIndex, quiz]);
 
@@ -248,6 +287,8 @@ export default function HostManager() {
       const data = response;
       setSessionStatus(data.status);
       setCurrentQuestionIndex(data.currentQuestionIndex);
+      const newStartTime = Date.now();
+      storeTimerData(data.currentQuestionIndex, newStartTime);
     } catch (err) {
       setError(err.message || "Failed to start quiz");
       console.error("Error in handleStartQuiz:", err);
@@ -268,6 +309,7 @@ export default function HostManager() {
           socket.emit("waiting-for-next", { code });
         }
         setShowLeaderboard(true);
+        clearTimerData();
       }
     } catch (err) {
       setError(err.message || "Failed to move to next question");
@@ -285,6 +327,8 @@ export default function HostManager() {
       const data = response;
       setCurrentQuestionIndex(data.currentQuestionIndex);
       setShowLeaderboard(false);
+      const newStartTime = Date.now();
+      storeTimerData(data.currentQuestionIndex, newStartTime);
 
       if (quiz && data.currentQuestionIndex >= quiz.quizData.length) {
         await handleEndQuiz();
@@ -306,6 +350,7 @@ export default function HostManager() {
       setSessionStatus(data.status);
       setPlayers(data.players);
       setShowLeaderboard(false);
+      clearTimerData();
     } catch (err) {
       setError(err.message || "Failed to end quiz");
       console.error("Error in handleEndQuiz:", err);
