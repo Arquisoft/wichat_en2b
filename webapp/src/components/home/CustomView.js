@@ -62,8 +62,8 @@ function CustomQuiz() {
         tempError = "No more than 30 questions are allowed";
       } else if (numberOfQuestions > numberOfAvailableQuestions) {
         tempError = `There are only ${numberOfAvailableQuestions} questions for this quiz.`;
-      } else if (numberOfOptions < 2 || numberOfOptions > 10) {
-        tempError = "The valid range of options is from 2–10.";
+      } else if (numberOfOptions < 2 || numberOfOptions > 8) {
+        tempError = "The valid range of options is from 2–8.";
       } else if (timePerQuestion < 1 || timePerQuestion > 120) {
         tempError = "You can only set a time from 1–120 seconds.";
       }

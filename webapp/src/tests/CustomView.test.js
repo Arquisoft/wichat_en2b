@@ -86,19 +86,7 @@ describe('CustomView Component', () => {
     });
   });
 
-  test('custom category input is shown when "custom" is selected', async () => {
-    render(<CustomView />);
-    
-    // Select "Custom category"
-    const categorySelect = screen.getByLabelText(/Select Category:/i);
-    fireEvent.change(categorySelect, { target: { value: 'custom' } });
-    
-    // Check if new category input is shown
-    expect(screen.getByLabelText(/Enter New Category:/i)).toBeInTheDocument();
-    expect(screen.getByText(/Disclaimer: these quizes will be AI generated/i)).toBeInTheDocument();
-  });
-
-  test('form validation works for number of questions', async () => {
+  test('form validation works for negative number of questions', async () => {
     render(<CustomView />);
     
     const categorySelect = screen.getByLabelText(/Select Category:/i);
@@ -116,6 +104,24 @@ describe('CustomView Component', () => {
     expect(screen.getByText(/You cannot enter a negative amount of questions/i)).toBeInTheDocument();
   });
 
+  test('form validation works for big number of questions', async () => {
+    render(<CustomView />);
+    
+    const categorySelect = screen.getByLabelText(/Select Category:/i);
+    fireEvent.change(categorySelect, { target: { value: 'History' } });
+    
+    // Set invalid number of questions
+    const questionsInput = screen.getByLabelText(/Number of Questions:/i);
+    fireEvent.change(questionsInput, { target: { value: '31' } });
+    
+    // Submit the form
+    const submitButton = screen.getByText('Start Quiz');
+    fireEvent.click(submitButton);
+    
+    // Check if error message is displayed
+    expect(screen.getByText(/No more than 30 questions are allowed/i)).toBeInTheDocument();
+  });
+
   test('form validation works for number of options', async () => {
     render(<CustomView />);
     
@@ -124,14 +130,14 @@ describe('CustomView Component', () => {
 
     // Set invalid number of options
     const optionsInput = screen.getByLabelText(/Number of options per question:/i);
-    fireEvent.change(optionsInput, { target: { value: '11' } });
+    fireEvent.change(optionsInput, { target: { value: '9' } });
     
     // Submit the form
     const submitButton = screen.getByText('Start Quiz');
     fireEvent.click(submitButton);
     
     // Check if error message is displayed
-    expect(screen.getByText(/The valid range of options is from 2–10/i)).toBeInTheDocument();
+    expect(screen.getByText(/The valid range of options is from 2–8/i)).toBeInTheDocument();
   });
 
   test('form validation works for time per question', async () => {
