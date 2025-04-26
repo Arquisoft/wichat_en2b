@@ -89,9 +89,10 @@ export default function PlayerView() {
 
                 if (response.ok) {
                     const sessionData = await response.json();
-                    console.log("TEST sessionData", sessionData)
+
                     setSessionStatus(sessionData.status);
                     setPlayers(sessionData.players);
+                    console.log("TEST session data players", sessionData.players)
                     setCurrentQuestionIndex(sessionData.currentQuestionIndex);
                     setWaitingForNext(sessionData.waitingForNext);
                     const player = sessionData.players.find((p) => p.id === playerId)
@@ -338,7 +339,7 @@ export default function PlayerView() {
 
             if (sessionData.ok) {
                 const playersFetched = await sessionData.json()
-                setPlayers(playersFetched)
+                setPlayers(playersFetched.players)
             }
         } catch (err) {
             console.error("Failed to submit answer or fetch session data:", err);
@@ -362,9 +363,11 @@ export default function PlayerView() {
         }
 
         try {
+            console.log("TEST Players ", players)
             const player = players.find((p) => p.id === playerId);
+            console.log("TEST player before find is", player)
             const pointsGain = player ? player.score : 0;
-            const numberOfQuestions = answers.length;
+            const numberOfQuestions = player.answers.length;
             const numberCorrectAnswers = answers.filter((a) => a.isCorrect).length;
             const totalTime = answers.reduce((acc, a) => acc + a.timeSpent, 0);
 
