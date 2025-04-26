@@ -85,7 +85,6 @@ describe('Socket Handler', () => {
       const mockCode = 'ABC123';
       const mockPlayerId = 'player123';
       const mockUsername = 'TestPlayer';
-      const mockIsGuest = true;
       
       const mockSession = {
         code: mockCode,
@@ -95,7 +94,6 @@ describe('Socket Handler', () => {
           {
             id: 'player1',
             username: 'Player 1',
-            isGuest: false,
             score: 100
           }
         ]
@@ -115,8 +113,7 @@ describe('Socket Handler', () => {
       await joinSessionHandler({
         code: mockCode,
         playerId: mockPlayerId,
-        username: mockUsername,
-        isGuest: mockIsGuest
+        username: mockUsername
       });
       
       expect(SharedQuizSession.findOne).toHaveBeenCalledWith({ code: mockCode });
@@ -124,7 +121,6 @@ describe('Socket Handler', () => {
       expect(mockSocket.sessionCode).toBe(mockCode);
       expect(mockSocket.playerId).toBe(mockPlayerId);
       expect(mockSocket.username).toBe(mockUsername);
-      expect(mockSocket.isGuest).toBe(mockIsGuest);
       
       expect(mockSocket.emit).toHaveBeenCalledWith('joined-session', {
         code: mockCode,
@@ -134,7 +130,6 @@ describe('Socket Handler', () => {
           {
             id: 'player1',
             username: 'Player 1',
-            isGuest: false,
             score: 100
           }
         ]
@@ -143,8 +138,7 @@ describe('Socket Handler', () => {
       expect(mockSocket.to).toHaveBeenCalledWith(mockCode);
       expect(mockSocket.to().emit).toHaveBeenCalledWith('player-joined', {
         playerId: mockPlayerId,
-        username: mockUsername,
-        isGuest: mockIsGuest
+        username: mockUsername
       });
     });
     
@@ -163,8 +157,7 @@ describe('Socket Handler', () => {
       await joinSessionHandler({
         code: 'INVALID',
         playerId: 'player123',
-        username: 'TestPlayer',
-        isGuest: true
+        username: 'TestPlayer'
       });
       
       expect(mockSocket.emit).toHaveBeenCalledWith('error', {
@@ -188,8 +181,7 @@ describe('Socket Handler', () => {
       await joinSessionHandler({
         code: 'ABC123',
         playerId: 'player123',
-        username: 'TestPlayer',
-        isGuest: true
+        username: 'TestPlayer'
       });
       
       expect(mockSocket.emit).toHaveBeenCalledWith('error', {
@@ -210,7 +202,6 @@ describe('Socket Handler', () => {
           {
             id: 'player1',
             username: 'Player 1',
-            isGuest: false,
             score: 100
           }
         ]
@@ -246,7 +237,6 @@ describe('Socket Handler', () => {
           {
             id: 'player1',
             username: 'Player 1',
-            isGuest: false,
             score: 100
           }
         ]

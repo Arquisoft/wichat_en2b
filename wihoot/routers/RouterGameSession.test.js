@@ -161,8 +161,7 @@ describe('Session Routes', () => {
         .post(`/api/sessions/${mockCode}/join`)
         .send({
           playerId: mockPlayerId,
-          username: mockUsername,
-          isGuest: true
+          username: mockUsername
         });
 
       expect(response.status).toBe(200);
@@ -174,15 +173,13 @@ describe('Session Routes', () => {
       expect(mockSession.addPlayer).toHaveBeenCalledWith({
         id: mockPlayerId,
         username: mockUsername,
-        isGuest: true,
         score: 0,
         answers: []
       });
       expect(socketHandlerObject.io.to).toHaveBeenCalledWith(mockCode);
       expect(socketHandlerObject.io.to().emit).toHaveBeenCalledWith('player-joined', {
         playerId: mockPlayerId,
-        username: mockUsername,
-        isGuest: true
+        username: mockUsername
       });
     });
 
@@ -587,7 +584,6 @@ describe('Session Routes', () => {
           {
             id: 'player1',
             username: 'Player 1',
-            isGuest: true,
             score: 150,
             answers: [{ questionId: 'q1', answerId: 'a1', isCorrect: true }]
           }
@@ -609,7 +605,6 @@ describe('Session Routes', () => {
           {
             id: 'player1',
             username: 'Player 1',
-            isGuest: true,
             score: 150,
             answers: [{ questionId: 'q1', answerId: 'a1', isCorrect: true }]
           }
@@ -646,7 +641,6 @@ describe('Session Routes', () => {
           {
             id: 'player1',
             username: 'Player 1',
-            isGuest: true,
             score: 150,
             answers: [{ questionId: 'q1', answerId: 'a1', isCorrect: true }],
             total_time: 45
@@ -668,7 +662,6 @@ describe('Session Routes', () => {
           {
             id: 'player1',
             username: 'Player 1',
-            isGuest: true,
             score: 150,
             answers: [{ questionId: 'q1', answerId: 'a1', isCorrect: true }],
             total_time: 45
