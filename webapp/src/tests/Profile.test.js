@@ -33,12 +33,6 @@ describe('ProfileForm', () => {
 			Promise.resolve({ data: { username: 'testUser' } })
 		);
 		
-		// Mock window.location.reload
-		Object.defineProperty(window, 'location', {
-			configurable: true,
-			value: { reload: jest.fn() }
-		});
-		
 		// Create a mock for FileReader
 		global.FileReader = class {
 			constructor() {

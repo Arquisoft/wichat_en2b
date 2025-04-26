@@ -264,6 +264,8 @@ export default function ProfileForm({ username, profilePicture, onSave }) {
         }
         if (file && file.size > FILE_SIZE_LIMIT) {
             setProfilePictureError("This file is too large. Maximum size is 2MB.");
+            setSnackbarMessage("This file is too large. Maximum size is 2MB.");
+            setOpenSnackbar(true);
             return;
         }
 
@@ -286,10 +288,11 @@ export default function ProfileForm({ username, profilePicture, onSave }) {
                 });
 
                 if (!response.ok) {
-                    throw new Error(`Error HTTP! Estado: ${response.status}`);
+                    throw new Error("Error uploading profile picture. Try another file or try again.");
                 }
 
                 const data = await response.json();
+
                 setSnackbarMessage("Profile picture uploaded successfully.");
                 setOpenSnackbar(true);
 
@@ -298,15 +301,15 @@ export default function ProfileForm({ username, profilePicture, onSave }) {
                     profilePicture: data.profilePicture,
                 }));
 
+                window.location.reload();
             } catch (error) {
-                console.error("Error uploading profile picture:", error);
+                setProfilePictureError(error.message);
                 setSnackbarMessage(`Error: ${error.message}`);
                 setOpenSnackbar(true);
             }
         };
 
         reader.readAsDataURL(file);
-        window.location.reload();
     };
 
     return (

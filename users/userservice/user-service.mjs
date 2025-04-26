@@ -6,8 +6,11 @@ import bodyParser from 'body-parser';
 import userRoutes from './routers/RouterUserCrud.js';
 
 const app = express();
+
+app.use(express.json({ limit: '2MB' }));
+app.use(express.urlencoded({ extended: true, limit: '2MB' }));
+
 app.use(helmet.hidePoweredBy());
-app.use(bodyParser.json());
 
 const port = 8001;
 

@@ -1,8 +1,6 @@
-const express = require('express');
-const router = express.Router();
 const Question = require('../../question-model');
 const fs = require('fs');
-const QuizModel = require('../../quizz-model');
+const sharp = require('sharp');
 
 const wikiDataUri = "https://query.wikidata.org/sparql?format=json&query=";
 
@@ -24,7 +22,7 @@ async function fetchWithRetry(url, options = {}, maxRetries = 3, baseDelay = 200
             if (!response.ok) {
                 if (response.status === 429) {
                     const waitTime = baseDelay * Math.pow(2, retries);
-                    console.log(`Límite de velocidad (429). Reintentando en ${waitTime/1000}s...`);
+                    console.log(`Límite de velocidad (429). Reintentando en ${waitTime / 1000}s...`);
                     await delay(waitTime);
                     retries++;
                     continue;
@@ -42,7 +40,7 @@ async function fetchWithRetry(url, options = {}, maxRetries = 3, baseDelay = 200
             const text = await response.text();
             if (isWikimediaError(text)) {
                 const waitTime = baseDelay * Math.pow(2, retries);
-                console.log(`Recibido error HTML. Reintentando en ${waitTime/1000}s...`);
+                console.log(`Recibido error HTML. Reintentando en ${waitTime / 1000}s...`);
                 await delay(waitTime);
                 retries++;
                 continue;
@@ -51,7 +49,7 @@ async function fetchWithRetry(url, options = {}, maxRetries = 3, baseDelay = 200
             return JSON.parse(text);
         } catch (error) {
             const waitTime = baseDelay * Math.pow(2, retries);
-            console.log(`Error: ${error.message}. Reintentando en ${waitTime/1000}s...`);
+            console.log(`Error: ${error.message}. Reintentando en ${waitTime / 1000}s...`);
             await delay(waitTime);
             retries++;
 
@@ -101,9 +99,9 @@ async function saveQuestionsToDB(code, query) {
         }
 
         const imagesDir = './public/images';
-        await fs.promises.mkdir(imagesDir, { recursive: true });
+        await fs.promises.mkdir(imagesDir, {recursive: true});
 
-        const existingQuestions = await Question.find({ subject: code }).lean();
+        const existingQuestions = await Question.find({subject: code}).lean();
         const existingMap = new Map(existingQuestions.map(q => [q.answer, q]));
 
         const bulkOps = [];
@@ -116,14 +114,14 @@ async function saveQuestionsToDB(code, query) {
             if (existingQuestion) {
                 bulkOps.push({
                     updateOne: {
-                        filter: { _id: existingQuestion._id },
+                        filter: {_id: existingQuestion._id},
                         update: {
                             $set: {
                                 subject: code,
                                 answer: item.name
                             },
-                            $inc: { __v: 1 },
-                            $setOnInsert: { ext: existingQuestion.ext }
+                            $inc: {__v: 1},
+                            $setOnInsert: {ext: existingQuestion.ext}
                         }
                     }
                 });
@@ -134,7 +132,7 @@ async function saveQuestionsToDB(code, query) {
                     answer: item.name,
                     ext: ''
                 });
-                bulkOps.push({ insertOne: { document: newQuestion } });
+                bulkOps.push({insertOne: {document: newQuestion}});
                 questionId = newQuestion._id;
             }
 
@@ -157,14 +155,37 @@ async function saveQuestionsToDB(code, query) {
                     }
 
                     const buffer = await res.arrayBuffer();
+                    const imageBuffer = Buffer.from(buffer);
+
+                    // Optimize and convert to webp for better web performance
+                    let processedImageBuffer;
+                    try {
+                        processedImageBuffer = await sharp(imageBuffer)
+                            .resize({width: 800, height: 800, fit: 'inside', withoutEnlargement: true})
+                            .webp({quality: 80}) // WebP ofrece mejor compresión que JPEG/PNG
+                            .toBuffer();
+                        ext = 'webp';
+
+                        // Except svg because sharp does not support it
+                        if (contentType === 'image/svg+xml') {
+                            processedImageBuffer = imageBuffer;
+                            ext = 'svg';
+                        }
+                    } catch (err) {
+                        console.error(`Error al procesar imagen: ${err.message}`);
+                        processedImageBuffer = imageBuffer;
+                    }
+
+                    // Save processed image
                     await fs.promises.writeFile(
                         `${imagesDir}/${questionId}.${ext}`,
-                        Buffer.from(buffer)
+                        processedImageBuffer
                     );
 
+                    // Update image extension in db
                     await Question.updateOne(
-                        { _id: questionId },
-                        { $set: { ext: ext } }
+                        {_id: questionId},
+                        {$set: {ext: ext}}
                     );
                 } catch (err) {
                     console.error(`Error al guardar imagen para "${item.name}":`, err);
