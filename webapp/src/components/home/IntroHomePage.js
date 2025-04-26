@@ -210,7 +210,7 @@ function IntroHomePage() {
                 onClick={handleRegister}
                 className="cta-secondary-button"
               >
-                Create Account
+                Create an Account
               </Button>
             </Box>
           </Paper>
