@@ -268,7 +268,8 @@ export default function PlayerView() {
         setSelectedOption(optionIndex)
         setHasAnswered(true)
 
-        const timeToAnswer = Date.now() - startTime
+        const timeToAnswer = (Date.now() - startTime ) / 1000;
+
         const validateOutput = await fetch(`${apiEndpoint}/question/validate`, {
             method: 'POST',
             headers: {
@@ -283,8 +284,12 @@ export default function PlayerView() {
         setIsCorrect(isCorrect);
         setCorrectAnswer(correctAnswer);
 
-        // Calculate points (same as backend: 1000 - timeToAnswer, min 100)
-        const points = isCorrect ? Math.max(1000 - Math.floor(timeToAnswer), 100) : 0;
+        let numAnswers = quizData[0].answers
+        const numberOptions = numAnswers.length
+        const timerDuration = quizMetaData[0].timePerQuestion
+        const timeLeft = timerDuration - timeToAnswer
+        // Add the points to render in the score
+        const points = isCorrect ? Math.ceil(10 * (80 * numberOptions / timerDuration) * (timeLeft / timerDuration)) : 0
 
         // Store answer
         setAnswers((prev) => [

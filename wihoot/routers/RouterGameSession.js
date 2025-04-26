@@ -212,7 +212,7 @@ router.get("/:code/next", async (req, res) => {
 router.post("/:code/answer", async (req, res) => {
     try {
         const { code } = req.params
-        const { playerId, questionId, answerId, isCorrect, timeToAnswer } = req.body //TODO add in the body of the request .../end the time that the user took to answer
+        const { playerId, questionId, answerId, isCorrect, timeToAnswer } = req.body
 
         if (!playerId || !questionId || answerId === undefined || isCorrect === undefined || timeToAnswer === undefined) {
             return res.status(400).json({ error: "Missing required fields" })
@@ -235,8 +235,13 @@ router.post("/:code/answer", async (req, res) => {
             return res.status(404).json({ error: "Player not found in this session" })
         }
 
+        let numAnswers = session.quizData[0].answers
+        const numberOptions = numAnswers.length
+        const timerDuration = session.quizMetaData[0].timePerQuestion
+        const timeLeft = timerDuration - timeToAnswer
+
         // Add the answer
-        const scoreIncrement = isCorrect ? Math.max(1000 - timeToAnswer, 100) : 0
+        const scoreIncrement = isCorrect ? Math.ceil(10 * (80 * numberOptions / timerDuration) * (timeLeft / timerDuration)) : 0
 
         session.players[playerIndex].answers.push({
             questionId,
@@ -244,8 +249,6 @@ router.post("/:code/answer", async (req, res) => {
             isCorrect: !!isCorrect,
             timeToAnswer,
         })
-
-        console.log("session", session)
 
         session.players[playerIndex].score += scoreIncrement
         session.players[playerIndex].total_time += timeToAnswer
