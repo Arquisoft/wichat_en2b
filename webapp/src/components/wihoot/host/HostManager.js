@@ -430,9 +430,6 @@ export default function HostManager() {
                       },
                     }}
                   />
-                  {player.isGuest && (
-                    <Badge badgeContent="Guest" color="secondary" sx={{ mr: 1 }} />
-                  )}
                 </ListItem>
               ))}
             </List>
@@ -469,11 +466,6 @@ export default function HostManager() {
                                     <ListItem key={player.id} className="leaderboard-item">
                                         <ListItemText
                                             primary={`#${index + 1} ${player.username}`}
-                                            secondary={
-                                                player.isGuest && (
-                                                    <Badge badgeContent="Guest" color="secondary" />
-                                                )
-                                            }
                                         />
                                         <Typography variant="body1" fontWeight="bold">
                                             {player.score}
@@ -628,7 +620,6 @@ export default function HostManager() {
                                             <ListItem key={player.id} className="leaderboard-item">
                                                 <ListItemText
                                                     primary={`#${index + 1} ${player.username}`}
-                                                    secondary={player.isGuest && <Badge badgeContent="Guest" color="secondary" />}
                                                 />
                                                 <Typography variant="body1" fontWeight="bold">
                                                     {player.score}
@@ -666,9 +657,6 @@ export default function HostManager() {
                   <ListItem key={player.id} className="result-item">
                     <ListItemText
                       primary={`#${index + 1} ${player.username}`}
-                      secondary={
-                        player.isGuest && <Badge badgeContent="Guest" color="secondary" />
-                      }
                     />
                     <Typography variant="body1" fontWeight="bold">
                       {player.score}

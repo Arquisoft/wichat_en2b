@@ -33,7 +33,6 @@ export default function PlayerView() {
 
   const [socket, setSocket] = useState(null);
   const [username, setUsername] = useState("");
-  const [isGuest, setIsGuest] = useState(false);
   const [sessionStatus, setSessionStatus] = useState("waiting");
   const [players, setPlayers] = useState([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(-1);
@@ -57,27 +56,21 @@ export default function PlayerView() {
     if (!code || !playerId) return;
 
         const fetchUserData = async () => {
-            if (playerId.startsWith("guest_")) {
-                setIsGuest(true);
-                setUsername(`${playerId}`);
-                return;
+            try {
+                const response = await fetchWithAuth("/token/username");
+                if (response) {
+                    const userData = response;
+                    setUsername(userData.username);
+                    return userData;
+                } else {
+                    throw new Error("Failed to get user data");
+                }
+            } catch (err) {
+                setError("Authentication error. Please log in again.");
+                console.error(err);
+                return null;
             }
-
-      try {
-        const response = await fetchWithAuth("/token/username");
-        if (response) {
-          const userData = response;
-          setUsername(userData.username);
-          return userData;
-        } else {
-          throw new Error("Failed to get user data");
-        }
-      } catch (err) {
-        setError("Authentication error. Please log in again.");
-        console.error(err);
-        return null;
-      }
-    };
+        };
 
         const fetchSessionData = async () => {
             try {
@@ -86,7 +79,6 @@ export default function PlayerView() {
                         'Content-Type': 'application/json'
                     }
                 });
-
 
                 if (response.ok) {
                     const sessionData = await response.json();
@@ -99,7 +91,6 @@ export default function PlayerView() {
                     const player = sessionData.players.find((p) => p.id === playerId)
                     if (player) {
                         setUsername(player.username)
-                        setIsGuest(player.isGuest)
                     }
 
                     return sessionData
@@ -144,7 +135,6 @@ export default function PlayerView() {
           code,
           playerId,
           username,
-          isGuest,
         });
       });
 
@@ -227,15 +217,15 @@ export default function PlayerView() {
         cleanup();
       }
     };
-  }, [code, playerId, username, isGuest]);
+  }, [code, playerId, username]);
 
   // Save game data when quiz ends
   useEffect(() => {
-    if (sessionStatus === "finished" && !hasSavedGame && !isGuest) {
+    if (sessionStatus === "finished" && !hasSavedGame) {
       saveGameData();
       setHasSavedGame(true);
     }
-  }, [sessionStatus, hasSavedGame, isGuest]);
+  }, [sessionStatus, hasSavedGame]);
 
   // Synchronize timeLeft with quizMetaData and currentQuestionIndex
   useEffect(() => {
@@ -361,7 +351,7 @@ export default function PlayerView() {
             isCorrect,
             timeToAnswer,
             }),
-    });
+        });
 
             const sessionData = await fetch(`${apiEndpoint}/shared-quiz/${code}/status`, {
                 headers: {
@@ -379,11 +369,6 @@ export default function PlayerView() {
     };
 
   const saveGameData = async () => {
-    if (isGuest) {
-      console.log("Skipping game data save for guest user");
-      return;
-    }
-
     const token = document.cookie
       .split("; ")
       .find((row) => row.startsWith("token="))
@@ -403,33 +388,33 @@ export default function PlayerView() {
             const numberCorrectAnswers = answers.filter((a) => a.isCorrect).length;
             const totalTime = answers.reduce((acc, a) => acc + a.timeSpent, 0);
 
-      const response = await fetch(`${apiEndpoint}/game`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          subject:
-            quizMetaData[0]?.category.toLowerCase() ||
-            quizMetaData[0]?.quizName.toLowerCase() ||
-            "unknown",
-          points_gain: pointsGain,
-          number_of_questions: numberOfQuestions,
-          number_correct_answers: numberCorrectAnswers,
-          total_time: totalTime,
-        }),
-      });
+            const response = await fetch(`${apiEndpoint}/game`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    subject:
+                        quizMetaData[0]?.category.toLowerCase() ||
+                        quizMetaData[0]?.quizName.toLowerCase() ||
+                        "unknown",
+                    points_gain: pointsGain,
+                    number_of_questions: numberOfQuestions,
+                    number_correct_answers: numberCorrectAnswers,
+                    total_time: totalTime,
+                }),
+            });
 
-      if (!response.ok) {
-        throw new Error("Failed to save game data");
-      }
+            if (!response.ok) {
+                throw new Error("Failed to save game data");
+            }
 
-      console.log("Game data saved successfully");
-    } catch (err) {
-      console.error("Error saving game data:", err);
-    }
-  };
+            console.log("Game data saved successfully");
+        } catch (err) {
+            console.error("Error saving game data:", err);
+        }
+    };
 
   const renderWaitingRoom = () => (
     <Card className="player-view-card">
@@ -493,9 +478,6 @@ export default function PlayerView() {
                     },
                   }}
                 />
-                {player.isGuest && (
-                  <Badge badgeContent="Guest" color="secondary" sx={{ mr: 1 }} />
-                )}
                 {player.id === playerId && (
                   <Badge badgeContent="You" color="primary" />
                 )}
@@ -546,22 +528,17 @@ export default function PlayerView() {
                     <ListItemText
                       primary={`#${index + 1} ${player.username}`}
                       secondary={
-                        <>
-                          {player.isGuest && (
-                            <Badge badgeContent="Guest" color="secondary" sx={{ mr: 1 }} />
-                          )}
-                          {player.id === playerId && (
-                            <Badge
-                              badgeContent="You"
-                              sx={{
-                                "& .MuiBadge-badge": {
-                                  backgroundColor: "#6c63ff",
-                                  color: "white",
-                                },
-                              }}
-                            />
-                          )}
-                        </>
+                        player.id === playerId && (
+                          <Badge
+                            badgeContent="You"
+                            sx={{
+                              "& .MuiBadge-badge": {
+                                backgroundColor: "#6c63ff",
+                                color: "white",
+                              },
+                            }}
+                          />
+                        )
                       }
                     />
                     <Typography variant="body1" fontWeight="bold">
@@ -681,14 +658,9 @@ export default function PlayerView() {
                     <ListItemText
                       primary={`#${index + 1} ${player.username}`}
                       secondary={
-                        <>
-                          {player.isGuest && (
-                            <Badge badgeContent="Guest" color="secondary" sx={{ mr: 1 }} />
-                          )}
-                          {player.id === playerId && (
-                            <Badge badgeContent="You" color="primary" />
-                          )}
-                        </>
+                        player.id === playerId && (
+                          <Badge badgeContent="You" color="primary" />
+                        )
                       }
                     />
                     <Typography variant="body1" fontWeight="bold">

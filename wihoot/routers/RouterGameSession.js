@@ -66,7 +66,7 @@ router.get('/internal/quizdata/:code', async (req, res) => {
 router.post("/:code/join", async (req, res) => {
     try {
         const { code } = req.params
-        const { playerId, username, isGuest } = req.body
+        const { playerId, username } = req.body
 
         if (!playerId || !username) {
             return res.status(400).json({ error: "Missing required fields" })
@@ -90,7 +90,6 @@ router.post("/:code/join", async (req, res) => {
             const player = {
                 id: playerId,
                 username,
-                isGuest: !!isGuest,
                 score: 0,
                 answers: [],
             }
@@ -103,7 +102,6 @@ router.post("/:code/join", async (req, res) => {
                 socketHandlerObject.io.to(code).emit("player-joined", {
                     playerId: playerId,
                     username: username,
-                    isGuest: !!isGuest,
                 })
             } else {
                 console.warn("Socket.IO instance not initialized; skipping player-joined emit")
@@ -296,7 +294,6 @@ router.get("/:code/status", async (req, res) => {
             players: session.players.map((p) => ({
                 id: p.id,
                 username: p.username,
-                isGuest: p.isGuest,
                 score: p.score,
                 answers: p.answers
             })),
@@ -336,12 +333,10 @@ router.get("/:code/end", async (req, res) => {
                 players: session.players.map((p) => ({
                     id: p.id,
                     username: p.username,
-                    isGuest: p.isGuest,
                     score: p.score,
                     answers: p.answers
                 })),
             })
-
 
             res.status(200).json({
                 success: true,
@@ -349,7 +344,6 @@ router.get("/:code/end", async (req, res) => {
                 players: session.players.map((p) => ({
                     id: p.id,
                     username: p.username,
-                    isGuest: p.isGuest,
                     score: p.score,
                     answers: p.answers,
                     total_time: p.total_time

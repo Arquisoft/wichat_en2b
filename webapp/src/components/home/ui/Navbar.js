@@ -84,34 +84,35 @@ const Navbar = ({ username = "Guest", profilePicture }) => {
                     <Box className="spacer" />
 
                     <Box className="user-section">
-                        {/*Join Game Code*/}
-                        <Button
-                            id={'navbar-join-game-button'}
-                            onClick={handleJoinCodeame}
-                            variant={"contained"}
-                            color="primary"
-                            startIcon={<ConnectWithoutContactOutlinedIcon />}
-                            className="joingame"
-                            aria-label="Join Game"
-                        >
-                            Join Game
-                        </Button>
+                        {isGuest && (
+                            <>
+                                {/*Join Game Code*/}
+                                <Button
+                                    id={'navbar-join-game-button'}
+                                    onClick={handleJoinCodeame}
+                                    variant={"contained"}
+                                    color="primary"
+                                    startIcon={<ConnectWithoutContactOutlinedIcon />}
+                                    className="joingame"
+                                    aria-label="Join Game"
+                                >
+                                    Join Game
+                                </Button>
 
-                        {/*Create Game Code*/}
-                        { isGuest && (
-                            <Button
-                                id={'navbar-create-game-button'}
-                            onClick={handleCreateCodeGame}
-                            variant={"contained"}
-                            color="primary"
-                            startIcon={<PlayCircleFilledWhiteOutlinedIcon />}
-                            className="creategame"
-                            aria-label="Start Game Session"
-                            >
-                            Start Session
-                            </Button>
+                                {/*Create Game Code*/}
+                                <Button
+                                    id={'navbar-create-game-button'}
+                                    onClick={handleCreateCodeGame}
+                                    variant={"contained"}
+                                    color="primary"
+                                    startIcon={<PlayCircleFilledWhiteOutlinedIcon />}
+                                    className="creategame"
+                                    aria-label="Start Game Session"
+                                >
+                                    Start Session
+                                </Button>
+                            </>
                         )}
-
                     </Box>
 
                     {isGuest ? (

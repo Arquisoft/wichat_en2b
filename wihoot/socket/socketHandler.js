@@ -18,7 +18,7 @@ module.exports = {
                 console.log("New client connected:", socket.id)
 
                 // Join a session room
-                socket.on("join-session", async ({ code, playerId, username, isGuest }) => {
+                socket.on("join-session", async ({ code, playerId, username }) => {
                     try {
                         // Find the session
                         const session = await SharedQuizSession.findOne({ code })
@@ -35,7 +35,6 @@ module.exports = {
                         socket.sessionCode = code
                         socket.playerId = playerId
                         socket.username = username
-                        socket.isGuest = isGuest
 
                         console.log(`Player ${username} (${playerId}) joined session ${code}`)
 
@@ -47,7 +46,6 @@ module.exports = {
                             players: session.players.map((p) => ({
                                 id: p.id,
                                 username: p.username,
-                                isGuest: p.isGuest,
                                 score: p.score,
                             })),
                         })
@@ -56,7 +54,6 @@ module.exports = {
                         socket.to(code).emit("player-joined", {
                             playerId,
                             username,
-                            isGuest,
                         })
                     } catch (error) {
                         console.error("Error joining session room:", error)
@@ -98,7 +95,6 @@ module.exports = {
                             players: session.players.map((p) => ({
                                 id: p.id,
                                 username: p.username,
-                                isGuest: p.isGuest,
                                 score: p.score,
                             })),
                         })
