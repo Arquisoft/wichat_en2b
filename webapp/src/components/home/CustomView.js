@@ -12,28 +12,15 @@ function CustomQuiz() {
     const [selectedCategory, setSelectedCategory] = useState(null);
     const [subcategories, setSubcategories] = useState([]);
     const [selectedSubcategory, setSelectedSubcategory] = useState("");
-    const [selectedDifficulty, setSelectedDifficulty] = useState(1);
-    const [newCategory, setNewCategory] = useState("");
     const [timePerQuestion, setTimePerQuestion] = useState(30);
     const [numberOfQuestions, setNumberOfQuestions] = useState(10);
     const [gameMode, setGameMode] = useState("singleplayer");
-    const [showNewCategoryInput, setShowNewCategoryInput] = useState(true);
     const [numberOfOptions, setNumberOfOptions] = useState(4);
     const [showGame, setShowGame] = useState(false);
     const [quizData, setQuizData] = useState([]);
     const [error, setError] = useState(null);
     const [numberOfAvailableQuestions, setNumberOfAvailableQuestions] = useState(10);
   
-    const mapDifficulty = (level) => {
-      switch (level) {
-        case 1: return "easy";
-        case 2: return "medium";
-        case 3: return "hard";
-        case 4: return "hard";
-        case 5: return "hell";
-        default: return "unknown";
-      }
-    };
     const fetchSubcategories = async (cat) => {
       try {
         const response = await fetch(`${apiEndpoint}/quiz/${cat}`);
@@ -69,11 +56,11 @@ function CustomQuiz() {
 
     const validFields = () => {
       let tempError = null;
-      if (showNewCategoryInput) {
-        tempError = "We are currently experimenting issues with this option and it is not available.";
-      } else if (numberOfQuestions <= 0) {
+      if (numberOfQuestions <= 0) {
         tempError = "You cannot enter a negative amount of questions.";
-      } else if (!showNewCategoryInput && numberOfQuestions > numberOfAvailableQuestions) {
+      } else if (numberOfQuestions > 30) {
+        tempError = "No more than 30 questions are allowed";
+      } else if (numberOfQuestions > numberOfAvailableQuestions) {
         tempError = `There are only ${numberOfAvailableQuestions} questions for this quiz.`;
       } else if (numberOfOptions < 2 || numberOfOptions > 10) {
         tempError = "The valid range of options is from 2–10.";
@@ -87,8 +74,6 @@ function CustomQuiz() {
     
 
     useEffect(() => {
-        setSelectedCategory("custom");
-        setSelectedSubcategory("");
         const fetchCategories = async () => {
           try {
             const response = await fetch(`${apiEndpoint}/quiz`);
@@ -105,6 +90,8 @@ function CustomQuiz() {
             );
     
             setCategories(formattedCategories);
+            setSelectedCategory(formattedCategories[0].name);
+            await fetchSubcategories(formattedCategories[0].name);
           } catch (error) {
             setError("There was an error fetching the categories");
             console.error("Failed to fetch categories:", error);
@@ -121,23 +108,13 @@ function CustomQuiz() {
         return;
       }
 
-      const category = showNewCategoryInput ? newCategory : selectedCategory;
-
-      let question = showNewCategoryInput ? "":
-        selectedSubcategory.question;
-        
-      let url = showNewCategoryInput ? 
-        `/game/${newCategory}/${numberOfQuestions}/${numberOfOptions}/${question}`:
-        `/game/${selectedSubcategory.wikidataCode}/${numberOfQuestions}/${numberOfOptions}`;
-      
-
       let quizData = {
-        topic: category, 
+        topic: selectedCategory, 
         totalQuestions: numberOfQuestions, 
         numberOptions: numberOfOptions, 
         timerDuration: timePerQuestion, 
-        question: question,
-        fetchQuestionsURL: url,
+        question: selectedSubcategory.question,
+        fetchQuestionsURL: `/game/${selectedSubcategory.wikidataCode}/${numberOfQuestions}/${numberOfOptions}`,
       };
       setQuizData(quizData);
       setShowGame(true);
@@ -159,13 +136,9 @@ function CustomQuiz() {
                 value={selectedCategory}
                 onChange={(e) => {
                   setSelectedCategory(e.target.value);
-                  setShowNewCategoryInput(e.target.value == "custom");
-                  if (e.target.value != "custom"){
-                    fetchSubcategories(e.target.value);
-                  }
+                  fetchSubcategories(e.target.value);
                 }}
               >
-                <option value="custom">Custom category</option>
                 {categories.map((category, index) => (
                   <option key={index} value={category.name}>
                     {category.name}
@@ -176,72 +149,29 @@ function CustomQuiz() {
           </div>
 
           <div className="form-group">
-            {!showNewCategoryInput && (
-              <>
-                <label htmlFor="quiz-select">Select quiz:</label>
-                <div className="subcategory-selection">
-                  <select
-                    id="quiz-select"
-                    value={selectedSubcategory.title}
-                    onChange={(e) => {
-                      const s = subcategories.find(element => element.title == e.target.value);
-                      setSelectedSubcategory(s);
-                      fetchAvailableQuestions(s.wikidataCode);
-                    }}
-                    disabled={showNewCategoryInput}
-                    >
-                    {subcategories.map((quiz, index) => (
-                      <option key={index} value={quiz.title}>
-                        {quiz.title}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </>
+            <>
+              <label htmlFor="quiz-select">Select quiz:</label>
+              <div className="subcategory-selection">
+                <select
+                  id="quiz-select"
+                  value={selectedSubcategory.title}
+                  onChange={(e) => {
+                    const s = subcategories.find(element => element.title == e.target.value);
+                    setSelectedSubcategory(s);
+                    fetchAvailableQuestions(s.wikidataCode);
+                  }}
+                  >
 
-            )}
+                  {subcategories.map((quiz, index) => (
+                    <option key={index} value={quiz.title}>
+                      {quiz.title}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </>
           </div>
   
-          {showNewCategoryInput && (
-            <div className="form-group new-category">
-              <label htmlFor="new-category">Enter New Category:</label>
-              <input
-                type="text"
-                id="new-category"
-                value={newCategory}
-                onChange={(e) => setNewCategory(e.target.value)}
-                placeholder="Enter a new category"
-                required
-              />
-            <p>⚠️ Disclaimer: these quizes will be AI generated so they will not contain images and will take some time!</p>
-            </div>
-          )}
-
-          <div className="form-group">
-            <label htmlFor="difficulty-select">Select Difficulty:</label>
-            <div className="difficulty-selection">
-              <select
-                id="difficulty-select"
-                value={selectedDifficulty}
-                onChange={(e) => {
-                  setSelectedDifficulty(e.target.value);
-                }}
-              >
-                {showNewCategoryInput && [1, 2, 3, 5].map((i) => (
-                  <option key={i} value={i}>
-                    {mapDifficulty(i)}
-                  </option>
-                ))}
-
-                {!showNewCategoryInput && (
-                  <option key={selectedSubcategory.difficulty} value={selectedSubcategory.difficulty}>
-                    {mapDifficulty(selectedSubcategory.difficulty)}
-                  </option>
-                )}
-              </select>
-            </div>
-          </div>
-
           <div className="form-group">
             <label htmlFor="time-per-question">Time Per Question (seconds):</label>
             <input
@@ -275,33 +205,6 @@ function CustomQuiz() {
           </div>
   
           {error && <p className="error-message">{error}</p>}
-
-          <div className="form-group">
-            <label>Game Mode:</label>
-            <div className="radio-group">
-              <label className="radio-label">
-                <input
-                  type="radio"
-                  name="gameMode"
-                  value="singleplayer"
-                  checked={gameMode === "singleplayer"}
-                  onChange={() => setGameMode("singleplayer")}
-                />
-                <span>Singleplayer</span>
-              </label>
-              <label className="radio-label">
-                <input
-                  type="radio"
-                  name="gameMode"
-                  value="vsAI"
-                  checked={gameMode === "vsAI"}
-                  onChange={() => setGameMode("vsAI")}
-                  disabled
-                />
-                <span>Against AI (Coming soon...)</span>
-              </label>
-            </div>
-          </div>
   
           <button type="submit" className="button">
             Start Quiz
