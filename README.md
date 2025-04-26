@@ -1,135 +1,154 @@
-# wichat_en2b
 
-[![Actions Status](https://github.com/arquisoft/wichat_en2b/workflows/CI%20for%20wichat_en2b/badge.svg)](https://github.com/arquisoft/wichat_en2b/actions)
+# 🚀 wichat_en2b
+
+[![CI Status](https://github.com/Arquisoft/wichat_en2b/workflows/CI%20for%20wichat_en2b/badge.svg)](https://github.com/Arquisoft/wichat_en2b/actions)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=Arquisoft_wichat_en2b&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Arquisoft_wichat_en2b)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=Arquisoft_wichat_en2b&metric=coverage)](https://sonarcloud.io/summary/new_code?id=Arquisoft_wichat_en2b)
-[![CodeScene general](https://codescene.io/images/analyzed-by-codescene-badge.svg)](https://codescene.io/projects/64833)
+[![CodeScene](https://codescene.io/images/analyzed-by-codescene-badge.svg)](https://codescene.io/projects/64833)
 
-<p float="left">
-<img src="https://blog.wildix.com/wp-content/uploads/2020/06/react-logo.jpg" height="100">
-<img src="https://miro.medium.com/max/365/1*Jr3NFSKTfQWRUyjblBSKeg.png" height="100">
-
-## Members
-
-| Name | GitHub Profile|
-|------|---------------|
-|| <a href="https://github.com/HovanRojasIgnacio"><img src="https://img.shields.io/badge/UO295341-HovanRojasIgnacio-blue"></a>
-|| <a href="https://github.com/adrianmfuentes"><img src="https://img.shields.io/badge/UO295341-adrianmfuentes-green"></a>
-|| <a href="https://github.com/carlosfernandezmartinez"><img src="https://img.shields.io/badge/UO295341-carlosfernandezmartinez-red"></a>
-|| <a href="https://github.com/DavidPedregal"><img src="https://img.shields.io/badge/UO295341-DavidPedregal-orange"></a>
-|| <a href="https://github.com/franCimadevilla"><img src="https://img.shields.io/badge/UO295341-franCimadevilla-yellow"></a>
-|| <a href="https://github.com/sergio-riesco"><img src="https://img.shields.io/badge/UO295341-sergio--riesco-purple"></a>
-|| <a href="https://github.com/pelayosl"><img src="https://img.shields.io/badge/UO295341-pelayosl-cyan"></a>
-
+<p align="center">
+  <img src="https://nodejs.org/static/images/logo.svg" height="80" alt="Node.js Logo">
+  <img src="https://upload.wikimedia.org/wikipedia/commons/a/a7/React-icon.svg" height="80" alt="React Logo">
+  <img src="https://webassets.mongodb.com/_com_assets/cms/mongodb_logo1-76twgcu2dm.png" height="80" alt="MongoDB Logo">
 </p>
 
+---
 
+## 🌟 Overview
 
-- **User service**. Express service that handles the insertion of new users in the system.
-- **Auth service**. Express service that handles the authentication of users.
-- **LLM service**. Express service that handles the communication with the LLM.
-- **Gateway service**. Express service that is exposed to the public and serves as a proxy to the two previous ones.
-- **Webapp**. React web application that uses the gateway service to allow basic login and new user features.
-- **Game service**. Express service that handles the retrieval and saving of the games, questions and statistics.
-- **Group service**. Express service that handles the creation and state of the groups.
+**wichat_en2b** is a microservices-based quiz game application developed as part of the Software Architecture course (2024/2025) at the University of Oviedo. It features user management, group functionalities, and AI-powered hints, all built with a modern backend architecture using Node.js and Express.
 
-Both the user and auth service share a Mongo database that is accessed with mongoose.
+---
 
-## Quick start guide
+## 👥 Team Members
 
-First, clone the project:
+| Name | GitHub Profile |
+|------|----------------|
+| Hovan Rojas Ignacio | <a href="https://github.com/HovanRojasIgnacio"><img src="https://img.shields.io/badge/UO295341-HovanRojasIgnacio-blue"></a> |
+| Adrián Martínez Fuentes | <a href="https://github.com/adrianmfuentes"><img src="https://img.shields.io/badge/UO295454-adrianmfuentes-green"></a> |
+| Carlos Fernández Martínez |	<a href="https://github.com/carlosfernandezmartinez"><img src="https://img.shields.io/badge/UO293564-carlosfernandezmartinez-red"></a> |
+| David Pedregal Ribas | 	<a href="https://github.com/DavidPedregal"><img src="https://img.shields.io/badge/UO293738-DavidPedregal-orange"></a> |
+| Francisco Cimadevilla Cuanda | <a href="https://github.com/franCimadevilla"><img src="https://img.shields.io/badge/UO294768-franCimadevilla-yellow"></a> |
+| Sergio Riesco Collar | <a href="https://github.com/sergio-riesco"><img src="https://img.shields.io/badge/UO294343-sergio--riesco-purple"></a> |
+| Pelayo Sierra Lobo | <a href="https://github.com/pelayosl"><img src="https://img.shields.io/badge/UO294217-pelayosl-cyan"></a> |
 
-```git clone git@github.com:arquisoft/wichat_en2b.git```
+---
 
-### LLM API key configuration
+## 🏗️ Architecture & Components
 
-In order to communicate with the LLM integrated in this project, we need to setup an API key. Two integrations are available in this propotipe: gemini and empaphy. The API key provided must match the LLM provider used.
+The system employs a microservices architecture coordinated by an API Gateway:
 
-We need to create two .env files. 
-- The first one in the llmservice directory (for executing the llmservice using ```npm start```). The content of this .env file should be as follows:
-```
-LLM_API_KEY="YOUR-API-KEY"
-```
-- The second one located in the root of the project (along the docker-compose.yml). This .env file is used for the docker-compose when launching the app with docker. The content of this .env file should be as follows:
-```
-LLM_API_KEY="YOUR-API-KEY"
-```
+- **Gateway Service**: Acts as the primary entry point, routing client requests to appropriate backend services, managing CORS, providing Prometheus metrics, health checks, and serving API documentation via Swagger/OpenAPI.
 
-Note that these files must NOT be uploaded to the github repository (they are excluded in the .gitignore).
+- **User Service**: Handles all user-related operations, including CRUD, profile updates (username, password, picture URL, 2FA secret), profile picture management (upload/retrieval), and fetching users by ID or username. Utilizes JWT middleware for authentication.
 
-An extra configuration for the LLM to work in the deployed version of the app is to create the same .env file (with the LLM_API_KEY variable) in the virtual machine (in the home of the azureuser directory).
+- **Auth Service**: Manages authentication flows such as login/registration (with password validation), JWT generation/verification, and optional Two-Factor Authentication (2FA) setup & validation via `otplib` and `qrcode`.
 
+- **Group Service**: Facilitates group management, including creation, finding groups (all, user's joined group, by name), updating names, deletion (owner restricted), joining/leaving, and fetching data for group leaderboards by coordinating with the Game Service.
 
-### Launching Using docker
-For launching the propotipe using docker compose, just type:
-```docker compose --profile dev up --build```
+- **Game Service**: Core logic for the quiz game:
+  - Manages quiz topics/categories (fetching, adding via Wikidata queries).
+  - Retrieves questions for gameplay (randomized, with fake answers).
+  - Validates user answers.
+  - Stores game results (points, time, etc.).
+  - Calculates and serves user statistics (global/subject) and leaderboards.
 
-### Component by component start
-First, start the database. Either install and run Mongo or run it using docker:
+- **LLM Service**: Interfaces with external Large Language Models (e.g., Google Gemini, Empathy AI) via the `/askllm` endpoint. Generates contextual hints for quiz questions based on conversation history and game data, avoiding giving away the direct answer.
 
-```docker run -d -p 27017:27017 --name=my-mongo mongo:latest```
+- **Webapp**: React web application that uses the Gateway Service to allow basic login and new user features, and provides the user interface for the quiz game and other functionalities.
 
-You can use also services like Mongo Altas for running a Mongo database in the cloud.
+User, Auth, Group and Game services share a MongoDB database accessed with Mongoose.
 
-Now launch the auth, user and gateway services. Just go to each directory and run `npm install` followed by `npm start`.
+---
 
-Lastly, go to the webapp directory and launch this component with `npm install` followed by `npm start`.
+## ✨ Key Features
 
-After all the components are launched, the app should be available in localhost in port 3000.
+- Secure User Registration & Login (bcrypt hashing).
+- JWT-based Authentication for API routes.
+- Optional Two-Factor Authentication (2FA).
+- User Profile Management (Username, Password, Profile Picture).
+- Group Creation, Joining, Leaving, and Management.
+- Dynamic Quiz Gameplay (Topic Selection, Question Fetching, Answer Validation).
+- AI-Powered In-Game Hints.
+- Tracking and Viewing Personal Game Statistics.
+- User & Group Leaderboards.
+- API Documentation via Swagger/OpenAPI (`/api-doc`).
+- Monitoring via Prometheus Metrics (`/metrics`) & Health Checks (`/health`).
 
-## Deployment
-For the deployment, we have several options. The first and more flexible is to deploy to a virtual machine using SSH. This will work with any cloud service (or with our own server). Other options include using the container services that all the cloud services provide. This means, deploying our Docker containers directly. Here I am going to use the first approach. I am going to create a virtual machine in a cloud service and after installing docker and docker-compose, deploy our containers there using GitHub Actions and SSH.
+---
 
-### Machine requirements for deployment
-The machine for deployment can be created in services like Microsoft Azure or Amazon AWS. These are in general the settings that it must have:
+## 🛠️ Tech Stack
 
-- Linux machine with Ubuntu > 20.04 (the recommended is 24.04).
-- Docker installed.
-- Open ports for the applications installed (in this case, ports 3000 for the webapp and 8000 for the gateway service).
+- **Backend**: Node.js, Express.js
+- **Database**: MongoDB (with Mongoose ODM)
+- **Frontend**: React
+- **Authentication**: JWT (`jsonwebtoken`), bcrypt
+- **2FA**: otplib, qrcode
+- **API Gateway**: `http-proxy-middleware`
+- **Communication**: Axios / Fetch API
+- **External APIs**: Wikidata, Google Gemini, Empathy AI
+- **Monitoring**: `express-prom-bundle` (Prometheus)
+- **API Docs**: Swagger UI (`swagger-ui-express`), YAML
+- **Security**: Helmet
+- **Image Processing**: Sharp
 
-Once you have the virtual machine created, you can install **docker** using the following instructions:
+---
 
-```ssh
-sudo apt update
-sudo apt install apt-transport-https ca-certificates curl software-properties-common
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"
-sudo apt update
-sudo apt install docker-ce
-sudo usermod -aG docker ${USER}
-```
+## ⚙️ Setup & Deployment
 
-### Continuous delivery (GitHub Actions)
-Once we have our machine ready, we could deploy by hand the application, taking our docker-compose file and executing it in the remote machine. In this repository, this process is done automatically using **GitHub Actions**. The idea is to trigger a series of actions when some condition is met in the repository. The precondition to trigger a deployment is going to be: "create a new release". The actions to execute are the following:
+### Local Setup
 
-![imagen](https://github.com/user-attachments/assets/7ead6571-0f11-4070-8fe8-1bbc2e327ad2)
+1. **Clone the Repository**:
+   ```bash
+   git clone https://github.com/Arquisoft/wichat_en2b.git
+   ```
 
+2. **Install Dependencies**:
+   Navigate to each service directory and run:
+   ```bash
+   npm install
+   ```
 
-As you can see, unitary tests of each module and e2e tests are executed before pushing the docker images and deploying them. Using this approach we avoid deploying versions that do not pass the tests.
+3. **Set Up Environment Variables**:
+   Create a `.env` file in each service directory with the necessary environment variables.
 
-The deploy action is the following:
+4. **Start MongoDB**:
+   Ensure MongoDB is running locally or use a cloud provider like MongoDB Atlas.
 
-```yml
-deploy:
-    name: Deploy over SSH
-    runs-on: ubuntu-latest
-    needs: [docker-push-userservice,docker-push-authservice,docker-push-llmservice,docker-push-gatewayservice,docker-push-webapp]
-    steps:
-    - name: Deploy over SSH
-      uses: fifsky/ssh-action@master
-      with:
-        host: ${{ secrets.DEPLOY_HOST }}
-        user: ${{ secrets.DEPLOY_USER }}
-        key: ${{ secrets.DEPLOY_KEY }}
-        command: |
-          wget https://raw.githubusercontent.com/arquisoft/wichat_en2b/master/docker-compose.yml -O docker-compose.yml
-          docker compose --profile prod down
-          docker compose --profile prod up -d --pull always
-```
+5. **Run Services**:
+   Start each service individually with:
+   ```bash
+   npm start
+   ```
+   Or use Docker Compose:
+   ```bash
+   docker compose --profile dev up --build
+   ```
 
-This action uses three secrets that must be configured in the repository:
-- DEPLOY_HOST: IP of the remote machine.
-- DEPLOY_USER: user with permission to execute the commands in the remote machine.
-- DEPLOY_KEY: key to authenticate the user in the remote machine.
+## 🧪 Testing & Quality Assurance
 
-Note that this action logs in the remote machine and downloads the docker-compose file from the repository and launches it. Obviously, previous actions have been executed which have uploaded the docker images to the GitHub Packages repository.
+- **CI/CD**: GitHub Actions automate builds and tests.
+- **Code Quality**: SonarCloud and CodeScene integration for code smells, maintainability metrics, and coverage tracking.
+- **Load Testing**: Gatling simulations available in `gatling` folder.
+
+---
+
+## 📊 Monitoring & Observability
+
+- **Prometheus Metrics**: Available at `/metrics` endpoints.
+- **Health Checks**: Available at `/health` endpoints.
+- **Swagger/OpenAPI**: Accessible at `/api-doc` endpoints.
+
+---
+
+## 📈 Performance Testing
+
+- **Gatling**: Load testing included for performance evaluation under stress.
+
+---
+
+## 🌐 Live Deployment
+
+The application is deployed at: [wichat.ddns.net](http://wichat.ddns.net)
+
+---
