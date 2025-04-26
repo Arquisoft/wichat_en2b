@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
-import React, { useState, useEffect } from "react"
-import { useRouter } from "next/router"
-import { fetchWithAuth } from "../../../utils/api-fetch-auth"
-import io from "socket.io-client"
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/router";
+import { fetchWithAuth } from "../../../utils/api-fetch-auth";
+import io from "socket.io-client";
 import {
     Box,
     Container,
@@ -21,224 +21,246 @@ import {
     CircularProgress,
 } from "@mui/material";
 import InGameChat from "@/components/game/InGameChat";
-import "../../../styles/wihoot/PlayerView.css"
+import "../../../styles/wihoot/PlayerView.css";
 import "../../../styles/QuestionGame.css";
 
-const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://localhost:8000';
+const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || "http://localhost:8000";
 
 export default function PlayerView() {
-    const router = useRouter()
-    const { code, playerId } = router.query
+    const router = useRouter();
+    const { code, playerId } = router.query;
 
-    const [socket, setSocket] = useState(null)
-    const [username, setUsername] = useState("")
-    const [isGuest, setIsGuest] = useState(false)
-    const [sessionStatus, setSessionStatus] = useState("waiting")
-    const [players, setPlayers] = useState([])
-    const [currentQuestionIndex, setCurrentQuestionIndex] = useState(-1)
-    const [quizData, setQuizData] = useState(null)
-    const [quizMetaData, setQuizMetaData] = useState(null)
-    const [selectedOption, setSelectedOption] = useState(null)
-    const [isCorrect, setIsCorrect] = useState(false)
-    const [correctAnswer, setCorrectAnswer] = useState(null)
-    const [hasAnswered, setHasAnswered] = useState(false)
-    const [startTime, setStartTime] = useState(null)
-    const [error, setError] = useState("")
-    const [isLoading, setIsLoading] = useState(true)
-    const [waitingForNext, setWaitingForNext] = useState(false)
-
+    const [socket, setSocket] = useState(null);
+    const [username, setUsername] = useState("");
+    const [isGuest, setIsGuest] = useState(false);
+    const [sessionStatus, setSessionStatus] = useState("waiting");
+    const [players, setPlayers] = useState([]);
+    const [currentQuestionIndex, setCurrentQuestionIndex] = useState(-1);
+    const [quizData, setQuizData] = useState(null);
+    const [quizMetaData, setQuizMetaData] = useState(null);
+    const [selectedOption, setSelectedOption] = useState(null);
+    const [isCorrect, setIsCorrect] = useState(false);
+    const [correctAnswer, setCorrectAnswer] = useState(null);
+    const [hasAnswered, setHasAnswered] = useState(false);
+    const [startTime, setStartTime] = useState(null);
+    const [error, setError] = useState("");
+    const [isLoading, setIsLoading] = useState(true);
+    const [waitingForNext, setWaitingForNext] = useState(false);
+    const [answers, setAnswers] = useState([]);
+    const [hasSavedGame, setHasSavedGame] = useState(false);
 
     // Initialize socket connection and fetch session data
     useEffect(() => {
-        if (!code || !playerId) return
+        if (!code || !playerId) return;
 
         const fetchUserData = async () => {
             if (playerId.startsWith("guest_")) {
-                setIsGuest(true)
-                return
+                setIsGuest(true);
+                setUsername(`Guest_${playerId}`);
+                return;
             }
 
             try {
-                const response = await fetchWithAuth("/token/username")
+                const response = await fetchWithAuth("/token/username");
                 if (response) {
-                    const userData = response
-                    setUsername(userData.username)
-                    return userData
+                    const userData = response;
+                    setUsername(userData.username);
+                    return userData;
                 } else {
-                    throw new Error("Failed to get user data")
+                    throw new Error("Failed to get user data");
                 }
             } catch (err) {
-                setError("Authentication error. Please log in again.")
-                console.error(err)
-                return null
+                setError("Authentication error. Please log in again.");
+                console.error(err);
+                return null;
             }
-        }
+        };
 
         const fetchSessionData = async () => {
             try {
-                const response = await fetchWithAuth(`/shared-quiz/${code}/status`)
+                const response = await fetchWithAuth(`/shared-quiz/${code}/status`);
                 if (response) {
-                    const sessionData = response
-                    setSessionStatus(sessionData.status)
-                    setPlayers(sessionData.players)
-                    setCurrentQuestionIndex(sessionData.currentQuestionIndex)
+                    const sessionData = response;
+                    setSessionStatus(sessionData.status);
+                    setPlayers(sessionData.players);
+                    setCurrentQuestionIndex(sessionData.currentQuestionIndex);
 
-                    const player = sessionData.players.find((p) => p.id === playerId)
+                    const player = sessionData.players.find((p) => p.id === playerId);
                     if (player) {
-                        setUsername(player.username)
-                        setIsGuest(player.isGuest)
+                        setUsername(player.username);
+                        setIsGuest(player.isGuest);
                     }
 
-                    return sessionData
+                    return sessionData;
                 } else {
-                    throw new Error("Failed to fetch session data")
+                    throw new Error("Failed to fetch session data");
                 }
             } catch (err) {
-                setError("Failed to load session data")
-                console.error(err)
-                return null
+                setError("Failed to load session data");
+                console.error(err);
+                return null;
             }
-        }
+        };
 
         const fetchQuizData = async (sessionData) => {
-            if (!sessionData) return
+            if (!sessionData) return;
 
             try {
-                const response = await fetchWithAuth(`/internal/quizdata/${code}`)
+                const response = await fetchWithAuth(`/internal/quizdata/${code}`);
                 if (response) {
-                    const quiz = response
-                    setQuizData(quiz.quizData)
-                    setQuizMetaData(quiz.quizMetaData)
+                    const quiz = response;
+                    setQuizData(quiz.quizData);
+                    setQuizMetaData(quiz.quizMetaData);
                 } else {
-                    throw new Error("Failed to fetch quiz data")
+                    throw new Error("Failed to fetch quiz data");
                 }
             } catch (err) {
-                setError("Failed to load quiz data")
-                console.error(err)
+                setError("Failed to load quiz data");
+                console.error(err);
             }
-        }
+        };
 
         const initializeSocket = () => {
-            const newSocket = io(process.env.SOCKET_SERVER || "http://localhost:8006")
+            const newSocket = io(process.env.SOCKET_SERVER || "http://localhost:8006");
 
             newSocket.on("connect", () => {
-                console.log("Socket connected")
-
+                console.log("Socket connected");
                 newSocket.emit("join-session", {
                     code,
                     playerId,
                     username,
                     isGuest,
-                })
-            })
+                });
+            });
 
             newSocket.on("joined-session", (data) => {
-                fetchSessionData()
-            })
+                fetchSessionData();
+            });
 
             newSocket.on("player-joined", (data) => {
-                fetchSessionData()
-            })
+                fetchSessionData();
+            });
 
             newSocket.on("player-left", (data) => {
-                fetchSessionData()
-            })
+                fetchSessionData();
+            });
 
             newSocket.on("session-started", (data) => {
-                setSessionStatus("active")
-                setCurrentQuestionIndex(data.currentQuestionIndex)
-                setStartTime(Date.now())
-                setHasAnswered(false)
-                setSelectedOption(null)
-                setWaitingForNext(false)
-            })
+                setSessionStatus("active");
+                setCurrentQuestionIndex(data.currentQuestionIndex);
+                setStartTime(Date.now());
+                setHasAnswered(false);
+                setSelectedOption(null);
+                setWaitingForNext(false);
+            });
 
             newSocket.on("question-changed", (data) => {
-                setCurrentQuestionIndex(data.currentQuestionIndex)
-                setStartTime(Date.now())
-                setHasAnswered(false)
-                setSelectedOption(null)
-                setWaitingForNext(false)
-            })
+                setCurrentQuestionIndex(data.currentQuestionIndex);
+                setStartTime(Date.now());
+                setHasAnswered(false);
+                setSelectedOption(null);
+                setWaitingForNext(false);
+            });
 
             newSocket.on("waiting-for-next", () => {
-                setWaitingForNext(true)
-            })
+                setWaitingForNext(true);
+            });
 
             newSocket.on("session-ended", (data) => {
-                setSessionStatus("finished")
-                setPlayers(data.players)
-                setWaitingForNext(false)
-            })
+                setSessionStatus("finished");
+                setPlayers(data.players);
+                setWaitingForNext(false);
+            });
 
             newSocket.on("score-updated", (data) => {
-                setPlayers(data.players)
-            })
+                setPlayers(data.players);
+            });
 
             newSocket.on("error", (data) => {
-                setError(data.message)
-            })
+                setError(data.message);
+            });
 
-            setSocket(newSocket)
-
-            return newSocket
-        }
+            setSocket(newSocket);
+            return newSocket;
+        };
 
         const setup = async () => {
-            setIsLoading(true)
+            setIsLoading(true);
             try {
-                await fetchUserData()
-                const sessionData = await fetchSessionData()
-                await fetchQuizData(sessionData)
-                const newSocket = initializeSocket()
-
+                await fetchUserData();
+                const sessionData = await fetchSessionData();
+                await fetchQuizData(sessionData);
+                const newSocket = initializeSocket();
                 return () => {
-                    if (newSocket) newSocket.disconnect()
-                }
+                    if (newSocket) newSocket.disconnect();
+                };
             } finally {
-                setIsLoading(false)
+                setIsLoading(false);
             }
-        }
+        };
 
-        const cleanup = setup()
+        const cleanup = setup();
         return () => {
             if (cleanup && typeof cleanup === "function") {
-                cleanup()
+                cleanup();
             }
+        };
+    }, [code, playerId, username, isGuest]);
+
+    // Save game data when quiz ends
+    useEffect(() => {
+        if (sessionStatus === "finished" && !hasSavedGame && !isGuest) {
+            saveGameData();
+            setHasSavedGame(true);
         }
-    }, [code, playerId, username, isGuest])
+    }, [sessionStatus, hasSavedGame, isGuest]);
 
     const getCurrentQuestion = () => {
         if (!quizData || currentQuestionIndex < 0 || currentQuestionIndex >= quizData.length) {
-            return null
+            return null;
         }
-        return quizData[currentQuestionIndex]
-    }
+        return quizData[currentQuestionIndex];
+    };
 
     const handleAnswerSubmit = async (optionIndex) => {
-        if (hasAnswered) return
+        if (hasAnswered) return;
 
-        const currentQuestion = getCurrentQuestion()
-        if (!currentQuestion) return
+        const currentQuestion = getCurrentQuestion();
+        if (!currentQuestion) return;
 
-        setSelectedOption(optionIndex)
-        setHasAnswered(true)
+        setSelectedOption(optionIndex);
+        setHasAnswered(true);
 
-        const timeToAnswer = Date.now() - startTime
+        const timeToAnswer = (Date.now() - startTime) / 1000; // Convert to seconds
         const validateOutput = await fetch(`${apiEndpoint}/question/validate`, {
-            method: 'POST',
+            method: "POST",
             headers: {
-                'Content-Type': 'application/json',
+                "Content-Type": "application/json",
             },
             body: JSON.stringify({
                 question_id: currentQuestion.question_id,
-                selected_answer: currentQuestion.answers[optionIndex]
+                selected_answer: currentQuestion.answers[optionIndex],
             }),
-        })
-        const { isCorrect, correctAnswer } = await validateOutput.json()
-        setIsCorrect(isCorrect)
-        setCorrectAnswer(correctAnswer)
-        
+        });
+        const { isCorrect, correctAnswer } = await validateOutput.json();
+        setIsCorrect(isCorrect);
+        setCorrectAnswer(correctAnswer);
+
+        // Calculate points (same as backend: 1000 - timeToAnswer, min 100)
+        const points = isCorrect ? Math.max(1000 - Math.floor(timeToAnswer), 100) : 0;
+
+        // Store answer
+        setAnswers((prev) => [
+            ...prev,
+            {
+                questionId: currentQuestion.question_id,
+                answerId: optionIndex,
+                isCorrect,
+                timeSpent: timeToAnswer,
+                points,
+            },
+        ]);
+
         try {
             await fetch(`${apiEndpoint}/shared-quiz/${code}/answer`, {
                 method: "POST",
@@ -250,18 +272,66 @@ export default function PlayerView() {
                     questionId: currentQuestion.question_id,
                     answerId: optionIndex,
                     isCorrect,
-                    timeToAnswer
+                    timeToAnswer,
                 }),
-            })
+            });
 
-            const sessionData = await fetchWithAuth(`/shared-quiz/${code}/status`)
+            const sessionData = await fetchWithAuth(`/shared-quiz/${code}/status`);
             if (sessionData) {
-                setPlayers(sessionData.players)
+                setPlayers(sessionData.players);
             }
         } catch (err) {
-            console.error("Failed to submit answer or fetch session data:", err)
+            console.error("Failed to submit answer or fetch session data:", err);
         }
-    }
+    };
+
+    const saveGameData = async () => {
+        if (isGuest) {
+            console.log("Skipping game data save for guest user");
+            return;
+        }
+
+        const token = document.cookie
+            .split("; ")
+            .find((row) => row.startsWith("token="))
+            ?.split("=")[1];
+
+        if (!token) {
+            console.error("No token found, cannot save game data");
+            return;
+        }
+
+        try {
+            const player = players.find((p) => p.id === playerId);
+            const pointsGain = player ? player.score : 0;
+            const numberOfQuestions = answers.length;
+            const numberCorrectAnswers = answers.filter((a) => a.isCorrect).length;
+            const totalTime = answers.reduce((acc, a) => acc + a.timeSpent, 0);
+
+            const response = await fetch(`${apiEndpoint}/game`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    subject: quizMetaData?.subject || quizMetaData?.quizName || "Unknown",
+                    points_gain: pointsGain,
+                    number_of_questions: numberOfQuestions,
+                    number_correct_answers: numberCorrectAnswers,
+                    total_time: totalTime,
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to save game data");
+            }
+
+            console.log("Game data saved successfully");
+        } catch (err) {
+            console.error("Error saving game data:", err);
+        }
+    };
 
     const renderWaitingRoom = () => (
         <Card className="player-view-card">
@@ -294,7 +364,7 @@ export default function PlayerView() {
                 </Typography>
             </CardContent>
         </Card>
-    )
+    );
 
     const renderLeaderboardView = () => (
         <Card className="player-view-card">
@@ -347,11 +417,11 @@ export default function PlayerView() {
                 </Typography>
             </CardContent>
         </Card>
-    )
+    );
 
     const renderActiveQuiz = () => {
-        const currentQuestion = getCurrentQuestion()
-        const player = players.find((p) => p.id === playerId)
+        const currentQuestion = getCurrentQuestion();
+        const player = players.find((p) => p.id === playerId);
 
         if (!currentQuestion) {
             return (
@@ -390,7 +460,7 @@ export default function PlayerView() {
                         </Box>
                     </Box>
                     <Typography variant="h6" className="question-title" mb={2}>
-                        {quizMetaData[0].question || "Untitled Quiz"}
+                        {quizMetaData?.[0]?.question || "Untitled Quiz"}
                     </Typography>
                     <Box className="image-box" mb={3}>
                         <img
@@ -424,7 +494,6 @@ export default function PlayerView() {
                             </Grid>
                         ))}
                     </Grid>
-
                     <InGameChat initialMessages={[]} question={currentQuestion} />
                 </CardContent>
             </Card>
