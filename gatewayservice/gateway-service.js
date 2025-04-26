@@ -22,7 +22,9 @@ const serviceUrls = {
 // CORS setup
 const publicCors = cors({ origin: '*', methods: ['GET', 'POST', 'PATCH', 'OPTIONS', 'DELETE', 'PUT'] });
 
-app.use(express.json());
+app.use(express.json({ limit: '2MB' }));
+app.use(express.urlencoded({ extended: true, limit: '2MB' }));
+
 app.use(helmet.hidePoweredBy());
 
 const metricsMiddleware = promBundle({
@@ -66,6 +68,14 @@ const forwardRequest = async (service, endpoint, req, res) => {
       },
       body: req.method !== 'GET' ? JSON.stringify(req.body) : undefined,
     });
+
+    // 413 (Payload Too Large)
+    if (response.status === 413) {
+      return res.status(413).json({
+        error: "The image is too large. Maximum allowed size is 2MB."
+      });
+    }
+
     // Get the response body (if any) and content type
     const contentType = response.headers.get('Content-Type');
     let responseBody;
@@ -345,6 +355,17 @@ if (fs.existsSync(openapiPath)) {
 } else {
   console.log('OpenAPI documentation not configured. YAML file missing.');
 }
+
+app.use((err, req, res, next) => {
+  if (err && (err.type === 'entity.too.large' || err.name === 'PayloadTooLargeError')) {
+    console.error('Error: Payload too large');
+    return res.status(413).json({
+      error: "The image is too large. Maximum allowed size is 2MB."
+    });
+  } else {
+    next(err);
+  }
+});
 
 // Start server
 const server = app.listen(port, () => console.log(`Gateway running at http://localhost:${port}`));

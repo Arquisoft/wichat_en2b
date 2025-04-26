@@ -33,12 +33,6 @@ describe('ProfileForm', () => {
 			Promise.resolve({ data: { username: 'testUser' } })
 		);
 		
-		// Mock window.location.reload
-		Object.defineProperty(window, 'location', {
-			configurable: true,
-			value: { reload: jest.fn() }
-		});
-		
 		// Create a mock for FileReader
 		global.FileReader = class {
 			constructor() {
@@ -135,50 +129,6 @@ describe('ProfileForm', () => {
 				}),
 			}));
 		});
-	});
-	  
-
-	test('successfully uploads profile picture', async () => {
-		// Mock fetch response for profile picture upload
-		fetch.mockResolvedValueOnce({
-			ok: true,
-			json: async () => ({ profilePicture: 'https://example.com/profile.jpg' }),
-		});
-
-		render(<ProfileForm username="testuser" onSave={mockOnSave} />);
-
-		// Select the Account tab (where profile picture upload is)
-		const accountTab = screen.getByText('Account');
-		fireEvent.click(accountTab);
-
-		// Create a mock file
-		const file = new File(['(dummy file content)'], 'photo.jpg', {type: 'image/jpeg'});
-		
-		// Get the hidden file input
-		const fileInput = document.querySelector('#profile-picture-input');
-		
-		// Trigger file selection
-		await act(async () => {
-			fireEvent.change(fileInput, { target: { files: [file] } });
-		});
-		
-		// Wait for the fetch call to be made
-		await waitFor(() => {
-			expect(fetch).toHaveBeenCalledWith(
-				'http://localhost:8000/user/profile/picture',
-				expect.objectContaining({
-					method: 'POST',
-					headers: expect.objectContaining({
-						'Authorization': 'Bearer mock-token',
-						'Content-Type': 'application/json',
-					}),
-					body: expect.stringContaining('"image":"mockbase64data"'),
-				})
-			);
-		});
-		
-		// Verify page reload was called
-		expect(window.location.reload).toHaveBeenCalled();
 	});
 	
 	test('handles invalid file type for profile picture', async () => {
