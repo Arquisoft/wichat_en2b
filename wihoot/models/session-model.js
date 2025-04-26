@@ -10,6 +10,9 @@ const playerSchema = new mongoose.Schema({
             answerId: String,
             isCorrect: Boolean,
             timeToAnswer: Number,
+            answer: String,
+            rightAnswer: String
+
         },
     ],
     total_time: { type: Number, default: 0 }
