@@ -93,7 +93,6 @@ const Navbar = ({ username = "Guest", profilePicture }) => {
                             startIcon={<ConnectWithoutContactOutlinedIcon />}
                             className="joingame"
                             aria-label="Join Game"
-                            size="small"
                         >
                             Join Game
                         </Button>
@@ -108,7 +107,6 @@ const Navbar = ({ username = "Guest", profilePicture }) => {
                             startIcon={<PlayCircleFilledWhiteOutlinedIcon />}
                             className="creategame"
                             aria-label="Start Game Session"
-                            size="small"
                             >
                             Start Session
                             </Button>

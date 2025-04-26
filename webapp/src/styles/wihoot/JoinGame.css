@@ -6,7 +6,10 @@ body .join-game-container {
   justify-content: center;
   align-items: center;
 }
-
+.back-button {
+  min-width: 120px !important;
+  margin-top: 16px !important;
+}
 body .join-game-card {
   border-radius: 16px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
