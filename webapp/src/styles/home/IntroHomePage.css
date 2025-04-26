@@ -126,7 +126,7 @@ body .scroll-button {
     transition: all 0.3s ease;
     margin-top: 2rem;
 }
-  
+
 body .scroll-button:hover {
     opacity: 1;
     transform: translateY(3px);
@@ -134,7 +134,8 @@ body .scroll-button:hover {
 
 /* Features Section */
 body .features-section {
-    height: 90vh;
+    min-height: 90vh;
+    height: auto;
     padding: 6rem 0;
     background-color: #f8f9fa;
 }
@@ -196,14 +197,11 @@ body .feature-description {
 /* Bottom CTA Section */
 body .bottom-cta-section {
     padding: 5rem 0;
-    background: linear-gradient(180deg, 
-                #ffffff 0%, 
-                #bacdec 50%, 
-                #ffffff 100%);
+    background: linear-gradient(180deg, #ffffff 0%, #bacdec 50%, #ffffff 100%);
 }
 
 body .cta-paper {
-padding: 3rem;
+    padding: 3rem;
     text-align: center;
     border-radius: 16px;
     background: white;
@@ -244,79 +242,66 @@ body .cta-secondary-button {
     border-radius: 50px;
     border-width: 2px;
 }
-  
-/* Dialog */
-body .dialog-container {
-    border-radius: 16px;
-    padding: 1rem;
-}
-
-body .dialog-title {
-    text-align: center;
-    font-weight: 600;
-    color: #333;
-}
-
-body .dialog-content {
-    padding: 1.5rem 2rem;
-    text-align: center;
-}
-
-body .dialog-actions {
-    padding: 1rem 1.5rem 1.5rem;
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 1rem;
-}
-
-body .dialog-button {
-    border-radius: 50px;
-    padding: 0.5rem 1.5rem;
-}
 
 /* Responsive Adjustments */
+@media (max-width: 1280px) {
+    body .hero-content {
+        padding: 3rem 1rem;
+    }
+    body .hero-title {
+        font-size: 3.5rem;
+    }
+}
+
 @media (max-width: 960px) {
     body .hero-title {
-      font-size: 3rem;
+        font-size: 3rem;
     }
-  
     body .hero-subtitle {
-      font-size: 1.25rem;
+        font-size: 1.25rem;
     }
-  
+    body .features-section {
+        padding: 4rem 0;
+    }
+    body .features-grid {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
     body .feature-card {
-      padding: 2rem 1.5rem;
+        width: 100%;
+        max-width: 500px;
+        margin-bottom: 2rem;
     }
 }
-  
+
 @media (max-width: 600px) {
     body .hero-title {
-      font-size: 2.5rem;
+        font-size: 2.5rem;
     }
-  
     body .hero-subtitle {
-      font-size: 1.1rem;
+        font-size: 1.1rem;
     }
-  
     body .play-now-button {
-      padding: 0.7rem 2rem;
-      font-size: 1.1rem;
+        padding: 0.7rem 2rem;
+        font-size: 1.1rem;
     }
-  
     body .auth-buttons {
-      flex-direction: column;
-      width: 100%;
-      max-width: 250px;
-      margin: 0 auto;
+        flex-direction: column;
+        width: 100%;
+        max-width: 250px;
+        margin: 0 auto;
     }
-  
     body .auth-button {
-      width: 100%;
+        width: 100%;
     }
-  
+    body .hero-buttons {
+        gap: 1.5rem;
+    }
+    body .scroll-button {
+        margin-top: 1.5rem;
+    }
     body .cta-paper {
-      padding: 2rem 1.5rem;
+        padding: 2rem 1.5rem;
     }
 }
-  
