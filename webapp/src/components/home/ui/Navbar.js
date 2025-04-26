@@ -99,8 +99,9 @@ const Navbar = ({ username = "Guest", profilePicture }) => {
                         </Button>
 
                         {/*Create Game Code*/}
-                        <Button
-                            id={'navbar-create-game-button'}
+                        { isGuest && (
+                            <Button
+                                id={'navbar-create-game-button'}
                             onClick={handleCreateCodeGame}
                             variant={"contained"}
                             color="primary"
@@ -108,9 +109,10 @@ const Navbar = ({ username = "Guest", profilePicture }) => {
                             className="creategame"
                             aria-label="Start Game Session"
                             size="small"
-                        >
+                            >
                             Start Session
-                        </Button>
+                            </Button>
+                        )}
 
                     </Box>
 
