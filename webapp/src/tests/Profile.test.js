@@ -108,9 +108,10 @@ describe('ProfileForm', () => {
 		const editPasswordButton = await screen.findByRole("button", { name: /Edit Password/i });
 		await act(async () => { editPasswordButton.click(); });
 
-		const currentPasswordInput = screen.getByLabelText('Actual password');
-		const newPasswordInput = screen.getByLabelText('New password');
-		const confirmPasswordInput = screen.getByLabelText('Confirm new password');
+		const passwordInputs = screen.getAllByLabelText(/password/i, { selector: 'input[type="password"]' });
+		const currentPasswordInput = passwordInputs[0];
+		const newPasswordInput = passwordInputs[1];
+		const confirmPasswordInput = passwordInputs[2];
 		fireEvent.change(currentPasswordInput, { target: { value: 'oldPassword' } });
 		fireEvent.change(newPasswordInput, { target: { value: 'newPassword' } });
 		fireEvent.change(confirmPasswordInput, { target: { value: 'newPassword' } });
@@ -237,8 +238,7 @@ describe('ProfileForm', () => {
 		// Simulate a change in the input field
 		const editUsernameButton = await screen.findByRole("button", { name: /Edit Username/i });
 		await act(async () => { editUsernameButton.click(); });
-		const input = screen.getByLabelText('Username');
-		await fireEvent.change(input, { target: { value: 'oldUsername' } });
+		await fireEvent.change(screen.getByRole("textbox", { name: /Username/i }), { target: { value: 'oldUsername' } });
 	
 		// Find and click the "Save Username" button
 		const saveUsernameButton = await screen.findByRole("button", { name: /Save Username/i });
@@ -262,8 +262,7 @@ describe('ProfileForm', () => {
 		// Simulate a change in the input field
 		const editUsernameButton = await screen.findByRole("button", { name: /Edit Username/i });
 		await act(async () => { editUsernameButton.click(); });
-		const input = screen.getByLabelText('Username');
-		await fireEvent.change(input, { target: { value: '' } });
+		await fireEvent.change(screen.getByRole("textbox", { name: /Username/i }), { target: { value: '' } });
 	
 		// Find and click the "Save Username" button
 		const saveUsernameButton = await screen.findByRole("button", { name: /Save Username/i });
@@ -287,8 +286,7 @@ describe('ProfileForm', () => {
 		// Simulate a change in the input field
 		const editUsernameButton = await screen.findByRole("button", { name: /Edit Username/i });
 		await act(async () => { editUsernameButton.click(); });
-		const input = screen.getByLabelText('Username');
-		await fireEvent.change(input, { target: { value: 'us' } });
+		await fireEvent.change(screen.getByRole("textbox", { name: /Username/i }), { target: { value: 'us' } });
 	
 		// Find and click the "Save Username" button
 		const saveUsernameButton = await screen.findByRole("button", { name: /Save Username/i });
@@ -321,7 +319,7 @@ describe('ProfileForm', () => {
 		// Edit the username
 		const editUsernameButton = await screen.findByRole("button", { name: /Edit Username/i });
 		await act(async () => { editUsernameButton.click(); });
-		fireEvent.change(screen.getByLabelText('Username'), { target: { value: 'validNewUsername' } });
+		await fireEvent.change(screen.getByRole("textbox", { name: /Username/i }), { target: { value: 'validNewUsername' } });
 		
 		// Find and click the "Save Username" button
 		const saveUsernameButton = await screen.findByRole("button", { name: /Save Username/i });
@@ -353,10 +351,11 @@ describe('ProfileForm', () => {
 		// Simulate a change in the password fields
 		const editPasswordButton = await screen.findByRole("button", { name: /Edit Password/i });
 		await act(async () => { editPasswordButton.click(); });
-		const currentPasswordInput = screen.getByLabelText('Actual password');
-		const newPasswordInput = screen.getByLabelText('New password');
-		const confirmPasswordInput = screen.getByLabelText('Confirm new password');
-	
+		const passwordInputs = screen.getAllByLabelText(/password/i, { selector: 'input[type="password"]' });
+		const currentPasswordInput = passwordInputs[0];
+		const newPasswordInput = passwordInputs[1];
+		const confirmPasswordInput = passwordInputs[2];
+
 		// Update the new password fields without providing current password
 		await fireEvent.change(currentPasswordInput, { target: { value: '' } });
 		await fireEvent.change(newPasswordInput, { target: { value: 'newpassword123' } });
@@ -378,9 +377,10 @@ describe('ProfileForm', () => {
 		// Simulate a change in the password fields
 		const editPasswordButton = await screen.findByRole("button", { name: /Edit Password/i });
 		await act(async () => { editPasswordButton.click(); });
-		const currentPasswordInput = screen.getByLabelText('Actual password');
-		const newPasswordInput = screen.getByLabelText('New password');
-		const confirmPasswordInput = screen.getByLabelText('Confirm new password');
+		const passwordInputs = screen.getAllByLabelText(/password/i, { selector: 'input[type="password"]' });
+		const currentPasswordInput = passwordInputs[0];
+		const newPasswordInput = passwordInputs[1];
+		const confirmPasswordInput = passwordInputs[2];
 	
 		// Enter mismatched passwords
 		await fireEvent.change(currentPasswordInput, { target: { value: 'currentpassword' } });
@@ -403,9 +403,10 @@ describe('ProfileForm', () => {
 		// Simulate a change in the password fields
 		const editPasswordButton = await screen.findByRole("button", { name: /Edit Password/i });
 		await act(async () => { editPasswordButton.click(); });
-		const currentPasswordInput = screen.getByLabelText('Actual password');
-		const newPasswordInput = screen.getByLabelText('New password');
-		const confirmPasswordInput = screen.getByLabelText('Confirm new password');
+		const passwordInputs = screen.getAllByLabelText(/password/i, { selector: 'input[type="password"]' });
+		const currentPasswordInput = passwordInputs[0];
+		const newPasswordInput = passwordInputs[1];
+		const confirmPasswordInput = passwordInputs[2];
 	
 		// Enter a password that is too short
 		await fireEvent.change(currentPasswordInput, { target: { value: 'currentpassword' } });
@@ -431,7 +432,7 @@ describe('ProfileForm', () => {
 		// Simulate editing the username
 		const editUsernameButton = await screen.findByRole("button", { name: /Edit Username/i });
 		await act(async () => { editUsernameButton.click(); });
-		fireEvent.change(screen.getByLabelText('Username'), { target: { value: 'takenUsername' } });
+		await fireEvent.change(screen.getByRole("textbox", { name: /Username/i }), { target: { value: 'takenUsername' } });
 	
 		// Find and click the "Save Username" button
 		const saveUsernameButton = await screen.findByRole("button", { name: /Save Username/i });
@@ -516,7 +517,7 @@ describe('ProfileForm', () => {
 		// Edit the username
 		const editUsernameButton = await screen.findByRole("button", { name: /Edit Username/i });
 		await act(async () => { editUsernameButton.click(); });
-		fireEvent.change(screen.getByLabelText('Username'), { target: { value: 'takenUsername' } });
+		await fireEvent.change(screen.getByRole("textbox", { name: /Username/i }), { target: { value: 'takenUsername' } });
 		
 		// Find and click the "Save Username" button
 		const saveUsernameButton = await screen.findByRole("button", { name: /Save Username/i });
@@ -806,7 +807,7 @@ describe('ProfileForm', () => {
         // Edit username
         const editUsernameButton = await screen.findByRole("button", { name: /Edit Username/i });
         await act(async () => { editUsernameButton.click(); });
-        fireEvent.change(screen.getByLabelText('Username'), { target: { value: 'newUsername' } });
+        await fireEvent.change(screen.getByRole("textbox", { name: /Username/i }), { target: { value: 'newUsername' } });
         
         // Save username
         const saveUsernameButton = await screen.findByRole("button", { name: /Save Username/i });

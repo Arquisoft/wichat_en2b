@@ -30,6 +30,7 @@ const authenticateUser = async (req, res, next) => {
         try {
             decodedToken = jwt.verify(token, process.env.JWT_SECRET || 'testing-secret');
         } catch (err) {
+            console.error("Token verification error:", err);
             return res.status(401).json({ error: "Invalid or expired token" });
         }
 
@@ -156,8 +157,8 @@ router.delete('/users', authenticateUser, async (req, res) => {
             if (fs.existsSync(profilePicturePath)) {
                 try {
                     fs.unlinkSync(profilePicturePath);
-                } catch (err) {
-                    console.error(`Error deleting profile picture for ${user.username}`);
+                } catch (err) { // NOSONAR
+                    console.error(`Error deleting profile picture`);                  
                 }
             }
         }
