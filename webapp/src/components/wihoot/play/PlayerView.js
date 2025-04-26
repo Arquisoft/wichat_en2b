@@ -21,6 +21,7 @@ import {
   CircularProgress,
   LinearProgress,
 } from "@mui/material";
+import FinishResults from "@/components/wihoot/game/FinishResults";
 import InGameChat from "@/components/game/InGameChat";
 import "../../../styles/wihoot/PlayerView.css";
 import "../../../styles/QuestionGame.css";
@@ -376,14 +377,16 @@ export default function PlayerView() {
 
     // Store answer
     setAnswers((prev) => [
-      ...prev,
-      {
-        questionId: currentQuestion.question_id,
-        answerId: optionIndex,
-        isCorrect,
-        timeSpent: timeToAnswer,
-        points,
-      },
+        ...prev,
+        {
+            questionId: currentQuestion.question_id,
+            answerId: optionIndex,
+            isCorrect,
+            timeSpent: timeToAnswer,
+            points,
+            rightAnswer: correctAnswer,
+            answer: currentQuestion.answers[optionIndex]
+        },
     ]);
 
     try {
@@ -726,6 +729,14 @@ export default function PlayerView() {
                 ))}
             </List>
           )}
+
+        <FinishResults
+            answers={players.find(p=>p.id === playerId).answers}
+            score={players.find(p=>p.id === playerId).score}
+            subject={quizMetaData[0].category}
+        />
+
+
         </Box>
         <Button
           variant="contained"
