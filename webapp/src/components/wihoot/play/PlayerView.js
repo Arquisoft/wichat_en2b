@@ -672,7 +672,7 @@ export default function PlayerView() {
     return (
         <Container maxWidth="lg" sx={{ py: 8 }}>
             <Typography variant="h4" className="quiz-player-header">
-                Wihoot - {username}
+                WiHoot - {username}
             </Typography>
             {error && (
                 <Alert severity="error" sx={{ mb: 2 }}>

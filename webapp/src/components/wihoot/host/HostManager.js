@@ -39,6 +39,8 @@ export default function HostManager() {
     const [isLoading, setIsLoading] = useState(true);
     const [showLeaderboard, setShowLeaderboard] = useState(false);
 
+    const [validatedAnswers, setValidatedAnswers] = useState(null);
+
     // Timer hooks and ref
     const [timeLeft, setTimeLeft] = useState(null);
     const timerIntervalRef = useRef(null);
@@ -442,6 +444,33 @@ export default function HostManager() {
         </Card>
     );
 
+    // Get the right answer so the host can visualize it
+    useEffect(() => {
+        const validateAnswers = async () => {
+            const currentQuestion = getCurrentQuestion();
+            if (!currentQuestion) return;
+
+            try {
+                const response = await fetch(`${apiEndpoint}/question/validate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        question_id: currentQuestion.question_id,
+                        selected_answer: currentQuestion.answers[0] // cualquier opción es válida
+                    }),
+                });
+                const data = await response.json();
+                setValidatedAnswers(data);
+            } catch (error) {
+                console.error('Error validating answers:', error);
+            }
+        };
+
+        validateAnswers();
+    }, [currentQuestionIndex]);
+
     const renderActiveQuiz = () => {
         const currentQuestion = getCurrentQuestion();
 
@@ -484,53 +513,89 @@ export default function HostManager() {
                             className="quiz-image"
                         />
                     </Box>
-                    <List className="options-list">
-                        {currentQuestion.answers.map((option, index) => (
-                            <ListItem key={index} className="option-item">
-                                <ListItemText primary={option} />
-                            </ListItem>
-                        ))}
-                    </List>
-                    <Box mt={3} mb={3}>
-                        <Typography variant="h6">Leaderboard</Typography>
-                        {players.length === 0 ? (
-                            <Typography variant="body2" color="textSecondary">
-                                No players
-                            </Typography>
-                        ) : (
-                            <List className="leaderboard-list">
-                                {[...players]
-                                    .sort((a, b) => b.score - a.score)
-                                    .map((player, index) => (
-                                        <ListItem key={player.id} className="leaderboard-item">
-                                            <ListItemText
-                                                primary={`#${index + 1} ${player.username}`}
-                                                secondary={
-                                                    player.isGuest && (
-                                                        <Badge badgeContent="Guest" color="secondary" />
-                                                    )
-                                                }
-                                            />
-                                            <Typography variant="body1" fontWeight="bold">
-                                                {player.score}
-                                            </Typography>
-                                        </ListItem>
-                                    ))}
-                            </List>
-                        )}
-                    </Box>
-                    <Button
-                        variant="contained"
-                        color="primary"
-                        onClick={handleNextQuestion}
-                        className="action-button"
+                    {/* Side-by-side layout for options and leaderboard */}
+                    <Box
+                        sx={{
+                            display: "grid",
+                            gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
+                            gap: 3,
+                            mb: 3,
+                            alignItems: "stretch"
+                        }}
                     >
+                        {/* Options section */}
+                        <Box>
+                            <Typography variant="h6" mb={2} className="answer-options-title">
+                                Answer Options
+                            </Typography>
+                            <List
+                                className="options-list"
+                                sx={{
+                                    height: { xs: "auto", md: "300px" },
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    justifyContent: "center",
+                                }}
+                            >
+                                {currentQuestion.answers.map((option, index) => (
+                                    <ListItem
+                                        key={index}
+                                        className={`option-item ${
+                                            validatedAnswers ?
+                                                (option === validatedAnswers.correctAnswer ||
+                                                option === currentQuestion.answers[0] && validatedAnswers.isCorrect ?
+                                                    'correct' : 'incorrect') : ''
+                                        }`}
+                                    >
+                                        <ListItemText primary={option} />
+                                    </ListItem>
+                                ))}
+                            </List>
+                        </Box>
+
+                        {/* Leaderboard section */}
+                        <Box>
+                            <Typography variant="h6" mb={2} className="leaderboard-title">
+                                Leaderboard
+                            </Typography>
+                            {players.length === 0 ? (
+                                <Typography variant="body2" color="textSecondary">
+                                    No players
+                                </Typography>
+                            ) : (
+                                <List
+                                    className="leaderboard-list"
+                                    sx={{
+                                        height: { xs: "auto", md: "300px" },
+                                        maxHeight: "300px",
+                                        overflowY: "auto",
+                                    }}
+                                >
+                                    {[...players]
+                                        .sort((a, b) => b.score - a.score)
+                                        .map((player, index) => (
+                                            <ListItem key={player.id} className="leaderboard-item">
+                                                <ListItemText
+                                                    primary={`#${index + 1} ${player.username}`}
+                                                    secondary={player.isGuest && <Badge badgeContent="Guest" color="secondary" />}
+                                                />
+                                                <Typography variant="body1" fontWeight="bold">
+                                                    {player.score}
+                                                </Typography>
+                                            </ListItem>
+                                        ))}
+                                </List>
+                            )}
+                        </Box>
+                    </Box>
+
+                    <Button variant="contained" color="primary" onClick={handleNextQuestion} className="action-button">
                         {currentQuestionIndex + 1 < quiz?.quizData.length ? "Next Question" : "End Quiz"}
                     </Button>
                 </CardContent>
             </Card>
-        );
-    };
+        )
+    }
 
     const renderFinishedQuiz = () => (
         <Card className="host-manager-card">
@@ -622,7 +687,7 @@ export default function HostManager() {
     return (
         <Container maxWidth="lg" sx={{ py: 8 }}>
             <Typography variant="h4" className="quiz-player-header">
-                WiHoot
+                WiHoot - Private Session
             </Typography>
             {error && (
                 <Alert severity="error" sx={{ mb: 2 }}>
