@@ -65,6 +65,24 @@ router.get('/statistics/global', verifyToken, async (req, res) => {
     }
 });
 
+router.get('/statistics/recent-quizzes', verifyToken, async (req, res) => {
+    try {
+        const page = parseInt(req.query.page) || 0;
+        const limit = 5;
+        const retrievedQuizzes = await GameInfo.find({ user_id: req.user._id })
+            .sort({ _id: -1 })
+            .skip(page * limit)
+            .limit(limit+1);
+
+        const hasMoreQuizzes = retrievedQuizzes.length > limit;
+        const recentQuizzes = retrievedQuizzes.slice(0, limit);
+        res.json({ recentQuizzes, hasMoreQuizzes });
+    } catch (error) {
+        console.error('Error retrieving recent quizzes:', error);
+        res.status(500).json({ error: 'Error retrieving recent quizzes' });
+    }
+})
+
 // leaderboard
 router.get('/leaderboard', verifyToken, async (req, res) => {
     try {

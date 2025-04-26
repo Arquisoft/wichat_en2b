@@ -48,16 +48,17 @@ defineFeature(feature, test => {
         });
 
         then('I should see a list of games I have played, including passed and failed questions, times, and scores', async () => {
-            await page.waitForSelector('#total-score > div', {visible: true, timeout: 10000});
+            await page.waitForSelector('#total-score', {visible: true, timeout: 10000});
 
             console.log("🥒 Game Info Test Data: ", global.gameInfoTestData);
 
-            const tScore = await page.$eval('#total-score > div', el => el.textContent.trim());
+            const tScore = await page.$eval('#total-score .MuiTypography-h6', el => el.textContent.trim());
+
             const totalPoints = global.gameInfoTestData.reduce((sum, data) => sum + data.points_gain, 0) || undefined;
             console.log("🥒 Score text obtained: ", tScore, "Expected: ", totalPoints);
             expect(tScore).toBe(""+totalPoints+" points");
 
-            const tQuestions = await page.$eval('#total-questions > div', el => el.textContent.trim());
+            const tQuestions = await page.$eval('#total-questions .MuiTypography-h6', el => el.textContent.trim());
             const totalQ = global.gameInfoTestData.reduce((sum, data) => sum + data.number_of_questions, 0) || undefined;
             console.log("🥒 Number of Questions text obtained: ", tQuestions, "Expected: ", totalQ);
             expect(tQuestions).toBe(""+totalQ);

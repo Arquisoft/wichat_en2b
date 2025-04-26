@@ -26,7 +26,32 @@ const publicCors = cors({ origin: '*', methods: ['GET', 'POST', 'PATCH', 'OPTION
 
 app.use(express.json());
 app.use(helmet.hidePoweredBy());
-app.use(promBundle({ includeMethod: true }));
+
+const metricsMiddleware = promBundle({
+  includeMethod: true,
+  includePath: true,
+  includeStatusCode: true,
+  includeUp: true,
+  promClient: {
+    collectDefaultMetrics: {
+      timeout: 5000
+    }
+  },
+  customLabels: {
+    service: 'gateway-service'
+  },
+  percentiles: [0.5, 0.9, 0.95, 0.99]
+});
+
+app.use(metricsMiddleware);
+
+// Add to gateway-service.js where you configure your metrics
+app.get('/health-metrics', (req, res) => {
+  const healthStatus = 1; // 1 for healthy, 0 for unhealthy  
+  res.set('Content-Type', 'text/plain');
+  res.send(`# HELP gateway_health_status Service health status (1=up, 0=down) 
+    # TYPE gateway_health_status gauge gateway_health_status ${healthStatus}`);
+});
 
 // Health check
 app.get('/health', (req, res) => res.json({ status: 'OK' }));
@@ -69,7 +94,6 @@ const forwardRequest = async (service, endpoint, req, res) => {
     res.status(500).json({ error: 'Hubo un problema al procesar la solicitud' });
   }
 };
-
 // Authentication
 app.use('/login', publicCors);
 app.post('/login', (req, res) => forwardRequest('auth', '/auth/login', req, res));
@@ -209,6 +233,14 @@ app.use('/question/internal/:id', cors({
 app.get('/question/internal/:id', (req, res) =>
     forwardRequest('game', `/question/internal/${req.params.id}`, req, res)
 );
+
+// I cannot use the general forwardRequest function due to pagination.
+app.use('/statistics/recent-quizzes', publicCors);
+app.get('/statistics/recent-quizzes', async (req, res) => {
+    const page = req.query.page || 0;
+    forwardRequest('game', `/statistics/recent-quizzes?page=${page}`, req, res);
+});
+
 // Statistics Routes
 ['/statistics/subject/:subject', '/statistics/global', '/leaderboard'].forEach(route => {
   app.use(route, publicCors);

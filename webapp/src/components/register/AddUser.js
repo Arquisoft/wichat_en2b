@@ -107,6 +107,22 @@ const AddUser = () => {
       // Redirect to the home page after login
       // On successful login, set the token in the cookie
       document.cookie = `token=${data.token}; path=/; max-age=3600`;
+      const guestData = localStorage.getItem("guestGameData");
+      if (guestData) {
+        try {
+          await fetch(`${apiEndpoint}/game`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${data.token}`,
+            },
+            body: guestData,
+          });
+          localStorage.removeItem("guestGameData");
+        } catch (err) {
+          console.error("Failed to save guest data after register:", err);
+        }
+      }
       router.push("/");
 
     } catch (error) {    
@@ -135,6 +151,7 @@ const AddUser = () => {
   return (
       <div className="register-container">
         <div className="register-card">
+          <button onClick={() => window.location.href = '/'}></button>
           <h2>Create an Account</h2>
           <p>Enter your username and password below to sign up!</p>
 
