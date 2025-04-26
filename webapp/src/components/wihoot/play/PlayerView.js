@@ -86,7 +86,7 @@ export default function PlayerView() {
                     setSessionStatus(sessionData.status);
                     setPlayers(sessionData.players);
                     setCurrentQuestionIndex(sessionData.currentQuestionIndex);
-
+                    setWaitingForNext(sessionData.waitingForNext);
                     const player = sessionData.players.find((p) => p.id === playerId)
                     if (player) {
                         setUsername(player.username)

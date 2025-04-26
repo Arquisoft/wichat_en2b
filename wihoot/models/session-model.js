@@ -24,6 +24,7 @@ const sharedQuizSessionSchema = new mongoose.Schema(
             unique: true,
             index: true,
         },
+        waitingForNext: { type: Boolean, default: false },
         quizData: [],
         quizMetaData: [],
         hostId: { type: String, required: true },
