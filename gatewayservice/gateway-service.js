@@ -347,6 +347,11 @@ app.post('/game', (req, res) => {
   forwardRequest('game', '/game', req, res);
 });
 
+app.use('/question/amount/:code', publicCors);
+app.get('/question/amount/:code', (req, res) => {
+  forwardRequest('game', `/question/amount/${req.params.code}`, req, res);
+});
+
 // OpenAPI Documentation
 const openapiPath = './openapi.yaml';
 if (fs.existsSync(openapiPath)) {

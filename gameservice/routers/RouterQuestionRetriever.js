@@ -91,4 +91,16 @@ router.get('/question/internal/:id', async (req, res) => {
     }
 });
 
+router.get('/question/amount/:code', async (req, res) => {
+    const code = req.params.code;
+    try{
+        console.log("Retrieving amount of questions...");
+        const amount = await Question.countDocuments({ subject: code });
+        res.status(200).json(amount);
+    } catch (error) {
+        console.error('Error retrieving the amount of questions:', error);
+        res.status(500).json({ error: 'Error retrieving question amount' });
+    }
+});
+
 module.exports = router;

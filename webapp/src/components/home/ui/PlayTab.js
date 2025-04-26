@@ -52,6 +52,35 @@ function PlayTab({ isGuest }) {
 
   return (
     <Grid container spacing={3} className="categories-container">
+		<Grid key={"custom"} size={{xs:12, sm:6, md:4}} >
+				<Card className="category-card">
+					<CardHeader
+						title={
+							<>
+								<span className="category-icon">🛠️</span>
+								Custom
+							</>
+						}
+						className="category-header custom-category-header"
+
+					/>
+					<CardContent className="category-content">
+						<Typography className="quiz-count">
+							Customize your own quiz, play with friends and much more! 
+						</Typography>
+						<Link href={`/quiz/custom`} passHref>
+							<Button
+								variant="text"
+								fullWidth
+								className={`button-custom`}
+							>
+								Customize quiz
+							</Button>
+						</Link>
+					</CardContent>
+				</Card>
+			</Grid>
+			
       {loading ? (
         <Typography>Loading categories...</Typography>
       ) : (

@@ -24,7 +24,6 @@ function CategoryComponent() {
 
     const router = useRouter();
     const { id } = router.query;
-
     useEffect(() => {
       if (!id) return;
       setLoading(true);
@@ -116,11 +115,11 @@ function CategoryComponent() {
     const handleStartQuiz = (quiz) => {
       setQuizData({
         topic: id, 
-        subject: quiz.wikidataCode, 
         totalQuestions: quiz.questions, 
         numberOptions: quiz.options, 
         timerDuration:  quiz.timeEstimate, 
         question: quiz.question,
+        fetchQuestionsURL: `/game/${quiz.wikidataCode}/${quiz.questions}/${quiz.options}`,
       });
       setShowQuiz(true);  
     };
