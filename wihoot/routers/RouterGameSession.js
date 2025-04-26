@@ -215,7 +215,7 @@ router.get("/:code/next", async (req, res) => {
 router.post("/:code/answer", async (req, res) => {
     try {
         const { code } = req.params
-        const { playerId, questionId, answerId, isCorrect, timeToAnswer } = req.body
+        const { playerId, questionId, answerId, isCorrect, timeToAnswer, rightAnswer, answer } = req.body
 
         if (!playerId || !questionId || answerId === undefined || isCorrect === undefined || timeToAnswer === undefined) {
             return res.status(400).json({ error: "Missing required fields" })
@@ -251,6 +251,8 @@ router.post("/:code/answer", async (req, res) => {
             answerId,
             isCorrect: !!isCorrect,
             timeToAnswer,
+            rightAnswer: rightAnswer,
+            answer: answer
         })
 
         session.players[playerIndex].score += scoreIncrement

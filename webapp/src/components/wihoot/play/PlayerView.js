@@ -401,6 +401,8 @@ export default function PlayerView() {
           answerId: optionIndex,
           isCorrect,
           timeToAnswer,
+          rightAnswer: correctAnswer,
+          answer: currentQuestion.answers[optionIndex]
         }),
       });
 
