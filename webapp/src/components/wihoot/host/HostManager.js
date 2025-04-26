@@ -321,17 +321,41 @@ export default function HostManager() {
     };
 
     const renderWaitingRoom = () => (
-        <Card className="host-manager-card">
-            <CardHeader title="Waiting for Players" />
+        <Card className="player-view-card">
             <CardContent>
+                {/* Timer-like progress bar */}
+                <Box className="timer-container">
+                    <Typography variant="body2" className="timer-text">
+                        Waiting for players...
+                    </Typography>
+                    <LinearProgress
+                        className="progress-bar"
+                        variant="indeterminate"
+                        sx={{
+                            background: "#e0e0e0",
+                            height: "8px",
+                            borderRadius: "4px",
+                            "& .MuiLinearProgress-bar": {
+                                background: "linear-gradient(90deg, #6c63ff, #ff6584)",
+                            },
+                        }}
+                    />
+                </Box>
+                <Box sx={{ textAlign: "center", my: 4 }}>
+                    <Typography variant="h5" sx={{ fontWeight: 600, mb: 2 }}>
+                        Click Start Quiz when ready 🛸
+                    </Typography>
+                </Box>
                 <Box className="code-display" mb={3}>
-                    <Typography variant="h6">Share this code with players:</Typography>
+                    <Typography variant="h6" className="joined-text" sx={{ mb: 1 }}>
+                        Share this code with players:
+                    </Typography>
                     <Typography variant="h4" className="code-text">
                         {code}
                     </Typography>
                 </Box>
                 <Box mb={3}>
-                    <Typography variant="h6">Players ({players.length})</Typography>
+                    <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>Players ({players.length})</Typography>
                     {players.length === 0 ? (
                         <Typography variant="body2" color="textSecondary">
                             No players have joined yet
@@ -339,9 +363,22 @@ export default function HostManager() {
                     ) : (
                         <List className="players-list">
                             {players.map((player) => (
-                                <ListItem key={player.id} className="player-item">
-                                    <ListItemText primary={player.username} />
-                                    {player.isGuest && <Badge badgeContent="Guest" color="secondary" />}
+                                <ListItem key={player.id} className="player-item" sx={{
+                                    mb: 1,
+                                    borderRadius: "6px",
+                                    transition: "all 0.2s ease",
+                                    "&:hover": {
+                                        transform: "translateY(-2px)",
+                                        boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
+                                    },
+                                }}>
+                                    <ListItemText primary={player.username} sx={{
+                                        "& .MuiListItemText-primary": {
+                                            fontWeight: 500,
+                                            fontSize: "1rem",
+                                        },
+                                    }} />
+                                    {player.isGuest && <Badge badgeContent="Guest" color="secondary" sx={{ mr: 1 }} />}
                                 </ListItem>
                             ))}
                         </List>
@@ -349,13 +386,14 @@ export default function HostManager() {
                 </Box>
                 <Button
                     variant="contained"
-                    color="success"
                     onClick={handleStartQuiz}
                     disabled={players.length === 0}
                     className="action-button"
                 >
                     Start Quiz
                 </Button>
+                {/* Gradient divider at the bottom */}
+                <Box className="divider" sx={{ mt: 4 }} />
             </CardContent>
         </Card>
     );
@@ -583,7 +621,7 @@ export default function HostManager() {
 
     return (
         <Container maxWidth="lg" sx={{ py: 8 }}>
-            <Typography variant="h4" gutterBottom>
+            <Typography variant="h4" className="quiz-player-header">
                 Quiz Host - {code}
             </Typography>
             {error && (
