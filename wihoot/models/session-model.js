@@ -108,7 +108,7 @@ sharedQuizSessionSchema.methods.checkForNoAnswer = function () {
     }
     this.players.forEach((p) => {
        try {
-           if (p.answers[this.currentQuestionIndex] == null){
+           if (p.answers.length < this.currentQuestionIndex+1){
                p.answers.push({
                    questionId: -1,
                    answerId: -1,
@@ -116,6 +116,7 @@ sharedQuizSessionSchema.methods.checkForNoAnswer = function () {
                    timeToAnswer: -1,
                })
            }
+           console.log("TEST answers before adding one ICORRECT; ", p);
        } catch (error) {
            throw new Error("Error when checking incorrect answers")
        }

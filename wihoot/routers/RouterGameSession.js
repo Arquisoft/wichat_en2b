@@ -298,6 +298,7 @@ router.get("/:code/status", async (req, res) => {
                 username: p.username,
                 isGuest: p.isGuest,
                 score: p.score,
+                answers: p.answers
             })),
         })
     } catch (error) {
@@ -325,6 +326,8 @@ router.get("/:code/end", async (req, res) => {
         }
 
         try {
+            //Set the answer of the users that did not answer before /next to incorrect
+            await session.checkForNoAnswer()
             session.finish()
             await session.save()
 
@@ -335,6 +338,7 @@ router.get("/:code/end", async (req, res) => {
                     username: p.username,
                     isGuest: p.isGuest,
                     score: p.score,
+                    answers: p.answers
                 })),
             })
 
