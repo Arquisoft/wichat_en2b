@@ -65,8 +65,7 @@ function CategoryComponent() {
             case 1: return "easy";
             case 2: return "medium";
             case 3: return "hard";
-            case 4: return "hard";
-            case 5: return "hell";
+            case 4: return "hell";
             default: return "unknown";
           }
         };

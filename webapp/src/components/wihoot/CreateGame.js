@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/router"
+import NextLink from "next/link"
 import { fetchWithAuth } from "../../utils/api-fetch-auth"
 import {
     Box,
@@ -134,6 +135,18 @@ export default function CreateGame() {
                         Create a quiz and share it with friends using a unique code.
                     </Typography>}
                 />
+                <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
+                    <NextLink href="/" passHref>
+                        <Button
+                            variant="outlined"
+                            color="secondary"
+                            sx={{ mt: 2 }}
+                            className="back-button"
+                        >
+                            Go back
+                        </Button>
+                    </NextLink>
+                </Box>
                 <CardContent className="create-game-content">
                     {error && (
                         <Alert className="create-game-error" severity="error" sx={{ mb: 2 }}>
@@ -190,19 +203,24 @@ export default function CreateGame() {
                             required
                         />
 
-                        <TextField
-                            data-testid="difficulty-input"
-                            className="create-game-textfield"
-                            id="difficultySelected"
-                            label="Difficulty of the Quiz"
-                            type="number"
-                            InputProps={{ inputProps: { min: 1, max: 5 } }}
-                            value={difficultySelected}
-                            onChange={(e) => setDifficultySelected(Number.parseInt(e.target.value))}
-                            fullWidth
-                            disabled={isLoading}
-                            required
-                        />
+                        <FormControl fullWidth required>
+                            <InputLabel id="difficulty-label">Difficulty</InputLabel>
+                            <Select
+                                data-testid="difficulty-input"
+                                className="create-game-select"
+                                labelId="difficulty-label"
+                                id="difficultySelected"
+                                value={difficultySelected}
+                                label="Difficulty"
+                                onChange={(e) => setDifficultySelected(e.target.value)}
+                                disabled={isLoading}
+                            >
+                                <MenuItem value={1}>Easy</MenuItem>
+                                <MenuItem value={2}>Medium</MenuItem>
+                                <MenuItem value={3}>Hard</MenuItem>
+                                <MenuItem value={4}>Hell</MenuItem>
+                            </Select>
+                        </FormControl>
 
                         <Button
                             data-testid="create-quiz-button"

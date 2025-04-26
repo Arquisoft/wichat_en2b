@@ -56,12 +56,12 @@ export default function PlayerView() {
   useEffect(() => {
     if (!code || !playerId) return;
 
-    const fetchUserData = async () => {
-      if (playerId.startsWith("guest_")) {
-        setIsGuest(true);
-        setUsername(`Guest_${playerId}`);
-        return;
-      }
+        const fetchUserData = async () => {
+            if (playerId.startsWith("guest_")) {
+                setIsGuest(true);
+                setUsername(`${playerId}`);
+                return;
+            }
 
       try {
         const response = await fetchWithAuth("/token/username");
@@ -79,48 +79,61 @@ export default function PlayerView() {
       }
     };
 
-    const fetchSessionData = async () => {
-      try {
-        const response = await fetchWithAuth(`/shared-quiz/${code}/status`);
-        if (response) {
-          const sessionData = response;
-          setSessionStatus(sessionData.status);
-          setPlayers(sessionData.players);
-          setCurrentQuestionIndex(sessionData.currentQuestionIndex);
-          setWaitingForNext(sessionData.waitingForNext);
-          const player = sessionData.players.find((p) => p.id === playerId);
-          if (player) {
-            setUsername(player.username);
-            setIsGuest(player.isGuest);
-          }
-          return sessionData;
-        } else {
-          throw new Error("Failed to fetch session data");
+        const fetchSessionData = async () => {
+            try {
+                const response = await fetch(`${apiEndpoint}/shared-quiz/${code}/status`, {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+
+                if (response.ok) {
+                    const sessionData = await response.json();
+
+                    setSessionStatus(sessionData.status);
+                    setPlayers(sessionData.players);
+                    console.log("TEST session data players", sessionData.players)
+                    setCurrentQuestionIndex(sessionData.currentQuestionIndex);
+                    setWaitingForNext(sessionData.waitingForNext);
+                    const player = sessionData.players.find((p) => p.id === playerId)
+                    if (player) {
+                        setUsername(player.username)
+                        setIsGuest(player.isGuest)
+                    }
+
+                    return sessionData
+                } else {
+                    throw new Error("Failed to fetch session data")
+                }
+            } catch (err) {
+                setError("Failed to load session data")
+                console.error(err)
+                return null
+            }
         }
-      } catch (err) {
-        setError("Failed to load session data");
-        console.error(err);
-        return null;
-      }
-    };
 
     const fetchQuizData = async (sessionData) => {
       if (!sessionData) return;
 
-      try {
-        const response = await fetchWithAuth(`/internal/quizdata/${code}`);
-        if (response) {
-          const quiz = response;
-          setQuizData(quiz.quizData);
-          setQuizMetaData(quiz.quizMetaData);
-        } else {
-          throw new Error("Failed to fetch quiz data");
+            try {
+                const response = await fetch(`${apiEndpoint}/internal/quizdata/${code}`, {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                if (response.ok) {
+                    const quiz = response;
+                    setQuizData(quiz.quizData);
+                    setQuizMetaData(quiz.quizMetaData);
+                } else {
+                    throw new Error("Failed to fetch quiz data")
+                }
+            } catch (err) {
+                setError("Failed to load quiz data")
+                console.error(err)
+            }
         }
-      } catch (err) {
-        setError("Failed to load quiz data");
-        console.error(err);
-      }
-    };
 
     const initializeSocket = () => {
       const newSocket = io(process.env.SOCKET_SERVER || "http://localhost:8006");
@@ -328,14 +341,20 @@ export default function PlayerView() {
         }),
       });
 
-      const sessionData = await fetchWithAuth(`/shared-quiz/${code}/status`);
-      if (sessionData) {
-        setPlayers(sessionData.players);
-      }
-    } catch (err) {
-      console.error("Failed to submit answer or fetch session data:", err);
-    }
-  };
+            const sessionData = await fetch(`${apiEndpoint}/shared-quiz/${code}/status`, {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (sessionData.ok) {
+                const playersFetched = await sessionData.json()
+                setPlayers(playersFetched.players)
+            }
+        } catch (err) {
+            console.error("Failed to submit answer or fetch session data:", err);
+        }
+    };
 
   const saveGameData = async () => {
     if (isGuest) {
@@ -353,12 +372,14 @@ export default function PlayerView() {
       return;
     }
 
-    try {
-      const player = players.find((p) => p.id === playerId);
-      const pointsGain = player ? player.score : 0;
-      const numberOfQuestions = answers.length;
-      const numberCorrectAnswers = answers.filter((a) => a.isCorrect).length;
-      const totalTime = answers.reduce((acc, a) => acc + a.timeSpent, 0);
+        try {
+            console.log("TEST Players ", players)
+            const player = players.find((p) => p.id === playerId);
+            console.log("TEST player before find is", player)
+            const pointsGain = player ? player.score : 0;
+            const numberOfQuestions = player.answers.length;
+            const numberCorrectAnswers = answers.filter((a) => a.isCorrect).length;
+            const totalTime = answers.reduce((acc, a) => acc + a.timeSpent, 0);
 
       const response = await fetch(`${apiEndpoint}/game`, {
         method: "POST",
@@ -680,19 +701,19 @@ export default function PlayerView() {
     );
   }
 
-  return (
-    <Container maxWidth="lg" sx={{ py: 8 }}>
-      <Typography variant="h4" className="quiz-player-header">
-        Wihoot - {username}
-      </Typography>
-      {error && (
-        <Alert severity="error" sx={{ mb: 2 }}>
-          {error}
-        </Alert>
-      )}
-      {sessionStatus === "waiting" && renderWaitingRoom()}
-      {sessionStatus === "active" && (waitingForNext ? renderLeaderboardView() : renderActiveQuiz())}
-      {sessionStatus === "finished" && renderFinishedQuiz()}
-    </Container>
-  );
+    return (
+        <Container maxWidth="lg" sx={{ py: 8 }}>
+            <Typography variant="h4" className="quiz-player-header">
+                WiHoot - {username}
+            </Typography>
+            {error && (
+                <Alert severity="error" sx={{ mb: 2 }}>
+                    {error}
+                </Alert>
+            )}
+            {sessionStatus === "waiting" && renderWaitingRoom()}
+            {sessionStatus === "active" && (waitingForNext ? renderLeaderboardView() : renderActiveQuiz())}
+            {sessionStatus === "finished" && renderFinishedQuiz()}
+        </Container>
+    );
 }

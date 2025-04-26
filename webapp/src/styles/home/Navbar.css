@@ -1,1 +1,12 @@
 body .navbar{background-color:#3f51b5;box-shadow:none;border-bottom:2px solid #e0e0e0}body .navbar-toolbar{display:flex;justify-content:space-between}body .navbar-left{display:flex;align-items:center}body .navbar-avatar{background-color:#fff;color:#3f51b5;margin-right:10px}body .navbar-title{font-weight:700}body .navbar-right{display:flex;align-items:center}body .navbar-profile-button{text-transform:none;font-weight:700;margin-right:10px}body .navbar-icon-button{color:#fff}body .navbar-user-avatar{background-color:#ff5722}
+.user-section .MuiButton-root {
+    height: 36px; /* Altura uniforme para todos los botones */
+    text-transform: none;
+    padding: 6px 16px;
+    min-width: 100px;
+}
+
+.joingame, .creategame, .navbar-profile-button {
+    font-weight: 600;
+    font-size: 0.875rem;
+}

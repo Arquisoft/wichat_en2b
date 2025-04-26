@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/router"
-import Link from "next/link"
+import NextLink from "next/link"
 import {
     Box,
     Card,
@@ -91,7 +91,7 @@ export default function JoinGame() {
 
             } else {
                 // For guest users, generate a unique ID
-                playerId = uuidv4()
+                playerId = "guest_"+uuidv4()
             }
 
             const response = await axios.post(
@@ -139,6 +139,18 @@ export default function JoinGame() {
                         Enter a 6-digit game code to join a shared quiz.
                     </Typography>}
                 />
+                <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
+                    <NextLink href="/" passHref>
+                        <Button
+                            variant="outlined"
+                            color="secondary"
+                            sx={{ mt: 2 }}
+                            className="back-button"
+                        >
+                            Go back
+                        </Button>
+                    </NextLink>
+                </Box>
                 <CardContent className="join-game-content">
                     {errorMessage && (
                         <Alert className="join-game-error" severity="error" sx={{ mb: 2 }}>
@@ -184,11 +196,11 @@ export default function JoinGame() {
                             <Typography variant="body1" gutterBottom>
                                 Want to create your own quizzes?
                             </Typography>
-                            <Link href="/login" passHref>
+                            <NextLink href="/login" passHref>
                                 <Button className="join-game-login-button" variant="outlined" color="primary">
                                     Log In
                                 </Button>
-                            </Link>
+                            </NextLink>
                         </Box>
                     )}
                 </CardContent>
