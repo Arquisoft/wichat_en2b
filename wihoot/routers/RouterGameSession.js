@@ -189,6 +189,9 @@ router.get("/:code/next", async (req, res) => {
 
         try {
             session.waitingForNext = false;
+            //Set the answer of the users that did not answer before /next to incorrect
+            await session.checkForNoAnswer()
+
             const nextQuestionIndex = session.nextQuestion()
             await session.save()
 

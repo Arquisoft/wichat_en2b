@@ -12,7 +12,13 @@ export function middleware(request) {
     return NextResponse.redirect(new URL("/", request.url));
   }
 
-  // Allow unauthenticated users to access "/" or any "/guest/*" paths, including the paths of the /wihoot game
+  // Redirect unauthenticated that access "/wihoot/create" to "/"
+  if (!token && (currentPath.startsWith("/wihoot/create") )) {
+    console.log("No token, redirecting to /login from:", currentPath);
+    return NextResponse.redirect(new URL("/login", request.url));
+  }
+
+  // Allow unauthenticated users to access "/" or any "/guest/*" paths
   if (!token && (currentPath === "/" || currentPath.startsWith("/guest") || currentPath.startsWith("/wihoot") )) {
     console.log("No token, allowing access to:", currentPath);
     return NextResponse.next();

@@ -58,7 +58,7 @@ export default function PlayerView() {
         const fetchUserData = async () => {
             if (playerId.startsWith("guest_")) {
                 setIsGuest(true);
-                setUsername(`Guest_${playerId}`);
+                setUsername(`${playerId}`);
                 return;
             }
 
@@ -80,9 +80,16 @@ export default function PlayerView() {
 
         const fetchSessionData = async () => {
             try {
-                const response = await fetchWithAuth(`/shared-quiz/${code}/status`);
-                if (response) {
-                    const sessionData = response;
+                const response = await fetch(`${apiEndpoint}/shared-quiz/${code}/status`, {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+
+                if (response.ok) {
+                    const sessionData = await response.json();
+                    console.log("TEST sessionData", sessionData)
                     setSessionStatus(sessionData.status);
                     setPlayers(sessionData.players);
                     setCurrentQuestionIndex(sessionData.currentQuestionIndex);
@@ -108,9 +115,14 @@ export default function PlayerView() {
             if (!sessionData) return
 
             try {
-                const response = await fetchWithAuth(`/internal/quizdata/${code}`)
-                if (response) {
-                    const quiz = response
+                const response = await fetch(`${apiEndpoint}/internal/quizdata/${code}`, {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const quiz = await response.json()
                     setQuizData(quiz.quizData)
                     setQuizMetaData(quiz.quizMetaData)
                     setTimeLeft(quiz.quizMetaData[0]?.timerDuration || 60)
@@ -318,9 +330,15 @@ export default function PlayerView() {
                 }),
             })
 
-            const sessionData = await fetchWithAuth(`/shared-quiz/${code}/status`)
-            if (sessionData) {
-                setPlayers(sessionData.players)
+            const sessionData = await fetch(`${apiEndpoint}/shared-quiz/${code}/status`, {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (sessionData.ok) {
+                const playersFetched = await sessionData.json()
+                setPlayers(playersFetched)
             }
         } catch (err) {
             console.error("Failed to submit answer or fetch session data:", err);
