@@ -80,15 +80,10 @@ export default function HostManager() {
         localStorage.removeItem(`quizTimer_${code}_${hostId}`);
     };
 
-    const kickHost = () => {
-        if (error === "You are not the host of this session") {
-            router.push("/");
-        }
-    };
-
     useEffect(() => {
-        if (error === "You are not the host of this session") {
-            kickHost();
+        // Only redirect immediately for errors other than "host has left"
+        if (error && error !== "The host has left the session") {
+            router.push("/");
         }
     }, [error, router]);
 

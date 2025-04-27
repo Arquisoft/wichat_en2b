@@ -50,6 +50,13 @@ export default function PlayerView() {
   const timerIntervalRef = useRef(null);
   const [showCorrectAnswer, setShowCorrectAnswer] = useState(false);
 
+  useEffect(() => {
+    // Only redirect immediately for errors other than "host has left"
+    if (error && error !== "The host has left the session") {
+        router.push("/");
+    }
+  }, [error, router]);
+
   // Fetch session data
   const fetchSessionData = async () => {
     try {
