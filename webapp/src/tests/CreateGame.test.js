@@ -62,7 +62,7 @@ describe("CreateGame Component", () => {
         });
 
         await waitFor(() => {
-            expect(screen.getByText("Create a Shared Quiz")).toBeInTheDocument();
+            expect(screen.getByText("Start a new session")).toBeInTheDocument();
             expect(screen.getByLabelText(/Topic/i)).toBeInTheDocument();
             expect(screen.getByLabelText(/Number of Questions/i)).toBeInTheDocument();
             expect(screen.getByLabelText(/Number of Answers/i)).toBeInTheDocument();

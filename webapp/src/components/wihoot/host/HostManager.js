@@ -136,6 +136,15 @@ export default function HostManager() {
                     throw new Error("Failed to fetch session data");
                 }
             } catch (err) {
+                // Check if the error is a 404 (not found) error
+                if (err.status === 404 || err.message?.includes("not found")) {
+                    setError("Quiz not found. This quiz code may not exist.");
+                    // Clear loading state so the error message is visible
+                    setIsLoading(false);
+                    // Redirect after showing the error
+                    setTimeout(() => router.push("/"), 3000);
+                    return null;
+                }
                 setError("Failed to load session data");
                 console.error("Error in fetchSessionData:", err);
                 return null;
