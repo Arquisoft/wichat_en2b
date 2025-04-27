@@ -122,6 +122,22 @@ export default function PlayerView() {
         const quiz = await fetchJson(`/internal/quizdata/${code}`);
         setQuizData(quiz.quizData);
         setQuizMetaData(quiz.quizMetaData);
+        
+        // Initialize timer with the fetched metadata - only if active
+        if (sessionData.status === "active" && !sessionData.waitingForNext && currentQuestionIndex >= 0) {
+          const timePerQuestion = quiz.quizMetaData?.[0]?.timePerQuestion || 60;
+          const storedStartTime = localStorage.getItem(`startTime-${code}-${playerId}`);
+          
+          if (storedStartTime) {
+            const elapsedSeconds = (Date.now() - Number(storedStartTime)) / 1000;
+            setTimeLeft(Math.max(timePerQuestion - elapsedSeconds, 0));
+          } else {
+            const now = Date.now();
+            setTimeLeft(timePerQuestion);
+            setStartTime(now);
+            localStorage.setItem(`startTime-${code}-${playerId}`, now.toString());
+          }
+        }
       } catch (err) {
         setError("Failed to load quiz data. The quiz may not exist.");
         setIsLoading(false);
@@ -293,62 +309,39 @@ export default function PlayerView() {
     }
   }, [sessionStatus, hasSavedGame, players, playerId, quizMetaData, answers]);
 
-  // Synchronize timeLeft
-  useEffect(() => {
-    if (
-      sessionStatus === "active" &&
-      !waitingForNext &&
-      !hasAnswered &&
-      currentQuestionIndex >= 0 &&
-      quizMetaData
-    ) {
-      const timePerQuestion = quizMetaData?.[0]?.timePerQuestion || 60;
-      setTimeLeft(timePerQuestion);
-      setStartTime(Date.now());
-    }
-  }, [sessionStatus, waitingForNext, hasAnswered, currentQuestionIndex, quizMetaData]);
-
-  useEffect(() => {
-    if (!quizMetaData || !code || !playerId) return;
-
-    const storedStartTime = localStorage.getItem(`startTime-${code}-${playerId}`);
-    if (storedStartTime) {
-      const elapsedSeconds = (Date.now() - Number(storedStartTime)) / 1000;
-      const timerDuration = quizMetaData[0]?.timePerQuestion || 60;
-      setTimeLeft(Math.max(timerDuration - elapsedSeconds, 0));
-    }
-  }, [quizMetaData, code, playerId]);
-
   // Timer logic
   useEffect(() => {
+    // If we're not in an active quiz state, don't run the timer
     if (
-        sessionStatus !== "active" ||
-        waitingForNext ||
-        timeLeft === null ||
-        currentQuestionIndex < 0
+      sessionStatus !== "active" ||
+      waitingForNext ||
+      currentQuestionIndex < 0 ||
+      !quizMetaData
     ) {
       clearInterval(timerIntervalRef.current);
       return;
     }
 
-    const timePerQuestion = 60; // or dynamically set if needed
+    // Always get fresh time per question from metadata
+    const timePerQuestion = quizMetaData[0]?.timePerQuestion || 60;
     const storedTimerKey = `startTime-${code}-${playerId}`;
     const storedStartTime = localStorage.getItem(storedTimerKey);
+    
+    // Initialize timeLeft based on stored start time or current time
     let initialTimeLeft = timePerQuestion;
-
-    // If there's a stored start time for this session, calculate the time left
     if (storedStartTime) {
       const elapsed = (Date.now() - parseInt(storedStartTime, 10)) / 1000;
       initialTimeLeft = Math.max(0, timePerQuestion - elapsed);
     } else {
-      // No stored start time, so set a new start time
+      // No stored start time, set one now
       localStorage.setItem(storedTimerKey, Date.now().toString());
     }
-
+    
+    // Update the timeLeft state
     setTimeLeft(initialTimeLeft);
 
+    // Start the timer interval for continuous updates
     let lastUpdate = Date.now();
-
     timerIntervalRef.current = setInterval(() => {
       const now = Date.now();
       const delta = (now - lastUpdate) / 1000; // in seconds
@@ -356,18 +349,19 @@ export default function PlayerView() {
 
       setTimeLeft(prevTime => {
         const newTime = prevTime - delta;
-
+        
         if (newTime <= 0) {
           clearInterval(timerIntervalRef.current);
           return 0;
         }
-
+        
         return newTime;
       });
-    }, 100);
+    }, 100); // Update every 100ms for smooth countdown
 
+    // Clean up on unmount or when dependencies change
     return () => clearInterval(timerIntervalRef.current);
-  }, [sessionStatus, waitingForNext, hasAnswered, timeLeft, currentQuestionIndex, code, playerId]);
+  }, [sessionStatus, waitingForNext, hasAnswered, currentQuestionIndex, quizMetaData, code, playerId]);
 
   const getCurrentQuestion = () => {
     if (!quizData || currentQuestionIndex < 0 || currentQuestionIndex >= quizData.length) {
@@ -548,7 +542,7 @@ export default function PlayerView() {
             Question {currentQuestionIndex + 1} of {quizData?.length || 0}
           </div>
           <h2 id="title-question" className="question-title">
-            {currentQuestion.question || quizMetaData?.[0]?.question || "Untitled Quiz"}
+            {currentQuestion.question || quizMetaData?.[0]?.question}
           </h2>
           <div className="image-box">
             <img
