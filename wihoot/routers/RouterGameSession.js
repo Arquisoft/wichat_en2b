@@ -281,18 +281,22 @@ router.post("/:code/answer", async (req, res) => {
 router.get("/:code/status", async (req, res) => {
     try {
         const { code } = req.params
+        const { playerId } = req.query // Get playerId from query parameters
 
         const session = await SharedQuizSession.findOne({ code })
-
         if (!session) {
             return res.status(404).json({ error: "Session not found" })
         }
+        
+        // If playerId is provided, verify it belongs to this session
+        if (playerId && !session.players.some(player => player.id === playerId)) {
+            return res.status(403).json({ error: "Player not authorized for this session" })
+        }
 
         res.status(200).json({
-            waitingForNext: session.waitingForNext,
-            code: session.code,
             status: session.status,
             currentQuestionIndex: session.currentQuestionIndex,
+            waitingForNext: session.waitingForNext,
             players: session.players.map((p) => ({
                 id: p.id,
                 username: p.username,

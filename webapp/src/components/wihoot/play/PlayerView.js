@@ -60,7 +60,7 @@ export default function PlayerView() {
   // Fetch session data
   const fetchSessionData = async () => {
     try {
-      const sessionData = await fetchJson(`/shared-quiz/${code}/status`);
+      const sessionData = await fetchJson(`/shared-quiz/${code}/status?playerId=${playerId}`);
       setSessionStatus(sessionData.status);
       setPlayers(sessionData.players);
       setCurrentQuestionIndex(sessionData.currentQuestionIndex);
@@ -69,6 +69,14 @@ export default function PlayerView() {
       if (player) setUsername(player.username);
       return sessionData;
     } catch (err) {
+      if (err.status === 403) {
+        setError("You are not authorized for this session");
+        // Redirect to join page after a short delay
+        setTimeout(() => {
+          router.push("/wihoot/join");
+        }, 3000);
+        return null;
+      }
       setError("Failed to load session data");
       console.error(err);
       return null;

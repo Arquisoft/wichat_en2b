@@ -31,6 +31,13 @@ module.exports = {
                             return
                         }
 
+                        // Check if this player is part of the session
+                        const isPlayerInSession = session.players.some(player => player.id === playerId);
+                        if (!isPlayerInSession && session.status !== "waiting") {
+                            socket.emit("error", { message: "Player not authorized for this session" })
+                            return
+                        }
+
                         // Join the room
                         socket.join(code)
 
