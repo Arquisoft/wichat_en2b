@@ -20,7 +20,9 @@ In this section of the documentation we are covering the fundamental decisions a
 | **https://getpino.io[Pino]** | Module for providing a logging system | Chosen over alternatives (Winston, Log4j-node, etc.) for its fast, straightforward logging and native JSON support, which simplifies readability and parsing.
 | **https://www.docker.com[Docker]** | Automates deployment using containerized services | Docker is currently the industry standard for containerized deployments, offering excellent performance and ease of management.
 | **https://www.oracle.com/cloud/[Oracle Cloud Infrastructure (OCI)]** | Hosts the application in the production stage | Selected due to our ability to obtain a free, sufficiently powerful server instance from Oracle’s infrastructure.
-| **https://gatling.io/[Gatling] (Not yed decided)** | Load testing tool for performance evaluation | Chosen for its ability to simulate multiple users and analyze application performance under load. It provides detailed reports and metrics, helping identify bottlenecks and optimize the system.
+| **https://gatling.io/[Gatling]** | Load testing tool for performance evaluation | Chosen for its ability to simulate multiple users and analyze application performance under load. It provides detailed reports and metrics, helping identify bottlenecks and optimize the system.
+| **https://pptr.dev/[Puppetter]** | E2E testing library to control high-level operations in browsers | It's compressible methods and as it was configured initially in the template of the project
+| **https://socket.io/[Socket.io]** | Library that allows using WebSockets to communicate clients and server bidirectionally and event-based | It's easy syntax and good event handling performance based in polling what was needed for the Wihoot implementation
 |===
 
 === Architectural design decisions
