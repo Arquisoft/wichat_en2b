@@ -27,6 +27,7 @@ jest.mock('fs', () => {
 jest.mock('sharp', () => {
   return jest.fn().mockImplementation(() => ({
     resize: jest.fn().mockReturnThis(),
+    webp: jest.fn().mockReturnThis(),
     toFormat: jest.fn().mockReturnThis(),
     toBuffer: jest.fn().mockResolvedValue(Buffer.from('mock-image-data')),
   }));
@@ -564,6 +565,8 @@ describe('User Routes', () => {
             image: base64Image
           });
 
+      console.log(response)
+
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('profilePicture');
       expect(fs.promises.writeFile).toHaveBeenCalled();
@@ -599,7 +602,7 @@ describe('User Routes', () => {
           });
 
       expect(response.status).toBe(400);
-      expect(response.body).toHaveProperty('error', 'Invalid file type. Only JPEG and PNG allowed.');
+      expect(response.body).toHaveProperty('error', 'Invalid file type. Only JPEG, PNG and WebP allowed.');
     });
 
     test('should create images directory if it does not exist', async () => {
@@ -631,7 +634,7 @@ describe('User Routes', () => {
           });
 
       expect(response.status).toBe(400);
-      expect(response.body).toHaveProperty('error', 'Invalid file type. Only JPEG and PNG allowed.');
+      expect(response.body).toHaveProperty('error', 'Invalid file type. Only JPEG, PNG and WebP allowed.');
     });
 
     test('should handle error when processing image', async () => {

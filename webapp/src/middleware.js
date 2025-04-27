@@ -13,7 +13,7 @@ export function middleware(request) {
   }
 
   // Allow unauthenticated users to access "/" or any "/guest/*" paths
-  if (!token && (currentPath === "/" || currentPath.startsWith("/guest"))) {
+  if (!token && (currentPath === "/" || currentPath.startsWith("/guest") || currentPath === "/quiz/custom")) {
     console.log("No token, allowing access to:", currentPath);
     return NextResponse.next();
   }

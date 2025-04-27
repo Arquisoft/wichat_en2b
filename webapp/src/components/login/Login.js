@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, {useEffect, useRef, useState} from "react";
 import { useRouter } from "next/navigation";
 import "../../styles/login/Login.css";
 import "../../styles/globals.css";
@@ -16,6 +16,19 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [has2fa, setHas2fa] = useState(false);
   const router = useRouter();
+
+  const usernameRef = useRef(null);
+  const passwordRef = useRef(null);
+
+  useEffect(() => {
+    if (usernameRef.current && usernameRef.current.value && usernameRef.current.value !== username) {
+      setUsername(usernameRef.current.value);
+    }
+
+    if (passwordRef.current && passwordRef.current.value && passwordRef.current.value !== password) {
+      setPassword(passwordRef.current.value);
+    }
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -94,6 +107,7 @@ const Login = () => {
             <input
               type="text"
               id="username"
+              ref={usernameRef}
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               placeholder="Enter your username"
@@ -107,6 +121,7 @@ const Login = () => {
             <input
               type="password"
               id="password"
+              ref={passwordRef}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Enter your password"

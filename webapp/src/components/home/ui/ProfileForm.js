@@ -264,6 +264,8 @@ export default function ProfileForm({ username, profilePicture, onSave }) {
         }
         if (file && file.size > FILE_SIZE_LIMIT) {
             setProfilePictureError("This file is too large. Maximum size is 2MB.");
+            setSnackbarMessage("This file is too large. Maximum size is 2MB.");
+            setOpenSnackbar(true);
             return;
         }
 
@@ -286,10 +288,11 @@ export default function ProfileForm({ username, profilePicture, onSave }) {
                 });
 
                 if (!response.ok) {
-                    throw new Error(`Error HTTP! Estado: ${response.status}`);
+                    throw new Error("Error uploading profile picture. Try another file or try again.");
                 }
 
                 const data = await response.json();
+
                 setSnackbarMessage("Profile picture uploaded successfully.");
                 setOpenSnackbar(true);
 
@@ -298,22 +301,24 @@ export default function ProfileForm({ username, profilePicture, onSave }) {
                     profilePicture: data.profilePicture,
                 }));
 
+                window.location.reload();
             } catch (error) {
-                console.error("Error uploading profile picture:", error);
+                setProfilePictureError(error.message);
                 setSnackbarMessage(`Error: ${error.message}`);
                 setOpenSnackbar(true);
             }
         };
 
         reader.readAsDataURL(file);
-        window.location.reload();
     };
 
     return (
         <Card className="profile-container">
-            <CardContent>
+            <CardContent>               
                 {/* Header with Avatar and Name */}
                 <Box className="profile-header">
+                    <button onClick={() => window.location.href = '/'}></button>
+
                     <Avatar
                         className="profile-avatar"
                         src={profileData.profilePicture || ""}
@@ -342,7 +347,7 @@ export default function ProfileForm({ username, profilePicture, onSave }) {
 
                 {/* Account */}
                 {tabIndex === 0 && (
-                    <Box component="form" className="form-section">
+                    <Box component="form-section" className="form-section">
                         {/* Sección de foto de perfil mejorada */}
                         <Box
                             sx={{
@@ -372,73 +377,105 @@ export default function ProfileForm({ username, profilePicture, onSave }) {
                             )}
                         </Box>
 
-                        {/* Campo para cambiar el nombre de usuario */}
-                        <TextField
-                            fullWidth
-                            label="Username"
-                            name="username"
-                            value={profileData.username}
-                            onChange={handleChange}
-                            disabled={!editingAccount}
-                        />
+                        <form onSubmit={(e) => {
+                            e.preventDefault();
+                            handleSaveUsername();
+                        }}>
+                            {/* Campo para cambiar el nombre de usuario */}
+                            <TextField
+                                fullWidth
+                                label="Username"
+                                name="username"
+                                value={profileData.username}
+                                onChange={handleChange}
+                                disabled={!editingAccount}
+                                required
+                            />
 
-                        {/* Botones para editar o guardar el nombre de usuario */}
-                        <Box className="action-button" sx={{ mt: 2 }}>
-                            {editingAccount ? (
-                                <Button variant="contained" startIcon={<Save />} onClick={handleSaveUsername}>
+                            {/* Botones para editar o guardar el nombre de usuario */}
+                            <Box className="action-button" sx={{ mt: 2 }}>
+                                {editingAccount ? (
+                                <Button type="submit" variant="contained" startIcon={<Save />}>
                                     Save Username
                                 </Button>
-                            ) : (
-                                <Button variant="outlined" startIcon={<Edit />} onClick={() => setEditingAccount(true)}>
+                                ) : (
+                                <Button 
+                                  variant="outlined" 
+                                  startIcon={<Edit />} 
+                                  onClick={(e) => {
+                                    e.preventDefault(); // Prevent form submission
+                                    setEditingAccount(true);
+                                  }}
+                                  type="button" // Explicitly set type to button
+                                >
                                     Edit Username
                                 </Button>
-                            )}
-                        </Box>
+                                )}
+                            </Box>
+                        </form>
                     </Box>
                 )}
-
 
                 {/* Pestaña Security */}
                 {tabIndex === 1 && (
                     <Box className="form-section">
-                        <TextField
-                            fullWidth
-                            label="Actual password"
-                            name="currentPassword"
-                            type="password"
-                            value={profileData.currentPassword}
-                            onChange={handleChange}
-                            disabled={!editingPassword}
-                        />
-                        <TextField
-                            fullWidth
-                            label="New password"
-                            name="newPassword"
-                            type="password"
-                            value={profileData.newPassword}
-                            onChange={handleChange}
-                            disabled={!editingPassword}
-                        />
-                        <TextField
-                            fullWidth
-                            label="Confirm new password"
-                            name="confirmPassword"
-                            type="password"
-                            value={profileData.confirmPassword}
-                            onChange={handleChange}
-                            disabled={!editingPassword}
-                        />
-                        <Box className="action-button" sx={{ mt: 2 }}>
-                            {editingPassword ? (
-                                <Button variant="contained" startIcon={<Save />} onClick={handleSavePassword}>
-                                    Save Password
-                                </Button>
-                            ) : (
-                                <Button variant="outlined" startIcon={<Edit />} onClick={() => setEditingPassword(true)}>
-                                    Edit Password
-                                </Button>
-                            )}
-                        </Box>
+                        <form onSubmit={(e) => {
+                            e.preventDefault();
+                            handleSavePassword();
+                        }}>
+                            <TextField
+                                fullWidth
+                                label="Actual password"
+                                name="currentPassword"
+                                type="password"
+                                value={profileData.currentPassword}
+                                onChange={handleChange}
+                                disabled={!editingPassword}
+                                sx ={{ mb: 2 }} // mb = margin bottom
+                            />
+                            <TextField
+                                fullWidth
+                                label="New password"
+                                name="newPassword"
+                                type="password"
+                                value={profileData.newPassword}
+                                onChange={handleChange}
+                                disabled={!editingPassword}
+                                sx ={{ mb: 2 }}  // mb = margin bottom
+                            />
+                            <TextField
+                                fullWidth
+                                label="Confirm new password"
+                                name="confirmPassword"
+                                type="password"
+                                value={profileData.confirmPassword}
+                                onChange={handleChange}
+                                disabled={!editingPassword}
+                            />
+                            <Box className="action-button" sx={{ mt: 2 }}>
+                                {editingPassword ? (
+                                    <Button 
+                                        type="submit" 
+                                        variant="contained" 
+                                        startIcon={<Save />}
+                                    >
+                                        Save Password
+                                    </Button>
+                                ) : (
+                                    <Button 
+                                        type="button"
+                                        variant="outlined" 
+                                        startIcon={<Edit />} 
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            setEditingPassword(true);
+                                        }}
+                                    >
+                                        Edit Password
+                                    </Button>
+                                )}
+                            </Box>
+                        </form>
                     </Box>
                 )}
 
