@@ -418,7 +418,6 @@ describe('PlayerView Component', () => {
             expect(screen.getByText('#1 testUser')).toBeInTheDocument();
             expect(screen.getByText('100')).toBeInTheDocument();
             expect(screen.getByText('FinishResults')).toBeInTheDocument();
-            expect(screen.getByText('Join Another Quiz')).toBeInTheDocument();
         });
 
         fireEvent.click(screen.getByText('Join Another Quiz'));

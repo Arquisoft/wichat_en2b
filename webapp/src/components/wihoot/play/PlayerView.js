@@ -568,14 +568,7 @@ export default function PlayerView() {
               score={player.score}
               subject={quizMetaData?.[0]?.category}
             />
-          )}
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={() => router.push("/wihoot/join")}
-          >
-            Join Another Quiz
-          </Button>
+          )}          
         </CardContent>
       </Card>
     );

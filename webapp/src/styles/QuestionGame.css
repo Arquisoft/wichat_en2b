@@ -324,7 +324,6 @@ body .buttons .MuiAlert-root {
 @media screen and (max-width: 450px) {
     .quiz-wrapper {
         padding: 20px;
-        width: 95%
     }
 
     .quiz-option {
