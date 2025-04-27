@@ -125,6 +125,31 @@ sharedQuizSessionSchema.methods.checkForNoAnswer = function () {
     });
 }
 
+// Add this method to handle safe player removal
+sharedQuizSessionSchema.statics.removePlayer = async function(code, playerId) {
+    try {
+        return await this.findOneAndUpdate(
+            { code },
+            { $pull: { players: { id: playerId } } },
+            { new: true }
+        );
+    } catch (error) {
+        console.error(`Error removing player ${playerId} from session ${code}:`, error);
+        throw error;
+    }
+};
+
+// Add this method to handle safe session deletion
+sharedQuizSessionSchema.statics.deleteSession = async function(code) {
+    try {
+        const result = await this.findOneAndDelete({ code });
+        return result;
+    } catch (error) {
+        console.error(`Error deleting session ${code}:`, error);
+        throw error;
+    }
+};
+
 const SharedQuizSession = mongoose.model("SharedQuizSession", sharedQuizSessionSchema)
 
 module.exports = SharedQuizSession
