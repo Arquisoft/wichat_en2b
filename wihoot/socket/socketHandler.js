@@ -128,14 +128,25 @@ module.exports = {
 
                 // Disconnect
                 socket.on("disconnect", async () => {
-                    console.log("Client disconnected:", socket.id)
+                    console.log("Client disconnected:", socket.id);
 
                     if (socket.sessionCode && socket.playerId && !socket.isHost) {
-                        // Notify others that player left
-                        socket.to(socket.sessionCode).emit("player-left", {
-                            playerId: socket.playerId,
-                            username: socket.username,
-                        })
+                        try {
+                            // First notify others that player left
+                            socket.to(socket.sessionCode).emit("player-left", {
+                                playerId: socket.playerId,
+                                username: socket.username
+                            });
+                            
+                            // Then actually remove the player from the session in the database
+                            const session = await SharedQuizSession.findOne({ code: socket.sessionCode });
+                            if (session) {
+                                session.players = session.players.filter(p => p.id !== socket.playerId);
+                                await session.save();
+                            }
+                        } catch (error) {
+                            console.error("Error handling disconnection:", error);
+                        }
                     }
                 })
 
