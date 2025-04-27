@@ -41,24 +41,24 @@ describe("JoinGame Component", () => {
     });
 
     it("renders the JoinGame page correctly", async () => {
-        await act(async () => {
-            render(
-                <MemoryRouterProvider>
-                    <JoinGame />
-                </MemoryRouterProvider>
-            );
-        });
-
-        await waitFor(() => {
-            expect(screen.getByText("Join a Game")).toBeInTheDocument();
-            expect(screen.getByText("Enter a 6-digit game code to join a shared quiz.")).toBeInTheDocument();
-            expect(screen.getByLabelText("Game Code")).toBeInTheDocument();
-            expect(screen.getByLabelText("Your Name")).toBeInTheDocument();
-            expect(screen.getByRole("button", { name: "Join Game" })).toBeInTheDocument();
-            expect(screen.getByText("Want to create your own quizzes?")).toBeInTheDocument();
-            expect(screen.getByRole("button", { name: "Log In" })).toBeInTheDocument();
-        });
+    await act(async () => {
+        render(
+            <MemoryRouterProvider>
+                <JoinGame />
+            </MemoryRouterProvider>
+        );
     });
+
+    await waitFor(() => {
+        expect(screen.getByText("Join a session")).toBeInTheDocument();
+        expect(screen.getByText("Enter a 6-digit game code to join a session.")).toBeInTheDocument();
+        expect(screen.getByLabelText("Game Code")).toBeInTheDocument();
+        expect(screen.getByLabelText("Your Name")).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: "Join Game" })).toBeInTheDocument();
+        expect(screen.getByText("Want to create your own quizzes?")).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: "Log In" })).toBeInTheDocument();
+    });
+});
 
     it("displays pre-filled username for authenticated users", async () => {
         axios.get.mockResolvedValueOnce({ data: { username: "testUser" } });
