@@ -48,6 +48,7 @@ export default function PlayerView() {
   const [timeLeft, setTimeLeft] = useState(null);
   const timerIntervalRef = useRef(null);
   const [showCorrectAnswer, setShowCorrectAnswer] = useState(false);
+  const [showAlerts, setShowAlerts] = useState(false); // Add this new state to track when to show the alerts
 
   // Fetch session data
   const fetchSessionData = async () => {
@@ -128,6 +129,8 @@ export default function PlayerView() {
         setHasAnswered(false);
         setSelectedOption(null);
         setWaitingForNext(false);
+        setShowCorrectAnswer(false); // Reset showCorrectAnswer when session starts
+        setShowAlerts(false); // Reset showAlerts when session starts
       });
 
       newSocket.on("question-changed", (data) => {
@@ -138,15 +141,14 @@ export default function PlayerView() {
         setHasAnswered(false);
         setSelectedOption(null);
         setWaitingForNext(false);
+        setShowCorrectAnswer(false); // Reset showCorrectAnswer when question changes
       });
 
-      newSocket.on("show-correct-answer", () => {
-        console.log("Received show-correct-answer");
-        setShowCorrectAnswer(true);
-        setTimeout(() => { // NOSONAR
-          setShowCorrectAnswer(false);
-          setWaitingForNext(true);
-        }, 2000);
+      newSocket.on("show-correct-answer", (data) => {
+        if (data && data.correctAnswer) {
+          setCorrectAnswer(data.correctAnswer);
+          setShowCorrectAnswer(true);
+        }
       });
 
       newSocket.on("waiting-for-next", () => setWaitingForNext(true));
@@ -161,6 +163,15 @@ export default function PlayerView() {
       newSocket.on("score-updated", (data) => setPlayers(data.players));
 
       newSocket.on("error", (data) => setError(data.message));
+
+      newSocket.on("host-disconnected", (data) => {
+        setError("The host has left the session");
+        
+        // Redirect to home after 3 seconds
+        setTimeout(() => {
+          router.push("/");
+        }, 3000);
+      });
 
       setSocket(newSocket);
       return newSocket;
@@ -332,6 +343,13 @@ export default function PlayerView() {
 
     setSelectedOption(optionIndex);
     setHasAnswered(true);
+    setShowAlerts(true); // Show the alert when answer is submitted
+    
+    // Hide the alert after 2 seconds
+    setTimeout(() => {
+      setShowAlerts(false);
+    }, 2000);
+
     const storedStartTime = localStorage.getItem(`startTime-${code}-${playerId}`);
     let answerTime = startTime;
     if (storedStartTime) {
@@ -481,12 +499,12 @@ export default function PlayerView() {
           />
         </Box>
         <div className="content-box">
-          {hasAnswered && isCorrect && (
+          {hasAnswered && showAlerts && isCorrect && (
             <Alert id="message-success" severity="success" className="alert-box">
               Great job! You got it right!
             </Alert>
           )}
-          {hasAnswered && !isCorrect && (
+          {hasAnswered && showAlerts && !isCorrect && (
             <Alert id="message-fail" severity="error" className="alert-box">
               Oops! You didn't guess this one.
             </Alert>
@@ -506,22 +524,34 @@ export default function PlayerView() {
           </div>
           <div className="options-box">
             {currentQuestion.answers.map((option, index) => {
+              const isSelected = selectedOption === index;
+
+              let stateClass = "";
+
+              if (hasAnswered) {
+                if (showCorrectAnswer) {
+                  // After host clicks "show correct answer"
+                  if (correctAnswer === option) {
+                    stateClass = "correct-answer";
+                  } else if (isSelected) {
+                    stateClass = "incorrect-answer";
+                  }
+                } else if (isSelected) {
+                  // After answering, before host shows correct answer
+                  stateClass = "waiting-answer";
+                }
+              }
+
               return (
-                  <button
-                      id={`option-${index}`}
-                      key={option}
-                      className={`quiz-option 
-                      ${selectedOption === index ? "selected" : ""} 
-                      ${(hasAnswered && selectedOption === index && isCorrect) ||
-                      (showCorrectAnswer && correctAnswer === option)
-                          ? "correct-answer"
-                          : ""}
-      `}
-                      onClick={() => handleAnswerSubmit(index)}
-                      disabled={hasAnswered}
-                  >
-                    {option}
-                  </button>
+                <button
+                  id={`option-${index}`}
+                  key={option}
+                  className={`quiz-option ${isSelected ? "selected" : ""} ${stateClass}`}
+                  onClick={() => handleAnswerSubmit(index)}
+                  disabled={hasAnswered}
+                >
+                  {option}
+                </button>
               );
             })}
           </div>
@@ -558,32 +588,43 @@ export default function PlayerView() {
     );
   };
 
-  if (isLoading) {
-    return (
-      <Container maxWidth="lg" sx={{ py: 8 }}>
-        <Box textAlign="center">
-          <CircularProgress />
-          <Typography variant="h6" mt={2}>
-            Loading...
+  const renderHostDisconnected = () => (
+    <Card className="player-view-card">
+      <CardContent>
+        <Box className="timer-container" mb={3}>
+          <Typography variant="h6" className="timer-text error">
+            Host Disconnected
+          </Typography>
+          <LinearProgress
+            className="progress-bar host-disconnected-progress"
+            variant="indeterminate"
+          />
+        </Box>
+        <Box className="host-disconnected-container">
+          <Typography variant="h5" className="host-disconnected-title">
+            The host has left the session
+          </Typography>
+          <Typography variant="body1" className="host-disconnected-message">
+            You will be redirected to the home page in a few seconds...
           </Typography>
         </Box>
-      </Container>
-    );
-  }
+      </CardContent>
+    </Card>
+  );
 
   return (
     <Container maxWidth="lg" sx={{ py: 8 }}>
       <Typography variant="h4" className="quiz-player-header">
-        WiHoot - {username}
+        WiHoot - {quizMetaData?.[0]?.quizName || "Quiz"}
       </Typography>
-      {error && (
-        <Alert severity="error" sx={{ mb: 2 }}>
-          {error}
-        </Alert>
+      {error === "The host has left the session" ? renderHostDisconnected() : (
+        <>
+          {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+          {sessionStatus === "waiting" && renderWaitingRoom()}
+          {sessionStatus === "active" && (waitingForNext ? renderLeaderboardView() : renderActiveQuiz())}
+          {sessionStatus === "finished" && renderFinishedQuiz()}
+        </>
       )}
-      {sessionStatus === "waiting" && renderWaitingRoom()}
-      {sessionStatus === "active" && (waitingForNext ? renderLeaderboardView() : renderActiveQuiz())}
-      {sessionStatus === "finished" && renderFinishedQuiz()}
     </Container>
   );
 }

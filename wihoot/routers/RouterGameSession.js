@@ -360,4 +360,34 @@ router.get("/:code/end", async (req, res) => {
     }
 })
 
+// Remove a player from the session
+router.delete("/:code/player/:playerId", async (req, res) => {
+    try {
+        const { code, playerId } = req.params;
+
+        const session = await SharedQuizSession.findOne({ code });
+        if (!session) {
+            return res.status(404).json({ error: "Session not found" });
+        }
+
+        // Remove the player from the session
+        session.players = session.players.filter(p => p.id !== playerId);
+        await session.save();
+
+        // Notify all clients about the player removal
+        socketHandlerObject.io.to(code).emit("player-left", {
+            playerId,
+            removed: true
+        });
+
+        res.status(200).json({
+            success: true,
+            players: session.players
+        });
+    } catch (error) {
+        console.error("Error removing player from session:", error);
+        res.status(500).json({ error: "Failed to remove player from session" });
+    }
+});
+
 module.exports = router

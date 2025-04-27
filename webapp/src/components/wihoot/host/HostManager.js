@@ -83,7 +83,13 @@ export default function HostManager() {
         if (error === "You are not the host of this session") {
             router.push("/");
         }
-    }
+    };
+
+    useEffect(() => {
+        if (error === "You are not the host of this session") {
+            kickHost();
+        }
+    }, [error, router]);
 
     // Initialize socket connection and fetch session data
     useEffect(() => {
@@ -194,6 +200,12 @@ export default function HostManager() {
             });
 
             newSocket.on("player-left", (data) => {
+                // Remove the player locally for immediate UI update
+                setPlayers((prevPlayers) => 
+                    prevPlayers.filter(player => player.id !== data.playerId)
+                );
+                
+                // Also fetch the latest session data to ensure sync with server
                 fetchSessionData();
             });
 
@@ -223,7 +235,11 @@ export default function HostManager() {
                     await fetchQuizData(sessionData);
                     const newSocket = initializeSocket(userId);
                     return () => {
-                        if (newSocket) newSocket.disconnect();
+                        if (newSocket) {
+                            console.log("Host disconnecting from socket");
+                            // Explicitly disconnect, which will trigger the server-side host-disconnected event
+                            newSocket.disconnect();
+                        }
                     };
                 }
             } catch (err) {
@@ -342,11 +358,15 @@ export default function HostManager() {
                 throw new Error("No current question available");
             }
 
-            const correctAnswer = validatedAnswers.correctAnswer;
+            const correctAnswer = validatedAnswers?.correctAnswer;
 
-            if (socket) {
+            if (socket && correctAnswer) {
                 console.log("emitting correct answer SOCKET1 - ", correctAnswer);
-                socket.emit("show-correct-answer", { code });
+                // Pass the correctAnswer to the socket event
+                socket.emit("show-correct-answer", { 
+                    code,
+                    correctAnswer 
+                });
             }
             setShowLeaderboard(false);
             setTimeout(async () => {
@@ -778,12 +798,9 @@ export default function HostManager() {
                 WiHoot - Private Session
             </Typography>
             {error && (
-                <>
-                    {kickHost()}
-                    <Alert severity="error" sx={{ mb: 2 }}>
-                        {error}
-                    </Alert>
-                </>
+                <Alert severity="error" sx={{ mb: 2 }}>
+                    {error}
+                </Alert>
             )}
             {sessionStatus === "waiting" && renderWaitingRoom()}
             {sessionStatus === "active" &&
