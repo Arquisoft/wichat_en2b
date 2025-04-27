@@ -360,7 +360,15 @@ app.use('/socket.io', createProxyMiddleware({
   ws: true,
   changeOrigin: true,
   pathRewrite: {
-    '^/socket.io': '/socket.io', // Ensure the path is preserved
+    '^/socket.io': '/socket.io',
+  },
+  onProxyReq: (proxyReq, req, res) => {
+    proxyReq.setHeader('Origin', 'https://wichat.ddns.net');
+  },
+  onProxyRes: (proxyRes, req, res) => {
+    proxyRes.headers['Access-Control-Allow-Origin'] = 'https://wichat.ddns.net';
+    proxyRes.headers['Access-Control-Allow-Credentials'] = 'true';
+    proxyRes.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS';
   },
 }));
 

@@ -98,7 +98,14 @@ export default function PlayerView() {
     };
 
     const initializeSocket = () => {
-      const newSocket = io(process.env.SOCKET_SERVER || "http://localhost:8006");
+      // Determine the Socket.IO URL based on environment
+      const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:8000';
+
+      const newSocket = io(socketUrl, {
+        path: '/socket.io',
+        withCredentials: true,
+        transports: ['websocket', 'polling'], // Prefer WebSocket
+      });
 
       const handleSessionUpdate = () => fetchSessionData();
 

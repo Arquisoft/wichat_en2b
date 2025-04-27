@@ -160,7 +160,14 @@ export default function HostManager() {
                 return;
             }
 
-            const newSocket = io(process.env.SOCKET_SERVER || "http://localhost:8006");
+            // Determine the Socket.IO URL based on environment
+            const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:8000';
+
+            const newSocket = io(socketUrl, {
+                path: '/socket.io',
+                withCredentials: true,
+                transports: ['websocket', 'polling'], // Prefer WebSocket
+            });
 
             newSocket.on("connect", () => {
                 console.log("Socket connected");
@@ -599,12 +606,12 @@ export default function HostManager() {
                                     <ListItem
                                         key={index}
                                         className={`option-item ${validatedAnswers
-                                                ? option === validatedAnswers.correctAnswer ||
-                                                    (option === currentQuestion.answers[0] &&
-                                                        validatedAnswers.isCorrect)
-                                                    ? "correct"
-                                                    : "incorrect"
-                                                : ""
+                                            ? option === validatedAnswers.correctAnswer ||
+                                                (option === currentQuestion.answers[0] &&
+                                                    validatedAnswers.isCorrect)
+                                                ? "correct"
+                                                : "incorrect"
+                                            : ""
                                             }`}
                                     >
                                         <ListItemText primary={option} />
