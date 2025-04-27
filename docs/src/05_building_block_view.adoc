@@ -73,7 +73,7 @@ This diagram is pivotal in illustrating system interaction patterns, including u
 
 The key building blocks forming the overall system architecture include:
 
-* **User**: Represents the end-user of the platform, who is required to authenticate in order to access the game functionality. Once authenticated, users can interact with the system and participate in gameplay.
+* **User**: Represents the end-user of the platform, who may authenticate in order to access the game functionality. Guest users can interact with the system and participate in gameplay. However, they will have limited access such as no multiplayer mode, saving the games...
 
 * **Wichat EN2B Application**: The core application responsible for managing game mechanics, including the generation of questions and content. It encapsulates the application’s game logic and drives the user experience. Detailed breakdowns of its internal components are explored further in later sections.
 
@@ -163,13 +163,19 @@ skinparam rectangle<<WichatEN2B.UserAuthenticationService>> {
   BorderColor #b26b23
   shadowing false
 }
-skinparam rectangle<<WichatEN2B.UserCRUDService>> {
+skinparam rectangle<<WichatEN2B.UserGroupService>> {
   BackgroundColor #ff9933
   FontColor #ffffff
   BorderColor #b26b23
   shadowing false
 }
-skinparam rectangle<<WichatEN2B.UserGateway>> {
+skinparam rectangle<<WichatEN2B.Wihoot>> {
+  BackgroundColor #ff9933
+  FontColor #ffffff
+  BorderColor #b26b23
+  shadowing false
+}
+skinparam rectangle<<WichatEN2B.UserCRUDService>> {
   BackgroundColor #ff9933
   FontColor #ffffff
   BorderColor #b26b23
@@ -197,31 +203,36 @@ person "==User\n<size:10>[Person]</size>" <<User>> as User
 rectangle "==WikiData\n<size:10>[Software System]</size>" <<WikiData>> as WikiData
 rectangle "==LLM\n<size:10>[Software System]</size>" <<LLM>> as LLM
 
-rectangle "Wichat EN2B\n<size:10>[Software System]</size>" <<WichatEN2B>> {
+rectangle "Wichat EN2B\n<size:20>[Software System]</size>" <<WichatEN2B>> {
   rectangle "==Game Service\n<size:10>[Container]</size>" <<WichatEN2B.GameService>> as WichatEN2B.GameService
   database "==MongoDB Database\n<size:10>[Container]</size>" <<WichatEN2B.MongoDBDatabase>> as WichatEN2B.MongoDBDatabase
   rectangle "==Web Application\n<size:10>[Container]</size>" <<WichatEN2B.WebApplication>> as WichatEN2B.WebApplication
   rectangle "==Gateway Service\n<size:10>[Container]</size>" <<WichatEN2B.GatewayService>> as WichatEN2B.GatewayService
   rectangle "==Documentation System\n<size:10>[Container]</size>" <<WichatEN2B.DocumentationSystem>> as WichatEN2B.DocumentationSystem
   rectangle "==LLM Service\n<size:10>[Container]</size>" <<WichatEN2B.LLMService>> as WichatEN2B.LLMService
-  rectangle "==User Gateway\n<size:10>[Container]</size>" <<WichatEN2B.UserGateway>> as WichatEN2B.UserGateway
   rectangle "==User CRUD Service\n<size:10>[Container]</size>" <<WichatEN2B.UserCRUDService>> as WichatEN2B.UserCRUDService
   rectangle "==User Authentication Service\n<size:10>[Container]</size>" <<WichatEN2B.UserAuthenticationService>> as WichatEN2B.UserAuthenticationService
+  rectangle "==User Group Service\n<size:10>[Container]</size>" <<WichatEN2B.UserGroupService>> as WichatEN2B.UserGroupService
+  rectangle "==Wihoot Service\n<size:10>[Container]</size>" <<WichatEN2B.Wihoot>> as WichatEN2B.Wihoot
 }
 
 WichatEN2B.LLMService .[#707070,thickness=2].> LLM : "<color:#707070>LLM ask API call"
 User .[#707070,thickness=2].> WichatEN2B.WebApplication : "<color:#707070>Uses"
 WichatEN2B.WebApplication .[#707070,thickness=2].> WichatEN2B.GatewayService : "<color:#707070>Makes API calls"
 WichatEN2B.GatewayService .[#707070,thickness=2].> WichatEN2B.LLMService : "<color:#707070>LLM ask API call"
-WichatEN2B.GatewayService .[#707070,thickness=2].> WichatEN2B.UserGateway : "<color:#707070>User related API calls"
 WichatEN2B.GatewayService .[#707070,thickness=2].> WichatEN2B.GameService : "<color:#707070>Question API calls"
+WichatEN2B.GatewayService .[#707070,thickness=2].> WichatEN2B.Wihoot : "<color:#707070>Wihoot API calls"
 WichatEN2B.GameService .[#707070,thickness=2].> WikiData : "<color:#707070>Question batches API calls"
 WichatEN2B.GameService .[#707070,thickness=2].> WichatEN2B.MongoDBDatabase : "<color:#707070>Stores game information"
-WichatEN2B.UserGateway .[#707070,thickness=2].> WichatEN2B.UserCRUDService : "<color:#707070>CRUD API calls"
-WichatEN2B.UserGateway .[#707070,thickness=2].> WichatEN2B.UserAuthenticationService : "<color:#707070>Authentication API calls"
+WichatEN2B.Wihoot .[#707070,thickness=2].> WichatEN2B.MongoDBDatabase : "<color:#707070>Stores multiplayer information"
+WichatEN2B.GatewayService .[#707070,thickness=2].> WichatEN2B.UserCRUDService : "<color:#707070>CRUD API calls"
+WichatEN2B.GatewayService .[#707070,thickness=2].> WichatEN2B.UserAuthenticationService : "<color:#707070>Authentication API calls"
+WichatEN2B.GatewayService .[#707070,thickness=2].> WichatEN2B.UserGroupService : "<color:#707070>Group management API calls"
 WichatEN2B.UserCRUDService .[#707070,thickness=2].> WichatEN2B.MongoDBDatabase : "<color:#707070>User CRUD operations"
 WichatEN2B.UserAuthenticationService .[#707070,thickness=2].> WichatEN2B.MongoDBDatabase : "<color:#707070>User authentication operations"
+WichatEN2B.UserGroupService .[#707070,thickness=2].> WichatEN2B.MongoDBDatabase : "<color:#707070>Group operations"
 @enduml
+
 ----
 
 ==== Motivation
@@ -243,16 +254,22 @@ responsible for generating and retrieving questions, together with retrieving th
 
 * **LLM Service**: This container interfaces with a **Large Language Model (LLM)** to provide hints, explanations, and additional content to assist the user during the game. It ensures that users receive context-sensitive content, enhancing the overall gaming experience by offering real-time dynamic information. Communication with the LLM API is conducted conversationally by passing the entire message history in each request to maintain context and coherence.
 
+* **Wihoot Service**: This container manages the multiplayer game logic by letting users host or join a session to play the same quiz with other users. It was developped using **sockets**.
+
 * **MongoDB Database**: The database responsible for storing persistent system data, including user profiles, game states, and scores. MongoDB is used for its flexibility in handling semi-structured data and its scalability.
 
-* **User Gateway**: A container dedicated to managing user-specific API requests. It handles user authentication, session management, and retrieval of user-related data, ensuring secure and personalized experiences.
+* **User CRUD Service**: A container dedicated to managing user-specific API requests. It handles retrieval of user-related data, and management of user information such as creating, updating and deleting users.
+
+* **User Authentication Service**: Handles the authentification part of the application. This service is in charge of logging a user in, registering a new one and validanting information.
+
+* **User Group Service**: This container contains all the behaviour regarding groups such as group management (CRUD operations), joining and leaving a group.
 
 ==== Data Flow
 
 Data flows between containers in a manner that ensures efficient communication and process execution. For example:
 
-* When a user logs in via the Web Application, the system authenticates the request using the **User Service**.
-* After successful authentication, the user interacts with the **Game Service**.
+* When a user logs in via the Web Application, the system authenticates the request using the **User Service**. Guest users are also allowed to play the existing quizzes.
+* After successful redirection, the user interacts with the **Game Service**.
 * The **LLM Service** is called when the user requests a hint.
 
 This modular design enhances scalability, maintainability, and fault isolation, ensuring that each component is specialized in its task while working seamlessly as part of the larger system.
@@ -356,14 +373,20 @@ rectangle "Wichat EN2B\n<size:10>[Software System]</size>" <<WichatEN2B>> {
   rectangle "Game Service\n<size:10>[Service]</size>" <<WichatEN2B.GameService>> as GameServer
   rectangle "User Service\n<size:10>[Service]</size>" <<WichatEN2B.UserService>> as UserServer
   rectangle "LLM Service\n<size:10>[Service]</size>" <<WichatEN2B.LLMService>> as LLMServer
+  rectangle "Auth Service\n<size:10>[Service]</size>" <<WichatEN2B.LLMService>> as AuthServer
+  rectangle "Group Service\n<size:10>[Service]</size>" <<WichatEN2B.LLMService>> as GroupServer
+  rectangle "Wihoot Service\n<size:10>[Service]</size>" <<WichatEN2B.LLMService>> as WihootServer
 
   ' ======== Routers =========
-  rectangle "Question Fetcher Router\n<size:10>[Router]</size>" <<Router>> as QuestionFetcherRouter
+  rectangle "Quiz Router\n<size:10>[Router]</size>" <<Router>> as QuizRouter
   rectangle "Question Retriever Router\n<size:10>[Router]</size>" <<Router>> as QuestionRetrieverRouter
   rectangle "Game Info Router\n<size:10>[Router]</size>" <<Router>> as GameInfoRouter
   rectangle "Statistics Router\n<size:10>[Router]</size>" <<Router>> as StatisticsRouter
   rectangle "Auth Router\n<size:10>[Router]</size>" <<Router>> as AuthRouter
   rectangle "User CRUD Router\n<size:10>[Router]</size>" <<Router>> as UserCrudRouter
+  rectangle "Group Router\n<size:10>[Router]</size>" <<Router>> as GroupRouter
+  rectangle "Wihoot Router\n<size:10>[Router]</size>" <<Router>> as WihootRouter
+
 
   ' ======== Middleware =========
   rectangle "Auth Middleware\n<size:10>[Middleware]</size>" <<Middleware>> as AuthMiddleware
@@ -372,6 +395,8 @@ rectangle "Wichat EN2B\n<size:10>[Software System]</size>" <<WichatEN2B>> {
   rectangle "Question Model\n<size:10>[Model]</size>" <<Model>> as QuestionModel
   rectangle "Game Result Model\n<size:10>[Model]</size>" <<Model>> as GameResultModel
   rectangle "User Model\n<size:10>[Model]</size>" <<Model>> as UserModel
+  rectangle "Group Model\n<size:10>[Model]</size>" <<Model>> as GroupModel
+  rectangle "Wihoot Model\n<size:10>[Model]</size>" <<Model>> as WihootModel
 
   ' ======== Database ========
   rectangle "MongoDB Database\n<size:10>[Container]</size>" <<WichatEN2B.MongoDBDatabase>> as MongoDBDatabase
@@ -385,29 +410,49 @@ rectangle "LLM API\n<size:10>[External API]</size>" <<LLM>> as LLMAPI
 GatewayServer -[#707070,thickness=2]-> GameServer : "Routes game API calls"
 GatewayServer -[#707070,thickness=2]-> UserServer : "Routes user-related API calls"
 GatewayServer -[#707070,thickness=2]-> LLMServer : "Routes LLM API calls"
+GatewayServer -[#707070,thickness=2]-> AuthServer : "Routes authentication-related API calls"
+GatewayServer -[#707070,thickness=2]-> GroupServer : "Routes group-related API calls"
+GatewayServer -[#707070,thickness=2]-> WihootServer : "Routes multiplayer-related API calls"
 
-UserServer -[#707070,thickness=2]-> AuthRouter : "Routes user-related API calls"
+AuthServer -[#707070,thickness=2]-> AuthRouter : "Routes user-related API calls"
 AuthRouter -[#707070,thickness=2]-> UserCrudRouter : "Requests user data"
 AuthRouter -[#707070,thickness=2]-> UserModel : "Handles authentication requests"
+
+UserServer -[#707070,thickness=2]-> UserCrudRouter : "Routes user-related API calls"
 UserCrudRouter -[#707070,thickness=2]-> UserModel : "Manages user data"
 UserCrudRouter -[#707070,thickness=2]-> MongoDBDatabase : "Modifies users"
 
+GroupServer -[#707070,thickness=2]-> GroupRouter : "Routes group-related API calls"
+GroupRouter -[#707070,thickness=2]-> GroupModel : "Manages group data"
+GroupRouter -[#707070,thickness=2]-> MongoDBDatabase : "Modifies groups"
+
+WihootServer -[#707070,thickness=2]-> WihootRouter : "Routes multiplayer-related API calls"
+WihootRouter -[#707070,thickness=2]-> WihootModel : "Manages multiplayer data"
+WihootRouter -[#707070,thickness=2]-> MongoDBDatabase : "Saves multiplayer data"
+
 LLMServer -[#707070,thickness=2]-> LLMAPI : "Processes language model requests"
 
-AuthMiddleware -[#707070,thickness=2]-> GameServer : "Validates user authentication"
-GameServer -[#707070,thickness=2]-> QuestionFetcherRouter : "Fetches new questions"
+AuthMiddleware -[#707070,thickness=2]-> GameInfoRouter : "Validates user authentication"
+AuthMiddleware -[#707070,thickness=2]-> StatisticsRouter : "Validates user authentication"
+AuthMiddleware -[#707070,thickness=2]-> GroupRouter : "Validates user authentication"
+
+GameServer -[#707070,thickness=2]-> QuizRouter : "Fetches new questions"
 GameServer -[#707070,thickness=2]-> QuestionRetrieverRouter : "Retrieves stored questions"
 GameServer -[#707070,thickness=2]-> GameInfoRouter : "Handles game session data"
 GameServer -[#707070,thickness=2]-> StatisticsRouter : "Processes game statistics"
-QuestionFetcherRouter -[#707070,thickness=2]-> QuestionModel : "Models the question schema"
-QuestionRetrieverRouter -[#707070,thickness=2]-> QuestionModel : "Models the question schema"
+
+QuizRouter -[#707070,thickness=2]-> QuestionModel : "Models the question schema"
+QuizRouter -[#707070,thickness=2]-> WikiDataAPI : "Fetches trivia questions"
+QuizRouter -[#707070,thickness=2]-> MongoDBDatabase : "Stores questions"
+
 GameInfoRouter -[#707070,thickness=2]-> GameResultModel : "Models the question schema"
-StatisticsRouter -[#707070,thickness=2]-> GameResultModel : "Models the question schema"
 GameInfoRouter -[#707070,thickness=2]-> MongoDBDatabase : "Saves game information"
+
+StatisticsRouter -[#707070,thickness=2]-> GameResultModel : "Models the question schema"
 StatisticsRouter -[#707070,thickness=2]-> MongoDBDatabase : "Retrieves game information"
-QuestionFetcherRouter -[#707070,thickness=2]-> MongoDBDatabase : "Stores questions"
+
+QuestionRetrieverRouter -[#707070,thickness=2]-> QuestionModel : "Models the question schema"
 QuestionRetrieverRouter -[#707070,thickness=2]-> MongoDBDatabase : "Retrieves questions"
-QuestionFetcherRouter -[#707070,thickness=2]-> WikiDataAPI : "Fetches trivia questions"
 
 @enduml
 ----
@@ -426,20 +471,31 @@ The **Component Diagram** (C4 Level 3) provides a detailed view of the internal 
 * **Game Service**:
   - **Middleware**: Ensures only authenticated users can access to these points.
   - **Game Information Router**: Saves the game information and the game state.
-  - **Game Fetcher Router**: Is in charge of fetching questions from WikiData given the type and amount.
-  - **Game Retriever Router**: Returns questions from our database given the requested parameters.
-  - **Game Statistics Router**: Returns the current user game statistics for a given subject or for 
+  - **Quiz Router**: Is in charge of fetching questions from WikiData given the type and amount.
+  - **Retriever Router**: Returns questions from our database given the requested parameters.
+  - **Statistics Router**: Returns the current user game statistics for a given subject or for 
   the whole application. It also returns the leaderboard of the application, including the current user.
 
-* **User Service**:
-  - **Auth Service Router**: Manages authentication-related endpoints (login, register). It uses the
+* **Auth Service**:
+  - **Auth Service Router**: Manages authentication-related endpoints (login, register, validate). It uses the
   User CRUD router internally.
+
+* **User Service**:
   - **User CRUD Router**: Handles user management endpoints (create, update, delete users).
   - **User Model**: Represents the user data structure and interacts with the database.
+
+* **Group Service**:
+  - **Group Router**: Handles the group management endpoints (CRUD, join, leave).
+  - **Group Model**: Represents the group data sctructure and interacts with the database.
+  - This service also uses the **middleware** to ensure only logged users can join or create groups.
 
 * **LLM Service**:
   - **LLM Router**: Handles requests for hints.
   - **LLM Logic**: Communicates with the external LLM API to generate responses. 
+
+* **Wihoot Service**:
+  - **Wihoot Router**: Manages multiplayer games' endpoints.
+  - **Wihoot Model**: The structure of the multiplayer data and interacts with the database.
 
 * **External APIs**:
   - **WikiData API**: Provides structured data for generating questions.
@@ -456,10 +512,13 @@ The **Component Diagram** (C4 Level 3) provides a detailed view of the internal 
 Each router contains one or several endpoints for its respective service. These router components interact with models or external APIs to fulfill the requests, ensuring a clear separation of concerns and maintainability.
 
 For example:
+
 - The **Gateway** routes a user request to the **Game Service** for game-related actions.
-- The **Middleware** would check if the user is authenticated previously to any operation.
-- The **Game Service** uses the **Game Fetcher Router** and fetches data from the **WikiData API** 
+
+- The **Middleware** would check if the user is authenticated previously to any operation if required.
+
 - The **Game Service** uses the **Game Retriever Router** and retrieves questions from the **Database** 
+
 - The **LLM Service** communicates with the **LLM** throught the **LLM API** to generate hints or contextual responses for the user.
 
 This modular design enhances scalability, maintainability, and fault isolation, ensuring that each component is specialized in its task while working seamlessly as part of the larger system.
