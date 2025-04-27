@@ -136,6 +136,7 @@
     font-weight: 600;
     color: #222;
     margin-bottom: 16px;
+    text-align: center;
 }
 
 .image-box {
@@ -225,6 +226,12 @@
     transform: translateX(-50%);
     z-index: 1000;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+#quiz-timer {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 8px;
 }
 
 /* Host Disconnected View Styles */

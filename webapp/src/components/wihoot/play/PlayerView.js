@@ -29,7 +29,7 @@ export default function PlayerView() {
   const router = useRouter();
   const { code, playerId } = router.query;
 
-  const [setSocket] = useState(null);
+  const [, setSocket] = useState(null); // NOSONAR
   const [username, setUsername] = useState("");
   const [sessionStatus, setSessionStatus] = useState("waiting");
   const [players, setPlayers] = useState([]);

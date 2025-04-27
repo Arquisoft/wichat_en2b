@@ -1,5 +1,6 @@
 import "../../../styles/wihoot/PlayerView.css";
-import { List, ListItem, ListItemText, Typography } from "@mui/material";
+import { List, ListItem, ListItemText, Typography, Chip } from "@mui/material";
+import PersonIcon from '@mui/icons-material/Person';
 import PropTypes from 'prop-types';
 
 export default function Leaderboard({ players, playerId, title }) {

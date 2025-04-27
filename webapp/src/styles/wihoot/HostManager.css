@@ -184,6 +184,8 @@
 
 .progress-indicator {
   text-align: center;
+  margin-top: 47px;
+  margin-bottom: 12px;
 }
 
 .progress-bar {
