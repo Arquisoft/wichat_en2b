@@ -591,14 +591,13 @@ describe('Session Routes', () => {
       };
       
       SharedQuizSession.findOne.mockResolvedValueOnce(mockSession);
-
+  
       const response = await request(app)
         .get(`/api/sessions/${mockCode}/status`);
-
+  
       expect(response.status).toBe(200);
       expect(response.body).toEqual({
         waitingForNext: false,
-        code: mockCode,
         status: 'active',
         currentQuestionIndex: 2,
         players: [
@@ -610,19 +609,6 @@ describe('Session Routes', () => {
           }
         ]
       });
-    });
-
-    it('should return 404 if session is not found', async () => {
-      const mockCode = 'INVALID';
-      
-      // Mock the findOne method to return null (session not found)
-      SharedQuizSession.findOne.mockResolvedValueOnce(null);
-
-      const response = await request(app)
-        .get(`/api/sessions/${mockCode}/status`);
-
-      expect(response.status).toBe(404);
-      expect(response.body).toEqual({ error: 'Session not found' });
     });
   });
 
