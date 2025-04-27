@@ -154,6 +154,10 @@ module.exports = {
                         socket.emit("error", { message: "Failed to process waiting-for-next" });
                     }
                 });
+
+                socket.on("show-correct-answer", async ({ code }) => {
+                    this.io.to(code).emit("show-correct-answer");
+                });
             })
 
         return this.io

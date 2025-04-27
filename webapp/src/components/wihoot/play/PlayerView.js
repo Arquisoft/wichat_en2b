@@ -47,6 +47,7 @@ export default function PlayerView() {
   const [hasSavedGame, setHasSavedGame] = useState(false);
   const [timeLeft, setTimeLeft] = useState(null);
   const timerIntervalRef = useRef(null);
+  const [showCorrectAnswer, setShowCorrectAnswer] = useState(false);
 
   // Fetch session data
   const fetchSessionData = async () => {
@@ -137,6 +138,15 @@ export default function PlayerView() {
         setHasAnswered(false);
         setSelectedOption(null);
         setWaitingForNext(false);
+      });
+
+      newSocket.on("show-correct-answer", () => {
+        console.log("Received show-correct-answer");
+        setShowCorrectAnswer(true);
+        setTimeout(() => {
+          setShowCorrectAnswer(false);
+          setWaitingForNext(true);
+        }, 2000);
       });
 
       newSocket.on("waiting-for-next", () => setWaitingForNext(true));
@@ -313,7 +323,6 @@ export default function PlayerView() {
       }),
     });
     setIsCorrect(isCorrect);
-    setCorrectAnswer(correctAnswer);
 
     const timerDuration = quizMetaData[0].timePerQuestion;
     const timeLeft = timerDuration - timeToAnswer;
@@ -472,20 +481,25 @@ export default function PlayerView() {
             />
           </div>
           <div className="options-box">
-            {currentQuestion.answers.map((option, index) => (
-              <button
-                id={`option-${index}`}
-                key={option}
-                className={`quiz-option 
-                  ${selectedOption === index ? "selected" : ""} 
-                  ${hasAnswered && selectedOption === index && isCorrect ? "correct-answer" : ""}
-                  ${hasAnswered && !isCorrect && correctAnswer === option ? "correct-answer" : ""}`}
-                onClick={() => handleAnswerSubmit(index)}
-                disabled={hasAnswered}
-              >
-                {option}
-              </button>
-            ))}
+            {currentQuestion.answers.map((option, index) => {
+              return (
+                  <button
+                      id={`option-${index}`}
+                      key={option}
+                      className={`quiz-option 
+                      ${selectedOption === index ? "selected" : ""} 
+                      ${(hasAnswered && selectedOption === index && isCorrect) ||
+                      (showCorrectAnswer && correctAnswer === option)
+                          ? "correct-answer"
+                          : ""}
+      `}
+                      onClick={() => handleAnswerSubmit(index)}
+                      disabled={hasAnswered}
+                  >
+                    {option}
+                  </button>
+              );
+            })}
           </div>
           <InGameChat initialMessages={[]} question={currentQuestion} />
         </div>

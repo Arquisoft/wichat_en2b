@@ -328,15 +328,25 @@ export default function HostManager() {
                 throw new Error("No current question available");
             }
 
-            if (currentQuestionIndex + 1 >= quiz.quizData.length) {
-                await handleEndQuiz();
-            } else {
-                if (socket) {
-                    socket.emit("waiting-for-next", { code });
-                }
-                setShowLeaderboard(true);
-                clearTimerData();
+            const correctAnswer = validatedAnswers.correctAnswer;
+
+            if (socket) {
+                console.log("emitting correct answer SOCKET1 - ", correctAnswer);
+                socket.emit("show-correct-answer", { code });
             }
+            setShowLeaderboard(false);
+            setTimeout(async () => {
+                setShowLeaderboard(true);
+                if (currentQuestionIndex + 1 >= quiz.quizData.length) {
+                    await handleEndQuiz();
+                } else {
+                    if (socket) {
+                        socket.emit("waiting-for-next", { code });
+                    }
+                    setShowLeaderboard(true);
+                    clearTimerData();
+                }
+            }, 2000);
         } catch (err) {
             setError(err.message || "Failed to move to next question");
             console.error("Error in handleNextQuestion:", err);
