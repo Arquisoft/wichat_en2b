@@ -554,7 +554,7 @@ describe('PlayerView Component', () => {
         render(<PlayerView />);
 
         await waitFor(() => {
-            expect(screen.getByText(/Time left: 60s/)).toBeInTheDocument();
+            expect(screen.getByText(/Time left: 10s/)).toBeInTheDocument();
         });
 
         act(() => {
@@ -562,7 +562,7 @@ describe('PlayerView Component', () => {
         });
 
         await waitFor(() => {
-            expect(screen.getByText(/Time left: 55s/)).toBeInTheDocument();
+            expect(screen.getByText(/Time left: 5s/)).toBeInTheDocument();
         });
     });
 
