@@ -67,10 +67,11 @@ image::04_architectural_design.png[Architecture design]
 In our solution we are applying some design patterns to be aware of future changes of features in the code. Therefore, we can highlight the following patterns:
 
 * **Facade** (Unifier Interface) +
-    As our project will use a LLM module, we have consider the possibility that perhaps we have to change API provider suddenly for a performance or other reason. Therefore, an interface that hide the specific interface of a provider will reduce the coupling in its API.
+    As our project will use a gateway arquitecture, we are abstracting some intern endpoints using a forwarding functionality in our gateway service.
 
-* **Strategy** +
-    We have considered an optional requirement that include game different modes. Therefore, a game could delegate the logic of an specific mode to an interface, a GameMode interface that is linked once the game is created.
+* **Observer**
+    Wihoot service multiplayer game is based in an event polling of the WebSockets joined to the same game session code. The logic of this is handled by the socket.io module.
+
 
 === Decisions trade-offs
 
@@ -126,3 +127,43 @@ We use **GitHub** as our **primary version control tool**, and also using its **
 * **Continuous Deployment and Stability Checks**
 
 Once the application reaches a deployment stable functionality, we will **implement a Continuous Deployment methodology**. This involves **deploying** the application **at least once per week, to verify stability in a production-like environment**. This proactive approach helps **detect** and resolve **deployment-specific bugs early**, preventing major issues from being discovered too late in the process.
+
+=== Implementation decisions
+
+* **How are solved the LLM hallucinations?**
+
+We have implemented a filter function that process LLM responses to exclude any of the possible quiz answers. If a forbidden word is detected, the system retries the request a limited number of times, and if the response of the LLM is wrong then it shows an error message: "There was an error while returning your answer, please try again." To avoid any prompt engineering attempt to obtain the answer.
+
+Known Limitations:
+
+--
+1. Exact Matching: The filtering mechanism only detects exact matches of possible answers, potentially missing paraphrased answers.
+
+2. Retry Limit: Fixed at a finite number of retries, which may not suffice for complex cases.
+--
+
+* **How are questions fetched/retrieved in our application?**
+
+- Adding Quiz Categories
+
+We have defined an endpoint `POST /quiz` that accepts JSON format with different body parameters as `category`, `wikidataQuery`, `wikidataCode`, ... Once the request is done automatically performs multiple requests to WikiData and stores questions for later retrieve in the quiz.
+
+- Retrieving Questions
+
+We have defined an endpoint `GET /game/{subject}/{numberOfQuestions}/{numberOfOptions}` to retrieve the questions stored in the database regarding the subject of the quiz.
+
+Known Limitations:
+
+--
+1. Assumes valid images paths and sufficient questions/answers to retrieve or fails.
+--
+
+* **How is designed our multiplayer functionality?**
+
+The multiplayer functionality of the quiz game is designed to enable real-time, shared quiz sessions where multiple players can join, compete, and interact under the coordination of a host. It leverages a combination of Express.js for session management, MongoDB for persistent storage, and Socket.IO for real-time communication, as implemented in the Wihoot microservice.
+
+Known Limitations:
+
+--
+1. You have to be registered to create the game session and to join to the game session code
+--
