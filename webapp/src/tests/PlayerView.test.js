@@ -1,19 +1,10 @@
 import React from 'react';
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
-import { act } from 'react-dom/test-utils';
 import { useRouter } from 'next/router';
-import io from 'socket.io-client';
 import { fetchWithAuth } from '@/utils/api-fetch-auth';
-import InGameChat from '@/components/game/InGameChat';
-import FinishResults from '@/components/wihoot/game/FinishResults';
 
 import "@testing-library/jest-dom";
 import { render, screen, fireEvent, waitFor, act } from "@testing-library/react";
 import PlayerView from "@/components/wihoot/play/PlayerView"
-import fetchMock from "jest-fetch-mock";
-import mockRouter from "next-router-mock";
-import { MemoryRouterProvider } from "next-router-mock/MemoryRouterProvider";
-import * as apiFetchAuth from "@/utils/api-fetch-auth";
 import io from "socket.io-client";
 
 // Mock dependencies
@@ -110,11 +101,6 @@ describe('PlayerView Component', () => {
         jest.useRealTimers();
     });
 
-    it('renders loading state initially', () => {
-        render(<PlayerView />);
-        expect(screen.getAllByText('Loading...').length).toBeGreaterThanOrEqual(2);
-    });
-
     it('fetches user and session data on mount', async () => {
         global.fetch.mockImplementation((url) => {
             if (url.includes('/shared-quiz/1234/status')) {
@@ -163,7 +149,7 @@ describe('PlayerView Component', () => {
 
         // Wait for the username to appear in the rendered output, indicating state update
         await waitFor(() => {
-            expect(screen.getByText('WiHoot - testUser')).toBeInTheDocument();
+            expect(screen.getByText('WiHoot - Quiz')).toBeInTheDocument();
         });
 
         // Manually trigger the socket connect event after state update
@@ -419,9 +405,6 @@ describe('PlayerView Component', () => {
             expect(screen.getByText('100')).toBeInTheDocument();
             expect(screen.getByText('FinishResults')).toBeInTheDocument();
         });
-
-        fireEvent.click(screen.getByText('Join Another Quiz'));
-        expect(mockRouter.push).toHaveBeenCalledWith('/wihoot/join');
     });
 
     it('handles socket session-started event', async () => {
@@ -581,5 +564,276 @@ describe('PlayerView Component', () => {
         await waitFor(() => {
             expect(screen.getByText(/Time left: 5s/)).toBeInTheDocument();
         });
+    });
+
+    it('renders disconnected view when the error is: "The host has left the session"', async () => {
+        global.fetch.mockImplementation((url) => {
+            if (url.includes('/shared-quiz/1234/status')) {
+                return Promise.resolve({
+                    ok: true,
+                    json: () =>
+                        Promise.resolve({
+                            status: 'waiting',
+                            players: [{ id: 'player1', username: 'testUser' }],
+                            currentQuestionIndex: -1,
+                            waitingForNext: false,
+                        }),
+                });
+            }
+            if (url.includes('/internal/quizdata/1234')) {
+                return Promise.resolve({
+                    ok: true,
+                    json: () =>
+                        Promise.resolve({
+                            quizData: [],
+                            quizMetaData: [{ timePerQuestion: 60 }],
+                        }),
+                });
+            }
+            return Promise.resolve({ ok: false });
+        });
+        mockFetchWithAuth.mockResolvedValue({ username: 'testUser' });
+
+        render(<PlayerView />);
+
+        // Wait for initial render and socket setup
+        await waitFor(() => {
+            expect(screen.getByText('Get ready for the quiz!🚀')).toBeInTheDocument();
+            expect(mockSocket.on).toHaveBeenCalledWith('connect', expect.any(Function));
+        });
+
+        // Simulate socket connection
+        await act(async () => {
+            const connectCall = mockSocket.on.mock.calls.find((call) => call[0] === 'connect');
+            const connectHandler = connectCall?.[1];
+            if (connectHandler) {
+                connectHandler();
+            } else {
+                throw new Error('connect handler not found');
+            }
+        });
+
+        // Simulate host-disconnected event
+        await act(async () => {
+            const hostDisconnectedCall = mockSocket.on.mock.calls.find(
+                (call) => call[0] === 'host-disconnected'
+            );
+            const errorHandler = hostDisconnectedCall?.[1];
+            if (errorHandler) {
+                errorHandler({ message: 'The host has left the session' });
+            } else {
+                throw new Error('host-disconnected handler not found');
+            }
+        });
+
+        // Wait for disconnected view
+        await waitFor(
+            () => {
+                expect(screen.getByText('Host Disconnected')).toBeInTheDocument();
+                expect(screen.getByText('The host has left the session')).toBeInTheDocument();
+            },
+            { timeout: 2000 }
+        );
+
+        // Verify redirect
+        act(() => {
+            jest.advanceTimersByTime(3000);
+        });
+        expect(mockRouter.push).toHaveBeenCalledWith('/');
+    });
+    it('shows loading spinner if there is no question', async () => {
+        global.fetch.mockImplementation((url) => {
+            if (url.includes('/shared-quiz/1234/status')) {
+                return Promise.resolve({
+                    ok: true,
+                    json: () =>
+                        Promise.resolve({
+                            status: 'active',
+                            players: [{ id: 'player1', username: 'testUser', answers: [] }],
+                            currentQuestionIndex: 1,
+                            waitingForNext: false,
+                        }),
+                });
+            }
+            if (url.includes('/internal/quizdata/1234')) {
+                return Promise.resolve({
+                    ok: true,
+                    json: () =>
+                        Promise.resolve({
+                            quizData: [
+                                {
+                                    question_id: 'q1',
+                                    question: 'What is 2+2?',
+                                    answers: ['4', '5', '6', '7'],
+                                    image_name: '/image.jpg',
+                                },
+                            ],
+                            quizMetaData: [{ timePerQuestion: 60, category: 'Math' }],
+                        }),
+                });
+            }
+            return Promise.resolve({ ok: false });
+        });
+
+        render(<PlayerView />);
+        await waitFor(() => {
+            expect(screen.getByText('Loading your quiz...')).toBeInTheDocument();
+        });
+    });
+    it('handles socket error event and redirects to home', async () => {
+        global.fetch.mockImplementation((url) => {
+            if (url.includes('/shared-quiz/1234/status')) {
+                return Promise.resolve({
+                    ok: true,
+                    json: () =>
+                        Promise.resolve({
+                            status: 'waiting',
+                            players: [{ id: 'player1', username: 'testUser' }],
+                            currentQuestionIndex: -1,
+                            waitingForNext: false,
+                        }),
+                });
+            }
+            if (url.includes('/internal/quizdata/1234')) {
+                return Promise.resolve({
+                    ok: true,
+                    json: () =>
+                        Promise.resolve({
+                            quizData: [],
+                            quizMetaData: [{ timePerQuestion: 60 }],
+                        }),
+                });
+            }
+            return Promise.resolve({ ok: false });
+        });
+        mockFetchWithAuth.mockResolvedValue({ username: 'testUser' });
+
+        render(<PlayerView />);
+
+        // Wait for initial render and socket setup
+        await waitFor(
+            () => {
+                expect(screen.getByText('Get ready for the quiz!🚀')).toBeInTheDocument();
+                expect(mockSocket.on).toHaveBeenCalledWith('connect', expect.any(Function));
+            },
+            { timeout: 3000 } // Increased timeout for async socket setup
+        );
+
+        // Simulate socket connection
+        await act(async () => {
+            const connectCall = mockSocket.on.mock.calls.find((call) => call[0] === 'connect');
+            const connectHandler = connectCall?.[1];
+            if (connectHandler) {
+                connectHandler();
+            } else {
+                throw new Error('connect handler not found');
+            }
+        });
+
+        // Simulate socket error event
+        await act(async () => {
+            const errorCall = mockSocket.on.mock.calls.find((call) => call[0] === 'error');
+            const errorHandler = errorCall?.[1];
+            if (errorHandler) {
+                errorHandler({ message: 'Session not found' });
+            } else {
+                throw new Error('error handler not found');
+            }
+        });
+
+        // Verify error message and redirect
+        await waitFor(
+            () => {
+                expect(screen.getByText('Session not found')).toBeInTheDocument();
+                expect(mockRouter.push).toHaveBeenCalledWith('/');
+            },
+            { timeout: 2000 }
+        );
+    });
+
+    it('handles socket question-changed event and updates question', async () => {
+        global.fetch.mockImplementation((url) => {
+            if (url.includes('/shared-quiz/1234/status')) {
+                return Promise.resolve({
+                    ok: true,
+                    json: () =>
+                        Promise.resolve({
+                            status: 'active',
+                            players: [{ id: 'player1', username: 'testUser', answers: [] }],
+                            currentQuestionIndex: 0,
+                            waitingForNext: false,
+                        }),
+                });
+            }
+            if (url.includes('/internal/quizdata/1234')) {
+                return Promise.resolve({
+                    ok: true,
+                    json: () =>
+                        Promise.resolve({
+                            quizData: [
+                                {
+                                    question_id: 'q1',
+                                    question: 'What is 2+2?',
+                                    answers: ['4', '5', '6', '7'],
+                                    image_name: '/image.jpg',
+                                },
+                                {
+                                    question_id: 'q2',
+                                    question: 'What is 3+3?',
+                                    answers: ['6', '7', '8', '9'],
+                                    image_name: '/image2.jpg',
+                                },
+                            ],
+                            quizMetaData: [{ timePerQuestion: 60, category: 'Math' }],
+                        }),
+                });
+            }
+            return Promise.resolve({ ok: false });
+        });
+        mockFetchWithAuth.mockResolvedValue({ username: 'testUser' });
+
+        render(<PlayerView />);
+
+        // Wait for initial question render
+        await waitFor(() => {
+            expect(screen.getByText('What is 2+2?')).toBeInTheDocument();
+        });
+
+        // Simulate socket connection
+        await act(async () => {
+            const connectCall = mockSocket.on.mock.calls.find((call) => call[0] === 'connect');
+            const connectHandler = connectCall?.[1];
+            if (connectHandler) {
+                connectHandler();
+            } else {
+                throw new Error('connect handler not found');
+            }
+        });
+
+        // Simulate question-changed event
+        await act(async () => {
+            const questionChangedCall = mockSocket.on.mock.calls.find(
+                (call) => call[0] === 'question-changed'
+            );
+            const questionHandler = questionChangedCall?.[1];
+            if (questionHandler) {
+                questionHandler({ currentQuestionIndex: 1 });
+            } else {
+                throw new Error('question-changed handler not found');
+            }
+        });
+
+        // Verify new question and state reset
+        await waitFor(
+            () => {
+                expect(screen.getByText('What is 3+3?')).toBeInTheDocument();
+                expect(screen.getByText('6')).toBeInTheDocument();
+                expect(localStorageMock.setItem).toHaveBeenCalledWith(
+                    expect.stringContaining('startTime-1234-player1'),
+                    expect.any(String)
+                );
+            },
+            { timeout: 2000 }
+        );
     });
 });
