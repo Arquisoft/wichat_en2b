@@ -64,14 +64,17 @@ export default function CreateGame() {
         try {
             const quizzesForTopic = await fetchWithAuth(`/quiz/${selectedTopic}`);
             const quizzes = quizzesForTopic
-            if (quizzes.length === 0) {
-                setError("No quizzes available for the selected topic.")
-                return
+            if (!quizzesForTopic || !Array.isArray(quizzesForTopic) || quizzesForTopic.length === 0) {
+                setError("No quizzes available for the selected topic.");
+                setIsLoading(false);
+                return;
             }
-            let quizRequested = quizzes.find(quiz => quiz.difficulty === difficultySelected);
 
-            if (!quizRequested) {
-                setError("No quiz found for the difficulty selected.")
+            let quizRequested = quizzesForTopic.find(quiz => quiz.difficulty === difficultySelected);
+            if (!quizRequested || !Array.isArray(quizzesForTopic)) {
+                setError("No quiz found for the difficulty selected.");
+                setIsLoading(false);
+                return;
             }
 
             if (quizRequested.length > 1) {

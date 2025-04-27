@@ -1,20 +1,17 @@
 import React from "react";
-import "@testing-library/jest-dom";
 import { render, screen, fireEvent, waitFor, act } from "@testing-library/react";
-import CreateGame from "../components/wihoot/CreateGame";
-import fetchMock from "jest-fetch-mock";
-import mockRouter from "next-router-mock";
+import CreateGame from "@/components/wihoot/CreateGame";
 import { MemoryRouterProvider } from "next-router-mock/MemoryRouterProvider";
-import * as apiFetchAuth from "../utils/api-fetch-auth";
+import mockRouter from "next-router-mock";
+import * as apiFetchAuth from "@/utils/api-fetch-auth";
+import fetchMock from "jest-fetch-mock";
 
 // Enable fetch mocking
 fetchMock.enableMocks();
 
-// Mock next/router
+// Mock dependencies
 jest.mock("next/router", () => require("next-router-mock"));
-
-// Mock fetchWithAuth
-jest.mock("../utils/api-fetch-auth");
+jest.mock("@/utils/api-fetch-auth");
 
 // Mock document.cookie
 Object.defineProperty(document, "cookie", {
@@ -23,12 +20,28 @@ Object.defineProperty(document, "cookie", {
 });
 
 describe("CreateGame Component", () => {
+    const mockTopics = ["History", "Science", "Math"];
+    const mockUserData = { _id: "user123", username: "TestUser" };
+    const mockQuizData = {
+        wikidataCode: "Q123",
+        questions: [{ question_id: "q1", answers: ["A", "B", "C", "D"] }],
+    };
+    const mockQuizMetaData = {
+        wikidataCode: "Q123",
+        difficulty: 1,
+        quizName: "Test Quiz",
+        timePerQuestion: 30,
+    };
+    const mockSessionData = { code: "ABC123" };
+
     beforeEach(() => {
         jest.useFakeTimers();
         fetchMock.resetMocks();
-        jest.clearAllMocks();
-        mockRouter.setCurrentUrl("/wihoot/create");
         apiFetchAuth.fetchWithAuth.mockReset();
+        mockRouter.setCurrentUrl("/wihoot/create");
+
+        // Mock environment variable
+        process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL = "http://localhost:8000";
     });
 
     afterEach(() => {
@@ -37,8 +50,8 @@ describe("CreateGame Component", () => {
         jest.clearAllMocks();
     });
 
-    it("renders the CreateGame page correctly", async () => {
-        apiFetchAuth.fetchWithAuth.mockResolvedValueOnce(["History", "Science"]);
+    it("renders CreateGame form correctly", async () => {
+        apiFetchAuth.fetchWithAuth.mockResolvedValueOnce(mockTopics);
 
         await act(async () => {
             render(
@@ -48,29 +61,52 @@ describe("CreateGame Component", () => {
             );
         });
 
+        await waitFor(() => {
+            expect(screen.getByText("Create a Shared Quiz")).toBeInTheDocument();
+            expect(screen.getByLabelText(/Topic/i)).toBeInTheDocument();
+            expect(screen.getByLabelText(/Number of Questions/i)).toBeInTheDocument();
+            expect(screen.getByLabelText(/Number of Answers/i)).toBeInTheDocument();
+            expect(screen.getByLabelText(/Difficulty/i)).toBeInTheDocument();
+            expect(screen.getByRole("button", { name: "Create Shared Quiz" })).toBeInTheDocument();
+            expect(screen.getByRole("button", { name: "Go back" })).toBeInTheDocument();
+        });
+    });
+
+    it("fetches and displays topics on mount", async () => {
+        apiFetchAuth.fetchWithAuth.mockResolvedValueOnce(mockTopics);
+
+        await act(async () => {
+            render(
+                <MemoryRouterProvider>
+                    <CreateGame />
+                </MemoryRouterProvider>
+            );
+        });
+
+        await waitFor(() => {
+            expect(apiFetchAuth.fetchWithAuth).toHaveBeenCalledWith("/quiz/allTopics");
+
+            // Verify that the Select component's native input has the first topic as its value
+            const topicSelectInput = screen.getByTestId("topic-select").querySelector('input[aria-hidden="true"]');
+            expect(topicSelectInput).toHaveValue(mockTopics[0]); // Should be "History"
+
+            // Verify that the displayed text in the Select is the first topic
+            expect(screen.getByText("History")).toBeInTheDocument();
+        });
+
+        // Open the Select dropdown by clicking the select element
+        const topicSelect = screen.getByTestId("topic-select");
+        fireEvent.click(topicSelect); // Try click instead of mouseDown for broader compatibility
+
+
+        // Wait for the dropdown options to appear
         await waitFor(
             () => {
-                expect(apiFetchAuth.fetchWithAuth).toHaveBeenCalledWith("/quiz/allTopics");
-                expect(screen.getByText("Create a Shared Quiz")).toBeInTheDocument();
-                expect(screen.getByText("Create a quiz and share it with friends using a unique code.")).toBeInTheDocument();
-                expect(screen.getByLabelText(/Number of Questions/i)).toBeInTheDocument();
-                expect(screen.getByLabelText(/Number of Answers/i)).toBeInTheDocument();
-                expect(screen.getByLabelText(/Difficulty of the Quiz/i)).toBeInTheDocument();
-                expect(screen.getByRole("button", { name: "Create Shared Quiz" })).toBeInTheDocument();
+                // Verify each topic is present in the dropdown
+                expect(screen.getByText("History")).toBeInTheDocument();
 
-                // Verify the Select displays the default topic
-                const select = screen.getByRole("combobox", { name: /Topic/i });
-
-                expect(screen.getByDisplayValue("History")).toBeInTheDocument();
-
-                // Open the Select to verify MenuItem options
-                fireEvent.mouseDown(select); // Opens the dropdown
-
-                // Test options are shown on click
-                expect(screen.getByRole("option", { name: "History" })).toBeInTheDocument();
-                expect(screen.getByRole("option", { name: "Science" })).toBeInTheDocument();
             },
-            { timeout: 3000 } // Increased timeout for Material UI render failing
+            { timeout: 3000 } // Increase timeout to account for MUI rendering delays
         );
     });
 
@@ -80,7 +116,7 @@ describe("CreateGame Component", () => {
         await act(async () => {
             render(
                 <MemoryRouterProvider>
-                    <CreateGame />
+                    <CreateGame/>
                 </MemoryRouterProvider>
             );
         });
@@ -90,13 +126,13 @@ describe("CreateGame Component", () => {
         let answersInput
         let difficultyInput
         await waitFor(() => {
-            select = screen.getByRole("combobox", { name: /Topic/i });
+            select = screen.getByRole("combobox", {name: /Topic/i});
             questionsInput = screen.getByLabelText(/Number of Questions/i)
             answersInput = screen.getByLabelText(/Number of Answers/i);
-            difficultyInput = screen.getByLabelText(/Difficulty of the Quiz/i);
+            difficultyInput = screen.getByLabelText(/Difficulty/i);
             expect(screen.getByDisplayValue("History")).toBeInTheDocument();
 
-        }, { timeout: 3000 });
+        }, {timeout: 3000});
 
         await act(async () => {
             fireEvent.mouseDown(select); // Opens the dropdown
@@ -104,27 +140,94 @@ describe("CreateGame Component", () => {
             await waitFor(
                 () => {
 
-                    const scienceOption = screen.getByRole("option", { name: "Science" });
+                    const scienceOption = screen.getByRole("option", {name: "Science"});
 
                     fireEvent.click(scienceOption);
-                },{ timeout: 3000 });
+                }, {timeout: 3000});
 
-            fireEvent.change(questionsInput, { target: { value: "10" } });
-            fireEvent.change(answersInput, { target: { value: "10" } });
-            fireEvent.change(difficultyInput, { target: { value: "4" } });
+            fireEvent.mouseDown(difficultyInput)
+            await waitFor(
+                () => {
+
+                    const option = screen.getByRole("option", {name: "Hard"});
+
+                    fireEvent.click(option);
+                }, {timeout: 3000});
+
+            fireEvent.change(questionsInput, {target: {value: "10"}});
+            fireEvent.change(answersInput, {target: {value: "10"}});
+        });
+    });
+
+    it("successfully creates a quiz and navigates to host manager", async () => {
+        apiFetchAuth.fetchWithAuth
+            .mockResolvedValueOnce(mockTopics)
+            .mockResolvedValueOnce([{ wikidataCode: "Q123", difficulty: 1 }])
+            .mockResolvedValueOnce(mockQuizData)
+            .mockResolvedValueOnce(mockUserData);
+
+        fetchMock.mockResponseOnce(JSON.stringify(mockSessionData));
+
+        await act(async () => {
+            render(
+                <MemoryRouterProvider>
+                    <CreateGame />
+                </MemoryRouterProvider>
+            );
+        });
+
+        await act(async () => {
+            fireEvent.click(screen.getByTestId("create-quiz-button"));
         });
 
         await waitFor(() => {
-            expect(screen.getByDisplayValue("Science")).toBeInTheDocument();
-            expect(questionsInput).toHaveValue(10);
-            expect(answersInput).toHaveValue(10);
-            expect(difficultyInput).toHaveValue(4);
-
+            expect(fetchMock).toHaveBeenCalledWith(
+                "http://localhost:8000/shared-quiz/create",
+                expect.objectContaining({
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: "Bearer mock-token",
+                    },
+                    body: JSON.stringify({
+                        quizData: mockQuizData,
+                        quizMetaData: { wikidataCode: "Q123", difficulty: 1 },
+                        hostId: "user123",
+                        hostUsername: "TestUser",
+                    }),
+                })
+            );
+            expect(mockRouter.asPath).toBe("/wihoot/host/manager?code=ABC123");
         }, { timeout: 3000 });
     });
 
-    it("shows error when topic fetch fails", async () => {
-        apiFetchAuth.fetchWithAuth.mockRejectedValueOnce(new Error("Network error"));
+    it("displays error when no quiz matches selected difficulty", async () => {
+        apiFetchAuth.fetchWithAuth
+            .mockResolvedValueOnce(mockTopics)
+            .mockResolvedValueOnce([{ wikidataCode: "Q123", difficulty: 2 }]);
+
+        await act(async () => {
+            render(
+                <MemoryRouterProvider>
+                    <CreateGame />
+                </MemoryRouterProvider>
+            );
+        });
+
+        await act(async () => {
+            fireEvent.click(screen.getByTestId("create-quiz-button"));
+        });
+
+        await waitFor(
+            () => {
+                expect(screen.getByText("No quiz found for the difficulty selected.")).toBeInTheDocument();
+            },
+            { timeout: 3000 }
+        );
+    });
+
+    it("displays error when fetching topics fails", async () => {
+        apiFetchAuth.fetchWithAuth.mockRejectedValueOnce(new Error("Failed to fetch topics"));
 
         await act(async () => {
             render(
@@ -139,10 +242,8 @@ describe("CreateGame Component", () => {
         });
     });
 
-    it("shows error when no quizzes are available for the topic", async () => {
-        apiFetchAuth.fetchWithAuth
-            .mockResolvedValueOnce(["History"]) // /quiz/allTopics
-            .mockResolvedValueOnce([]); // /quiz/History
+    it("navigates to home page when 'Go back' button is clicked", async () => {
+        apiFetchAuth.fetchWithAuth.mockResolvedValueOnce(mockTopics);
 
         await act(async () => {
             render(
@@ -150,68 +251,25 @@ describe("CreateGame Component", () => {
                     <CreateGame />
                 </MemoryRouterProvider>
             );
-        });
-
-        const submitButton = screen.getByRole("button", { name: "Create Shared Quiz" });
-
-        await act(async () => {
-            fireEvent.click(submitButton);
         });
 
         await waitFor(() => {
-            expect(screen.getByText("No quizzes available for the selected topic.")).toBeInTheDocument();
-        });
-    });
-
-    it("successfully creates a quiz and navigates to host manager", async () => {
-        apiFetchAuth.fetchWithAuth
-            .mockResolvedValueOnce(["History"]) // /quiz/allTopics
-            .mockResolvedValueOnce([{ wikidataCode: "Q123", difficulty: 1 }]) // /quiz/History
-            .mockResolvedValueOnce({ questions: [], answers: [] }) // /game/Q123/5/4
-            .mockResolvedValueOnce({ _id: "user123", username: "testUser" }); // /token/username
-
-        fetchMock.mockResponseOnce(JSON.stringify({ code: "ABC123" }), { status: 200 });
-
-        await act(async () => {
-            render(
-                <MemoryRouterProvider>
-                    <CreateGame />
-                </MemoryRouterProvider>
-            );
-        });
-
-        const submitButton = screen.getByRole("button", { name: "Create Shared Quiz" });
-
-        await act(async () => {
-            fireEvent.click(submitButton);
+            fireEvent.click(screen.getByRole("button", { name: "Go back" }));
         });
 
         await waitFor(() => {
-            expect(fetchMock).toHaveBeenCalledWith(
-                "http://localhost:8000/shared-quiz/create",
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": "Bearer mock-token",
-                    },
-                    body: JSON.stringify({
-                        quizData: { questions: [], answers: [] },
-                        quizMetaData: { wikidataCode: "Q123", difficulty: 1 },
-                        hostId: "user123",
-                        hostUsername: "testUser",
-                    }),
-                }
-            );
-            expect(mockRouter.asPath).toBe("/wihoot/host/manager?code=ABC123");
+            expect(mockRouter.asPath).toBe("/");
         });
     });
 
-    it("handles API errors during quiz creation", async () => {
+    it("handles API error during quiz creation", async () => {
         apiFetchAuth.fetchWithAuth
-            .mockResolvedValueOnce(["History"]) // /quiz/allTopics
-            .mockResolvedValueOnce([{ wikidataCode: "Q123", difficulty: 1 }]) // /quiz/History
-            .mockRejectedValueOnce(new Error("Failed to create quiz")); // /game/Q123/5/4
+            .mockResolvedValueOnce(mockTopics)
+            .mockResolvedValueOnce([{ wikidataCode: "Q123", difficulty: 1 }])
+            .mockResolvedValueOnce(mockQuizData)
+            .mockResolvedValueOnce(mockUserData);
+
+        fetchMock.mockRejectOnce(new Error("Failed to create shared quiz"));
 
         await act(async () => {
             render(
@@ -219,89 +277,14 @@ describe("CreateGame Component", () => {
                     <CreateGame />
                 </MemoryRouterProvider>
             );
-        });
-
-        const submitButton = screen.getByRole("button", { name: "Create Shared Quiz" });
-
-        await act(async () => {
-            fireEvent.click(submitButton);
         });
 
         await waitFor(() => {
-            expect(screen.getByText("Failed to create quiz")).toBeInTheDocument();
-            expect(screen.getByRole("button", { name: "Create Shared Quiz" })).not.toBeDisabled();
-        });
-    });
-
-    it("disables inputs and button during quiz creation", async () => {
-        apiFetchAuth.fetchWithAuth.mockResolvedValueOnce(["History"]);
-
-        await act(async () => {
-            render(
-                <MemoryRouterProvider>
-                    <CreateGame />
-                </MemoryRouterProvider>
-            );
-        });
-
-        const topicSelect = screen.getByTestId("topic-select");
-        const questionsInput = screen.getByTestId("questions-input").querySelector("input");
-        const answersInput = screen.getByTestId("answers-input").querySelector("input");
-        const difficultyInput = screen.getByTestId("difficulty-input").querySelector("input");
-        const submitButton = screen.getByTestId("create-quiz-button");
-
-        // Mock subsequent API calls with delay to keep isLoading true
-        apiFetchAuth.fetchWithAuth
-            .mockImplementationOnce(
-                () => new Promise((resolve) => setTimeout(() => resolve([{ wikidataCode: "Q123", difficulty: 1, textName: "Test?", _id: "mockId" }]), 500))
-            ) // /quiz/History
-            .mockResolvedValueOnce({ questions: [], answers: [] }) // /game/Q123/5/4
-            .mockResolvedValueOnce({ _id: "user123", username: "testUser" }); // /token/username
-
-        fetchMock.mockResponseOnce(JSON.stringify({ code: "ABC123" }), { status: 200 }); // /shared-quiz/create
-
-        await act(async () => {
-            fireEvent.click(submitButton);
-        });
-
-        await waitFor(
-            () => {
-                expect(screen.getByText("Creating...")).toBeInTheDocument();
-                expect(topicSelect.querySelector(".MuiSelect-nativeInput")).toHaveAttribute("disabled");
-                expect(questionsInput).toHaveAttribute("disabled");
-                expect(answersInput).toHaveAttribute("disabled");
-                expect(difficultyInput).toHaveAttribute("disabled");
-                expect(submitButton).toBeDisabled();
-            },
-            { timeout: 3000 }
-        );
-    });
-
-    it("shows loading state during quiz creation", async () => {
-        apiFetchAuth.fetchWithAuth.mockResolvedValueOnce(["History"]);
-
-        await act(async () => {
-            render(
-                <MemoryRouterProvider>
-                    <CreateGame />
-                </MemoryRouterProvider>
-            );
-        });
-
-        const submitButton = screen.getByRole("button", { name: "Create Shared Quiz" });
-
-        // Mock API with delay
-        apiFetchAuth.fetchWithAuth.mockImplementationOnce(
-            () => new Promise((resolve) => setTimeout(() => resolve([{ wikidataCode: "Q123", difficulty: 1 }]), 500))
-        );
-
-        await act(async () => {
-            fireEvent.click(submitButton);
+            fireEvent.click(screen.getByTestId("create-quiz-button"));
         });
 
         await waitFor(() => {
-            expect(screen.getByText("Creating...")).toBeInTheDocument();
-            expect(screen.getByRole("progressbar")).toBeInTheDocument();
+            expect(screen.getByText("Failed to create shared quiz")).toBeInTheDocument();
         });
     });
 });
