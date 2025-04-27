@@ -79,7 +79,7 @@ export default function CreateGame() {
 
             if (quizRequested.length > 1) {
                 //Take one of the quizzes random
-                const randomIndex = Math.floor(Math.random() * quizRequested.length);
+                const randomIndex = Math.floor(Math.random() * quizRequested.length); // NOSONAR
                 quizRequested = quizRequested[randomIndex];
             }
             // First, create a quiz

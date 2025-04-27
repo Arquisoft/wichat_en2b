@@ -13,20 +13,16 @@ import {
   CardHeader,
   Button,
   Alert,
-  List,
-  ListItem,
-  ListItemText,
-  Badge,
-  Grid,
   CircularProgress,
   LinearProgress,
 } from "@mui/material";
 import FinishResults from "@/components/wihoot/game/FinishResults";
 import InGameChat from "@/components/game/InGameChat";
+import Leaderboard from "@/components/wihoot/play/Leaderboard";
+import PlayerList from "@/components/wihoot/play/PlayerList";
+import { apiEndpoint, fetchJson, getToken, saveGameData } from "../../../utils/PlayerViewUtil";
 import "../../../styles/wihoot/PlayerView.css";
 import "../../../styles/QuestionGame.css";
-
-const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || "http://localhost:8000";
 
 export default function PlayerView() {
   const router = useRouter();
@@ -52,20 +48,36 @@ export default function PlayerView() {
   const [timeLeft, setTimeLeft] = useState(null);
   const timerIntervalRef = useRef(null);
 
-  // Initialize socket connection and fetch session data
+  // Fetch session data
+  const fetchSessionData = async () => {
+    try {
+      const sessionData = await fetchJson(`/shared-quiz/${code}/status`);
+      setSessionStatus(sessionData.status);
+      setPlayers(sessionData.players);
+      setCurrentQuestionIndex(sessionData.currentQuestionIndex);
+      setWaitingForNext(sessionData.waitingForNext);
+      const player = sessionData.players.find((p) => p.id === playerId);
+      if (player) setUsername(player.username);
+      return sessionData;
+    } catch (err) {
+      setError("Failed to load session data");
+      console.error(err);
+      return null;
+    }
+  };
+
+  // Initialize socket and fetch initial data
   useEffect(() => {
     if (!code || !playerId) return;
 
     const fetchUserData = async () => {
       try {
-        const response = await fetchWithAuth("/token/username");
-        if (response) {
-          const userData = response;
+        const userData = await fetchWithAuth("/token/username");
+        if (userData) {
           setUsername(userData.username);
           return userData;
-        } else {
-          throw new Error("Failed to get user data");
         }
+        throw new Error("Failed to get user data");
       } catch (err) {
         setError("Authentication error. Please log in again.");
         console.error(err);
@@ -73,54 +85,12 @@ export default function PlayerView() {
       }
     };
 
-    const fetchSessionData = async () => {
-      try {
-        const response = await fetch(`${apiEndpoint}/shared-quiz/${code}/status`, {
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        });
-
-        if (response.ok) {
-          const sessionData = await response.json();
-
-          setSessionStatus(sessionData.status);
-          setPlayers(sessionData.players);
-          console.log("TEST session data players", sessionData.players);
-          setCurrentQuestionIndex(sessionData.currentQuestionIndex);
-          setWaitingForNext(sessionData.waitingForNext);
-          const player = sessionData.players.find((p) => p.id === playerId);
-          if (player) {
-            setUsername(player.username);
-          }
-
-          return sessionData;
-        } else {
-          throw new Error("Failed to fetch session data");
-        }
-      } catch (err) {
-        setError("Failed to load session data");
-        console.error(err);
-        return null;
-      }
-    };
-
     const fetchQuizData = async (sessionData) => {
       if (!sessionData) return;
-
       try {
-        const response = await fetch(`${apiEndpoint}/internal/quizdata/${code}`, {
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        });
-        if (response.ok) {
-          const quiz = await response.json();
-          setQuizData(quiz.quizData);
-          setQuizMetaData(quiz.quizMetaData);
-        } else {
-          throw new Error("Failed to fetch quiz data");
-        }
+        const quiz = await fetchJson(`/internal/quizdata/${code}`);
+        setQuizData(quiz.quizData);
+        setQuizMetaData(quiz.quizMetaData);
       } catch (err) {
         setError("Failed to load quiz data");
         console.error(err);
@@ -130,26 +100,16 @@ export default function PlayerView() {
     const initializeSocket = () => {
       const newSocket = io(process.env.SOCKET_SERVER || "http://localhost:8006");
 
+      const handleSessionUpdate = () => fetchSessionData();
+
       newSocket.on("connect", () => {
         console.log("Socket connected");
-        newSocket.emit("join-session", {
-          code,
-          playerId,
-          username,
-        });
+        newSocket.emit("join-session", { code, playerId, username });
       });
 
-      newSocket.on("joined-session", (data) => {
-        fetchSessionData();
-      });
-
-      newSocket.on("player-joined", (data) => {
-        fetchSessionData();
-      });
-
-      newSocket.on("player-left", (data) => {
-        fetchSessionData();
-      });
+      newSocket.on("joined-session", handleSessionUpdate);
+      newSocket.on("player-joined", handleSessionUpdate);
+      newSocket.on("player-left", handleSessionUpdate);
 
       newSocket.on("session-started", (data) => {
         const now = Date.now();
@@ -172,9 +132,7 @@ export default function PlayerView() {
         setWaitingForNext(false);
       });
 
-      newSocket.on("waiting-for-next", () => {
-        setWaitingForNext(true);
-      });
+      newSocket.on("waiting-for-next", () => setWaitingForNext(true));
 
       newSocket.on("session-ended", (data) => {
         localStorage.removeItem(`startTime-${code}-${playerId}`);
@@ -183,16 +141,11 @@ export default function PlayerView() {
         setWaitingForNext(false);
       });
 
-      newSocket.on("score-updated", (data) => {
-        setPlayers(data.players);
-      });
+      newSocket.on("score-updated", (data) => setPlayers(data.players));
 
-      newSocket.on("error", (data) => {
-        setError(data.message);
-      });
+      newSocket.on("error", (data) => setError(data.message));
 
       setSocket(newSocket);
-
       return newSocket;
     };
 
@@ -203,24 +156,17 @@ export default function PlayerView() {
         const sessionData = await fetchSessionData();
         await fetchQuizData(sessionData);
         const newSocket = initializeSocket();
-
-        return () => {
-          if (newSocket) newSocket.disconnect();
-        };
+        return () => newSocket?.disconnect();
       } finally {
         setIsLoading(false);
       }
     };
 
     const cleanup = setup();
-    return () => {
-      if (cleanup && typeof cleanup === "function") {
-        cleanup();
-      }
-    };
+    return () => typeof cleanup === "function" && cleanup();
   }, [code, playerId, username]);
 
-  // Check for previous answers when quizData, players, or currentQuestionIndex changes
+  // Check for previous answers
   useEffect(() => {
     if (!quizData || currentQuestionIndex < 0 || !players.length) return;
 
@@ -238,26 +184,15 @@ export default function PlayerView() {
         );
         setSelectedOption(parseInt(answer.answerId));
         setIsCorrect(answer.isCorrect);
-        // Fetch correct answer for display
-        const fetchCorrectAnswer = async () => {
-          try {
-            const validateOutput = await fetch(`${apiEndpoint}/question/validate`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                question_id: currentQuestion.question_id,
-                selected_answer: currentQuestion.answers[0] // Send any answer to get correct answer
-              }),
-            });
-            const { correctAnswer } = await validateOutput.json();
-            setCorrectAnswer(correctAnswer);
-          } catch (err) {
-            console.error("Failed to fetch correct answer:", err);
-          }
-        };
-        fetchCorrectAnswer();
+        fetchJson("/question/validate", {
+          method: "POST",
+          body: JSON.stringify({
+            question_id: currentQuestion.question_id,
+            selected_answer: currentQuestion.answers[0],
+          }),
+        }).then(({ correctAnswer }) => setCorrectAnswer(correctAnswer)).catch((err) =>
+          console.error("Failed to fetch correct answer:", err)
+        );
       } else {
         setSelectedOption(null);
         setIsCorrect(false);
@@ -269,12 +204,27 @@ export default function PlayerView() {
   // Save game data when quiz ends
   useEffect(() => {
     if (sessionStatus === "finished" && !hasSavedGame) {
-      saveGameData();
+      const token = getToken();
+      if (token) {
+        const player = players.find((p) => p.id === playerId);
+        if (player) {
+          saveGameData(token, {
+            subject:
+              quizMetaData?.[0]?.category.toLowerCase() ||
+              quizMetaData?.[0]?.quizName.toLowerCase() ||
+              "unknown",
+            points_gain: player.score,
+            number_of_questions: player.answers.length,
+            number_correct_answers: answers.filter((a) => a.isCorrect).length,
+            total_time: answers.reduce((acc, a) => acc + a.timeSpent, 0),
+          });
+        }
+      }
       setHasSavedGame(true);
     }
-  }, [sessionStatus, hasSavedGame]);
+  }, [sessionStatus, hasSavedGame, players, playerId, quizMetaData, answers]);
 
-  // Synchronize timeLeft with quizMetaData and currentQuestionIndex
+  // Synchronize timeLeft
   useEffect(() => {
     if (
       sessionStatus === "active" &&
@@ -296,10 +246,9 @@ export default function PlayerView() {
     if (storedStartTime) {
       const elapsedSeconds = (Date.now() - Number(storedStartTime)) / 1000;
       const timerDuration = quizMetaData[0]?.timePerQuestion || 60;
-      const remainingTime = Math.max(timerDuration - elapsedSeconds, 0);
-      setTimeLeft(remainingTime);
+      setTimeLeft(Math.max(timerDuration - elapsedSeconds, 0));
     }
-  }, [quizData, code, playerId]);
+  }, [quizMetaData, code, playerId]);
 
   // Timer logic
   useEffect(() => {
@@ -320,13 +269,11 @@ export default function PlayerView() {
           clearInterval(timerIntervalRef.current);
           return 0;
         }
-        return prevTime - 0.1; // Update every 100ms for smoother progress
+        return prevTime - 0.1;
       });
-    }, 100); // Use 100ms interval for smoother updates
+    }, 100);
 
-    return () => {
-      clearInterval(timerIntervalRef.current);
-    };
+    return () => clearInterval(timerIntervalRef.current);
   }, [sessionStatus, waitingForNext, hasAnswered, timeLeft, currentQuestionIndex]);
 
   const getCurrentQuestion = () => {
@@ -351,50 +298,39 @@ export default function PlayerView() {
     }
 
     const timeToAnswer = (Date.now() - answerTime) / 1000;
-
-    const validateOutput = await fetch(`${apiEndpoint}/question/validate`, {
+    const { isCorrect, correctAnswer } = await fetchJson("/question/validate", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
       body: JSON.stringify({
         question_id: currentQuestion.question_id,
         selected_answer: currentQuestion.answers[optionIndex],
       }),
     });
-    const { isCorrect, correctAnswer } = await validateOutput.json();
     setIsCorrect(isCorrect);
     setCorrectAnswer(correctAnswer);
 
-    let numAnswers = quizData[0].answers;
-    const numberOptions = numAnswers.length;
     const timerDuration = quizMetaData[0].timePerQuestion;
     const timeLeft = timerDuration - timeToAnswer;
-    // Add the points to render in the score
+    const numberOptions = currentQuestion.answers.length;
     const points = isCorrect
       ? Math.ceil((10 * (80 * numberOptions / timerDuration) * (timeLeft / timerDuration)))
       : 0;
 
-    // Store answer
     setAnswers((prev) => [
-        ...prev,
-        {
-            questionId: currentQuestion.question_id,
-            answerId: optionIndex,
-            isCorrect,
-            timeSpent: timeToAnswer,
-            points,
-            rightAnswer: correctAnswer,
-            answer: currentQuestion.answers[optionIndex]
-        },
+      ...prev,
+      {
+        questionId: currentQuestion.question_id,
+        answerId: optionIndex,
+        isCorrect,
+        timeSpent: timeToAnswer,
+        points,
+        rightAnswer: correctAnswer,
+        answer: currentQuestion.answers[optionIndex],
+      },
     ]);
 
     try {
-      await fetch(`${apiEndpoint}/shared-quiz/${code}/answer`, {
+      await fetchJson(`/shared-quiz/${code}/answer`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
         body: JSON.stringify({
           playerId,
           questionId: currentQuestion.question_id,
@@ -402,77 +338,19 @@ export default function PlayerView() {
           isCorrect,
           timeToAnswer,
           rightAnswer: correctAnswer,
-          answer: currentQuestion.answers[optionIndex]
+          answer: currentQuestion.answers[optionIndex],
         }),
       });
-
-      const sessionData = await fetch(`${apiEndpoint}/shared-quiz/${code}/status`, {
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (sessionData.ok) {
-        const playersFetched = await sessionData.json();
-        setPlayers(playersFetched.players);
-      }
+      const sessionData = await fetchSessionData();
+      if (sessionData) setPlayers(sessionData.players);
     } catch (err) {
       console.error("Failed to submit answer or fetch session data:", err);
-    }
-  };
-
-  const saveGameData = async () => {
-    const token = document.cookie
-      .split("; ")
-      .find((row) => row.startsWith("token="))
-      ?.split("=")[1];
-
-    if (!token) {
-      console.error("No token found, cannot save game data");
-      return;
-    }
-
-    try {
-      console.log("TEST Players ", players);
-      const player = players.find((p) => p.id === playerId);
-      console.log("TEST player before find is", player);
-      const pointsGain = player ? player.score : 0;
-      const numberOfQuestions = player.answers.length;
-      const numberCorrectAnswers = answers.filter((a) => a.isCorrect).length;
-      const totalTime = answers.reduce((acc, a) => acc + a.timeSpent, 0);
-
-      const response = await fetch(`${apiEndpoint}/game`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          subject:
-            quizMetaData[0]?.category.toLowerCase() ||
-            quizMetaData[0]?.quizName.toLowerCase() ||
-            "unknown",
-          points_gain: pointsGain,
-          number_of_questions: numberOfQuestions,
-          number_correct_answers: numberCorrectAnswers,
-          total_time: totalTime,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to save game data");
-      }
-
-      console.log("Game data saved successfully");
-    } catch (err) {
-      console.error("Error saving game data:", err);
     }
   };
 
   const renderWaitingRoom = () => (
     <Card className="player-view-card">
       <CardContent>
-        {/* Timer-like progress bar */}
         <Box className="timer-container">
           <Typography variant="body2" className="timer-text">
             Waiting for host...
@@ -507,38 +385,8 @@ export default function PlayerView() {
           <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
             Players ({players.length})
           </Typography>
-          <List className="players-list">
-            {players.map((player) => (
-              <ListItem
-                key={player.id}
-                className={`player-item ${player.id === playerId ? "current-player" : ""}`}
-                sx={{
-                  mb: 1,
-                  borderRadius: "6px",
-                  transition: "all 0.2s ease",
-                  "&:hover": {
-                    transform: "translateY(-2px)",
-                    boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
-                  },
-                }}
-              >
-                <ListItemText
-                  primary={player.username}
-                  sx={{
-                    "& .MuiListItemText-primary": {
-                      fontWeight: 500,
-                      fontSize: "1rem",
-                    },
-                  }}
-                />
-                {player.id === playerId && (
-                  <Badge badgeContent="You" color="primary" />
-                )}
-              </ListItem>
-            ))}
-          </List>
+          <PlayerList players={players} playerId={playerId} />
         </Box>
-
         <Box
           sx={{
             textAlign: "center",
@@ -552,8 +400,6 @@ export default function PlayerView() {
             The host will start the quiz soon. Get ready!
           </Typography>
         </Box>
-
-        {/* Gradient divider at the bottom */}
         <Box className="divider" sx={{ mt: 4 }} />
       </CardContent>
     </Card>
@@ -563,45 +409,7 @@ export default function PlayerView() {
     <Card className="player-view-card">
       <CardHeader title={`Leaderboard - Question ${currentQuestionIndex + 1} Results`} />
       <CardContent>
-        <Box mb={3}>
-          <Typography variant="h6">Current Standings</Typography>
-          {players.length === 0 ? (
-            <Typography variant="body2" color="textSecondary">
-              No players
-            </Typography>
-          ) : (
-            <List className="results-list">
-              {[...players]
-                .sort((a, b) => b.score - a.score)
-                .map((player, index) => (
-                  <ListItem
-                    key={player.id}
-                    className={`result-item ${player.id === playerId ? "current-player" : ""}`}
-                  >
-                    <ListItemText
-                      primary={`#${index + 1} ${player.username}`}
-                      secondary={
-                        player.id === playerId && (
-                          <Badge
-                            badgeContent="You"
-                            sx={{
-                              "& .MuiBadge-badge": {
-                                backgroundColor: "#6c63ff",
-                                color: "white",
-                              },
-                            }}
-                          />
-                        )
-                      }
-                    />
-                    <Typography variant="body1" fontWeight="bold">
-                      {player.score}
-                    </Typography>
-                  </ListItem>
-                ))}
-            </List>
-          )}
-        </Box>
+        <Leaderboard players={players} playerId={playerId} title="Current Standings" />
         <Typography variant="body2" color="textSecondary" align="center">
           Waiting for the host to proceed to the next question...
         </Typography>
@@ -611,8 +419,6 @@ export default function PlayerView() {
 
   const renderActiveQuiz = () => {
     const currentQuestion = getCurrentQuestion();
-    const player = players.find((p) => p.id === playerId);
-
     if (!currentQuestion) {
       return (
         <div className="loading-container">
@@ -624,7 +430,6 @@ export default function PlayerView() {
 
     return (
       <div className="quiz-wrapper">
-        {/* Timer and progress bar */}
         <Box className="timer-container">
           <Typography variant="body2" className="timer-text" id="quiz-timer">
             Time left: {Math.ceil(timeLeft)}s
@@ -635,7 +440,6 @@ export default function PlayerView() {
             value={(timeLeft / (quizMetaData?.[0]?.timePerQuestion || 60)) * 100}
           />
         </Box>
-
         <div className="content-box">
           {hasAnswered && isCorrect && (
             <Alert id="message-success" severity="success" className="alert-box">
@@ -647,15 +451,12 @@ export default function PlayerView() {
               Oops! You didn't guess this one.
             </Alert>
           )}
-
           <div className="progress-indicator">
             Question {currentQuestionIndex + 1} of {quizData?.length || 0}
           </div>
-
           <h2 id="title-question" className="question-title">
             {currentQuestion.question || quizMetaData?.[0]?.question || "Untitled Quiz"}
           </h2>
-
           <div className="image-box">
             <img
               src={`${apiEndpoint}${currentQuestion.image_name}`}
@@ -663,7 +464,6 @@ export default function PlayerView() {
               className="quiz-image"
             />
           </div>
-
           <div className="options-box">
             {currentQuestion.answers.map((option, index) => (
               <button
@@ -680,76 +480,38 @@ export default function PlayerView() {
               </button>
             ))}
           </div>
-
           <InGameChat initialMessages={[]} question={currentQuestion} />
         </div>
-
         <div className="divider"></div>
       </div>
     );
   };
 
-  const renderFinishedQuiz = () => (
-    <Card className="player-view-card">
-      <CardHeader title="Quiz Completed" />
-      <CardContent>
-        <Box mb={3}>
-          <Typography variant="h6">Final Results</Typography>
-          {players.length === 0 ? (
-            <Typography variant="body2" color="textSecondary">
-              No players participated
-            </Typography>
-          ) : (
-            <List className="results-list">
-              {[...players]
-                .sort((a, b) => b.score - a.score)
-                .map((player, index) => (
-                  <ListItem
-                    key={player.id}
-                    className={`result-item ${player.id === playerId ? "current-player" : ""}`}
-                  >
-                    <ListItemText
-                      primary={`#${index + 1} ${player.username}`}
-                      secondary={
-                        player.id === playerId && (
-                          <Badge
-                            badgeContent="You"
-                            sx={{
-                              "& .MuiBadge-badge": {
-                                backgroundColor: "#6c63ff",
-                                color: "white",
-                              },
-                            }}
-                          />
-                        )
-                      }
-                    />
-                    <Typography variant="body1" fontWeight="bold">
-                      {player.score}
-                    </Typography>
-                  </ListItem>
-                ))}
-            </List>
+  const renderFinishedQuiz = () => {
+    const player = players.find((p) => p.id === playerId);
+    return (
+      <Card className="player-view-card">
+        <CardHeader title="Quiz Completed" />
+        <CardContent>
+          <Leaderboard players={players} playerId={playerId} title="Final Results" />
+          {player && (
+            <FinishResults
+              answers={player.answers}
+              score={player.score}
+              subject={quizMetaData?.[0]?.category}
+            />
           )}
-
-        <FinishResults
-            answers={players.find(p=>p.id === playerId).answers}
-            score={players.find(p=>p.id === playerId).score}
-            subject={quizMetaData[0].category}
-        />
-
-
-        </Box>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={() => router.push("/wihoot/join")}
-        >
-          Join Another Quiz
-        </Button>
-      </CardContent>
-    </Card>
-  );
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => router.push("/wihoot/join")}
+          >
+            Join Another Quiz
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  };
 
   if (isLoading) {
     return (
