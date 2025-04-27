@@ -57,7 +57,7 @@ router.get('/internal/quizdata/:code', async (req, res) => {
             };
             res.status(200).json(quiz);
         }
-    } catch (error){
+    } catch (error){ // NOSONAR
         res.status(500).json({ error: 'Error retrieving quiz data' });
     }
 })

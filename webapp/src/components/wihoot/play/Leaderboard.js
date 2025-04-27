@@ -1,5 +1,6 @@
 import "../../../styles/wihoot/PlayerView.css";
 import { List, ListItem, ListItemText, Typography, Badge } from "@mui/material";
+import PropTypes from 'prop-types';
 
 export default function Leaderboard({ players, playerId, title }) {
   return (
@@ -44,3 +45,9 @@ export default function Leaderboard({ players, playerId, title }) {
     </div>
   );
 }
+
+Leaderboard.propTypes = {
+  players: PropTypes.array.isRequired,
+  playerId: PropTypes.string.isRequired,
+  title: PropTypes.string
+};

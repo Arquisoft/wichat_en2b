@@ -166,7 +166,7 @@ export default function JoinGame() {
                             placeholder="Enter 6-digit game code"
                             value={gameCode}
                             onChange={(e) => setGameCode(e.target.value.toUpperCase())}
-                            inputProps={{ maxLength: 6 }}
+                            slotProps={{ input: { maxLength: 6 } }}
                             disabled={isJoining}
                         />
                         <TextField

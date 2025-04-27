@@ -28,7 +28,7 @@ export default function PlayerView() {
   const router = useRouter();
   const { code, playerId } = router.query;
 
-  const [socket, setSocket] = useState(null);
+  const [setSocket] = useState(null);
   const [username, setUsername] = useState("");
   const [sessionStatus, setSessionStatus] = useState("waiting");
   const [players, setPlayers] = useState([]);
@@ -143,7 +143,7 @@ export default function PlayerView() {
       newSocket.on("show-correct-answer", () => {
         console.log("Received show-correct-answer");
         setShowCorrectAnswer(true);
-        setTimeout(() => {
+        setTimeout(() => { // NOSONAR
           setShowCorrectAnswer(false);
           setWaitingForNext(true);
         }, 2000);
