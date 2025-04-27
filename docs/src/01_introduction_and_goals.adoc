@@ -3,7 +3,7 @@
 
 === Requirements Overview
 
-The goal of this project is to enhance the online "Saber y Ganar" quiz show application, developed last year by HappySw, with new features that incorporate large language models (LLMs) and Wikidata for a more interactive and engaging experience.
+The goal of this project is to enhance the online "Saber y Ganar" quiz show application, developed last year by HappySw, with new features that incorporate large language models (LLMs) and Wikidata for a more interactive and engaging experience and a multiplayer mode where the host code of the session allows mulitple players to share the same quiz game in real time with session leaderboard.
 
 The key functional requirements of the system are:
 
@@ -14,7 +14,7 @@ The key functional requirements of the system are:
 * The LLM should mitigate the generation of incorrect answers or hallucinations when providing hints.
 * Each question will have a correct answer and multiple distractors, all generated automatically.
 * The application must be deployable on the web and allow users to access their information via a documented API.
-* There is a possibility for users to interact with the application in different game modes, such as “Each wise man with his subject,” “Travel with us,” or “The hot question.” (not yet implemented)
+* A multiplayer mode called **wihoot**, allowing users to join a shared quiz session using a unique code, participate in real-time, and communicate via chat.
 
 Optional features include internationalization, mobile version, users' ranking, multiplayer capabilities, and personalized game settings like adjusting time limits and the scope of questions.
 
