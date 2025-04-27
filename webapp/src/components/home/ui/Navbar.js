@@ -2,6 +2,13 @@
 
 import React, { useState } from "react";
 import PropTypes from "prop-types";
+import { useRouter } from "next/navigation";
+import "../../../styles/home/Navbar.css";
+import ProfileForm from "./ProfileForm";
+import ConnectWithoutContactOutlinedIcon from '@mui/icons-material/ConnectWithoutContactOutlined';
+import PlayCircleFilledWhiteOutlinedIcon from '@mui/icons-material/PlayCircleFilledWhiteOutlined';
+import MenuIcon from '@mui/icons-material/Menu';
+
 import {
     AppBar,
     Toolbar,
@@ -10,27 +17,24 @@ import {
     Button,
     Box,
     Typography,
-    Dialog
+    Dialog,
+    Menu,
+    MenuItem,
+    ListItemIcon,
+    ListItemText
 } from "@mui/material";
+
 import {
     Logout as LogoutIcon,
     Person as PersonIcon
 } from "@mui/icons-material";
-import { useRouter } from "next/navigation";
-import "../../../styles/home/Navbar.css";
-import ProfileForm from "./ProfileForm";
-import ConnectWithoutContactOutlinedIcon from '@mui/icons-material/ConnectWithoutContactOutlined';
-import PlayCircleFilledWhiteOutlinedIcon from '@mui/icons-material/PlayCircleFilledWhiteOutlined';
-
-let isGuest = false;
 
 const Navbar = ({ username = "Guest", profilePicture }) => {
-    if (!username || username === "") {
-        username = "Guest";
-        isGuest = true;
-    }
-
+    const isGuest = !username || username === "" || username === "Guest";
+    const effectiveUsername = isGuest ? "Guest" : username;
+    
     const [isProfileOpen, setIsProfileOpen] = useState(false);
+    const [mobileMenuAnchor, setMobileMenuAnchor] = useState(null);
     const router = useRouter();
 
     const handleLogoClick = () => {
@@ -39,6 +43,7 @@ const Navbar = ({ username = "Guest", profilePicture }) => {
 
     const handleProfileClick = () => {
         setIsProfileOpen(true);
+        handleMobileMenuClose();
     };
 
     const handleCloseProfile = () => {
@@ -52,15 +57,61 @@ const Navbar = ({ username = "Guest", profilePicture }) => {
     const handleLogout = () => {
         document.cookie = "token=; path=/; max-age=0; SameSite=Lax";
         window.location.href = "/";
+        handleMobileMenuClose();
     };
 
     const handleCreateCodeGame = () => {
         router.push("/wihoot/create");
-    }
+        handleMobileMenuClose();
+    };
 
     const handleJoinCodeame = () => {
         router.push("/wihoot/join");
-    }
+        handleMobileMenuClose();
+    };
+
+    const handleMobileMenuOpen = (event) => {
+        setMobileMenuAnchor(event.currentTarget);
+    };
+
+    const handleMobileMenuClose = () => {
+        setMobileMenuAnchor(null);
+    };
+
+    // Menu items for guest users
+    const guestMenuItems = [
+        <MenuItem key="join" onClick={handleJoinCodeame}>
+            <ListItemIcon>
+                <ConnectWithoutContactOutlinedIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText>Join Game</ListItemText>
+        </MenuItem>,
+        <MenuItem key="start" onClick={handleCreateCodeGame}>
+            <ListItemIcon>
+                <PlayCircleFilledWhiteOutlinedIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText>Start Session</ListItemText>
+        </MenuItem>,
+        <MenuItem key="profile" onClick={handleProfileClick}>
+            <ListItemIcon>
+                <PersonIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText>Profile</ListItemText>
+        </MenuItem>,
+        <MenuItem key="logout" onClick={handleLogout}>
+            <ListItemIcon>
+                <LogoutIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText>Logout</ListItemText>
+        </MenuItem>
+    ];
+
+    // Menu items for non-guest users
+    const nonGuestMenuItem = [
+        <MenuItem key="exit" onClick={() => router.push("/")}>
+            <ListItemText>Exit</ListItemText>
+        </MenuItem>
+    ];
 
     return (
         <>
@@ -70,9 +121,9 @@ const Navbar = ({ username = "Guest", profilePicture }) => {
                         <Avatar className="logo-avatar" src={profilePicture || ""}>
                             {!profilePicture && "Wi"}
                         </Avatar>
-                        {isGuest ? (
+                        {!isGuest ? (
                             <Typography variant="h6" className="app-title">
-                                WiChat - {username}
+                                WiChat - {effectiveUsername}
                             </Typography>
                         ) : (
                             <Typography variant="h6" className="app-title">
@@ -83,10 +134,10 @@ const Navbar = ({ username = "Guest", profilePicture }) => {
 
                     <Box className="spacer" />
 
-                    <Box className="user-section">
-                        {isGuest && (
+                    {/* Desktop Navigation */}
+                    <Box className="user-section desktop-only">
+                        {!isGuest ? (
                             <>
-                                {/*Join Game Code*/}
                                 <Button
                                     id={'navbar-join-game-button'}
                                     onClick={handleJoinCodeame}
@@ -96,10 +147,9 @@ const Navbar = ({ username = "Guest", profilePicture }) => {
                                     className="joingame"
                                     aria-label="Join Game"
                                 >
-                                    Join Game
+                                    <span className="button-text">Join Game</span>
                                 </Button>
 
-                                {/*Create Game Code*/}
                                 <Button
                                     id={'navbar-create-game-button'}
                                     onClick={handleCreateCodeGame}
@@ -109,33 +159,29 @@ const Navbar = ({ username = "Guest", profilePicture }) => {
                                     className="creategame"
                                     aria-label="Start Game Session"
                                 >
-                                    Start Session
+                                    <span className="button-text">Start Session</span>
                                 </Button>
 
                                 <Button
-                                        id="navbar-profile-button"
-                                        variant="contained"
-                                        color="secondary"
-                                        startIcon={<PersonIcon />}
-                                        onClick={handleProfileClick}
-                                        className="navbar-profile-button"
-                                    >
-                                        Profile
+                                    id="navbar-profile-button"
+                                    variant="contained"
+                                    color="secondary"
+                                    startIcon={<PersonIcon />}
+                                    onClick={handleProfileClick}
+                                    className="navbar-profile-button"
+                                >
+                                    <span className="button-text">Profile</span>
                                 </Button>
 
-                                    <IconButton
-                                        aria-label="logout"
-                                        onClick={handleLogout}
-                                        className="logout-button"
-                                    >
-                                        <LogoutIcon />
-                                    </IconButton>
+                                <IconButton
+                                    aria-label="logout"
+                                    onClick={handleLogout}
+                                    className="logout-button"
+                                >
+                                    <LogoutIcon />
+                                </IconButton>
                             </>
-                        )}
-                    </Box>
-
-                    {!isGuest && (
-                        <Box className="user-section">
+                        ) : (
                             <Button
                                 variant="outlined"
                                 color="primary"
@@ -144,10 +190,33 @@ const Navbar = ({ username = "Guest", profilePicture }) => {
                             >
                                 Exit
                             </Button>                            
-                        </Box>
-                    )}
+                        )}
+                    </Box>
+
+                    {/* Mobile Hamburger Menu */}
+                    <Box className="mobile-only">
+                        <IconButton
+                            size="large"
+                            edge="end"
+                            color="inherit"
+                            aria-label="menu"
+                            onClick={handleMobileMenuOpen}
+                        >
+                            <MenuIcon />
+                        </IconButton>
+                    </Box>
                 </Toolbar>
             </AppBar>
+
+            {/* Mobile Menu Popup - Using arrays instead of fragments */}
+            <Menu
+                anchorEl={mobileMenuAnchor}
+                open={Boolean(mobileMenuAnchor)}
+                onClose={handleMobileMenuClose}
+                className="mobile-menu-popup"
+            >
+                {!isGuest ? guestMenuItems : nonGuestMenuItem}
+            </Menu>
 
             <Dialog
                 open={isProfileOpen}
@@ -156,7 +225,7 @@ const Navbar = ({ username = "Guest", profilePicture }) => {
                 fullWidth
             >
                 <ProfileForm
-                    username={username}
+                    username={effectiveUsername}
                     profilePicture={profilePicture}
                     onSave={handleSaveProfile}
                 />
@@ -166,7 +235,7 @@ const Navbar = ({ username = "Guest", profilePicture }) => {
 };
 
 Navbar.propTypes = {
-    username: PropTypes.string.isRequired,
+    username: PropTypes.string,
     profilePicture: PropTypes.string
 };
 

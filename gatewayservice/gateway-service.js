@@ -17,7 +17,7 @@ const serviceUrls = {
   auth: process.env.AUTH_SERVICE_URL || 'http://localhost:8002',
   user: process.env.USER_SERVICE_URL || 'http://localhost:8001',
   game: process.env.GAME_SERVICE_URL || 'http://localhost:8004',
-  group: process.env.GROUP_SERVICE_URL || 'http://localhost:8005',
+  group: (process.env.GROUP_SERVICE_URL || 'http://localhost:8005').replace(/,\s*$/, ''), 
   wihoot: process.env.WIHOOT_SERVICE_URL || 'http://localhost:8006',
 };
 
