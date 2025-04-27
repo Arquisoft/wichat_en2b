@@ -194,7 +194,14 @@
     font-weight: 700;
 }
 
-.quiz-option:disabled.selected:not(.correct-answer) {
+.quiz-option.waiting-answer {
+    background-color: #eaeaff !important;
+    color: #5a54e6 !important;
+    border: 1px solid #5a54e6 !important;
+    font-weight: 700;
+}
+
+.quiz-option.incorrect-answer {
     background-color: #f8d7da;
     color: #d32f2f;
     border: 1px solid #d32f2f;

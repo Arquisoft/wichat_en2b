@@ -506,17 +506,27 @@ export default function PlayerView() {
           </div>
           <div className="options-box">
             {currentQuestion.answers.map((option, index) => {
+              const isSelected = selectedOption === index;
+
+              let stateClass = "";
+
+              if (hasAnswered) {
+                if (!showCorrectAnswer && isSelected) {
+                  stateClass = "waiting-answer";
+                } else if (showCorrectAnswer) {
+                  if (correctAnswer === option) {
+                    stateClass = "correct-answer";
+                  } else if (isSelected) {
+                    stateClass = "incorrect-answer";
+                  }
+                }
+              }
+              console.log(`Option: ${option}, State Class: ${stateClass}`);
               return (
                   <button
                       id={`option-${index}`}
                       key={option}
-                      className={`quiz-option 
-                      ${selectedOption === index ? "selected" : ""} 
-                      ${(hasAnswered && selectedOption === index && isCorrect) ||
-                      (showCorrectAnswer && correctAnswer === option)
-                          ? "correct-answer"
-                          : ""}
-      `}
+                      className={`quiz-option ${isSelected ? "selected" : ""} ${stateClass}`}
                       onClick={() => handleAnswerSubmit(index)}
                       disabled={hasAnswered}
                   >
