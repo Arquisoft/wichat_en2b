@@ -8,7 +8,7 @@ module.exports = {
         if (this.io == null){
             this.io = socketIo(server, {
                 cors: {
-                    origin: "http://localhost:3000", // Adjust to match your Next.js app's origin
+                    origin: "*",
                     methods: ["GET", "POST"],
                     credentials: true,
                 },
