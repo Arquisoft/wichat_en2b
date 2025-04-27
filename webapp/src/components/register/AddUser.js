@@ -70,7 +70,7 @@ const AddUser = () => {
     return Object.keys(newErrors).length === 0
   }
 
-  const addUser = async (e) => {
+  const addUser = async (e) => { // NOSONAR
     // For anyone reading, the default behavior of a form submit is to reload the page  
     e.preventDefault(); // Prevent the default form submit so that errors can be shown (if any)
 

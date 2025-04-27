@@ -3,6 +3,11 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/router"
 import NextLink from "next/link"
+import GameConnecting from "@/components/wihoot/game/Connecting"
+import axios from "axios"
+import { v4 as uuidv4 } from "uuid"
+import "../../styles/wihoot/JoinGame.css"
+
 import {
     Box,
     Card,
@@ -14,10 +19,6 @@ import {
     Alert,
     CircularProgress,
 } from "@mui/material"
-import GameConnecting from "@/components/wihoot/game/Connecting"
-import axios from "axios"
-import { v4 as uuidv4 } from "uuid"
-import "../../styles/wihoot/JoinGame.css"
 
 const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || "http://localhost:8000"
 

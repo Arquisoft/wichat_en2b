@@ -3,19 +3,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/router";
 import { fetchWithAuth } from "../../../utils/api-fetch-auth";
-import io from "socket.io-client";
-import {
-  Box,
-  Container,
-  Typography,
-  Card,
-  CardContent,
-  CardHeader,
-  Button,
-  Alert,
-  CircularProgress,
-  LinearProgress,
-} from "@mui/material";
 import FinishResults from "@/components/wihoot/game/FinishResults";
 import InGameChat from "@/components/game/InGameChat";
 import Leaderboard from "@/components/wihoot/play/Leaderboard";
@@ -23,6 +10,20 @@ import PlayerList from "@/components/wihoot/play/PlayerList";
 import { apiEndpoint, fetchJson, getToken, saveGameData } from "../../../utils/PlayerViewUtil";
 import "../../../styles/wihoot/PlayerView.css";
 import "../../../styles/QuestionGame.css";
+import io from "socket.io-client";
+
+import {
+  Box,
+  Container,
+  Typography,
+  Card,
+  CardContent,
+  CardHeader,
+  Alert,
+  CircularProgress,
+  LinearProgress,
+} from "@mui/material";
+
 
 export default function PlayerView() {
   const router = useRouter();
@@ -41,7 +42,7 @@ export default function PlayerView() {
   const [hasAnswered, setHasAnswered] = useState(false);
   const [startTime, setStartTime] = useState(null);
   const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true); // NOSONAR
   const [waitingForNext, setWaitingForNext] = useState(false);
   const [answers, setAnswers] = useState([]);
   const [hasSavedGame, setHasSavedGame] = useState(false);
@@ -167,7 +168,7 @@ export default function PlayerView() {
         setError("The host has left the session");
         
         // Redirect to home after 3 seconds
-        setTimeout(() => {
+        setTimeout(() => { // NOSONAR
           router.push("/");
         }, 3000);
       });

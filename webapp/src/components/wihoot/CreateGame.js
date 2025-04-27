@@ -4,6 +4,8 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/router"
 import NextLink from "next/link"
 import { fetchWithAuth } from "../../utils/api-fetch-auth"
+import "../../styles/wihoot/CreateGame.css"
+
 import {
     Box,
     Card,
@@ -19,7 +21,7 @@ import {
     Alert,
     CircularProgress,
 } from "@mui/material"
-import "../../styles/wihoot/CreateGame.css"
+
 
 const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://localhost:8000';
 

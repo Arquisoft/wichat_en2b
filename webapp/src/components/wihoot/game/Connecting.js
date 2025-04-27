@@ -1,17 +1,10 @@
 
 import { Box, CircularProgress, Typography } from "@mui/material";
+import "@/styles/wihoot/Connecting.css";
 
 export default function GameConnecting() {
     return (
-        <Box
-            sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                minHeight: '200px'
-            }}
-        >
+        <Box className="game-connecting">
             <CircularProgress />
             <Typography variant="h6" sx={{ mt: 2 }}>
                 Connecting to game...
