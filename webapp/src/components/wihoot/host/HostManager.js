@@ -749,10 +749,10 @@ export default function HostManager() {
                 <Button
                     variant="contained"
                     color="primary"
-                    onClick={() => router.push("/wihoot/create")}
+                    onClick={() => router.push("/")}
                     className="action-button"
                 >
-                    Create New Quiz
+                    Go home
                 </Button>
             </CardContent>
         </Card>

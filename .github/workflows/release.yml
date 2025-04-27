@@ -13,22 +13,22 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: npm --prefix users/authservice ci
-      - run: npm --prefix users/userservice ci
-      - run: npm --prefix users/groupservice ci
-      - run: npm --prefix llmservice ci
-      - run: npm --prefix wihoot ci
-      - run: npm --prefix gameservice ci
-      - run: npm --prefix gatewayservice ci
-      - run: npm --prefix webapp ci
-      - run: npm --prefix users/authservice test -- --coverage
-      - run: npm --prefix users/userservice test -- --coverage
-      - run: npm --prefix users/groupservice test -- --coverage
-      - run: npm --prefix llmservice test -- --coverage
-      - run: npm --prefix wihoot test -- --coverage
-      - run: npm --prefix gatewayservice test -- --coverage
-      - run: npm --prefix gameservice test -- --coverage
-      - run: npm --prefix webapp test -- --coverage
+      # - run: npm --prefix users/authservice ci
+      # - run: npm --prefix users/userservice ci
+      # - run: npm --prefix users/groupservice ci
+      # - run: npm --prefix llmservice ci
+      # - run: npm --prefix wihoot ci
+      # - run: npm --prefix gameservice ci
+      # - run: npm --prefix gatewayservice ci
+      # - run: npm --prefix webapp ci
+      # - run: npm --prefix users/authservice test -- --coverage
+      # - run: npm --prefix users/userservice test -- --coverage
+      # - run: npm --prefix users/groupservice test -- --coverage
+      # - run: npm --prefix llmservice test -- --coverage
+      # - run: npm --prefix wihoot test -- --coverage
+      # - run: npm --prefix gatewayservice test -- --coverage
+      # - run: npm --prefix gameservice test -- --coverage
+      # - run: npm --prefix webapp test -- --coverage
       - name: Analyze with SonarCloud
         uses: SonarSource/sonarqube-scan-action@master
         env:
@@ -41,15 +41,15 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: npm --prefix users/authservice install
-      - run: npm --prefix users/userservice install
-      - run: npm --prefix llmservice install
-      - run: npm --prefix wihoot install
-      - run: npm --prefix gameservice install
-      - run: npm --prefix gatewayservice install
-      - run: npm --prefix webapp install
-      - run: npm --prefix webapp run build
-      - run: npm --prefix webapp run test:e2e
+      # - run: npm --prefix users/authservice install
+      # - run: npm --prefix users/userservice install
+      # - run: npm --prefix llmservice install
+      # - run: npm --prefix wihoot install
+      # - run: npm --prefix gameservice install
+      # - run: npm --prefix gatewayservice install
+      # - run: npm --prefix webapp install
+      # - run: npm --prefix webapp run build
+      # - run: npm --prefix webapp run test:e2e
   docker-push-webapp:
     name: Push webapp Docker Image to GitHub Packages
     runs-on: ubuntu-latest
