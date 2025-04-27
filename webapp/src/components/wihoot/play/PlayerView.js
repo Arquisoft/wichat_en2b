@@ -48,7 +48,6 @@ export default function PlayerView() {
   const [timeLeft, setTimeLeft] = useState(null);
   const timerIntervalRef = useRef(null);
   const [showCorrectAnswer, setShowCorrectAnswer] = useState(false);
-  const [showAlerts, setShowAlerts] = useState(false); // Add this new state to track when to show the alerts
 
   // Fetch session data
   const fetchSessionData = async () => {
@@ -130,7 +129,7 @@ export default function PlayerView() {
         setSelectedOption(null);
         setWaitingForNext(false);
         setShowCorrectAnswer(false); // Reset showCorrectAnswer when session starts
-        setShowAlerts(false); // Reset showAlerts when session starts
+        setShowCorrectAnswer(false); // Reset showCorrectAnswer when session starts
       });
 
       newSocket.on("question-changed", (data) => {
@@ -145,7 +144,7 @@ export default function PlayerView() {
       });
 
       newSocket.on("show-correct-answer", (data) => {
-        if (data && data.correctAnswer) {
+        if (data?.correctAnswer) {
           setCorrectAnswer(data.correctAnswer);
           setShowCorrectAnswer(true);
         }
@@ -343,12 +342,6 @@ export default function PlayerView() {
 
     setSelectedOption(optionIndex);
     setHasAnswered(true);
-    setShowAlerts(true); // Show the alert when answer is submitted
-    
-    // Hide the alert after 2 seconds
-    setTimeout(() => {
-      setShowAlerts(false);
-    }, 2000);
 
     const storedStartTime = localStorage.getItem(`startTime-${code}-${playerId}`);
     let answerTime = startTime;
@@ -499,12 +492,12 @@ export default function PlayerView() {
           />
         </Box>
         <div className="content-box">
-          {hasAnswered && showAlerts && isCorrect && (
+          {hasAnswered && showCorrectAnswer && isCorrect && (
             <Alert id="message-success" severity="success" className="alert-box">
               Great job! You got it right!
             </Alert>
           )}
-          {hasAnswered && showAlerts && !isCorrect && (
+          {hasAnswered && showCorrectAnswer && !isCorrect && (
             <Alert id="message-fail" severity="error" className="alert-box">
               Oops! You didn't guess this one.
             </Alert>
