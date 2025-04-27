@@ -51,6 +51,15 @@ export default function PlayerView() {
   const [showCorrectAnswer, setShowCorrectAnswer] = useState(false);
 
   useEffect(() => {
+    if (router.isReady) {
+      if (!code || !playerId) {
+        setError("Invalid session. Missing required parameters.");
+        router.push("/");
+      }
+    }
+  }, [router.isReady, code, playerId, router]);
+
+  useEffect(() => {
     // Only redirect immediately for errors other than "host has left"
     if (error && error !== "The host has left the session") {
         router.push("/");
@@ -69,6 +78,11 @@ export default function PlayerView() {
       if (player) setUsername(player.username);
       return sessionData;
     } catch (err) {
+      if (err.status === 404 || err.message?.includes("not found") || err.message?.includes("does not exist")) {
+        setError("Quiz not found. This session may have ended or does not exist.");
+        router.push("/");
+        return null;
+      }
       if (err.status === 403) {
         setError("You are not authorized for this session");
         // Redirect to join page after a short delay
@@ -109,7 +123,9 @@ export default function PlayerView() {
         setQuizData(quiz.quizData);
         setQuizMetaData(quiz.quizMetaData);
       } catch (err) {
-        setError("Failed to load quiz data");
+        setError("Failed to load quiz data. The quiz may not exist.");
+        setIsLoading(false);
+        setTimeout(() => router.push("/"), 2000);
         console.error(err);
       }
     };
@@ -177,7 +193,17 @@ export default function PlayerView() {
 
       newSocket.on("score-updated", (data) => setPlayers(data.players));
 
-      newSocket.on("error", (data) => setError(data.message));
+      newSocket.on("error", (data) => {
+        console.error("Socket error:", data.message);
+        setError(data.message);
+        
+        if (data.message?.includes("not found") || 
+            data.message?.includes("does not exist") || 
+            data.message?.includes("invalid") || 
+            data.message?.includes("Invalid")) {
+          router.push("/");
+        }
+      });
 
       newSocket.on("host-disconnected", (data) => {
         setError("The host has left the session");
