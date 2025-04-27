@@ -733,136 +733,224 @@ describe('HostManager', () => {
     });
 
     it('handles next question to end quiz', async () => {
-        fetchWithAuth.mockImplementation((url) => {
+        jest.useFakeTimers(); // Enable fake timers for this test
+    
+        // --- Mocks Setup ---
+        // Mock fetchWithAuth for initial status and only ONE question
+        fetchWithAuth.mockImplementation(async (url) => {
             if (url.includes('/status')) {
-                return Promise.resolve({
-                    status: 'active',
-                    players: [],
-                    currentQuestionIndex: 0,
-                });
+                return { status: 'active', players: [], currentQuestionIndex: 0 };
             }
             if (url.includes('/internal/quizdata/')) {
-                return Promise.resolve({
+                return {
                     quizMetaData: [{ quizName: 'Sample Quiz', timePerQuestion: 60 }],
+                    // Only one question in quizData
                     quizData: [
                         { question_id: 'q1', answers: ['A', 'B', 'C', 'D'], image_name: '/image.png' },
                     ],
-                });
+                };
             }
+            // Mock the /end call to succeed
             if (url.includes('/end')) {
-                return Promise.resolve({
-                    status: 'finished',
-                    players: [],
-                });
+                return { status: 'finished', players: [] };
             }
-            return Promise.resolve(null);
+            // Mock /validate call if needed within handleNextQuestion before timeout
+             if (url.includes('/question/validate')) {
+                 return { ok: true, json: async () => ({ correctAnswer: 'A', isCorrect: true }) };
+             }
+            return null; // Fallback
         });
-
+        // Ensure global fetch is also appropriately mocked if /validate isn't handled above
+        global.fetch.mockImplementation(async (url) => {
+             if (url.includes('/question/validate')) {
+                return { ok: true, json: async () => ({ correctAnswer: 'A', isCorrect: true }) };
+            }
+            return { ok: true, json: async () => ({}) };
+        });
+    
+    
+        // --- Test Execution ---
         await act(async () => {
             render(<HostManager />);
         });
-
+    
+        // Wait for the active quiz view with the "End Quiz" button
         await waitFor(() => {
             expect(screen.getByRole('button', { name: /End Quiz/i })).toBeInTheDocument();
+            expect(screen.getByText('Question 1 of 1')).toBeInTheDocument(); // Verify it knows it's the last question
         });
-
+    
+        // Click the "End Quiz" button (triggers handleNextQuestion)
         await act(async () => {
             fireEvent.click(screen.getByRole('button', { name: /End Quiz/i }));
+            // Allow validate fetch to potentially resolve if it runs before timeout
+            await Promise.resolve();
         });
-
+    
+        // Advance the timer by the 2-second delay in handleNextQuestion
+        await act(async () => {
+            jest.advanceTimersByTime(2000);
+            // Allow the async handleEndQuiz fetch call to resolve
+             await Promise.resolve();
+        });
+    
+        // Now wait for the "Quiz Completed" screen
         await waitFor(() => {
             expect(screen.getByText('Quiz Completed')).toBeInTheDocument();
+            expect(screen.getByText('Final Results')).toBeInTheDocument();
+            // Check timer cleared
             expect(localStorage.removeItem).toHaveBeenCalledWith(
                 expect.stringContaining('quizTimer_TESTCODE_mock-user-id')
             );
         });
+    
+        jest.useRealTimers(); // Disable fake timers
     });
+    
+    
 
     it('handles leaderboard next API error', async () => {
-        fetchWithAuth.mockImplementation((url) => {
-            if (url.includes('/status')) {
-                return Promise.resolve({
-                    status: 'active',
-                    players: [],
-                    currentQuestionIndex: 0,
-                });
-            }
-            if (url.includes('/internal/quizdata/')) {
-                return Promise.resolve({
-                    quizMetaData: [{ quizName: 'Sample Quiz', timePerQuestion: 60 }],
-                    quizData: [
-                        { question_id: 'q1', answers: ['A', 'B', 'C', 'D'], image_name: '/image.png' },
-                        { question_id: 'q2', answers: ['A', 'B', 'C', 'D'], image_name: '/image.png' },
-                    ],
-                });
-            }
+        jest.useFakeTimers(); // Enable fake timers
+    
+        // --- Mocks Setup ---
+        // Initial setup (active, Q1 of 2) - use default mocks from beforeEach usually
+    
+        // --- Test Execution ---
+        await act(async () => {
+            render(<HostManager />);
+        });
+    
+        // Wait for the active quiz view (Q1)
+        await waitFor(() => {
+            expect(screen.getByRole('button', { name: /Next Question/i })).toBeInTheDocument();
+            expect(screen.getByText('Question 1 of 2')).toBeInTheDocument();
+        });
+    
+        // Click "Next Question" (triggers handleNextQuestion for Q1)
+        await act(async () => {
+            fireEvent.click(screen.getByRole('button', { name: /Next Question/i }));
+             // Allow validate fetch to potentially resolve
+            await Promise.resolve();
+        });
+    
+        // Advance timer for the delay
+        await act(async () => {
+            jest.advanceTimersByTime(2000);
+        });
+    
+        // Wait for the Leaderboard view to appear
+        await waitFor(() => {
+            expect(screen.getByText(/Current Standings/i)).toBeInTheDocument();
+            // Button should still say "Next Question" as we have Q2 remaining
+            expect(screen.getByRole('button', { name: /Next Question/i })).toBeInTheDocument();
+        });
+    
+        // *** NOW, set up the mock for the *failing* /next API call ***
+        fetchWithAuth.mockImplementationOnce(async (url) => { // Use Once if other calls need default
             if (url.includes('/next')) {
                 throw new Error('Failed to move to next question');
             }
-            return Promise.resolve(null);
+             // Add fallbacks if other calls might happen unexpectedly
+             // console.warn("Unexpected fetchWithAuth call in error mock:", url)
+             return null;
         });
-
-        await act(async () => {
-            render(<HostManager />);
-        });
-
-        await waitFor(() => {
-            fireEvent.click(screen.getByRole('button', { name: /Next Question/i }));
-        });
-
-        await waitFor(() => {
-            expect(screen.getByText(/Current Standings/i)).toBeInTheDocument();
-            expect(screen.getByRole('button', { name: /Next Question/i })).toBeInTheDocument();
-        });
-
+    
+        // Click the "Next Question" button *on the leaderboard* (triggers handleLeaderboardNext)
         await act(async () => {
             fireEvent.click(screen.getByRole('button', { name: /Next Question/i }));
         });
-
+    
+        // Wait for the error message to be displayed
         await waitFor(() => {
-            expect(screen.getByText('Failed to move to next question')).toBeInTheDocument();
+            // Check for the Alert message containing the error
+            const alert = screen.getByRole('alert');
+            expect(alert).toHaveTextContent('Failed to move to next question');
+            // expect(screen.getByText('Failed to move to next question')).toBeInTheDocument(); // Might be inside the Alert
         });
+    
+         // Ensure we are still on the leaderboard view after the error
+         expect(screen.getByText(/Current Standings/i)).toBeInTheDocument();
+    
+    
+        jest.useRealTimers(); // Disable fake timers
     });
 
     it('handles end quiz API error', async () => {
-        fetchWithAuth.mockImplementation((url) => {
+        jest.useFakeTimers(); // Enable fake timers
+    
+        // --- Mocks Setup ---
+        // Mock fetchWithAuth for initial status and ONE question
+        fetchWithAuth.mockImplementation(async (url) => {
             if (url.includes('/status')) {
-                return Promise.resolve({
-                    status: 'active',
-                    players: [],
-                    currentQuestionIndex: 0,
-                });
+                return { status: 'active', players: [], currentQuestionIndex: 0 };
             }
             if (url.includes('/internal/quizdata/')) {
-                return Promise.resolve({
+                return {
                     quizMetaData: [{ quizName: 'Sample Quiz', timePerQuestion: 60 }],
+                    // Only one question
                     quizData: [
                         { question_id: 'q1', answers: ['A', 'B', 'C', 'D'], image_name: '/image.png' },
                     ],
-                });
+                };
             }
+            // Mock the /end call to *fail*
             if (url.includes('/end')) {
                 throw new Error('Failed to end quiz');
             }
-            return Promise.resolve(null);
+             // Mock /validate call if needed within handleNextQuestion before timeout
+             if (url.includes('/question/validate')) {
+                 return { ok: true, json: async () => ({ correctAnswer: 'A', isCorrect: true }) };
+             }
+            return null; // Fallback
         });
-
+         // Ensure global fetch is also appropriately mocked if /validate isn't handled above
+         global.fetch.mockImplementation(async (url) => {
+              if (url.includes('/question/validate')) {
+                 return { ok: true, json: async () => ({ correctAnswer: 'A', isCorrect: true }) };
+             }
+             return { ok: true, json: async () => ({}) };
+         });
+    
+        // --- Test Execution ---
         await act(async () => {
             render(<HostManager />);
         });
-
+    
+        // Wait for the active quiz view with the "End Quiz" button
         await waitFor(() => {
             expect(screen.getByRole('button', { name: /End Quiz/i })).toBeInTheDocument();
+             expect(screen.getByText('Question 1 of 1')).toBeInTheDocument();
         });
-
+    
+        // Click the "End Quiz" button (triggers handleNextQuestion)
         await act(async () => {
             fireEvent.click(screen.getByRole('button', { name: /End Quiz/i }));
+             // Allow validate fetch to potentially resolve
+            await Promise.resolve();
         });
-
+    
+        // Advance the timer by the 2-second delay
+        await act(async () => {
+            jest.advanceTimersByTime(2000);
+             // Allow the async handleEndQuiz fetch call (which throws error) to settle
+            await Promise.resolve();
+        });
+    
+        // Wait for the error message to be displayed
         await waitFor(() => {
-            expect(screen.getByText('Failed to end quiz')).toBeInTheDocument();
+            const alert = screen.getByRole('alert');
+            expect(alert).toHaveTextContent('Failed to end quiz');
+            // expect(screen.getByText('Failed to end quiz')).toBeInTheDocument();
         });
+    
+         // Ensure we are still on the Active Quiz view (or wherever the error leaves us)
+         // The component might stay on the active screen or leaderboard depending on exact error handling state update
+         expect(screen.getByRole('button', { name: /End Quiz/i })).toBeInTheDocument();
+    
+    
+        jest.useRealTimers(); // Disable fake timers
     });
+    
 
     it('handles timer persistence with stored data', async () => {
         jest.useFakeTimers();
@@ -903,43 +991,43 @@ describe('HostManager', () => {
     });
 
     it('handles timer expiration', async () => {
-        jest.useFakeTimers();
-        fetchWithAuth.mockImplementation((url) => {
-            if (url.includes('/status')) {
-                return Promise.resolve({
-                    status: 'active',
-                    players: [],
-                    currentQuestionIndex: 0,
-                });
-            }
-            if (url.includes('/internal/quizdata/')) {
-                return Promise.resolve({
-                    quizMetaData: [{ quizName: 'Sample Quiz', timePerQuestion: 60 }],
-                    quizData: [
-                        { question_id: 'q1', answers: ['A', 'B', 'C', 'D'], image_name: '/image.png' },
-                        { question_id: 'q2', answers: ['A', 'B', 'C', 'D'], image_name: '/image.png' },
-                    ],
-                });
-            }
-            if (url.includes('/next')) {
-                return Promise.resolve({
-                    currentQuestionIndex: 1,
-                });
-            }
-            return Promise.resolve(null);
-        });
-
+        jest.useFakeTimers(); // Enable fake timers
+    
+        // --- Mocks Setup ---
+        // Use default mocks which include 2 questions and timePerQuestion: 60
+    
+        // --- Test Execution ---
         await act(async () => {
             render(<HostManager />);
-            jest.advanceTimersByTime(60000); // 60 seconds
         });
-
+    
+        // Wait for the active quiz view (Q1) to render initially
+        await waitFor(() => {
+            expect(screen.getByText(/Time left: 60s/i)).toBeInTheDocument();
+            expect(screen.getByText('Question 1 of 2')).toBeInTheDocument();
+        });
+    
+        // Advance timers past the question time (60s) + the timeout delay (2s) in handleNextQuestion
+        await act(async () => {
+            jest.advanceTimersByTime(60000 + 2000);
+             // Allow validate fetch and state updates inside setTimeout to resolve
+            await Promise.resolve();
+        });
+    
+        // Now expect the leaderboard view for Q1 results
         await waitFor(() => {
             expect(screen.getByText(/Current Standings/i)).toBeInTheDocument();
+            // Check timer cleared for Q1
             expect(localStorage.removeItem).toHaveBeenCalledWith(
                 expect.stringContaining('quizTimer_TESTCODE_mock-user-id')
             );
+             // Leaderboard should show results for Q1
+             expect(screen.getByText(/Leaderboard - Question 1 Results/i)).toBeInTheDocument();
+             // Button should be ready to move to Q2
+             expect(screen.getByRole('button', { name: /Next Question/i })).toBeInTheDocument();
         });
+    
+        jest.useRealTimers(); // Disable fake timers
     });
 
     it('handles validate answers error', async () => {
