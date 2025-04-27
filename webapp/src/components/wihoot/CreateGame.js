@@ -34,7 +34,6 @@ export default function CreateGame() {
     const router = useRouter()
 
     useEffect(() => {
-        // Fetch available topics
         const fetchTopics = async () => {
             try {
                 const response = await fetchWithAuth(`/quiz/allTopics`);
@@ -63,7 +62,7 @@ export default function CreateGame() {
 
         try {
             const quizzesForTopic = await fetchWithAuth(`/quiz/${selectedTopic}`);
-            const quizzes = quizzesForTopic
+  
             if (!quizzesForTopic || !Array.isArray(quizzesForTopic) || quizzesForTopic.length === 0) {
                 setError("No quizzes available for the selected topic.");
                 setIsLoading(false);
@@ -97,18 +96,18 @@ export default function CreateGame() {
 
             // Create a shared quiz session
             const sessionResponse = await fetch(`${apiEndpoint}/shared-quiz/create`, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${token}`,
-                    },
-                    body: JSON.stringify({
-                        quizData: quizResponse,  //constains the questions and answers
-                        quizMetaData: quizRequested, //contains quiz question, time estimated, ...
-                        hostId,
-                        hostUsername
-                    })
-                }
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    quizData: quizResponse,  //constains the questions and answers
+                    quizMetaData: quizRequested, //contains quiz question, time estimated, ...
+                    hostId,
+                    hostUsername
+                })
+            }
             );
 
 
@@ -119,7 +118,7 @@ export default function CreateGame() {
             const sessionData = await sessionResponse.json()
 
             // Redirect to host manager page
-            router.push( { pathname: `/wihoot/host/manager`, query: { code: sessionData.code } } )
+            router.push({ pathname: `/wihoot/host/manager`, query: { code: sessionData.code } })
         } catch (err) {
             setError(err.message || "Failed to create shared quiz")
             console.error(err)
@@ -133,10 +132,16 @@ export default function CreateGame() {
             <Card className="create-game-card" sx={{ maxWidth: 600, width: '100%', m: 2, boxShadow: 3 }}>
                 <CardHeader
                     className="create-game-header"
-                    title={<Typography className="create-game-title" variant="h4" component="h1" align="center">Create a Shared Quiz</Typography>}
-                    subheader={<Typography className="create-game-subheader" variant="body2" color="textSecondary" align="center">
-                        Create a quiz and share it with friends using a unique code.
-                    </Typography>}
+                    title={
+                        <Typography className="create-game-title" variant="h4" component="h1" align="center">
+                            Start a new session
+                        </Typography>
+                    }
+                    subheader={
+                        <Typography className="create-game-subheader" variant="body2" color="textSecondary" align="center">
+                            Start a session and share your code with your friends to start playing!
+                        </Typography>
+                    }
                 />
                 <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
                     <NextLink href="/" passHref>
@@ -184,7 +189,7 @@ export default function CreateGame() {
                             id="questions"
                             label="Number of Questions"
                             type="number"
-                            InputProps={{ inputProps: { min: 1, max: 20 } }}
+                            slotProps={{ input: { min: 1, max: 20 } }}
                             value={numberOfQuestions}
                             onChange={(e) => setNumberOfQuestions(Number.parseInt(e.target.value))}
                             fullWidth
@@ -198,7 +203,7 @@ export default function CreateGame() {
                             id="answers"
                             label="Number of Answers"
                             type="number"
-                            InputProps={{ inputProps: { min: 4, max: 6 } }}
+                            slotProps={{ input: { min: 4, max: 6 } }}
                             value={numberOfAnswers}
                             onChange={(e) => setNumberOfAnswers(Number.parseInt(e.target.value))}
                             fullWidth

@@ -5,11 +5,13 @@ body .create-game-container {
   display: flex;
   justify-content: center;
   align-items: center;
+  box-sizing: border-box;
 }
 
 .back-button {
-  min-width: 120px !important;
+  min-width: 100px !important;
   margin-top: 16px !important;
+  font-size: 0.9rem !important;
 }
 
 body .create-game-card {
@@ -20,10 +22,11 @@ body .create-game-card {
   transition: all 0.3s ease;
   max-width: 600px;
   width: 100%;
+  margin: 0 auto;
 }
 
 body .create-game-card:hover {
-  transform: translateY(-8px);
+  transform: translateY(-5px);
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
 }
 
@@ -38,6 +41,7 @@ body .create-game-title {
   font-size: 1.8rem;
   font-weight: 700;
   letter-spacing: 0.5px;
+  word-wrap: break-word;
 }
 
 body .create-game-subheader {
@@ -64,6 +68,7 @@ body .create-game-error {
 body .create-game-select,
 body .create-game-textfield {
   border-radius: 8px;
+  width: 100%;
 }
 
 body .create-game-button {
@@ -74,6 +79,7 @@ body .create-game-button {
   background: linear-gradient(90deg, #6b48ff, #ff4081);
   color: #fff;
   transition: all 0.3s ease;
+  width: 100%;
 }
 
 body .create-game-button:hover {
@@ -86,13 +92,57 @@ body .create-game-button:disabled {
   color: #aaa;
 }
 
-@media (max-width: 600px) {
+/* Small mobile devices */
+@media (max-width: 320px) {
+  body .create-game-container {
+    padding: 12px 8px;
+  }
+
+  body .create-game-card {
+    border-radius: 10px;
+    margin: 0 4px;
+  }
+
+  body .create-game-header {
+    padding: 12px;
+  }
+
+  body .create-game-title {
+    font-size: 1.3rem;
+  }
+
+  body .create-game-subheader {
+    font-size: 0.85rem;
+  }
+
+  body .create-game-content {
+    padding: 12px;
+  }
+
+  body .create-game-form {
+    gap: 14px;
+  }
+  
+  .back-button {
+    min-width: 80px !important;
+    font-size: 0.8rem !important;
+  }
+  
+  body .create-game-button {
+    padding: 10px 16px;
+    font-size: 0.9rem;
+  }
+}
+
+/* Standard mobile devices */
+@media (min-width: 321px) and (max-width: 600px) {
   body .create-game-container {
     padding: 16px 8px;
   }
 
   body .create-game-card {
     border-radius: 12px;
+    margin: 0 8px;
   }
 
   body .create-game-header {
@@ -112,8 +162,68 @@ body .create-game-button:disabled {
   }
 }
 
+/* Tablets */
 @media (min-width: 601px) and (max-width: 960px) {
+  body .create-game-container {
+    padding: 20px 16px;
+  }
+  
+  body .create-game-card {
+    max-width: 550px;
+  }
+  
   body .create-game-title {
     font-size: 1.6rem;
+  }
+  
+  body .create-game-form {
+    gap: 20px;
+  }
+}
+
+/* Larger tablets and small desktops */
+@media (min-width: 961px) and (max-width: 1280px) {
+  body .create-game-container {
+    padding: 24px;
+  }
+  
+  body .create-game-card {
+    max-width: 600px;
+  }
+}
+
+/* Landscape orientation adjustments */
+@media (max-height: 500px) and (orientation: landscape) {
+  body .create-game-container {
+    padding: 12px;
+    align-items: flex-start;
+  }
+  
+  body .create-game-card {
+    margin-top: 12px;
+    margin-bottom: 12px;
+  }
+  
+  body .create-game-header {
+    padding: 12px;
+  }
+  
+  body .create-game-title {
+    font-size: 1.4rem;
+  }
+  
+  body .create-game-content {
+    padding: 16px;
+  }
+  
+  body .create-game-form {
+    gap: 14px;
+  }
+}
+
+/* High DPI screens */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  body .create-game-card {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
   }
 }

@@ -46,7 +46,7 @@ export default function JoinGame() {
                             Authorization: `Bearer ${token}`,
                         },
                     })
-                    if (userResponse.data){
+                    if (userResponse.data) {
                         setIsAuthenticated(true)
                         setPlayerName(userResponse.data.username)
                     }
@@ -91,7 +91,7 @@ export default function JoinGame() {
 
             } else {
                 // For guest users, generate a unique ID
-                playerId = "guest_"+uuidv4()
+                playerId = "guest_" + uuidv4()
             }
 
             const response = await axios.post(
@@ -134,10 +134,16 @@ export default function JoinGame() {
             <Card className="join-game-card" sx={{ maxWidth: 600, width: '100%', m: 2, boxShadow: 3 }}>
                 <CardHeader
                     className="join-game-header"
-                    title={<Typography className="join-game-title" variant="h4" component="h1" align="center">Join a Game</Typography>}
-                    subheader={<Typography className="join-game-subheader" variant="body2" color="textSecondary" align="center">
-                        Enter a 6-digit game code to join a shared quiz.
-                    </Typography>}
+                    title={
+                        <Typography className="join-game-title" variant="h4" component="h1" align="center">
+                            Join a session
+                        </Typography>
+                    }
+                    subheader={
+                        <Typography className="join-game-subheader" variant="body2" color="textSecondary" align="center">
+                            Enter a 6-digit game code to join a session.
+                        </Typography>
+                    }
                 />
                 <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
                     <NextLink href="/" passHref>
