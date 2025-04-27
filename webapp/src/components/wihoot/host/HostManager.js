@@ -17,7 +17,6 @@ import {
     List,
     ListItem,
     ListItemText,
-    Badge,
     CircularProgress,
     LinearProgress,
 } from "@mui/material";
@@ -79,6 +78,12 @@ export default function HostManager() {
     const clearTimerData = () => {
         localStorage.removeItem(`quizTimer_${code}_${hostId}`);
     };
+
+    const kickHost = () => {
+        if (error === "You are not the host of this session") {
+            router.push("/");
+        }
+    }
 
     // Initialize socket connection and fetch session data
     useEffect(() => {
@@ -282,16 +287,25 @@ export default function HostManager() {
             return;
         }
 
+        let lastUpdate = Date.now();
+
         timerIntervalRef.current = setInterval(() => {
-            setTimeLeft((prevTime) => {
-                if (prevTime <= 0) {
+            const now = Date.now();
+            const delta = (now - lastUpdate) / 1000; // seconds
+            lastUpdate = now;
+
+            setTimeLeft(prevTime => {
+                const newTime = prevTime - delta;
+
+                if (newTime <= 0) {
                     clearInterval(timerIntervalRef.current);
                     handleNextQuestion();
                     return 0;
                 }
-                return prevTime - 0.1; // Update every 100ms for smoother progress
+
+                return newTime;
             });
-        }, 100); // Use 100ms interval for smoother updates
+        }, 100);
 
         return () => {
             clearInterval(timerIntervalRef.current);
@@ -754,9 +768,12 @@ export default function HostManager() {
                 WiHoot - Private Session
             </Typography>
             {error && (
-                <Alert severity="error" sx={{ mb: 2 }}>
-                    {error}
-                </Alert>
+                <>
+                    {kickHost()}
+                    <Alert severity="error" sx={{ mb: 2 }}>
+                        {error}
+                    </Alert>
+                </>
             )}
             {sessionStatus === "waiting" && renderWaitingRoom()}
             {sessionStatus === "active" &&

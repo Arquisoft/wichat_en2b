@@ -260,28 +260,52 @@ export default function PlayerView() {
   // Timer logic
   useEffect(() => {
     if (
-      sessionStatus !== "active" ||
-      waitingForNext ||
-      hasAnswered ||
-      timeLeft === null ||
-      currentQuestionIndex < 0
+        sessionStatus !== "active" ||
+        waitingForNext ||
+        timeLeft === null ||
+        currentQuestionIndex < 0
     ) {
       clearInterval(timerIntervalRef.current);
       return;
     }
 
+    const timePerQuestion = 60; // or dynamically set if needed
+    const storedTimerKey = `startTime-${code}-${playerId}`;
+    const storedStartTime = localStorage.getItem(storedTimerKey);
+    let initialTimeLeft = timePerQuestion;
+
+    // If there's a stored start time for this session, calculate the time left
+    if (storedStartTime) {
+      const elapsed = (Date.now() - parseInt(storedStartTime, 10)) / 1000;
+      initialTimeLeft = Math.max(0, timePerQuestion - elapsed);
+    } else {
+      // No stored start time, so set a new start time
+      localStorage.setItem(storedTimerKey, Date.now().toString());
+    }
+
+    setTimeLeft(initialTimeLeft);
+
+    let lastUpdate = Date.now();
+
     timerIntervalRef.current = setInterval(() => {
-      setTimeLeft((prevTime) => {
-        if (prevTime <= 0) {
+      const now = Date.now();
+      const delta = (now - lastUpdate) / 1000; // in seconds
+      lastUpdate = now;
+
+      setTimeLeft(prevTime => {
+        const newTime = prevTime - delta;
+
+        if (newTime <= 0) {
           clearInterval(timerIntervalRef.current);
           return 0;
         }
-        return prevTime - 0.1;
+
+        return newTime;
       });
     }, 100);
 
     return () => clearInterval(timerIntervalRef.current);
-  }, [sessionStatus, waitingForNext, hasAnswered, timeLeft, currentQuestionIndex]);
+  }, [sessionStatus, waitingForNext, hasAnswered, timeLeft, currentQuestionIndex, code, playerId]);
 
   const getCurrentQuestion = () => {
     if (!quizData || currentQuestionIndex < 0 || currentQuestionIndex >= quizData.length) {
