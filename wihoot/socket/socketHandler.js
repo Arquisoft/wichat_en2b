@@ -8,7 +8,10 @@ module.exports = {
         if (this.io == null){
             this.io = socketIo(server, {
                 cors: {
-                    origin: "*",
+                    origin: [
+                        "http://localhost:3000",
+                        "https://wichat.ddns.net"
+                    ],
                     methods: ["GET", "POST"],
                     credentials: true,
                 },

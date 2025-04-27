@@ -47,7 +47,10 @@ describe('Socket Handler', () => {
       
       expect(socketIo).toHaveBeenCalledWith(mockServer, {
         cors: {
-          origin: '*',
+          origin: [
+            "http://localhost:3000",   // Development URL
+            "https://wichat.ddns.net", // Production URL
+          ],
           methods: ['GET', 'POST'],
           credentials: true
         }
