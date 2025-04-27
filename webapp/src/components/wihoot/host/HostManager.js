@@ -83,7 +83,13 @@ export default function HostManager() {
         if (error === "You are not the host of this session") {
             router.push("/");
         }
-    }
+    };
+
+    useEffect(() => {
+        if (error === "You are not the host of this session") {
+            kickHost();
+        }
+    }, [error, router]);
 
     // Initialize socket connection and fetch session data
     useEffect(() => {
@@ -194,6 +200,12 @@ export default function HostManager() {
             });
 
             newSocket.on("player-left", (data) => {
+                // Remove the player locally for immediate UI update
+                setPlayers((prevPlayers) => 
+                    prevPlayers.filter(player => player.id !== data.playerId)
+                );
+                
+                // Also fetch the latest session data to ensure sync with server
                 fetchSessionData();
             });
 
@@ -778,12 +790,9 @@ export default function HostManager() {
                 WiHoot - Private Session
             </Typography>
             {error && (
-                <>
-                    {kickHost()}
-                    <Alert severity="error" sx={{ mb: 2 }}>
-                        {error}
-                    </Alert>
-                </>
+                <Alert severity="error" sx={{ mb: 2 }}>
+                    {error}
+                </Alert>
             )}
             {sessionStatus === "waiting" && renderWaitingRoom()}
             {sessionStatus === "active" &&

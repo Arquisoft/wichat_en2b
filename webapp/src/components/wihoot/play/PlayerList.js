@@ -1,4 +1,5 @@
 import { List, ListItem, ListItemText, Badge } from "@mui/material";
+import PropTypes from "prop-types";
 import "../../../styles/wihoot/PlayerView.css";
 
 export default function PlayerList({ players, playerId }) {
@@ -33,3 +34,13 @@ export default function PlayerList({ players, playerId }) {
     </List>
   );
 }
+
+PlayerList.propTypes = {
+  players: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.string.isRequired,
+      username: PropTypes.string.isRequired,
+    })
+  ).isRequired,
+  playerId: PropTypes.string,
+}; 
