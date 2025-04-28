@@ -14,7 +14,7 @@ Below is a prioritized list of technical risks and debts identified in the curre
     * Develop a kind of cache or similar system for the questions, so the user doesn't have to wait for all of them to load.
 
 . *Reliance on Oracle Server*
-  - *Risk*: The team is planning on deploying the application on an Oracle server, which was created using a free account. Although chances of losing this service are small, per contract they are still possible. The alternative would be to deploy on a personal computer, but that entails depending on a teammate's computer being available when needed.
+  - *Risk*: The team will deploy the application on an Oracle server, which was created using a free account. Although chances of losing this service are small, per contract they are still possible. The alternative would be to deploy on a personal computer, but that entails depending on a teammate's computer being available when needed.
   - *Mitigation*:
     * Have another teammate set up an additional Oracle account, or a similar service, with a backup server to be used if needed.
 
