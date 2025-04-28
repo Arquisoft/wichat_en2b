@@ -2,6 +2,8 @@ import React from "react"
 import "../../styles/home/CustomView.css"
 import { useRouter } from "next/navigation";
 import QuestionGame from "../game/QuestionGame"; 
+import "../../utils/auth";
+import { getAuthToken, getCurrentPlayerId } from "../../utils/auth";
 
 const { useState, useEffect } = React
 const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://localhost:8000';
@@ -14,13 +16,13 @@ function CustomQuiz() {
     const [selectedSubcategory, setSelectedSubcategory] = useState("");
     const [timePerQuestion, setTimePerQuestion] = useState(30);
     const [numberOfQuestions, setNumberOfQuestions] = useState(10);
-    const [gameMode, setGameMode] = useState("singleplayer");
     const [numberOfOptions, setNumberOfOptions] = useState(4);
     const [showGame, setShowGame] = useState(false);
     const [quizData, setQuizData] = useState([]);
     const [error, setError] = useState(null);
     const [numberOfAvailableQuestions, setNumberOfAvailableQuestions] = useState(10);
-  
+    const [HomeURL, setHomeURL] = useState("/");
+
     const fetchSubcategories = async (cat) => {
       try {
         const response = await fetch(`${apiEndpoint}/quiz/${cat}`);
@@ -39,7 +41,6 @@ function CustomQuiz() {
         fetchAvailableQuestions(mappedQuizzes[0].wikidataCode);
       } catch (err) {
         setError("There was an error fetching the quizzes.");
-        console.error("Error fetching quizzes", err);
       }
     };
 
@@ -50,7 +51,6 @@ function CustomQuiz() {
         setNumberOfAvailableQuestions(data);
       } catch (error){
         setError("There was an error fetching the amount of questions we have");
-        console.error("Error fetching available questions: ", error);
       }
     };
 
@@ -94,11 +94,16 @@ function CustomQuiz() {
             await fetchSubcategories(formattedCategories[0].name);
           } catch (error) {
             setError("There was an error fetching the categories");
-            console.error("Failed to fetch categories:", error);
           }
+        };
+
+        const computeHomeURL = async () => {
+          const id = getCurrentPlayerId(getAuthToken());
+          setHomeURL(!id? "/guest/home": "/");
         };
     
         fetchCategories();
+        computeHomeURL();
     }, []); 
   
     const handleSubmit = (e) => {
@@ -215,7 +220,7 @@ function CustomQuiz() {
           <button
             onClick={(e) => {
               e.preventDefault();
-              router.push("/"); 
+              router.push(HomeURL); 
             }}
             className="button"
           >
