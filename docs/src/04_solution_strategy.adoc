@@ -60,7 +60,126 @@ The project architecture is divided in different modules and their functionaliti
 - **MongoDB** +
   Module of persistence that stores the user's information in JSON format.
 
-image::04_architectural_design.png[Architecture design]
+[plantuml]
+----
+@startuml
+set separator none
+title Wichat EN2B - Arquitecture
+
+left to right direction
+
+skinparam {
+  arrowFontSize 10
+  defaultTextAlignment center
+  wrapWidth 200
+  maxMessageSize 100
+}
+
+hide stereotype
+
+skinparam rectangle<<WichatEN2B.GameService>> {
+  BackgroundColor #ff9933
+  FontColor #ffffff
+  BorderColor #b26b23
+  shadowing false
+}
+skinparam rectangle<<WichatEN2B.GatewayService>> {
+  BackgroundColor #ff9933
+  FontColor #ffffff
+  BorderColor #b26b23
+  shadowing false
+}
+skinparam rectangle<<LLM>> {
+  BackgroundColor #2d882d
+  FontColor #ffffff
+  BorderColor #1f5f1f
+  shadowing false
+}
+skinparam rectangle<<WichatEN2B.LLMService>> {
+  BackgroundColor #ff9933
+  FontColor #ffffff
+  BorderColor #b26b23
+  shadowing false
+}
+skinparam database<<WichatEN2B.MongoDBDatabase>> {
+  BackgroundColor #ff9933
+  FontColor #ffffff
+  BorderColor #b26b23
+  shadowing false
+}
+
+skinparam rectangle<<WichatEN2B.UserAuthenticationService>> {
+  BackgroundColor #ff9933
+  FontColor #ffffff
+  BorderColor #b26b23
+  shadowing false
+}
+skinparam rectangle<<WichatEN2B.UserGroupService>> {
+  BackgroundColor #ff9933
+  FontColor #ffffff
+  BorderColor #b26b23
+  shadowing false
+}
+skinparam rectangle<<WichatEN2B.Wihoot>> {
+  BackgroundColor #ff9933
+  FontColor #ffffff
+  BorderColor #b26b23
+  shadowing false
+}
+skinparam rectangle<<WichatEN2B.UserCRUDService>> {
+  BackgroundColor #ff9933
+  FontColor #ffffff
+  BorderColor #b26b23
+  shadowing false
+}
+skinparam rectangle<<WichatEN2B.WebApplication>> {
+  BackgroundColor #ff9933
+  FontColor #ffffff
+  BorderColor #b26b23
+  shadowing false
+}
+skinparam rectangle<<WikiData>> {
+  BackgroundColor #2d882d
+  FontColor #ffffff
+  BorderColor #1f5f1f
+  shadowing false
+}
+skinparam rectangle<<WichatEN2B>> {
+  BorderColor #1f5f1f
+  FontColor #1f5f1f
+  shadowing false
+}
+
+rectangle "==WikiData\n<size:10>[Software System]</size>" <<WikiData>> as WikiData
+rectangle "==LLM\n<size:10>[Software System]</size>" <<LLM>> as LLM
+
+rectangle "Wichat EN2B\n<size:20></size>" <<WichatEN2B>> {
+  rectangle "==Game Service\n<size:10>[Container]</size>" <<WichatEN2B.GameService>> as WichatEN2B.GameService
+  database "==MongoDB Database\n<size:10>[Container]</size>" <<WichatEN2B.MongoDBDatabase>> as WichatEN2B.MongoDBDatabase
+  rectangle "==Web Application\n<size:10>[Container]</size>" <<WichatEN2B.WebApplication>> as WichatEN2B.WebApplication
+  rectangle "==Gateway Service\n<size:10>[Container]</size>" <<WichatEN2B.GatewayService>> as WichatEN2B.GatewayService
+  rectangle "==LLM Service\n<size:10>[Container]</size>" <<WichatEN2B.LLMService>> as WichatEN2B.LLMService
+  rectangle "==User CRUD Service\n<size:10>[Container]</size>" <<WichatEN2B.UserCRUDService>> as WichatEN2B.UserCRUDService
+  rectangle "==User Authentication Service\n<size:10>[Container]</size>" <<WichatEN2B.UserAuthenticationService>> as WichatEN2B.UserAuthenticationService
+  rectangle "==User Group Service\n<size:10>[Container]</size>" <<WichatEN2B.UserGroupService>> as WichatEN2B.UserGroupService
+  rectangle "==Wihoot Service\n<size:10>[Container]</size>" <<WichatEN2B.Wihoot>> as WichatEN2B.Wihoot
+}
+
+WichatEN2B.LLMService .[#707070,thickness=2].> LLM : "<color:#707070>LLM ask API call"
+WichatEN2B.WebApplication .[#707070,thickness=2].> WichatEN2B.GatewayService : "<color:#707070>Makes API calls"
+WichatEN2B.GatewayService .[#707070,thickness=2].> WichatEN2B.LLMService : "<color:#707070>LLM ask API call"
+WichatEN2B.GatewayService .[#707070,thickness=2].> WichatEN2B.GameService : "<color:#707070>Question API calls"
+WichatEN2B.GatewayService .[#707070,thickness=2].> WichatEN2B.Wihoot : "<color:#707070>Wihoot API calls"
+WichatEN2B.GameService .[#707070,thickness=2].> WikiData : "<color:#707070>Question batches API calls"
+WichatEN2B.GameService .[#707070,thickness=2].> WichatEN2B.MongoDBDatabase : "<color:#707070>Stores game information"
+WichatEN2B.Wihoot .[#707070,thickness=2].> WichatEN2B.MongoDBDatabase : "<color:#707070>Stores multiplayer information"
+WichatEN2B.GatewayService .[#707070,thickness=2].> WichatEN2B.UserCRUDService : "<color:#707070>CRUD API calls"
+WichatEN2B.GatewayService .[#707070,thickness=2].> WichatEN2B.UserAuthenticationService : "<color:#707070>Authentication API calls"
+WichatEN2B.GatewayService .[#707070,thickness=2].> WichatEN2B.UserGroupService : "<color:#707070>Group management API calls"
+WichatEN2B.UserCRUDService .[#707070,thickness=2].> WichatEN2B.MongoDBDatabase : "<color:#707070>User CRUD operations"
+WichatEN2B.UserAuthenticationService .[#707070,thickness=2].> WichatEN2B.MongoDBDatabase : "<color:#707070>User authentication operations"
+WichatEN2B.UserGroupService .[#707070,thickness=2].> WichatEN2B.MongoDBDatabase : "<color:#707070>Group operations"
+@enduml
 
 === Design patterns applied
 
