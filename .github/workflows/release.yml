@@ -264,6 +264,6 @@ jobs:
           user: ${{ secrets.DEPLOY_USER_ORACLE }}
           key: ${{ secrets.DEPLOY_KEY_ORACLE }}
           command: |
-            wget https://raw.githubusercontent.com/arquisoft/wichat_en2b/%23168/docker-compose.yml -O docker-compose.yml
+            wget https://raw.githubusercontent.com/arquisoft/wichat_en2b/master/docker-compose.yml -O docker-compose.yml
             docker compose --profile prod down
             docker compose --profile prod up -d --pull always
