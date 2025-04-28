@@ -383,6 +383,7 @@ rectangle "Wichat EN2B\n<size:10>[Software System]</size>" <<WichatEN2B>> {
   rectangle "Game Info Router\n<size:10>[Router]</size>" <<Router>> as GameInfoRouter
   rectangle "Statistics Router\n<size:10>[Router]</size>" <<Router>> as StatisticsRouter
   rectangle "Auth Router\n<size:10>[Router]</size>" <<Router>> as AuthRouter
+  rectangle "2fa Router\n<size:10>[Router]</size>" <<Router>> as 2faRouter
   rectangle "User CRUD Router\n<size:10>[Router]</size>" <<Router>> as UserCrudRouter
   rectangle "Group Router\n<size:10>[Router]</size>" <<Router>> as GroupRouter
   rectangle "Wihoot Router\n<size:10>[Router]</size>" <<Router>> as WihootRouter
@@ -415,8 +416,9 @@ GatewayServer -[#707070,thickness=2]-> GroupServer : "Routes group-related API c
 GatewayServer -[#707070,thickness=2]-> WihootServer : "Routes multiplayer-related API calls"
 
 AuthServer -[#707070,thickness=2]-> AuthRouter : "Routes user-related API calls"
+AuthServer -[#707070,thickness=2]-> 2faRouter : "Routes 2fa-related API calls"
 AuthRouter -[#707070,thickness=2]-> UserCrudRouter : "Requests user data"
-AuthRouter -[#707070,thickness=2]-> UserModel : "Handles authentication requests"
+2faRouter -[#707070,thickness=2]-> UserCrudRouter : "Handles authentication requests"
 
 UserServer -[#707070,thickness=2]-> UserCrudRouter : "Routes user-related API calls"
 UserCrudRouter -[#707070,thickness=2]-> UserModel : "Manages user data"
