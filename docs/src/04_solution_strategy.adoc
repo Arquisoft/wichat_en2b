@@ -21,7 +21,7 @@ In this section of the documentation we are covering the fundamental decisions a
 | **https://www.docker.com[Docker]** | Automates deployment using containerized services | Docker is currently the industry standard for containerized deployments, offering excellent performance and ease of management.
 | **https://www.oracle.com/cloud/[Oracle Cloud Infrastructure (OCI)]** | Hosts the application in the production stage | Selected due to our ability to obtain a free, sufficiently powerful server instance from Oracle’s infrastructure.
 | **https://gatling.io/[Gatling]** | Load testing tool for performance evaluation | Chosen for its ability to simulate multiple users and analyze application performance under load. It provides detailed reports and metrics, helping identify bottlenecks and optimize the system.
-| **https://pptr.dev/[Puppetter]** | E2E testing library to control high-level operations in browsers | It's compressible methods and as it was configured initially in the template of the project
+| **https://pptr.dev/[Puppetter]** | E2E testing library to control high-level operations in browsers | It is designed specifically for Node.js and our application is fully implemented in Node.js ecosystem. Moreover. Puppetter directly within the Node.js runtime, requiring no additional drivers or external processes, which simplifies setup and deployment in our application.
 | **https://socket.io/[Socket.io]** | Library that allows using WebSockets to communicate clients and server bidirectionally and event-based | It's easy syntax and good event handling performance based in polling what was needed for the Wihoot implementation
 |===
 
@@ -180,6 +180,7 @@ WichatEN2B.UserCRUDService .[#707070,thickness=2].> WichatEN2B.MongoDBDatabase :
 WichatEN2B.UserAuthenticationService .[#707070,thickness=2].> WichatEN2B.MongoDBDatabase : "<color:#707070>User authentication operations"
 WichatEN2B.UserGroupService .[#707070,thickness=2].> WichatEN2B.MongoDBDatabase : "<color:#707070>Group operations"
 @enduml
+----
 
 === Design patterns applied
 
@@ -207,7 +208,8 @@ In our solution we are applying some design patterns to be aware of future chang
 | **Pino** | Winston | By rejecting Winston, we lose its flexibility in supporting multiple log formats and advanced configuration options.
 | **Docker** | Podman and Kubernetes | By using Docker instead of Podman, we reject Podman's decentralized daemon architecture, which enhances deployment security. Additionally, Podman consumes fewer resources by running each container as an independent process. Furthermore, by choosing Docker, we dismiss Kubernetes' superior performance in deploying high-availability and scalable applications.
 | **Oracle Cloud Infrastructure** | Microsoft Azure, Amazon Web Services (AWS) | By choosing Oracle Cloud Infrastructure as our deployment platform, we opt against Azure, which provides student licenses but may have higher costs for long-term use. Additionally, we reject AWS, which offers better scalability and a more flexible pricing.
-| **Gatling (Not yed decided)** | Apache Jmeter and Locust.io (among others) | By using Gatling, we reject ache Jmeter and Locust.io, which where also presented load testing tools. Gatling is known for its high performance and scalability, making it suitable for simulating large user loads. It provides detailed reports and metrics, helping identify bottlenecks and optimize the system.
+| **Gatling** | Apache Jmeter and Locust.io (among others) | By using Gatling, we reject ache Jmeter and Locust.io, which where also presented load testing tools. Gatling is known for its high performance and scalability, making it suitable for simulating large user loads. It provides detailed reports and metrics, helping identify bottlenecks and optimize the system.
+| **Puppetter** | Selenium | By using Gatling, we reject ache Jmeter and Locust.io, which where also presented load testing tools. Gatling is known for its high performance and scalability, making it suitable for simulating large user loads. It provides detailed reports and metrics, helping identify bottlenecks and optimize the system.
 |===
 
 === Decisions on how to achieve the key quality goals
@@ -286,3 +288,55 @@ Known Limitations:
 --
 1. You have to be registered to create the game session and to join to the game session code
 --
+
+Sequence diagram of the behaviour:
+
+[plantuml]
+----
+@startuml
+title Wihoot - Create Multiplayer Session
+!theme plain
+skinparam BackgroundColor transparent
+skinparam sequenceMessageAlign center
+
+skinparam sequence {
+ArrowColor #2C3E50
+LifeLineBorderColor #95A5A6
+LifeLineBackgroundColor #ECF0F1
+
+    ParticipantBorderColor #0d3375
+    ParticipantBackgroundColor #E8F6FF
+    ParticipantFontColor #2C3E50
+    ParticipantFontSize 14
+
+    ActorBorderColor #0d3375
+    ActorBackgroundColor #E8F6FF
+    ActorFontColor #2C3E50
+    ActorFontSize 14
+
+    DatabaseBorderColor #9B59B6
+    DatabaseBackgroundColor #F4ECF7
+}
+
+actor "HostUser" as LoggedUser1
+actor "LoggedUser" as LoggedUser2
+participant "Webapp" as Webapp
+participant "Wihoot" as Wihoot
+participant "Socket Server" as Socket
+database "Database" as DB
+
+LoggedUser1 -> Webapp: POST /shared-quiz/create
+Webapp -> Wihoot: POST /wihoot/create
+Wihoot -> DB: Create the session game data
+Wihoot --> Webapp: response={ gameCode: A5AB6B }
+Webapp --> LoggedUser1: Shows game code A5AB6B generated
+
+LoggedUser2 -> Webapp: GET /shared-quiz/join (enters gameCode)
+Webapp -> Wihoot: GET /wihoot/join
+Wihoot -> Socket: creates new socket attached to the session code A5AB6B
+Socket -> Socket: Notifies all sockets of the session of the new player
+Wihoot -> DB: Adds a player to the session
+Wihoot --> Webapp: Success response to the join
+Webapp --> LoggedUser2: Shows that you have joined the game session A5AB6B
+@enduml
+----
