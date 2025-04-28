@@ -17,6 +17,7 @@ jobs:
       - run: npm --prefix users/userservice ci
       - run: npm --prefix users/groupservice ci
       - run: npm --prefix llmservice ci
+      - run: npm --prefix wihoot ci
       - run: npm --prefix gameservice ci
       - run: npm --prefix gatewayservice ci
       - run: npm --prefix webapp ci
@@ -24,6 +25,7 @@ jobs:
       - run: npm --prefix users/userservice test -- --coverage
       - run: npm --prefix users/groupservice test -- --coverage
       - run: npm --prefix llmservice test -- --coverage
+      - run: npm --prefix wihoot test -- --coverage
       - run: npm --prefix gatewayservice test -- --coverage
       - run: npm --prefix gameservice test -- --coverage
       - run: npm --prefix webapp test -- --coverage
@@ -42,6 +44,7 @@ jobs:
       - run: npm --prefix users/authservice install
       - run: npm --prefix users/userservice install
       - run: npm --prefix llmservice install
+      - run: npm --prefix wihoot install
       - run: npm --prefix gameservice install
       - run: npm --prefix gatewayservice install
       - run: npm --prefix webapp install
@@ -67,7 +70,9 @@ jobs:
           registry: ghcr.io
           workdir: webapp
           platforms: linux/arm64
-          buildargs: NEXT_PUBLIC_GATEWAY_SERVICE_URL=${{ secrets.GATEWAY_URL }}
+          buildargs: |
+            NEXT_PUBLIC_GATEWAY_SERVICE_URL=${{ secrets.GATEWAY_URL }}
+            NEXT_PUBLIC_SOCKET_URL=${{ secrets.SOCKET_URL }}
   docker-push-authservice:
     name: Push auth service Docker Image to GitHub Packages
     runs-on: ubuntu-latest
@@ -155,6 +160,27 @@ jobs:
           workdir: gameservice
           platforms: linux/arm64
 
+  docker-push-wihoot:
+    name: Push wihoot service Docker Image to GitHub Packages
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    needs: [ e2e-tests ]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Publish to Registry
+        uses: elgohr/Publish-Docker-Github-Action@v5
+        with:
+          name: arquisoft/wichat_en2b/wihoot
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          registry: ghcr.io
+          workdir: wihoot
+          platforms: linux/arm64
+
   docker-push-groupservice:
     name: Push group service Docker Image to GitHub Packages
     runs-on: ubuntu-latest
@@ -204,7 +230,7 @@ jobs:
   deploy:
     name: Deploy over SSH
     runs-on: ubuntu-latest
-    needs: [ docker-push-userservice,docker-push-authservice,docker-push-llmservice,docker-push-gatewayservice,docker-push-gameservice,docker-push-groupservice,docker-push-webapp]
+    needs: [ docker-push-userservice,docker-push-authservice,docker-push-llmservice,docker-push-gatewayservice,docker-push-gameservice,docker-push-wihoot,docker-push-groupservice,docker-push-webapp]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -238,6 +264,6 @@ jobs:
           user: ${{ secrets.DEPLOY_USER_ORACLE }}
           key: ${{ secrets.DEPLOY_KEY_ORACLE }}
           command: |
-            wget https://raw.githubusercontent.com/arquisoft/wichat_en2b/master/docker-compose.yml -O docker-compose.yml
+            wget https://raw.githubusercontent.com/arquisoft/wichat_en2b/%23168/docker-compose.yml -O docker-compose.yml
             docker compose --profile prod down
             docker compose --profile prod up -d --pull always

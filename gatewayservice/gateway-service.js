@@ -6,6 +6,7 @@ const fs = require('fs');
 const YAML = require('yaml');
 const { createProxyMiddleware } = require('http-proxy-middleware');
 const helmet = require('helmet');
+const {toFormData} = require("axios");
 
 const app = express();
 const port = 8000;
@@ -16,7 +17,8 @@ const serviceUrls = {
   auth: process.env.AUTH_SERVICE_URL || 'http://localhost:8002',
   user: process.env.USER_SERVICE_URL || 'http://localhost:8001',
   game: process.env.GAME_SERVICE_URL || 'http://localhost:8004',
-  group: process.env.GROUP_SERVICE_URL || 'http://localhost:8005',
+  group: (process.env.GROUP_SERVICE_URL || 'http://localhost:8005').replace(/,\s*$/, ''), 
+  wihoot: process.env.WIHOOT_SERVICE_URL || 'http://localhost:8006',
 };
 
 // CORS setup
@@ -351,6 +353,71 @@ app.use('/question/amount/:code', publicCors);
 app.get('/question/amount/:code', (req, res) => {
   forwardRequest('game', `/question/amount/${req.params.code}`, req, res);
 });
+
+// Proxy for Socket.IO WebSocket connections
+app.use('/socket.io', createProxyMiddleware({
+  target: serviceUrls.wihoot, // http://localhost:8006
+  ws: true,
+  changeOrigin: true,
+  pathRewrite: {
+    '^/socket.io': '/socket.io',
+  },
+  onProxyReq: (proxyReq, req, res) => {
+    proxyReq.setHeader('Origin', 'https://wichat.ddns.net');
+  },
+  onProxyRes: (proxyRes, req, res) => {
+    proxyRes.headers['Access-Control-Allow-Origin'] = 'https://wichat.ddns.net';
+    proxyRes.headers['Access-Control-Allow-Credentials'] = 'true';
+    proxyRes.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS';
+  },
+}));
+
+// Shared quiz session routes
+app.use("/shared-quiz", publicCors)
+
+// Create a new shared quiz session
+app.post("/shared-quiz/create", (req, res) => {
+  forwardRequest("wihoot", "/wihoot/create", req, res)
+})
+
+// Join a shared quiz session
+app.post("/shared-quiz/:code/join", (req, res) => {
+  forwardRequest("wihoot", `/wihoot/${req.params.code}/join`, req, res)
+})
+
+// Start a shared quiz session (host only)
+app.get("/shared-quiz/:code/start", (req, res) => {
+  forwardRequest("wihoot", `/wihoot/${req.params.code}/start?hostId=${req.query.hostId}`, req, res)
+})
+
+// Move to the next question (host only)
+app.get("/shared-quiz/:code/next", (req, res) => {
+  forwardRequest("wihoot", `/wihoot/${req.params.code}/next?hostId=${req.query.hostId}`, req, res)
+})
+
+app.get("/shared-quiz/:code/end", (req, res) => {
+  forwardRequest("wihoot", `/wihoot/${req.params.code}/end?hostId=${req.query.hostId}`, req, res)
+})
+
+
+// Get session status
+app.get("/shared-quiz/:code/status", (req, res) => {
+  forwardRequest("wihoot", `/wihoot/${req.params.code}/status`, req, res)
+})
+
+app.post("/shared-quiz/:code/answer", (req, res) => {
+  forwardRequest("wihoot", `/wihoot/${req.params.code}/answer`, req, res)
+})
+
+
+app.use('/internal/quizdata/', publicCors);
+
+app.get('/internal/quizdata/:id', (req, res) => {
+  forwardRequest("wihoot", `/wihoot/internal/quizdata/${req.params.id}`, req, res)
+})
+
+app.post("shared-quiz/play")
+
 
 // OpenAPI Documentation
 const openapiPath = './openapi.yaml';

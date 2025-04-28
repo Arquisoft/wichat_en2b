@@ -1,230 +1,258 @@
-import React from "react"
-import "../../styles/home/CustomView.css"
-import { useRouter } from "next/navigation";
-import QuestionGame from "../game/QuestionGame"; 
+"use client"
 
-const { useState, useEffect } = React
+import React, { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
+import QuestionGame from "../game/QuestionGame"
+import "../../styles/home/CustomView.css"
+
+import {
+  Box,
+  Card,
+  CardHeader,
+  CardContent,
+  Typography,
+  TextField,
+  Button,
+  Alert,
+  MenuItem,
+  Select,
+  FormControl,
+  InputLabel
+} from "@mui/material"
+
 const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://localhost:8000';
 
 function CustomQuiz() {
-    const router = useRouter();
-    const [categories, setCategories] = useState([]);
-    const [selectedCategory, setSelectedCategory] = useState(null);
-    const [subcategories, setSubcategories] = useState([]);
-    const [selectedSubcategory, setSelectedSubcategory] = useState("");
-    const [timePerQuestion, setTimePerQuestion] = useState(30);
-    const [numberOfQuestions, setNumberOfQuestions] = useState(10);
-    const [gameMode, setGameMode] = useState("singleplayer");
-    const [numberOfOptions, setNumberOfOptions] = useState(4);
-    const [showGame, setShowGame] = useState(false);
-    const [quizData, setQuizData] = useState([]);
-    const [error, setError] = useState(null);
-    const [numberOfAvailableQuestions, setNumberOfAvailableQuestions] = useState(10);
+  const router = useRouter();
+  const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [subcategories, setSubcategories] = useState([]);
+  const [selectedSubcategory, setSelectedSubcategory] = useState("");
+  const [timePerQuestion, setTimePerQuestion] = useState(30);
+  const [numberOfQuestions, setNumberOfQuestions] = useState(10);
+  const [numberOfOptions, setNumberOfOptions] = useState(4);
+  const [showGame, setShowGame] = useState(false);
+  const [quizData, setQuizData] = useState([]);
+  const [error, setError] = useState(null);
+  const [numberOfAvailableQuestions, setNumberOfAvailableQuestions] = useState(10);
+
+  const fetchSubcategories = async (cat) => {
+    try {
+      const response = await fetch(`${apiEndpoint}/quiz/${cat}`);
+      const data = await response.json();
+
+      // Map data to fit frontend expectations
+      const mappedQuizzes = data.map((quiz) => ({//NOSONAR
+        title: quiz.quizName,
+        difficulty: quiz.difficulty,
+        wikidataCode: quiz.wikidataCode,
+        question: quiz.question,
+      }));
+
+      setSubcategories(mappedQuizzes);
+      setSelectedSubcategory(mappedQuizzes[0]);
+      fetchAvailableQuestions(mappedQuizzes[0].wikidataCode);
+    } catch (err) {
+      setError("There was an error fetching the quizzes.");
+      console.error("Error fetching quizzes", err);
+    }
+  };
+
+  const fetchAvailableQuestions = async (wikidataCode) => {
+    try{
+      const response = await fetch(`${apiEndpoint}/question/amount/${wikidataCode}`);
+      const data = await response.json();
+      setNumberOfAvailableQuestions(data);
+    } catch (error){
+      setError("There was an error fetching the amount of questions we have");
+      console.error("Error fetching available questions: ", error);
+    }
+  };
+
+  const validFields = () => {
+    let tempError = null;
+    if (numberOfQuestions <= 0) {
+      tempError = "You cannot enter a negative amount of questions.";
+    } else if (numberOfQuestions > 30) {
+      tempError = "No more than 30 questions are allowed";
+    } else if (numberOfQuestions > numberOfAvailableQuestions) {
+      tempError = `There are only ${numberOfAvailableQuestions} questions for this quiz.`;
+    } else if (numberOfOptions < 2 || numberOfOptions > 8) {
+      tempError = "The valid range of options is from 2–8.";
+    } else if (timePerQuestion < 1 || timePerQuestion > 120) {
+      tempError = "You can only set a time from 1–120 seconds.";
+    }
   
-    const fetchSubcategories = async (cat) => {
+    setError(tempError);
+    return tempError == null;
+  };
+  
+  useEffect(() => {
+    const fetchCategories = async () => {
       try {
-        const response = await fetch(`${apiEndpoint}/quiz/${cat}`);
+        const response = await fetch(`${apiEndpoint}/quiz`);
         const data = await response.json();
 
-        // Map data to fit frontend expectations
-        const mappedQuizzes = data.map((quiz) => ({//NOSONAR
-          title: quiz.quizName,
-          difficulty: quiz.difficulty,
-          wikidataCode: quiz.wikidataCode,
-          question: quiz.question,
-        }));
+        const formattedCategories = Object.values(
+          data.reduce((acc, quiz) => {
+            const category = quiz.category;
+            acc[category] = {
+              name: category,
+            };
+            return acc;
+          }, {})
+        );
 
-        setSubcategories(mappedQuizzes);
-        setSelectedSubcategory(mappedQuizzes[0]);
-        fetchAvailableQuestions(mappedQuizzes[0].wikidataCode);
-      } catch (err) {
-        setError("There was an error fetching the quizzes.");
-        console.error("Error fetching quizzes", err);
+        setCategories(formattedCategories);
+        setSelectedCategory(formattedCategories[0].name);
+        await fetchSubcategories(formattedCategories[0].name);
+      } catch (error) {
+        setError("There was an error fetching the categories");
+        console.error("Failed to fetch categories:", error);
       }
     };
 
-    const fetchAvailableQuestions = async (wikidataCode) => {
-      try{
-        const response = await fetch(`${apiEndpoint}/question/amount/${wikidataCode}`);
-        const data = await response.json();
-        setNumberOfAvailableQuestions(data);
-      } catch (error){
-        setError("There was an error fetching the amount of questions we have");
-        console.error("Error fetching available questions: ", error);
-      }
+    fetchCategories();
+  }, []); 
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    if (!validFields()) {
+      return;
+    }
+
+    let quizData = {
+      topic: selectedCategory, 
+      totalQuestions: numberOfQuestions, 
+      numberOptions: numberOfOptions, 
+      timerDuration: timePerQuestion, 
+      question: selectedSubcategory.question,
+      fetchQuestionsURL: `/game/${selectedSubcategory.wikidataCode}/${numberOfQuestions}/${numberOfOptions}`,
     };
+    setQuizData(quizData);
+    setShowGame(true);
+  }
 
-    const validFields = () => {
-      let tempError = null;
-      if (numberOfQuestions <= 0) {
-        tempError = "You cannot enter a negative amount of questions.";
-      } else if (numberOfQuestions > 30) {
-        tempError = "No more than 30 questions are allowed";
-      } else if (numberOfQuestions > numberOfAvailableQuestions) {
-        tempError = `There are only ${numberOfAvailableQuestions} questions for this quiz.`;
-      } else if (numberOfOptions < 2 || numberOfOptions > 8) {
-        tempError = "The valid range of options is from 2–8.";
-      } else if (timePerQuestion < 1 || timePerQuestion > 120) {
-        tempError = "You can only set a time from 1–120 seconds.";
-      }
-    
-      setError(tempError);
-      return tempError == null;
-    };
-    
-
-    useEffect(() => {
-        const fetchCategories = async () => {
-          try {
-            const response = await fetch(`${apiEndpoint}/quiz`);
-            const data = await response.json();
-
-            const formattedCategories = Object.values(
-              data.reduce((acc, quiz) => {
-                const category = quiz.category;
-                acc[category] = {
-                  name: category,
-                };
-                return acc;
-              }, {})
-            );
-    
-            setCategories(formattedCategories);
-            setSelectedCategory(formattedCategories[0].name);
-            await fetchSubcategories(formattedCategories[0].name);
-          } catch (error) {
-            setError("There was an error fetching the categories");
-            console.error("Failed to fetch categories:", error);
-          }
-        };
-    
-        fetchCategories();
-    }, []); 
+  if(showGame){
+    return <QuestionGame {...quizData} />;
+  }
   
-    const handleSubmit = (e) => {
-      e.preventDefault();
-
-      if (!validFields()) {
-        return;
-      }
-
-      let quizData = {
-        topic: selectedCategory, 
-        totalQuestions: numberOfQuestions, 
-        numberOptions: numberOfOptions, 
-        timerDuration: timePerQuestion, 
-        question: selectedSubcategory.question,
-        fetchQuestionsURL: `/game/${selectedSubcategory.wikidataCode}/${numberOfQuestions}/${numberOfOptions}`,
-      };
-      setQuizData(quizData);
-      setShowGame(true);
-    }
-
-    if(showGame){
-      return <QuestionGame {...quizData} />;
-    }
-    
-    return (
-      <div className="quiz-customizer">
-        <h1>Customize your quiz!</h1>
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="category-select">Select Category:</label>
-            <div className="category-selection">
-              <select
+  return (
+    <Box className="custom-quiz-container" sx={{ minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', bgcolor: '#f5f5f5' }}>
+      <Card className="custom-quiz-card" sx={{ maxWidth: 600, width: '100%', m: 2, boxShadow: 3 }}>
+        <CardHeader
+          className="custom-quiz-header"
+          title={<Typography className="custom-quiz-title" variant="h4" component="h1" align="center">Customize your quiz!</Typography>}
+          subheader={<Typography className="custom-quiz-subheader" variant="body2" color="textSecondary" align="center">
+            Configure your own custom quiz experience.
+          </Typography>}
+        />
+        <CardContent className="custom-quiz-content">
+          {error && (
+            <Alert className="custom-quiz-error" severity="error" sx={{ mb: 2 }}>
+              {error}
+            </Alert>
+          )}
+          <Box component="form" className="custom-quiz-form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <FormControl fullWidth variant="outlined">
+              <InputLabel id="category-select-label">Select Category</InputLabel>
+              <Select
+                labelId="category-select-label"
                 id="category-select"
-                value={selectedCategory}
+                value={selectedCategory || ''}
                 onChange={(e) => {
                   setSelectedCategory(e.target.value);
                   fetchSubcategories(e.target.value);
                 }}
+                label="Select Category"
               >
-                {categories.map((category, index) => (
-                  <option key={index} value={category.name}>
+                {categories.map((category) => (
+                  <MenuItem key={category.name} value={category.name}>
                     {category.name}
-                  </option>
+                  </MenuItem>
                 ))}
-              </select>
-            </div>
-          </div>
+              </Select>
+            </FormControl>
 
-          <div className="form-group">
-            <>
-              <label htmlFor="quiz-select">Select quiz:</label>
-              <div className="subcategory-selection">
-                <select
-                  id="quiz-select"
-                  value={selectedSubcategory.title}
-                  onChange={(e) => {
-                    const s = subcategories.find(element => element.title == e.target.value);
-                    setSelectedSubcategory(s);
-                    fetchAvailableQuestions(s.wikidataCode);
-                  }}
-                  >
+            <FormControl fullWidth variant="outlined">
+              <InputLabel id="quiz-select-label">Select Quiz</InputLabel>
+              <Select
+                labelId="quiz-select-label"
+                id="quiz-select"
+                value={selectedSubcategory.title || ''}
+                onChange={(e) => {
+                  const s = subcategories.find(element => element.title === e.target.value);
+                  setSelectedSubcategory(s);
+                  fetchAvailableQuestions(s.wikidataCode);
+                }}
+                label="Select Quiz"
+              >
+                {subcategories.map((quiz) => (
+                  <MenuItem key={quiz.wikidataCode} value={quiz.title}>
+                    {quiz.title}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
 
-                  {subcategories.map((quiz, index) => (
-                    <option key={index} value={quiz.title}>
-                      {quiz.title}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </>
-          </div>
-  
-          <div className="form-group">
-            <label htmlFor="time-per-question">Time Per Question (seconds):</label>
-            <input
-              type="number"
+            <TextField
+              fullWidth
               id="time-per-question"
-              min="1"
+              label="Time Per Question (seconds)"
+              type="number"
+              variant="outlined"
+              slotProps={{ input: { min: 1, max: 120 } }}
               value={timePerQuestion}
               onChange={(e) => setTimePerQuestion(Number.parseInt(e.target.value))}
             />
-          </div>
-  
-          <div className="form-group">
-            <label htmlFor="number-of-questions">Number of Questions:</label>
-            <input
-              type="number"
+
+            <TextField
+              fullWidth
               id="number-of-questions"
+              label="Number of Questions"
+              type="number"
+              variant="outlined"
+              slotProps={{ input: { min: 1, max: 30 } }}
               value={numberOfQuestions}
               onChange={(e) => setNumberOfQuestions(Number.parseInt(e.target.value))}
+              helperText={`Available questions: ${numberOfAvailableQuestions}`}
             />
-          </div>
 
-          <div className="form-group">
-            <label htmlFor="number-of-answers">Number of options per question:</label>
-            <input
-              type="number"
+            <TextField
+              fullWidth
               id="number-of-answers"
-              min="2"
+              label="Number of Options Per Question"
+              type="number"
+              variant="outlined"
+              slotProps={{ input: { min: 2, max: 8 } }}
               value={numberOfOptions}
               onChange={(e) => setNumberOfOptions(Number.parseInt(e.target.value))}
             />
-          </div>
-  
-          {error && <p className="error-message">{error}</p>}
-  
-          <button type="submit" className="button">
-            Start Quiz
-          </button>
-        </form>
 
-        <form>
-          <button
-            onClick={(e) => {
-              e.preventDefault();
-              router.push("/"); 
-            }}
-            className="button"
-          >
-            Back
-          </button>
-        </form>
+            <Button 
+              className="custom-quiz-button"
+              type="submit" 
+              variant="contained" 
+              color="primary"
+              sx={{ py: 1.5 }}
+            >
+              Start Quiz
+            </Button>
 
-      </div>
-    )
-  }
+            <Button
+              className="back-button"
+              variant="outlined"
+              color="secondary"
+              onClick={() => router.push("/")}
+            >
+              Go Back
+            </Button>
+          </Box>
+        </CardContent>
+      </Card>
+    </Box>
+  );
+}
 
-  export default CustomQuiz;
+export default CustomQuiz;

@@ -45,14 +45,6 @@ export default function QuestionGame(params) {
         setTimeLeft(timerDuration);
     };
 
-    const handleTimerUpdate = (prevTime) => {
-        if (prevTime <= 0) {
-            stopTimerAndTransition();
-            return 0;
-        }
-        return prevTime - 0.01;
-    };
-
     const stopTimerAndTransition = () => {
         clearInterval(timerIntervalRef.current);
         timerIntervalRef.current = null;
@@ -137,8 +129,23 @@ export default function QuestionGame(params) {
     useEffect(() => {
         if (loading || currentQuestion >= totalQuestions || isTransitioning.current || selectedOption !== null) return;
 
+        let lastUpdate = Date.now();
+
         timerIntervalRef.current = setInterval(() => {
-            setTimeLeft(handleTimerUpdate);
+            const now = Date.now();
+            const delta = (now - lastUpdate) / 1000; // in seconds
+            lastUpdate = now;
+
+            setTimeLeft(prevTime => {
+                const newTime = prevTime - delta;
+
+                if (newTime <= 0) {
+                    stopTimerAndTransition();
+                    return 0;
+                }
+
+                return newTime;
+            });
         }, 10);
 
         return () => {

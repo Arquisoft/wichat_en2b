@@ -1,1 +1,120 @@
-body .navbar{background-color:#3f51b5;box-shadow:none;border-bottom:2px solid #e0e0e0}body .navbar-toolbar{display:flex;justify-content:space-between}body .navbar-left{display:flex;align-items:center}body .navbar-avatar{background-color:#fff;color:#3f51b5;margin-right:10px}body .navbar-title{font-weight:700}body .navbar-right{display:flex;align-items:center}body .navbar-profile-button{text-transform:none;font-weight:700;margin-right:10px}body .navbar-icon-button{color:#fff}body .navbar-user-avatar{background-color:#ff5722}
+/* Base navbar styling */
+body .navbar, body .app-bar {
+    background-color: #ffffff;
+    box-shadow: none;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+body .toolbar {
+    display: flex;
+    justify-content: space-between;
+}
+
+body .navbar-left {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+body .logo-avatar {
+    background-color: #fff;
+    color: #fcfcfc;
+    margin-right: 10px;
+}
+
+body .app-title {
+    font-weight: 700;
+}
+
+.spacer {
+    flex-grow: 1;
+}
+
+/* User section styling */
+.user-section {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.user-section .MuiButton-root {
+    height: 36px;
+    text-transform: none;
+    padding: 6px 16px;
+    min-width: 100px;
+}
+
+.joingame, .creategame, .navbar-profile-button {
+    font-weight: 700;
+    font-size: 0.875rem;
+}
+
+.joingame {
+    background: linear-gradient(90deg, #9c27b0, #e91e63);
+}
+
+/* Icon styling */
+body .navbar-icon-button {
+    color: #fff;
+}
+
+body .navbar-user-avatar {
+    background-color: #ff5722;
+}
+
+.navbar-profile-button {
+    text-transform: none;
+    font-weight: 700;
+}
+
+/* Mobile menu styling */
+.mobile-menu-popup .MuiListItemIcon-root {
+    min-width: 40px;
+}
+
+/* Responsive styles for desktop vs mobile */
+.desktop-only {
+    display: flex;
+}
+
+.mobile-only {
+    display: none;
+}
+
+/* Responsive breakpoints */
+@media (max-width: 768px) {
+    .desktop-only button {
+        display: none;
+    }
+    
+    .mobile-only {
+        display: flex;
+    }
+
+    body .app-title {
+        font-size: 1.1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    body .navbar-left {
+        flex: 1;
+    }
+    
+    body .app-title {
+        font-size: 0.95rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    body .MuiSvgIcon-root {
+        font-size: 1.25rem;
+    }
+}
+
+@media (max-width: 360px) {
+    body .app-title {
+        max-width: 120px;
+    }
+}

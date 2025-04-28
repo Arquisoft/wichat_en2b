@@ -14,7 +14,6 @@ export const fetchWithAuth = async (endpoint) => {
             'Content-Type': 'application/json'
         }
     });
-
     if (!response.ok) {
         throw new Error(`Failed to fetch from ${endpoint}`);
     }

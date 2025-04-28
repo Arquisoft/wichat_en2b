@@ -81,19 +81,21 @@
 .options-box {
     display: grid;
     grid-template-columns:repeat(2, 1fr);
-    gap: 12px;
-    width: 100%;
-    justify-items: center
+    gap: 16px;
+    width: 95%;
+    max-width: 95%;
+    justify-items: center;
+    margin: 0 auto;
 }
 
 .robot-button {
     position: fixed;
     right: 1%;
-    bottom: 3%
+    bottom: 3%;
 }
 
 .quiz-option {
-    width: 100%;
+    width: 95%;
     padding: 14px;
     font-size: 16px;
     border: 2px solid #ddd;
@@ -101,16 +103,53 @@
     background: #fff;
     color: #333;
     cursor: pointer;
-    transition: all .25s ease-in-out;
+    transition: all .2s ease-in-out;
     font-weight: 500;
     pointer-events: auto;
-    text-align: center
+    text-align: center;
+    /* Añadimos overflow para manejar texto largo */
+    overflow-wrap: break-word;
+    word-wrap: break-word;
 }
 
 .quiz-option:not(:disabled):hover {
     background: #efefef;
-    transform: scale(1.03);
-    border-color: #6c63ff
+    transform: translateY(-2px) scale(1.02);
+    border-color: #6c63ff;
+    /* Cambiamos la transformación para evitar que se corte */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Mejoramos los media queries para dispositivos pequeños */
+@media screen and (max-width: 768px) {
+    .options-box {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+        max-width: 98%;
+    }
+    
+    .quiz-option {
+        width: 98%;
+        padding: 12px 10px;
+        font-size: 15px;
+    }
+}
+
+@media screen and (max-width: 450px) {
+    .options-box {
+        grid-template-columns: repeat(1, 1fr);
+        gap: 10px;
+    }
+    
+    .quiz-option {
+        width: 100%;
+        padding: 12px 8px;
+        font-size: 14px;
+    }
+    
+    .quiz-option:not(:disabled):hover {
+        transform: translateY(-1px) scale(1.01);
+    }
 }
 
 .alert-box {
@@ -324,7 +363,6 @@ body .buttons .MuiAlert-root {
 @media screen and (max-width: 450px) {
     .quiz-wrapper {
         padding: 20px;
-        width: 95%
     }
 
     .quiz-option {

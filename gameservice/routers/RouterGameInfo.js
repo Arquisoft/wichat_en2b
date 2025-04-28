@@ -34,7 +34,7 @@ router.post('/game', verifyToken, async (req, res) => {
             number_correct_answers: req.body.number_correct_answers,
             total_time: req.body.total_time
         });
-
+        console.log("Game info object created:", gameInfo);
         const savedGame = await gameInfo.save();
         res.status(201).json(savedGame);
     } catch (error) {

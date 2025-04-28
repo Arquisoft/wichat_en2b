@@ -66,7 +66,7 @@ router.post('/question/validate', async (req, res) => {
         const isCorrect = question.answer === selected_answer;
         res.json({
             isCorrect,
-            correctAnswer: isCorrect ? null : question.answer
+            correctAnswer: question.answer
         });
 
     } catch (error) {

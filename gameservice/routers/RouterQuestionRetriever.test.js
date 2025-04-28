@@ -122,7 +122,7 @@ describe('RouterQuestionRetriever', () => {
         expect(res.status).toBe(200);
         expect(res.body).toEqual({
             isCorrect: true,
-            correctAnswer: null
+            correctAnswer: "Mock answer",
         });
     });
 

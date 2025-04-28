@@ -1,0 +1,29 @@
+{
+  "name": "wihoot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "wihoot.js",
+  "scripts": {
+    "start": "node wihoot.js",
+    "test": "jest"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongodb": "^6.15.0",
+    "mongodb-memory-server": "^10.1.4",
+    "mongoose": "^8.13.2",
+    "socket.io": "^4.8.1",
+    "supertest": "^7.1.0",
+    "uuid": "^11.1.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "mongodb-memory-server": "^10.0.0",
+    "supertest": "^7.0.0"
+  }
+}
