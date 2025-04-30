@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import QuestionGame from "../game/QuestionGame"
 import "../../styles/home/CustomView.css"
+import { getAuthToken, getCurrentPlayerId } from "../../utils/auth"
 
 import {
   Box,
@@ -23,21 +24,72 @@ import {
 const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://localhost:8000';
 
 function CustomQuiz() {
-    const router = useRouter();
-    const [categories, setCategories] = useState([]);
-    const [selectedCategory, setSelectedCategory] = useState(null);
-    const [subcategories, setSubcategories] = useState([]);
-    const [selectedSubcategory, setSelectedSubcategory] = useState("");
-    const [timePerQuestion, setTimePerQuestion] = useState(30);
-    const [numberOfQuestions, setNumberOfQuestions] = useState(10);
-    const [numberOfOptions, setNumberOfOptions] = useState(4);
-    const [showGame, setShowGame] = useState(false);
-    const [quizData, setQuizData] = useState([]);
-    const [error, setError] = useState(null);
-    const [numberOfAvailableQuestions, setNumberOfAvailableQuestions] = useState(10);
-    const [HomeURL, setHomeURL] = useState("/");
+  const router = useRouter();
+  const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [subcategories, setSubcategories] = useState([]);
+  const [selectedSubcategory, setSelectedSubcategory] = useState("");
+  const [timePerQuestion, setTimePerQuestion] = useState(30);
+  const [numberOfQuestions, setNumberOfQuestions] = useState(10);
+  const [numberOfOptions, setNumberOfOptions] = useState(4);
+  const [showGame, setShowGame] = useState(false);
+  const [quizData, setQuizData] = useState([]);
+  const [error, setError] = useState(null);
+  const [numberOfAvailableQuestions, setNumberOfAvailableQuestions] = useState(10);
+  const [homeURL, setHomeURL] = useState("/");
 
-    const fetchSubcategories = async (cat) => {
+
+  const fetchSubcategories = async (cat) => {
+    try {
+      const response = await fetch(`${apiEndpoint}/quiz/${cat}`);
+      const data = await response.json();
+
+      // Map data to fit frontend expectations
+      const mappedQuizzes = data.map((quiz) => ({//NOSONAR
+        title: quiz.quizName,
+        difficulty: quiz.difficulty,
+        wikidataCode: quiz.wikidataCode,
+        question: quiz.question,
+      }));
+
+      setSubcategories(mappedQuizzes);
+      setSelectedSubcategory(mappedQuizzes[0]);
+      fetchAvailableQuestions(mappedQuizzes[0].wikidataCode);
+    } catch (err) {
+      setError("There was an error fetching the quizzes.");
+    }
+  };
+
+  const fetchAvailableQuestions = async (wikidataCode) => {
+    try{
+      const response = await fetch(`${apiEndpoint}/question/amount/${wikidataCode}`);
+      const data = await response.json();
+      setNumberOfAvailableQuestions(data);
+    } catch (error){
+      setError("There was an error fetching the amount of questions we have");
+    }
+  };
+
+  const validFields = () => {
+    let tempError = null;
+    if (numberOfQuestions <= 0) {
+      tempError = "You cannot enter a negative amount of questions.";
+    } else if (numberOfQuestions > 30) {
+      tempError = "No more than 30 questions are allowed";
+    } else if (numberOfQuestions > numberOfAvailableQuestions) {
+      tempError = `There are only ${numberOfAvailableQuestions} questions for this quiz.`;
+    } else if (numberOfOptions < 2 || numberOfOptions > 8) {
+      tempError = "The valid range of options is from 2–8.";
+    } else if (timePerQuestion < 1 || timePerQuestion > 120) {
+      tempError = "You can only set a time from 1–120 seconds.";
+    }
+  
+    setError(tempError);
+    return tempError == null;
+  };
+  
+  useEffect(() => {
+    const fetchCategories = async () => {
       try {
         const response = await fetch(`${apiEndpoint}/quiz`);
         const data = await response.json();
@@ -52,78 +104,45 @@ function CustomQuiz() {
           }, {})
         );
 
-        setSubcategories(mappedQuizzes);
-        setSelectedSubcategory(mappedQuizzes[0]);
-        fetchAvailableQuestions(mappedQuizzes[0].wikidataCode);
-      } catch (err) {
-        setError("There was an error fetching the quizzes.");
+        setCategories(formattedCategories);
+        setSelectedCategory(formattedCategories[0].name);
+        await fetchSubcategories(formattedCategories[0].name);
+      } catch (error) {
+        setError("There was an error fetching the categories");
       }
     };
+    const computeHomeURL = async () => {
+      const id = getCurrentPlayerId(getAuthToken());
+      setHomeURL(!id? "/guest/home": "/");
+      console.log(!id? "/guest/home": "/");
+    };
 
-    const fetchAvailableQuestions = async (wikidataCode) => {
-      try{
-        const response = await fetch(`${apiEndpoint}/question/amount/${wikidataCode}`);
-        const data = await response.json();
-        setNumberOfAvailableQuestions(data);
-      } catch (error){
-        setError("There was an error fetching the amount of questions we have");
-      }
+    computeHomeURL();
+    fetchCategories();
+  }, []); 
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    if (!validFields()) {
+      return;
+    }
+
+    let quizData = {
+      topic: selectedCategory, 
+      totalQuestions: numberOfQuestions, 
+      numberOptions: numberOfOptions, 
+      timerDuration: timePerQuestion, 
+      question: selectedSubcategory.question,
+      fetchQuestionsURL: `/game/${selectedSubcategory.wikidataCode}/${numberOfQuestions}/${numberOfOptions}`,
     };
     setQuizData(quizData);
     setShowGame(true);
   }
 
-    const validFields = () => {
-      let tempError = null;
-      if (numberOfQuestions <= 0) {
-        tempError = "You cannot enter a negative amount of questions.";
-      } else if (numberOfQuestions > 30) {
-        tempError = "No more than 30 questions are allowed";
-      } else if (numberOfQuestions > numberOfAvailableQuestions) {
-        tempError = `There are only ${numberOfAvailableQuestions} questions for this quiz.`;
-      } else if (numberOfOptions < 2 || numberOfOptions > 8) {
-        tempError = "The valid range of options is from 2–8.";
-      } else if (timePerQuestion < 1 || timePerQuestion > 120) {
-        tempError = "You can only set a time from 1–120 seconds.";
-      }
-    
-      setError(tempError);
-      return tempError == null;
-    };
-    
-
-    useEffect(() => {
-        const fetchCategories = async () => {
-          try {
-            const response = await fetch(`${apiEndpoint}/quiz`);
-            const data = await response.json();
-
-            const formattedCategories = Object.values(
-              data.reduce((acc, quiz) => {
-                const category = quiz.category;
-                acc[category] = {
-                  name: category,
-                };
-                return acc;
-              }, {})
-            );
-    
-            setCategories(formattedCategories);
-            setSelectedCategory(formattedCategories[0].name);
-            await fetchSubcategories(formattedCategories[0].name);
-          } catch (error) {
-            setError("There was an error fetching the categories");
-          }
-        };
-
-        const computeHomeURL = async () => {
-          const id = getCurrentPlayerId(getAuthToken());
-          setHomeURL(!id? "/guest/home": "/");
-        };
-    
-        fetchCategories();
-        computeHomeURL();
-    }, []); 
+  if(showGame){
+    return <QuestionGame {...quizData} />;
+  }
   
   return (
     <Box className="custom-quiz-container" sx={{ minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', bgcolor: '#f5f5f5' }}>
@@ -231,7 +250,7 @@ function CustomQuiz() {
               className="back-button"
               variant="outlined"
               color="secondary"
-              onClick={() => router.push("/")}
+              onClick={() => router.push(homeURL)}
             >
               Go Back
             </Button>

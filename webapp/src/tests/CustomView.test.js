@@ -401,7 +401,7 @@ describe('CustomView Component', () => {
     fireEvent.click(backButton);
   
     // Verify router.push was called with correct path
-    expect(mockRouter.push).toHaveBeenCalledWith('/');
+    expect(mockRouter.push).toHaveBeenCalledWith('/guest/home');
   });
 
   test('fetchAvailableQuestions updates state correctly', async () => {
