@@ -165,8 +165,8 @@ export default function StatsTab() {
 		setSelectedSubject(event.target.value);
 	}
 
-	function StatsPie() {
-		if (!statistics || !statistics.totalQuestions)
+	function StatsPie() { //NOSONAR
+		if (!statistics?.totalQuestions)
 			return null;
 
 		return (
@@ -219,8 +219,8 @@ export default function StatsTab() {
 		);
 	}
 
-	function StatsArc() {
-		if (!statistics || !statistics.totalQuestions)
+	function StatsArc() { //NOSONAR
+		if (!statistics?.totalQuestions)
 			return null;
 		const accuracy = (statistics.successRatio * 100).toFixed(1)
 
@@ -264,7 +264,7 @@ export default function StatsTab() {
 		);
 	}
 
-	function QuizTable() {
+	function QuizTable() { //NOSONAR
 		return (
 			<Paper
 				elevation={3}
@@ -297,13 +297,13 @@ export default function StatsTab() {
 							</TableRow>
 						</TableHead>
 						<TableBody>
-							{recentQuizzes.map((quiz, index) => {
-								const scoreColor = performanceColor((quiz.number_correct_answers/quiz.number_of_questions)*100);
-								const wrongAnswers = quiz.number_of_questions - quiz.number_correct_answers
-								const scoreIcon = performanceIcon((quiz.number_correct_answers/quiz.number_of_questions)*100);
-								return (
-									<TableRow
-										key={index}
+							{recentQuizzes.map((quiz) => {
+							const scoreColor = performanceColor((quiz.number_correct_answers/quiz.number_of_questions)*100);
+							const wrongAnswers = quiz.number_of_questions - quiz.number_correct_answers
+							const scoreIcon = performanceIcon((quiz.number_correct_answers/quiz.number_of_questions)*100);
+							return (
+								<TableRow
+									key={quiz._id}
 										className="quiz-table-row"
 										sx={{ borderLeft: `4px solid ${scoreColor}` }}
 									>

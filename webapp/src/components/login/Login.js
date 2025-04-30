@@ -21,11 +21,11 @@ const Login = () => {
   const passwordRef = useRef(null);
 
   useEffect(() => {
-    if (usernameRef.current && usernameRef.current.value && usernameRef.current.value !== username) {
+    if (usernameRef.current?.value && usernameRef.current.value !== username) {
       setUsername(usernameRef.current.value);
     }
 
-    if (passwordRef.current && passwordRef.current.value && passwordRef.current.value !== password) {
+    if (passwordRef.current?.value && passwordRef.current.value !== password) {
       setPassword(passwordRef.current.value);
     }
   }, []);
