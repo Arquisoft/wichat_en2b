@@ -56,7 +56,7 @@ function CustomQuiz() {
       setSelectedSubcategory(mappedQuizzes[0]);
       fetchAvailableQuestions(mappedQuizzes[0].wikidataCode);
     } catch (err) {
-      setError("There was an error fetching the quizzes.");
+      setError("There was an error fetching the quizzes: ", err.message);
     }
   };
 
@@ -66,7 +66,7 @@ function CustomQuiz() {
       const data = await response.json();
       setNumberOfAvailableQuestions(data);
     } catch (error){
-      setError("There was an error fetching the amount of questions we have");
+      setError("There was an error fetching the amount of questions we have: ", error.message);
     }
   };
 
@@ -108,7 +108,7 @@ function CustomQuiz() {
         setSelectedCategory(formattedCategories[0].name);
         await fetchSubcategories(formattedCategories[0].name);
       } catch (error) {
-        setError("There was an error fetching the categories");
+        setError("There was an error fetching the categories: ", error.message);
       }
     };
     const computeHomeURL = async () => {
