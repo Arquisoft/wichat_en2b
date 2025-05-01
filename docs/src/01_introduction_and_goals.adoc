@@ -14,9 +14,6 @@ The key functional requirements of the system are:
 * The LLM should mitigate the generation of incorrect answers or hallucinations when providing hints.
 * Each question will have a correct answer and multiple distractors, all generated automatically.
 * The application must be deployable on the web and allow users to access their information via a documented API.
-* A multiplayer mode called **wihoot**, allowing users to join a shared quiz session using a unique code, participate in real-time, and communicate via chat.
-
-Optional features include internationalization, mobile version, users' ranking, multiplayer capabilities, and personalized game settings like adjusting time limits and the scope of questions.
 
 === Quality Goals
 The quality goals for the architecture are as follows:
