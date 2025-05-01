@@ -83,8 +83,9 @@ The system is linked to several technical interfaces:
 * **Backend-Database Communication**: The backend of the system interacts with a database through MongoDB using Mongoose ODM.
 * **External APIs**: Some external APIs are used for taking advantage of services such as data retrieval (WikiData) and hint generation (LLM).
 * **Security Considerations**: User passwords are hashed using Bcrypt, and authentication is managed through a Gateway service and a backend authorization service.
-* **User Gateway**: Handles user-related API requests, routing authentication, CRUD and game operations to their respective services.
+* **Gateway**: Forwards front-end requests to their respective services.
 * **Game Service**: Generates questions from WikiData and stores them in a database, ensuring access to questions is fast and reliable when playing. It is also in charge of retrieving batches of questions for the game to the frontend application and storing the game results associated to a logged in user.
+* **Wihoot Service**: A Node.js-based microservice using Express and Socket.io that manages multiplayer quiz sessions, including session creation, player joining, answer submission, and real-time chat via WebSocket.
 
 Quiz Game System - Technical Context Table
 [cols="1,2,3,4,5", options="header"]
@@ -93,10 +94,11 @@ Quiz Game System - Technical Context Table
 | **Frontend** | React | REST API Calls | HTTP | JSON
 | **Backend** | Node.js + Express | REST API Calls | HTTP | JSON
 | **Database** | Mongoose (MongoDB) | Queries | TCP/IP | JSON
-| **WikiData** (via GameService) | External API | REST API, SPARQL queries | HTTPS | JSON
+| **WikiData (via GameService)** | External API | REST API, SPARQL queries | HTTPS | JSON
 | **AI (via LLMService)** | External API | REST API Calls | HTTPS | JSON
 | **User CRUD Service** | Express.js | REST API Calls | HTTP | JSON
 | **User Authentication Service** | Express.js + Bcrypt | REST API Calls | HTTP | JSON
+| **Wihoot Service** |Node.js + Express + Socket.IO|HTTP, WebSocket|HTTP, WebSocket|JSON
 | **Security (Bcrypt)** | Password Hashing | Internal Authentication | N/A | N/A
 |===
 
@@ -136,18 +138,18 @@ database "Database" as DB
 participant "WikiData API" as WikiData
 participant "LLM API" as AI
 
-User -> Frontend : Login, Register, Request Game, Retrieve Stats, Submit Answers, Request Hint
-Frontend -> Gateway : Forward User Requests (JSON)
+User -> Frontend : Interacts with UI 
+Frontend -> Gateway : Generates a Request (JSON) 
 
-Gateway -> Backend : Authenticated Requests (JSON)
-Backend -> DB : Store/Retrieve User Data (MongoDB JSON)
-Backend -> WikiData : Fetch Quiz Data (HTTP GET, JSON)
-Backend -> AI : Request Hints (HTTP POST, JSON)
+Gateway -> Backend : Authenticates Request (JSON)
+Backend -> DB : Stores/Retrieves Data (MongoDB JSON)
+Backend -> WikiData : Fetches Quiz Data (HTTP GET, JSON)
+Backend -> AI : Requests Hints (HTTP POST, JSON)
 
 AI --> Backend : AI-generated Hint (JSON)
 WikiData --> Backend : Quiz Data (JSON)
 Backend --> Gateway : Processed Data (JSON)
-Gateway --> Frontend : Send Quiz, Hints, Scores, User Data (JSON)
-Frontend --> User : Display Questions, Feedback, Leaderboard, Stats
+Gateway --> Frontend : Send Response (JSON)
+Frontend --> User : Display Response in UI
 @enduml
 ----

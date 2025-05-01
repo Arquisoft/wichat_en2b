@@ -20,7 +20,9 @@ In this section of the documentation we are covering the fundamental decisions a
 | **https://getpino.io[Pino]** | Module for providing a logging system | Chosen over alternatives (Winston, Log4j-node, etc.) for its fast, straightforward logging and native JSON support, which simplifies readability and parsing.
 | **https://www.docker.com[Docker]** | Automates deployment using containerized services | Docker is currently the industry standard for containerized deployments, offering excellent performance and ease of management.
 | **https://www.oracle.com/cloud/[Oracle Cloud Infrastructure (OCI)]** | Hosts the application in the production stage | Selected due to our ability to obtain a free, sufficiently powerful server instance from Oracle’s infrastructure.
-| **https://gatling.io/[Gatling] (Not yed decided)** | Load testing tool for performance evaluation | Chosen for its ability to simulate multiple users and analyze application performance under load. It provides detailed reports and metrics, helping identify bottlenecks and optimize the system.
+| **https://gatling.io/[Gatling]** | Load testing tool for performance evaluation | Chosen for its ability to simulate multiple users and analyze application performance under load. It provides detailed reports and metrics, helping identify bottlenecks and optimize the system.
+| **https://pptr.dev/[Puppetter]** | E2E testing library to control high-level operations in browsers | It is designed specifically for Node.js and our application is fully implemented in Node.js ecosystem. Moreover. Puppetter directly within the Node.js runtime, requiring no additional drivers or external processes, which simplifies setup and deployment in our application.
+| **https://socket.io/[Socket.io]** | Library that allows using WebSockets to communicate clients and server bidirectionally and event-based | It's easy syntax and good event handling performance based in polling what was needed for the Wihoot implementation
 |===
 
 === Architectural design decisions
@@ -58,17 +60,138 @@ The project architecture is divided in different modules and their functionaliti
 - **MongoDB** +
   Module of persistence that stores the user's information in JSON format.
 
-image::04_architectural_design.png[Architecture design]
+[plantuml]
+----
+@startuml
+set separator none
+title Wichat EN2B - Arquitecture
+
+left to right direction
+
+skinparam {
+  arrowFontSize 10
+  defaultTextAlignment center
+  wrapWidth 200
+  maxMessageSize 100
+}
+
+hide stereotype
+
+skinparam rectangle<<WichatEN2B.GameService>> {
+  BackgroundColor #ff9933
+  FontColor #ffffff
+  BorderColor #b26b23
+  shadowing false
+}
+skinparam rectangle<<WichatEN2B.GatewayService>> {
+  BackgroundColor #ff9933
+  FontColor #ffffff
+  BorderColor #b26b23
+  shadowing false
+}
+skinparam rectangle<<LLM>> {
+  BackgroundColor #2d882d
+  FontColor #ffffff
+  BorderColor #1f5f1f
+  shadowing false
+}
+skinparam rectangle<<WichatEN2B.LLMService>> {
+  BackgroundColor #ff9933
+  FontColor #ffffff
+  BorderColor #b26b23
+  shadowing false
+}
+skinparam database<<WichatEN2B.MongoDBDatabase>> {
+  BackgroundColor #ff9933
+  FontColor #ffffff
+  BorderColor #b26b23
+  shadowing false
+}
+
+skinparam rectangle<<WichatEN2B.UserAuthenticationService>> {
+  BackgroundColor #ff9933
+  FontColor #ffffff
+  BorderColor #b26b23
+  shadowing false
+}
+skinparam rectangle<<WichatEN2B.UserGroupService>> {
+  BackgroundColor #ff9933
+  FontColor #ffffff
+  BorderColor #b26b23
+  shadowing false
+}
+skinparam rectangle<<WichatEN2B.Wihoot>> {
+  BackgroundColor #ff9933
+  FontColor #ffffff
+  BorderColor #b26b23
+  shadowing false
+}
+skinparam rectangle<<WichatEN2B.UserCRUDService>> {
+  BackgroundColor #ff9933
+  FontColor #ffffff
+  BorderColor #b26b23
+  shadowing false
+}
+skinparam rectangle<<WichatEN2B.WebApplication>> {
+  BackgroundColor #ff9933
+  FontColor #ffffff
+  BorderColor #b26b23
+  shadowing false
+}
+skinparam rectangle<<WikiData>> {
+  BackgroundColor #2d882d
+  FontColor #ffffff
+  BorderColor #1f5f1f
+  shadowing false
+}
+skinparam rectangle<<WichatEN2B>> {
+  BorderColor #1f5f1f
+  FontColor #1f5f1f
+  shadowing false
+}
+
+rectangle "==WikiData\n<size:10>[Software System]</size>" <<WikiData>> as WikiData
+rectangle "==LLM\n<size:10>[Software System]</size>" <<LLM>> as LLM
+
+rectangle "Wichat EN2B\n<size:20></size>" <<WichatEN2B>> {
+  rectangle "==Game Service\n<size:10>[Container]</size>" <<WichatEN2B.GameService>> as WichatEN2B.GameService
+  database "==MongoDB Database\n<size:10>[Container]</size>" <<WichatEN2B.MongoDBDatabase>> as WichatEN2B.MongoDBDatabase
+  rectangle "==Web Application\n<size:10>[Container]</size>" <<WichatEN2B.WebApplication>> as WichatEN2B.WebApplication
+  rectangle "==Gateway Service\n<size:10>[Container]</size>" <<WichatEN2B.GatewayService>> as WichatEN2B.GatewayService
+  rectangle "==LLM Service\n<size:10>[Container]</size>" <<WichatEN2B.LLMService>> as WichatEN2B.LLMService
+  rectangle "==User CRUD Service\n<size:10>[Container]</size>" <<WichatEN2B.UserCRUDService>> as WichatEN2B.UserCRUDService
+  rectangle "==User Authentication Service\n<size:10>[Container]</size>" <<WichatEN2B.UserAuthenticationService>> as WichatEN2B.UserAuthenticationService
+  rectangle "==User Group Service\n<size:10>[Container]</size>" <<WichatEN2B.UserGroupService>> as WichatEN2B.UserGroupService
+  rectangle "==Wihoot Service\n<size:10>[Container]</size>" <<WichatEN2B.Wihoot>> as WichatEN2B.Wihoot
+}
+
+WichatEN2B.LLMService .[#707070,thickness=2].> LLM : "<color:#707070>LLM ask API call"
+WichatEN2B.WebApplication .[#707070,thickness=2].> WichatEN2B.GatewayService : "<color:#707070>Makes API calls"
+WichatEN2B.GatewayService .[#707070,thickness=2].> WichatEN2B.LLMService : "<color:#707070>LLM ask API call"
+WichatEN2B.GatewayService .[#707070,thickness=2].> WichatEN2B.GameService : "<color:#707070>Question API calls"
+WichatEN2B.GatewayService .[#707070,thickness=2].> WichatEN2B.Wihoot : "<color:#707070>Wihoot API calls"
+WichatEN2B.GameService .[#707070,thickness=2].> WikiData : "<color:#707070>Question batches API calls"
+WichatEN2B.GameService .[#707070,thickness=2].> WichatEN2B.MongoDBDatabase : "<color:#707070>Stores game information"
+WichatEN2B.Wihoot .[#707070,thickness=2].> WichatEN2B.MongoDBDatabase : "<color:#707070>Stores multiplayer information"
+WichatEN2B.GatewayService .[#707070,thickness=2].> WichatEN2B.UserCRUDService : "<color:#707070>CRUD API calls"
+WichatEN2B.GatewayService .[#707070,thickness=2].> WichatEN2B.UserAuthenticationService : "<color:#707070>Authentication API calls"
+WichatEN2B.GatewayService .[#707070,thickness=2].> WichatEN2B.UserGroupService : "<color:#707070>Group management API calls"
+WichatEN2B.UserCRUDService .[#707070,thickness=2].> WichatEN2B.MongoDBDatabase : "<color:#707070>User CRUD operations"
+WichatEN2B.UserAuthenticationService .[#707070,thickness=2].> WichatEN2B.MongoDBDatabase : "<color:#707070>User authentication operations"
+WichatEN2B.UserGroupService .[#707070,thickness=2].> WichatEN2B.MongoDBDatabase : "<color:#707070>Group operations"
+@enduml
+----
 
 === Design patterns applied
 
 In our solution we are applying some design patterns to be aware of future changes of features in the code. Therefore, we can highlight the following patterns:
 
 * **Facade** (Unifier Interface) +
-    As our project will use a LLM module, we have consider the possibility that perhaps we have to change API provider suddenly for a performance or other reason. Therefore, an interface that hide the specific interface of a provider will reduce the coupling in its API.
+    As our project will use a gateway arquitecture, we are abstracting some intern endpoints using a forwarding functionality in our gateway service.
 
-* **Strategy** +
-    We have considered an optional requirement that include game different modes. Therefore, a game could delegate the logic of an specific mode to an interface, a GameMode interface that is linked once the game is created.
+* **Observer**
+    Wihoot service multiplayer game is based in an event polling of the WebSockets joined to the same game session code. The logic of this is handled by the socket.io module.
+
 
 === Decisions trade-offs
 
@@ -85,7 +208,8 @@ In our solution we are applying some design patterns to be aware of future chang
 | **Pino** | Winston | By rejecting Winston, we lose its flexibility in supporting multiple log formats and advanced configuration options.
 | **Docker** | Podman and Kubernetes | By using Docker instead of Podman, we reject Podman's decentralized daemon architecture, which enhances deployment security. Additionally, Podman consumes fewer resources by running each container as an independent process. Furthermore, by choosing Docker, we dismiss Kubernetes' superior performance in deploying high-availability and scalable applications.
 | **Oracle Cloud Infrastructure** | Microsoft Azure, Amazon Web Services (AWS) | By choosing Oracle Cloud Infrastructure as our deployment platform, we opt against Azure, which provides student licenses but may have higher costs for long-term use. Additionally, we reject AWS, which offers better scalability and a more flexible pricing.
-| **Gatling (Not yed decided)** | Apache Jmeter and Locust.io (among others) | By using Gatling, we reject ache Jmeter and Locust.io, which where also presented load testing tools. Gatling is known for its high performance and scalability, making it suitable for simulating large user loads. It provides detailed reports and metrics, helping identify bottlenecks and optimize the system.
+| **Gatling** | Apache Jmeter and Locust.io (among others) | By using Gatling, we reject ache Jmeter and Locust.io, which where also presented load testing tools. Gatling is known for its high performance and scalability, making it suitable for simulating large user loads. It provides detailed reports and metrics, helping identify bottlenecks and optimize the system.
+| **Puppetter** | Selenium | By using Gatling, we reject ache Jmeter and Locust.io, which where also presented load testing tools. Gatling is known for its high performance and scalability, making it suitable for simulating large user loads. It provides detailed reports and metrics, helping identify bottlenecks and optimize the system.
 |===
 
 === Decisions on how to achieve the key quality goals
@@ -124,3 +248,164 @@ We use **GitHub** as our **primary version control tool**, and also using its **
 * **Continuous Deployment and Stability Checks**
 
 Once the application reaches a deployment stable functionality, we will **implement a Continuous Deployment methodology**. This involves **deploying** the application **at least once per week, to verify stability in a production-like environment**. This proactive approach helps **detect** and resolve **deployment-specific bugs early**, preventing major issues from being discovered too late in the process.
+
+=== Implementation decisions
+
+* **How are solved the LLM hallucinations?**
+
+We have implemented a filter function that process LLM responses to exclude any of the possible quiz answers. If a forbidden word is detected, the system retries the request a limited number of times, and if the response of the LLM is wrong then it shows an error message: "There was an error while returning your answer, please try again." To avoid any prompt engineering attempt to obtain the answer.
+
+Known Limitations:
+
+--
+1. Exact Matching: The filtering mechanism only detects exact matches of possible answers, potentially missing paraphrased answers.
+
+2. Retry Limit: Fixed at a finite number of retries, which may not suffice for complex cases.
+--
+
+* **How are questions fetched/retrieved in our application?**
+
+- Adding Quiz Categories
+
+We have defined an endpoint `POST /quiz` that accepts JSON format with different body parameters as `category`, `wikidataQuery`, `wikidataCode`, ... Once the request is done automatically performs multiple requests to WikiData and stores questions for later retrieve in the quiz.
+
+- Retrieving Questions
+
+We have defined an endpoint `GET /game/{subject}/{numberOfQuestions}/{numberOfOptions}` to retrieve the questions stored in the database regarding the subject of the quiz.
+
+Known Limitations:
+
+--
+1. Assumes valid images paths and sufficient questions/answers to retrieve or fails.
+--
+
+* **How is designed our multiplayer functionality?**
+
+The multiplayer functionality of the quiz game is designed to enable real-time, shared quiz sessions where multiple players can join, compete, and interact under the coordination of a host. It leverages a combination of Express.js for session management, MongoDB for persistent storage, and Socket.IO for real-time communication, as implemented in the Wihoot microservice.
+
+Known Limitations:
+
+--
+1. You have to be registered to create the game session and to join to the game session code
+--
+
+Sequence diagram of the behaviour:
+
+[plantuml]
+----
+@startuml
+title Wihoot - Create Multiplayer Session
+!theme plain
+skinparam BackgroundColor transparent
+skinparam sequenceMessageAlign center
+
+skinparam sequence {
+ArrowColor #2C3E50
+LifeLineBorderColor #95A5A6
+LifeLineBackgroundColor #ECF0F1
+
+    ParticipantBorderColor #0d3375
+    ParticipantBackgroundColor #E8F6FF
+    ParticipantFontColor #2C3E50
+    ParticipantFontSize 14
+
+    ActorBorderColor #0d3375
+    ActorBackgroundColor #E8F6FF
+    ActorFontColor #2C3E50
+    ActorFontSize 14
+
+    DatabaseBorderColor #9B59B6
+    DatabaseBackgroundColor #F4ECF7
+}
+
+actor "HostUser" as LoggedUser1
+actor "LoggedUser" as LoggedUser2
+participant "Webapp" as Webapp
+participant "Wihoot" as Wihoot
+participant "Socket Server" as Socket
+database "Database" as DB
+
+LoggedUser1 -> Webapp: POST /shared-quiz/create
+Webapp -> Wihoot: POST /wihoot/create
+Wihoot -> DB: Create the session game data
+Wihoot --> Webapp: response={ gameCode: A5AB6B }
+Webapp --> LoggedUser1: Shows game code A5AB6B generated
+
+LoggedUser2 -> Webapp: GET /shared-quiz/join (enters gameCode)
+Webapp -> Wihoot: GET /wihoot/join
+Wihoot -> Socket: creates new socket attached to the session code A5AB6B
+Socket -> Socket: Notifies all sockets of the session of the new player
+Wihoot -> DB: Adds a player to the session
+Wihoot --> Webapp: Success response to the join
+Webapp --> LoggedUser2: Shows that you have joined the game session A5AB6B
+@enduml
+----
+
+[plantuml]
+----
+@startuml
+title Wihoot - Question/Answer in the Session
+!theme plain
+skinparam BackgroundColor transparent
+skinparam sequenceMessageAlign center
+
+skinparam sequence {
+ArrowColor #2C3E50
+LifeLineBorderColor #95A5A6
+LifeLineBackgroundColor #ECF0F1
+
+    ParticipantBorderColor #0d3375
+    ParticipantBackgroundColor #E8F6FF
+    ParticipantFontColor #2C3E50
+    ParticipantFontSize 14
+
+    ActorBorderColor #0d3375
+    ActorBackgroundColor #E8F6FF
+    ActorFontColor #2C3E50
+    ActorFontSize 14
+
+    DatabaseBorderColor #9B59B6
+    DatabaseBackgroundColor #F4ECF7
+}
+
+actor "HostUser" as LoggedUser1
+actor "LoggedUser" as LoggedUser2
+participant "Webapp" as Webapp
+participant "Wihoot" as Wihoot
+database "Database" as DB
+participant "All Sockets" as IO
+participant "Host Socket" as HS
+participant "Player Socket" as PS
+
+LoggedUser1 -> Webapp: POST /shared-quiz/start
+Webapp -> Wihoot: POST /wihoot/start
+Wihoot -> DB: update the status of the session to started
+Wihoot -> IO: Emit the signal session-started
+
+IO -> HS: recieve the signal session-started
+IO -> PS: recieve the signal session-started
+HS-> Webapp: game status update (GET /shared-quiz/status)
+PS -> Webapp: game status update (GET /shared-quiz/status)
+
+Webapp --> LoggedUser1: Shows the host view for the first question
+Webapp --> LoggedUser2: Shows the player view for the first question
+
+LoggedUser2 -> Webapp: Player answers (POST /shared-quiz/answer)
+Webapp -> Wihoot: POST /wihoot/answer
+Wihoot -> DB: Store the response and its data (time, isCorrect?,...)
+
+LoggedUser1 -> Webapp: Clicks next (GET /shared-quiz/next)
+Webapp -> Wihoot: GET /wihoot/next
+Wihoot -> DB: updates the game status
+
+Wihoot -> IO: emit signal of question-changed
+IO -> HS: fetch the new game state
+IO -> PS: fetch the new game state
+HS-> Webapp: game status update (GET /shared-quiz/status)
+PS -> Webapp: game status update (GET /shared-quiz/status)
+
+Webapp -> LoggedUser1: Shows the next question and the leaderboard updated
+Webapp -> LoggedUser2: Shows the next  question
+
+@enduml
+----
