@@ -384,8 +384,8 @@ Wihoot -> IO: Emit the signal session-started
 
 IO -> HS: recieve the signal session-started
 IO -> PS: recieve the signal session-started
-HS-> Webapp: fetches  game status (GET /shared-quiz/status)
-PS -> Webapp: fetches game status (GET /shared-quiz/status)
+HS-> Webapp: game status update (GET /shared-quiz/status)
+PS -> Webapp: game status update (GET /shared-quiz/status)
 
 Webapp --> LoggedUser1: Shows the host view for the first question
 Webapp --> LoggedUser2: Shows the player view for the first question
@@ -401,8 +401,8 @@ Wihoot -> DB: updates the game status
 Wihoot -> IO: emit signal of question-changed
 IO -> HS: fetch the new game state
 IO -> PS: fetch the new game state
-HS-> Webapp: fetch the game status (GET /shared-quiz/status)
-PS -> Webapp: fetch the game status (GET /shared-quiz/status)
+HS-> Webapp: game status update (GET /shared-quiz/status)
+PS -> Webapp: game status update (GET /shared-quiz/status)
 
 Webapp -> LoggedUser1: Shows the next question and the leaderboard updated
 Webapp -> LoggedUser2: Shows the next  question
