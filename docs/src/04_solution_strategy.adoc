@@ -340,3 +340,72 @@ Wihoot --> Webapp: Success response to the join
 Webapp --> LoggedUser2: Shows that you have joined the game session A5AB6B
 @enduml
 ----
+
+[plantuml]
+----
+@startuml
+title Wihoot - Question/Answer in the Session
+!theme plain
+skinparam BackgroundColor transparent
+skinparam sequenceMessageAlign center
+
+skinparam sequence {
+ArrowColor #2C3E50
+LifeLineBorderColor #95A5A6
+LifeLineBackgroundColor #ECF0F1
+
+    ParticipantBorderColor #0d3375
+    ParticipantBackgroundColor #E8F6FF
+    ParticipantFontColor #2C3E50
+    ParticipantFontSize 14
+
+    ActorBorderColor #0d3375
+    ActorBackgroundColor #E8F6FF
+    ActorFontColor #2C3E50
+    ActorFontSize 14
+
+    DatabaseBorderColor #9B59B6
+    DatabaseBackgroundColor #F4ECF7
+}
+
+actor "HostUser" as LoggedUser1
+actor "LoggedUser" as LoggedUser2
+participant "Webapp" as Webapp
+participant "Wihoot" as Wihoot
+database "Database" as DB
+participant "All Sockets" as IO
+participant "Host Socket" as HS
+participant "Player Socket" as PS
+
+LoggedUser1 -> Webapp: POST /shared-quiz/start
+Webapp -> Wihoot: POST /wihoot/start
+Wihoot -> DB: update the status of the session to started
+Wihoot -> IO: Emit the signal session-started
+
+IO -> HS: recieve the signal session-started
+IO -> PS: recieve the signal session-started
+HS-> Webapp: fetches  game status (GET /shared-quiz/status)
+PS -> Webapp: fetches game status (GET /shared-quiz/status)
+
+Webapp --> LoggedUser1: Shows the host view for the first question
+Webapp --> LoggedUser2: Shows the player view for the first question
+
+LoggedUser2 -> Webapp: Player answers (POST /shared-quiz/answer)
+Webapp -> Wihoot: POST /wihoot/answer
+Wihoot -> DB: Store the response and its data (time, isCorrect?,...)
+
+LoggedUser1 -> Webapp: Clicks next (GET /shared-quiz/next)
+Webapp -> Wihoot: GET /wihoot/next
+Wihoot -> DB: updates the game status
+
+Wihoot -> IO: emit signal of question-changed
+IO -> HS: fetch the new game state
+IO -> PS: fetch the new game state
+HS-> Webapp: fetch the game status (GET /shared-quiz/status)
+PS -> Webapp: fetch the game status (GET /shared-quiz/status)
+
+Webapp -> LoggedUser1: Shows the next question and the leaderboard updated
+Webapp -> LoggedUser2: Shows the next  question
+
+@enduml
+----
