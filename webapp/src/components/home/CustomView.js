@@ -114,7 +114,6 @@ function CustomQuiz() {
     const computeHomeURL = async () => {
       const id = getCurrentPlayerId(getAuthToken());
       setHomeURL(!id? "/guest/home": "/");
-      console.log(!id? "/guest/home": "/");
     };
 
     computeHomeURL();
