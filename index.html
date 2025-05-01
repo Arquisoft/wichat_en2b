@@ -473,6 +473,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_decisions_trade_offs">4.4. Decisions trade-offs</a></li>
 <li><a href="#_decisions_on_how_to_achieve_the_key_quality_goals">4.5. Decisions on how to achieve the key quality goals</a></li>
 <li><a href="#_organizational_decisions">4.6. Organizational decisions</a></li>
+<li><a href="#_implementation_decisions">4.7. Implementation decisions</a></li>
 </ul>
 </li>
 <li><a href="#section-building-block-view">5. Building Block View</a>
@@ -556,7 +557,7 @@ See <a href="https://arc42.org" class="bare">https://arc42.org</a>.</p>
 <div class="sect2">
 <h3 id="_requirements_overview">1.1. Requirements Overview</h3>
 <div class="paragraph">
-<p>The goal of this project is to enhance the online "Saber y Ganar" quiz show application, developed last year by HappySw, with new features that incorporate large language models (LLMs) and Wikidata for a more interactive and engaging experience.</p>
+<p>The goal of this project is to enhance the online "Saber y Ganar" quiz show application, developed last year by HappySw, with new features that incorporate large language models (LLMs) and Wikidata for a more interactive and engaging experience and a multiplayer mode where the host code of the session allows mulitple players to share the same quiz game in real time with session leaderboard.</p>
 </div>
 <div class="paragraph">
 <p>The key functional requirements of the system are:</p>
@@ -584,13 +585,7 @@ See <a href="https://arc42.org" class="bare">https://arc42.org</a>.</p>
 <li>
 <p>The application must be deployable on the web and allow users to access their information via a documented API.</p>
 </li>
-<li>
-<p>There is a possibility for users to interact with the application in different game modes, such as “Each wise man with his subject,” “Travel with us,” or “The hot question.” (not yet implemented)</p>
-</li>
 </ul>
-</div>
-<div class="paragraph">
-<p>Optional features include internationalization, mobile version, users' ranking, multiplayer capabilities, and personalized game settings like adjusting time limits and the scope of questions.</p>
 </div>
 </div>
 <div class="sect2">
@@ -861,7 +856,7 @@ See <a href="https://arc42.org" class="bare">https://arc42.org</a>.</p>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="./images/diag-plantuml-md5-9ea75ac55f307c962435cf2901f524aa.png" alt="Diagram" width="538" height="197">
+<img src="./images/diag-plantuml-md5-9ea75ac55f307c962435cf2901f524aa.png" alt="Diagram" width="522" height="191">
 </div>
 </div>
 </div>
@@ -885,10 +880,13 @@ See <a href="https://arc42.org" class="bare">https://arc42.org</a>.</p>
 <p><strong>Security Considerations</strong>: User passwords are hashed using Bcrypt, and authentication is managed through a Gateway service and a backend authorization service.</p>
 </li>
 <li>
-<p><strong>User Gateway</strong>: Handles user-related API requests, routing authentication, CRUD and game operations to their respective services.</p>
+<p><strong>Gateway</strong>: Forwards front-end requests to their respective services.</p>
 </li>
 <li>
 <p><strong>Game Service</strong>: Generates questions from WikiData and stores them in a database, ensuring access to questions is fast and reliable when playing. It is also in charge of retrieving batches of questions for the game to the frontend application and storing the game results associated to a logged in user.</p>
+</li>
+<li>
+<p><strong>Wihoot Service</strong>: A Node.js-based microservice using Express and Socket.io that manages multiplayer quiz sessions, including session creation, player joining, answer submission, and real-time chat via WebSocket.</p>
 </li>
 </ul>
 </div>
@@ -935,7 +933,7 @@ See <a href="https://arc42.org" class="bare">https://arc42.org</a>.</p>
 <td class="tableblock halign-left valign-top"><p class="tableblock">JSON</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>WikiData</strong> (via GameService)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>WikiData (via GameService)</strong></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">External API</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">REST API, SPARQL queries</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">HTTPS</p></td>
@@ -963,6 +961,13 @@ See <a href="https://arc42.org" class="bare">https://arc42.org</a>.</p>
 <td class="tableblock halign-left valign-top"><p class="tableblock">JSON</p></td>
 </tr>
 <tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Wihoot Service</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Node.js + Express + Socket.IO</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">HTTP, WebSocket</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">HTTP, WebSocket</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">JSON</p></td>
+</tr>
+<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Security (Bcrypt)</strong></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Password Hashing</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Internal Authentication</p></td>
@@ -976,7 +981,7 @@ See <a href="https://arc42.org" class="bare">https://arc42.org</a>.</p>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="./images/diag-plantuml-md5-5d7fbc0c315e1a0382bc0b9f9e94bc56.png" alt="Diagram" width="1549" height="536">
+<img src="./images/diag-plantuml-md5-97a8b041afe94a4697a11ed6d4f3a45c.png" alt="Diagram" width="1223" height="511">
 </div>
 </div>
 <div style="page-break-after: always;"></div>
@@ -1056,9 +1061,19 @@ See <a href="https://arc42.org" class="bare">https://arc42.org</a>.</p>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Selected due to our ability to obtain a free, sufficiently powerful server instance from Oracle’s infrastructure.</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><strong><a href="https://gatling.io/">Gatling</a> (Not yed decided)</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong><a href="https://gatling.io/">Gatling</a></strong></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Load testing tool for performance evaluation</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Chosen for its ability to simulate multiple users and analyze application performance under load. It provides detailed reports and metrics, helping identify bottlenecks and optimize the system.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong><a href="https://pptr.dev/">Puppetter</a></strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">E2E testing library to control high-level operations in browsers</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">It is designed specifically for Node.js and our application is fully implemented in Node.js ecosystem. Moreover. Puppetter directly within the Node.js runtime, requiring no additional drivers or external processes, which simplifies setup and deployment in our application.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong><a href="https://socket.io/">Socket.io</a></strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Library that allows using WebSockets to communicate clients and server bidirectionally and event-based</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">It&#8217;s easy syntax and good event handling performance based in polling what was needed for the Wihoot implementation</p></td>
 </tr>
 </tbody>
 </table>
@@ -1134,7 +1149,7 @@ Module of persistence that stores the user&#8217;s information in JSON format.</
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="./images/04_architectural_design.png" alt="Architecture design">
+<img src="./images/diag-plantuml-md5-55faeb6ead024be55138aea526dfd9c7.png" alt="Diagram" width="1120" height="788">
 </div>
 </div>
 </div>
@@ -1147,11 +1162,11 @@ Module of persistence that stores the user&#8217;s information in JSON format.</
 <ul>
 <li>
 <p><strong>Facade</strong> (Unifier Interface)<br>
-As our project will use a LLM module, we have consider the possibility that perhaps we have to change API provider suddenly for a performance or other reason. Therefore, an interface that hide the specific interface of a provider will reduce the coupling in its API.</p>
+As our project will use a gateway arquitecture, we are abstracting some intern endpoints using a forwarding functionality in our gateway service.</p>
 </li>
 <li>
-<p><strong>Strategy</strong><br>
-We have considered an optional requirement that include game different modes. Therefore, a game could delegate the logic of an specific mode to an interface, a GameMode interface that is linked once the game is created.</p>
+<p><strong>Observer</strong>
+Wihoot service multiplayer game is based in an event polling of the WebSockets joined to the same game session code. The logic of this is handled by the socket.io module.</p>
 </li>
 </ul>
 </div>
@@ -1223,8 +1238,13 @@ We have considered an optional requirement that include game different modes. Th
 <td class="tableblock halign-left valign-top"><p class="tableblock">By choosing Oracle Cloud Infrastructure as our deployment platform, we opt against Azure, which provides student licenses but may have higher costs for long-term use. Additionally, we reject AWS, which offers better scalability and a more flexible pricing.</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Gatling (Not yed decided)</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Gatling</strong></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Apache Jmeter and Locust.io (among others)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">By using Gatling, we reject ache Jmeter and Locust.io, which where also presented load testing tools. Gatling is known for its high performance and scalability, making it suitable for simulating large user loads. It provides detailed reports and metrics, helping identify bottlenecks and optimize the system.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Puppetter</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Selenium</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">By using Gatling, we reject ache Jmeter and Locust.io, which where also presented load testing tools. Gatling is known for its high performance and scalability, making it suitable for simulating large user loads. It provides detailed reports and metrics, helping identify bottlenecks and optimize the system.</p></td>
 </tr>
 </tbody>
@@ -1328,6 +1348,114 @@ We have considered an optional requirement that include game different modes. Th
 <div class="paragraph">
 <p>Once the application reaches a deployment stable functionality, we will <strong>implement a Continuous Deployment methodology</strong>. This involves <strong>deploying</strong> the application <strong>at least once per week, to verify stability in a production-like environment</strong>. This proactive approach helps <strong>detect</strong> and resolve <strong>deployment-specific bugs early</strong>, preventing major issues from being discovered too late in the process.</p>
 </div>
+</div>
+<div class="sect2">
+<h3 id="_implementation_decisions">4.7. Implementation decisions</h3>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>How are solved the LLM hallucinations?</strong></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>We have implemented a filter function that process LLM responses to exclude any of the possible quiz answers. If a forbidden word is detected, the system retries the request a limited number of times, and if the response of the LLM is wrong then it shows an error message: "There was an error while returning your answer, please try again." To avoid any prompt engineering attempt to obtain the answer.</p>
+</div>
+<div class="paragraph">
+<p>Known Limitations:</p>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Exact Matching: The filtering mechanism only detects exact matches of possible answers, potentially missing paraphrased answers.</p>
+</li>
+<li>
+<p>Retry Limit: Fixed at a finite number of retries, which may not suffice for complex cases.</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>How are questions fetched/retrieved in our application?</strong></p>
+<div class="ulist">
+<ul>
+<li>
+<p>Adding Quiz Categories</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>We have defined an endpoint <code>POST /quiz</code> that accepts JSON format with different body parameters as <code>category</code>, <code>wikidataQuery</code>, <code>wikidataCode</code>, &#8230;&#8203; Once the request is done automatically performs multiple requests to WikiData and stores questions for later retrieve in the quiz.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Retrieving Questions</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>We have defined an endpoint <code>GET /game/{subject}/{numberOfQuestions}/{numberOfOptions}</code> to retrieve the questions stored in the database regarding the subject of the quiz.</p>
+</div>
+<div class="paragraph">
+<p>Known Limitations:</p>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Assumes valid images paths and sufficient questions/answers to retrieve or fails.</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>How is designed our multiplayer functionality?</strong></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The multiplayer functionality of the quiz game is designed to enable real-time, shared quiz sessions where multiple players can join, compete, and interact under the coordination of a host. It leverages a combination of Express.js for session management, MongoDB for persistent storage, and Socket.IO for real-time communication, as implemented in the Wihoot microservice.</p>
+</div>
+<div class="paragraph">
+<p>Known Limitations:</p>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>You have to be registered to create the game session and to join to the game session code</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="paragraph">
+<p>Sequence diagram of the behaviour:</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="./images/diag-plantuml-md5-d6f67fad0ba1bfc0c5d6384563de7b8a.png" alt="Diagram" width="1550" height="602">
+</div>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="./images/diag-plantuml-md5-e17a1d0944fb955f9679a71ecdadb0fa.png" alt="Diagram" width="1520" height="917">
+</div>
+</div>
 <div style="page-break-after: always;"></div>
 </div>
 </div>
@@ -1344,7 +1472,7 @@ We have considered an optional requirement that include game different modes. Th
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="./images/diag-plantuml-md5-9ea75ac55f307c962435cf2901f524aa.png" alt="Diagram" width="538" height="197">
+<img src="./images/diag-plantuml-md5-9ea75ac55f307c962435cf2901f524aa.png" alt="Diagram" width="522" height="191">
 </div>
 </div>
 </div>
@@ -1365,7 +1493,7 @@ We have considered an optional requirement that include game different modes. Th
 <div class="ulist">
 <ul>
 <li>
-<p><strong>User</strong>: Represents the end-user of the platform, who is required to authenticate in order to access the game functionality. Once authenticated, users can interact with the system and participate in gameplay.</p>
+<p><strong>User</strong>: Represents the end-user of the platform, who may authenticate in order to access the game functionality. Guest users can interact with the system and participate in gameplay. However, they will have limited access such as no multiplayer mode, saving the games&#8230;&#8203;</p>
 </li>
 <li>
 <p><strong>Wichat EN2B Application</strong>: The core application responsible for managing game mechanics, including the generation of questions and content. It encapsulates the application’s game logic and drives the user experience. Detailed breakdowns of its internal components are explored further in later sections.</p>
@@ -1409,7 +1537,7 @@ corresponding LLM, and this service is in charge of the propper connection witht
 <h4 id="_container_diagram">5.2.1. Container Diagram</h4>
 <div class="imageblock">
 <div class="content">
-<img src="./images/diag-plantuml-md5-e43447f2487a693a7f270a4b1145462d.png" alt="Diagram" width="1669" height="559">
+<img src="./images/diag-plantuml-md5-4ab0c5c5c122ec0a504a29105e56df2a.png" alt="Diagram" width="1300" height="795">
 </div>
 </div>
 </div>
@@ -1443,10 +1571,19 @@ responsible for generating and retrieving questions, together with retrieving th
 <p><strong>LLM Service</strong>: This container interfaces with a <strong>Large Language Model (LLM)</strong> to provide hints, explanations, and additional content to assist the user during the game. It ensures that users receive context-sensitive content, enhancing the overall gaming experience by offering real-time dynamic information. Communication with the LLM API is conducted conversationally by passing the entire message history in each request to maintain context and coherence.</p>
 </li>
 <li>
+<p><strong>Wihoot Service</strong>: This container manages the multiplayer game logic by letting users host or join a session to play the same quiz with other users. It was developped using <strong>sockets</strong>.</p>
+</li>
+<li>
 <p><strong>MongoDB Database</strong>: The database responsible for storing persistent system data, including user profiles, game states, and scores. MongoDB is used for its flexibility in handling semi-structured data and its scalability.</p>
 </li>
 <li>
-<p><strong>User Gateway</strong>: A container dedicated to managing user-specific API requests. It handles user authentication, session management, and retrieval of user-related data, ensuring secure and personalized experiences.</p>
+<p><strong>User CRUD Service</strong>: A container dedicated to managing user-specific API requests. It handles retrieval of user-related data, and management of user information such as creating, updating and deleting users.</p>
+</li>
+<li>
+<p><strong>User Authentication Service</strong>: Handles the authentification part of the application. This service is in charge of logging a user in, registering a new one and validanting information.</p>
+</li>
+<li>
+<p><strong>User Group Service</strong>: This container contains all the behaviour regarding groups such as group management (CRUD operations), joining and leaving a group.</p>
 </li>
 </ul>
 </div>
@@ -1459,10 +1596,10 @@ responsible for generating and retrieving questions, together with retrieving th
 <div class="ulist">
 <ul>
 <li>
-<p>When a user logs in via the Web Application, the system authenticates the request using the <strong>User Service</strong>.</p>
+<p>When a user logs in via the Web Application, the system authenticates the request using the <strong>User Service</strong>. Guest users are also allowed to play the existing quizzes.</p>
 </li>
 <li>
-<p>After successful authentication, the user interacts with the <strong>Game Service</strong>.</p>
+<p>After successful redirection, the user interacts with the <strong>Game Service</strong>.</p>
 </li>
 <li>
 <p>The <strong>LLM Service</strong> is called when the user requests a hint.</p>
@@ -1480,7 +1617,7 @@ responsible for generating and retrieving questions, together with retrieving th
 <h4 id="_component_diagram">5.3.1. Component Diagram</h4>
 <div class="imageblock">
 <div class="content">
-<img src="./images/diag-plantuml-md5-6c981ea1a6d9deb6325032e2fbd4671d.png" alt="Diagram" width="1379" height="824">
+<img src="./images/diag-plantuml-md5-28ea9714b2b1c070b7fa4e3fe5e775fe.png" alt="Diagram" width="1371" height="909">
 </div>
 </div>
 </div>
@@ -1521,14 +1658,25 @@ responsible for generating and retrieving questions, together with retrieving th
 <p><strong>Game Information Router</strong>: Saves the game information and the game state.</p>
 </li>
 <li>
-<p><strong>Game Fetcher Router</strong>: Is in charge of fetching questions from WikiData given the type and amount.</p>
+<p><strong>Quiz Router</strong>: Is in charge of fetching questions from WikiData given the type and amount.</p>
 </li>
 <li>
-<p><strong>Game Retriever Router</strong>: Returns questions from our database given the requested parameters.</p>
+<p><strong>Retriever Router</strong>: Returns questions from our database given the requested parameters.</p>
 </li>
 <li>
-<p><strong>Game Statistics Router</strong>: Returns the current user game statistics for a given subject or for
+<p><strong>Statistics Router</strong>: Returns the current user game statistics for a given subject or for
 the whole application. It also returns the leaderboard of the application, including the current user.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Auth Service</strong>:</p>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Auth Service Router</strong>: Manages authentication-related endpoints (login, register, validate). It uses the
+User CRUD router internally.</p>
 </li>
 </ul>
 </div>
@@ -1538,14 +1686,26 @@ the whole application. It also returns the leaderboard of the application, inclu
 <div class="ulist">
 <ul>
 <li>
-<p><strong>Auth Service Router</strong>: Manages authentication-related endpoints (login, register). It uses the
-User CRUD router internally.</p>
-</li>
-<li>
 <p><strong>User CRUD Router</strong>: Handles user management endpoints (create, update, delete users).</p>
 </li>
 <li>
 <p><strong>User Model</strong>: Represents the user data structure and interacts with the database.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Group Service</strong>:</p>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Group Router</strong>: Handles the group management endpoints (CRUD, join, leave).</p>
+</li>
+<li>
+<p><strong>Group Model</strong>: Represents the group data sctructure and interacts with the database.</p>
+</li>
+<li>
+<p>This service also uses the <strong>middleware</strong> to ensure only logged users can join or create groups.</p>
 </li>
 </ul>
 </div>
@@ -1559,6 +1719,19 @@ User CRUD router internally.</p>
 </li>
 <li>
 <p><strong>LLM Logic</strong>: Communicates with the external LLM API to generate responses.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Wihoot Service</strong>:</p>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Wihoot Router</strong>: Manages multiplayer games' endpoints.</p>
+</li>
+<li>
+<p><strong>Wihoot Model</strong>: The structure of the multiplayer data and interacts with the database.</p>
 </li>
 </ul>
 </div>
@@ -1598,12 +1771,23 @@ User CRUD router internally.</p>
 <p>Each router contains one or several endpoints for its respective service. These router components interact with models or external APIs to fulfill the requests, ensuring a clear separation of concerns and maintainability.</p>
 </div>
 <div class="paragraph">
-<p>For example:
-- The <strong>Gateway</strong> routes a user request to the <strong>Game Service</strong> for game-related actions.
-- The <strong>Middleware</strong> would check if the user is authenticated previously to any operation.
-- The <strong>Game Service</strong> uses the <strong>Game Fetcher Router</strong> and fetches data from the <strong>WikiData API</strong>
-- The <strong>Game Service</strong> uses the <strong>Game Retriever Router</strong> and retrieves questions from the <strong>Database</strong>
-- The <strong>LLM Service</strong> communicates with the <strong>LLM</strong> throught the <strong>LLM API</strong> to generate hints or contextual responses for the user.</p>
+<p>For example:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>The <strong>Gateway</strong> routes a user request to the <strong>Game Service</strong> for game-related actions.</p>
+</li>
+<li>
+<p>The <strong>Middleware</strong> would check if the user is authenticated previously to any operation if required.</p>
+</li>
+<li>
+<p>The <strong>Game Service</strong> uses the <strong>Game Retriever Router</strong> and retrieves questions from the <strong>Database</strong></p>
+</li>
+<li>
+<p>The <strong>LLM Service</strong> communicates with the <strong>LLM</strong> throught the <strong>LLM API</strong> to generate hints or contextual responses for the user.</p>
+</li>
+</ul>
 </div>
 <div class="paragraph">
 <p>This modular design enhances scalability, maintainability, and fault isolation, ensuring that each component is specialized in its task while working seamlessly as part of the larger system.</p>
@@ -1626,7 +1810,7 @@ User CRUD router internally.</p>
 </div>
 <div class="imageblock text-center">
 <div class="content">
-<img src="./images/Register%20diagram.png" alt="Register diagram" width="498" height="505">
+<img src="./images/Register%20diagram.png" alt="Register diagram" width="479" height="496">
 </div>
 </div>
 <div class="paragraph">
@@ -1659,7 +1843,7 @@ User CRUD router internally.</p>
 </div>
 <div class="imageblock text-center">
 <div class="content">
-<img src="./images/Login%20diagram.png" alt="Login diagram" width="508" height="449">
+<img src="./images/Login%20diagram.png" alt="Login diagram" width="489" height="441">
 </div>
 </div>
 <div class="paragraph">
@@ -1692,7 +1876,7 @@ User CRUD router internally.</p>
 </div>
 <div class="imageblock text-center">
 <div class="content">
-<img src="./images/Game%20diagram.png" alt="Game diagram" width="417" height="653">
+<img src="./images/Game%20diagram.png" alt="Game diagram" width="404" height="643">
 </div>
 </div>
 <div class="olist arabic">
@@ -1820,7 +2004,7 @@ User CRUD router internally.</p>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="./images/UML%20diagram%201.png" alt="UML diagram 1" width="423" height="318">
+<img src="./images/UML%20diagram%201.png" alt="UML diagram 1" width="398" height="309">
 </div>
 </div>
 <div class="paragraph">
@@ -1842,7 +2026,7 @@ User CRUD router internally.</p>
 <h4 id="_oracle_serverapplication">7.2.1. Oracle ServerApplication</h4>
 <div class="imageblock">
 <div class="content">
-<img src="./images/UML%20diagram%202.png" alt="UML diagram 2" width="1137" height="315">
+<img src="./images/UML%20diagram%202.png" alt="UML diagram 2" width="921" height="467">
 </div>
 </div>
 <div class="paragraph">
@@ -1854,245 +2038,284 @@ User CRUD router internally.</p>
 <div class="paragraph">
 <p><strong>Key Features</strong></p>
 </div>
+<div class="paragraph">
+<p><strong><mark>Web Application</mark></strong>: The web app serves as the user interface where users interact with the system. It connects to the Gateway Service to make API calls and process user actions.</p>
+</div>
 <div class="ulist">
 <ul>
 <li>
-<p><strong>Web Application</strong>: The web app serves as the user interface where users interact with the system. It connects to the Gateway Service to make API calls and process user actions.</p>
+<p>Endpoints</p>
+<div class="literalblock">
+<div class="content">
+<pre>GET /adduser - Shows the registration form
+POST /adduser - Sends the sign up information to the gateway service
+GET /login - Shows the login form
+POST /login - Sends the login information to the gateway service
+GET / - Shows homepage with categories, stats and leaderboard.
+GET /quiz/category/:id - Shows quizzes for a category and starts gameplay.
+GET /quiz/custom - Shows the custom quiz form to customize it.
+GET /guest/home - The home page for guests which does not have full functionality.
+GET /guest/quiz/category/:id - Shows quizzes for a category and starts gameplay.</pre>
+</div>
+</div>
 </li>
 </ul>
 </div>
 <div class="paragraph">
-<p>Endpoints</p>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>`GET /adduser` - Shows the registration form</pre>
-</div>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>`POST /adduser` - Sends the sign up information to the gateway service</pre>
-</div>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>`GET /login` - Shows the login form</pre>
-</div>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>`POST /login` - Sends the login information to the gateway service</pre>
-</div>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>'GET /' - Shows homepage with categories, stats and leaderboard.</pre>
-</div>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>'GET /quiz/category/:id' - Shows quizzes for a category and starts gameplay</pre>
-</div>
+<p><strong><mark>Gateway Service</mark></strong>: The central point for routing all incoming requests. It ensures security, authentication, and routing to the appropriate service, whether it&#8217;s the LLM Service, User-related services, or the Game Service.</p>
 </div>
 <div class="ulist">
 <ul>
 <li>
-<p><strong>Gateway Service</strong>: The central point for routing all incoming requests. It ensures security, authentication, and routing to the appropriate service, whether it&#8217;s the LLM Service, User-related services, or the Game Service.</p>
+<p>Endpoints:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Authentification Management Endpoints</p>
+<div class="literalblock">
+<div class="content">
+<pre>POST /login - Authenticates a user and returns a token.
+POST /adduser - Registers a new user in the system.
+POST /setup2fa - Sets up two-factor authentication for a user.
+POST /verify2fa - Verifies a two-factor authentication code.
+GET /check2fa - Checks if two-factor authentication is enabled for a user.
+GET /token/username - Retrieves the username associated with a provided token.</pre>
+</div>
+</div>
+</li>
+<li>
+<p>User Management Endpoints</p>
+<div class="literalblock">
+<div class="content">
+<pre>POST /users - Creates a new user.
+GET /users - Retrieves a list of users.
+GET /users/:username - Retrieves user details by username.
+PATCH /users - Updates user information.
+DELETE /users - Deletes a user.
+POST /users/by-ids - Retrieves users by a list of IDs.
+GET /users/id/:id - Retrieves user details by user ID.
+PATCH /users/:username - Updates the username for a specific user.
+POST /user/profile/picture - Uploads a user's profile picture.
+GET /user/profile/picture/:id - Retrieves a user's profile picture by ID.</pre>
+</div>
+</div>
+</li>
+<li>
+<p>Group Management Endpoints</p>
+<div class="literalblock">
+<div class="content">
+<pre>GET /groups - Retrieves a list of groups.
+GET /groups/joined - Retrieves group the user has joined.
+GET /groups/:name - Retrieves details of a specific group by name.
+POST /groups - Creates a new group.
+PATCH /groups - Updates group information.
+DELETE /groups - Deletes a group.
+POST /groups/join - Allows a user to join a group.
+POST /groups/leave - Allows a user to leave a group.</pre>
+</div>
+</div>
+</li>
+<li>
+<p>LLM Service Endpoints</p>
+<div class="literalblock">
+<div class="content">
+<pre>POST /askllm - Sends a question to the LLM service and returns a response.</pre>
+</div>
+</div>
+</li>
+<li>
+<p>Game Service Endpoints</p>
+<div class="literalblock">
+<div class="content">
+<pre>GET /quiz/allTopics - Retrieves all available quiz topics.
+GET /quiz - Retrieves quizzes or quiz-related information.
+GET /quiz/:topic - Retrieves quizzes for a specific topic.
+POST /quiz - Creates or submits a quiz.
+GET /game/:subject/:totalQuestions/:numberOptions - Retrieves questions for a game based on subject, total questions, and number of options.
+POST /game - Creates or processes a game session.
+POST /question/validate - Validates a question response.
+GET /question/internal/:id - Retrieves internal question details by ID (restricted to LLM service origin).
+GET /question/amount/:code - Retrieves the number of questions associated with a specific code.</pre>
+</div>
+</div>
+</li>
+<li>
+<p>Statistics and Leaderboard Endpoints</p>
+<div class="literalblock">
+<div class="content">
+<pre>GET /statistics/recent-quizzes - Retrieves recent quizzes with pagination support.
+GET /statistics/subject/:subject - Retrieves statistics for a specific subject.
+GET /statistics/global - Retrieves global statistics across all subjects or quizzes.
+GET /leaderboard - Retrieves the global leaderboard.
+POST /leaderboard/group - Retrieves the leaderboard for a specific group.</pre>
+</div>
+</div>
+</li>
+<li>
+<p>Image Proxy Endpoint</p>
+<div class="literalblock">
+<div class="content">
+<pre>GET /images/:image - Proxies image requests, routing to the user service for profile pictures or the game service for other images.</pre>
+</div>
+</div>
+</li>
+<li>
+<p>Health and Metrics Endpoints</p>
+<div class="literalblock">
+<div class="content">
+<pre>GET /health - Checks the health status of the gateway service.
+GET /health-metrics - Provides Prometheus-compatible health metrics for the gateway service.</pre>
+</div>
+</div>
+</li>
+<li>
+<p>API Documentation</p>
+<div class="literalblock">
+<div class="content">
+<pre>GET /api-doc - Serves the OpenAPI documentation for the API (if openapi.yaml is present).</pre>
+</div>
+</div>
+</li>
+</ul>
+</div>
 </li>
 </ul>
 </div>
 <div class="paragraph">
-<p>Endpoints</p>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>`GET /health` - Shows health status of the system</pre>
-</div>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>`POST /login` - Forwards to Authentication Service to authenticate login</pre>
-</div>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>`POST /adduser` - Forwards to Authentication Service for registration</pre>
-</div>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>'GET /users' - Proxies to User Service to get all users</pre>
-</div>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>'GET /users/:username' - Proxies to User Service for user details</pre>
-</div>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>'POST /users' - Proxies to User Service for user creation</pre>
-</div>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>'PATCH /users/:username' - Proxies to User Service for user edits</pre>
-</div>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>'DELETE /users/:username' - Proxies to User Service for deletion</pre>
-</div>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>'GET /game/:subject/:totalQuestions/:numberOptions' - Proxies to Game Service to get a given number of questions, with a given number of options for a given subject</pre>
-</div>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>'POST /askllm` - Proxies to LLM Service for hints</pre>
-</div>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>`GET /statistics/subject/:subject` - Proxies to Game Service for global stats</pre>
-</div>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>`GET /statistics/global` - Proxies to Game Service for leaderboard</pre>
-</div>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>'GET /leaderboard' - Gets leaderboard with top 10 players plus user</pre>
-</div>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>'GET /image/:images' - Proxies to get image from Game Service</pre>
-</div>
+<p><strong><mark>LLM Service</mark></strong>: A container dedicated to handling calls to the LLM API for processing user queries.</p>
 </div>
 <div class="ulist">
 <ul>
 <li>
-<p><strong>LLM Service</strong>: A container dedicated to handling calls to the LLM API for processing user queries.</p>
+<p>Endpoints</p>
+<div class="literalblock">
+<div class="content">
+<pre>POST /askllm - Provides a hint to the player</pre>
+</div>
+</div>
 </li>
 </ul>
 </div>
 <div class="paragraph">
-<p>Endpoints</p>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>`POST /hint` - Provides a hint to the player</pre>
-</div>
+<p><strong><mark>User CRUD Service</mark></strong>: Handles the CRUD operations for user data, interacting with the MongoDB database for persistent storage.</p>
 </div>
 <div class="ulist">
 <ul>
 <li>
-<p><strong>User Gateway</strong>: Manages user-related API calls, including user authentication and CRUD operations.</p>
-</li>
-<li>
-<p><strong>User CRUD Service</strong>: Handles the CRUD operations for user data, interacting with the MongoDB database for persistent storage.</p>
+<p>Endpoints</p>
+<div class="literalblock">
+<div class="content">
+<pre>POST /users - Creates a user with hashed password (bcrypt).
+GET /users - Rerieves all users
+GET /users/:username - Retrieves a specific user
+POST /users/by-ids - Retrieves users by a list of IDs.
+GET /users/id/:id - Retrieves user details by user ID.
+PATCH /users/:username - Updates the username for a specific user.
+POST /user/profile/picture - Uploads a user's profile picture.
+GET /user/profile/picture/:id - Retrieves a user's profile picture by ID.</pre>
+</div>
+</div>
 </li>
 </ul>
 </div>
 <div class="paragraph">
-<p>Endpoints</p>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>'POST /users' - Creates a user with hashed password (bcrypt).</pre>
-</div>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>'GET /users' - Rerieves all users</pre>
-</div>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>'GET /users/:username' - Retrieves a specific user</pre>
-</div>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>'PATCH /users/:username' - Updates user data</pre>
-</div>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>`DELETE /users/:username` - Deletes a user</pre>
-</div>
+<p><strong><mark>User Authentication Service</mark></strong>: Responsible for managing user authentication, ensuring that secure access to the application is maintained.</p>
 </div>
 <div class="ulist">
 <ul>
 <li>
-<p><strong>User Authentication Service</strong>: Responsible for managing user authentication, ensuring that secure access to the application is maintained.</p>
+<p>Endpoints</p>
+<div class="literalblock">
+<div class="content">
+<pre>POST /login - Validates credentials and returns a JWT
+POST /register - Registers user via User Service and returns a JWT
+GET /token/username - Gets the user details using the token
+POST /validatePassword - Validates the password
+POST /setup2fa - Sets up the 2fa for the user
+POST /verify2fa - Verifies the 2fa
+GET /check2fa - Checks if the user has 2fa enabled</pre>
+</div>
+</div>
 </li>
 </ul>
 </div>
 <div class="paragraph">
-<p>Endpoints</p>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>`POST /login` - Validates credentials and returns a JWT</pre>
-</div>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>`POST /register` - Registers user via User Service and returns a JWT</pre>
-</div>
+<p><strong><mark>User Group Service</mark></strong>: Responsible for managing group data, interacting with the database for persistent storage.</p>
 </div>
 <div class="ulist">
 <ul>
 <li>
-<p><strong>Game Service</strong>: Manages the game-related API calls, processing user inputs and interacting with external services like the Wikidata API to answer game-related questions.</p>
+<p>Endpoints</p>
+<div class="literalblock">
+<div class="content">
+<pre>GET /groups - Retrieves all groups.
+GET /groups/joined - Gets the group the authenticated user belongs to.
+GET /groups/:name - Retrieves a group by its name.
+POST /groups - Creates a new group with the provided name.
+PATCH /groups - Updates the name of the authenticated user's group.
+DELETE /groups - Deletes the authenticated user's group.
+POST /groups/join - Joins the authenticated user to a group by name.
+POST /groups/leave - Removes the authenticated user from their group.
+GET /groups/topGroups - Retrieves the top 10 groups by score.</pre>
+</div>
+</div>
 </li>
 </ul>
 </div>
 <div class="paragraph">
-<p>Endpoints</p>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>'POST /game' - Saves games results</pre>
-</div>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>'GET /generate/:type/:amount' - Fetches/stores Wikidata questions</pre>
-</div>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>'GET /game/:subject/:numQuestions?/:numOptions?' - Generates a given number of quiz questions for a given subject</pre>
-</div>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>'GET /statistics/subject/:subject' - Gives statistics for a given subject</pre>
-</div>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>'GET /statistics/global' - Gives global statistics</pre>
-</div>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>'GET /leaderboard' - Gives the top 10 players plus user</pre>
-</div>
+<p><strong><mark>Game Service</mark></strong>: Manages the game-related API calls, processing user inputs and interacting with external services like the Wikidata API to answer game-related questions.</p>
 </div>
 <div class="ulist">
 <ul>
 <li>
-<p><strong>MongoDB Database</strong>: Stores user data, including authentication and CRUD-related data, and ensures data integrity and persistence.</p>
+<p>Endpoints</p>
+<div class="literalblock">
+<div class="content">
+<pre>GET /quiz - Retrieves all quizzes.
+GET /quiz/allTopics - Lists all unique quiz categories.
+GET /quiz/:topic - Retrieves quizzes for a specific topic.
+POST /quiz - Creates a new quiz with provided data and saves questions.
+POST /game - Saves game data for the authenticated user.
+GET /game/:subject/:numQuestions?/:numOptions? - Retrieves random questions for a game by subject.
+POST /question/validate - Validates a user's answer to a question.
+GET /question/internal/:id - Retrieves the correct answer for a question by ID.
+GET /question/amount/:code - Counts questions for a specific subject.
+GET /statistics/subject/:subject - Retrieves game statistics for a subject for the authenticated user.
+GET /statistics/global - Retrieves global game statistics for the authenticated user.
+GET /statistics/recent-quizzes - Retrieves recent quizzes for the authenticated user.
+GET /leaderboard - Retrieves the top 10 players and the authenticated user's rank.
+POST /leaderboard/group - Retrieves leaderboard for a specific group of players.
+POST /leaderboard/calculateGroupScores - Calculates total scores for provided groups.</pre>
+</div>
+</div>
 </li>
 </ul>
+</div>
+<div class="paragraph">
+<p><strong><mark>Wihoot Service</mark></strong>: Manages the multiplayer-related API calls, processing multiple user inputs and synchronizing them.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Endpoints:</p>
+<div class="literalblock">
+<div class="content">
+<pre>POST /create - Creates a new shared quiz
+GET /internal/quizdata/:code - Finds a shared quiz given the code
+POST /:code/join - Joins a user to the given session
+GET /:code/start - Starts the session. This is only available for the host
+GET /:code/next - Moves to the next quiz question
+POST /:code/answer - Submits an answer for a question
+GET /:code/status - Gets the session status and the players
+GET /:code/end - Finishes the session. This is only available for the host
+DELETE /:code/player/:playerId - Removes a user from the session</pre>
+</div>
+</div>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><strong><mark>MongoDB Database</mark></strong>: Stores user data, including authentication and CRUD-related data, and ensures data integrity and persistence.</p>
 </div>
 <div class="paragraph">
 <p>By organizing the system into these clear, well-defined containers, we ensure that each component can evolve independently, maintain security, and scale as required while providing a robust user experience.</p>
@@ -2348,7 +2571,7 @@ in the <a href="https://github.com/Arquisoft/wichat_en2b/discussions/79">discuss
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="./images/diag-plantuml-md5-b3055430474e822ea75e03b26c0fe3a1.png" alt="Diagram" width="788" height="316">
+<img src="./images/diag-plantuml-md5-b3055430474e822ea75e03b26c0fe3a1.png" alt="Diagram" width="753" height="309">
 </div>
 </div>
 </div>
@@ -2453,7 +2676,7 @@ in the <a href="https://github.com/Arquisoft/wichat_en2b/discussions/79">discuss
 <div class="ulist">
 <ul>
 <li>
-<p><strong>Risk</strong>: The team is planning on deploying the application on an Oracle server, which was created using a free account. Although chances of losing this service are small, per contract they are still possible. The alternative would be to deploy on a personal computer, but that entails depending on a teammate&#8217;s computer being available when needed.</p>
+<p><strong>Risk</strong>: The team will deploy the application on an Oracle server, which was created using a free account. Although chances of losing this service are small, per contract they are still possible. The alternative would be to deploy on a personal computer, but that entails depending on a teammate&#8217;s computer being available when needed.</p>
 </li>
 <li>
 <p><strong>Mitigation</strong>:</p>
@@ -2652,7 +2875,7 @@ in the <a href="https://github.com/Arquisoft/wichat_en2b/discussions/79">discuss
 <div id="footer">
 <div id="footer-text">
 Version 8.2 EN<br>
-Last updated 2025-04-01 11:02:49 +0200
+Last updated 2025-04-01 08:02:52 +0200
 </div>
 </div>
 </body>
