@@ -6,6 +6,7 @@ import QuestionGame from "../game/QuestionGame";
 import "../../styles/home/Categories.css";
 import "@/app/layout";
 import { Button, Container, Grid, Box, Typography, Card, CardContent, CardHeader, Badge } from "@mui/material";
+import { getAuthToken, getCurrentPlayerId } from "../../utils/auth"
 
 const apiEndpoint = process.env.NEXT_PUBLIC_GATEWAY_SERVICE_URL || 'http://localhost:8000';
 
@@ -21,13 +22,18 @@ function CategoryComponent() {
     const [showQuiz, setShowQuiz] = useState(false);  
     const [quizData, setQuizData] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [homeURL, setHomeURL] = useState("/");
 
     const router = useRouter();
     const { id } = router.query;
     useEffect(() => {
       if (!id) return;
       setLoading(true);
-
+      const computeHomeURL = async () => {
+        const userId = getCurrentPlayerId(getAuthToken());
+        setHomeURL(!userId? "/guest/home": "/");
+      };
+      computeHomeURL()
       const timer = setTimeout(() => {
           // Replace inside fetchQuizzes in useEffect
         const fetchQuizzes = async () => {
@@ -137,7 +143,7 @@ function CategoryComponent() {
           <Container maxWidth="lg">
             <Button
               component={Link}
-              href="/"
+              href={homeURL}
               variant="text"
               className="back-button"
               startIcon={<ArrowLeft className="back-button-icon" />}

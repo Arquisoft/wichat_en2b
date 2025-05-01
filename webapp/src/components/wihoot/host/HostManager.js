@@ -56,9 +56,13 @@ export default function HostManager() {
     const [isLoading, setIsLoading] = useState(true);
     const [showLeaderboard, setShowLeaderboard] = useState(false);
     const [validatedAnswers, setValidatedAnswers] = useState(null);
+    
     // Timer hooks and ref
     const [timeLeft, setTimeLeft] = useState(null);
     const timerIntervalRef = useRef(null);
+
+    // State to manage the visibility of the correct answer
+    const [showCorrectAnswer, setShowCorrectAnswer] = useState(false);
 
     // Helper functions for timer persistence
     const getStoredTimerData = () => {
@@ -364,6 +368,7 @@ export default function HostManager() {
             }
 
             const correctAnswer = validatedAnswers?.correctAnswer;
+            setShowCorrectAnswer(true);
 
             if (socket && correctAnswer) {
                 console.log("emitting correct answer SOCKET1 - ", correctAnswer);
@@ -373,7 +378,7 @@ export default function HostManager() {
                     correctAnswer 
                 });
             }
-            setShowLeaderboard(false);
+
             setTimeout(async () => {
                 setShowLeaderboard(true);
                 if (currentQuestionIndex + 1 >= quiz.quizData.length) {
@@ -394,6 +399,8 @@ export default function HostManager() {
 
     const handleLeaderboardNext = async () => {
         try {
+            setShowCorrectAnswer(false);
+
             const response = await fetchWithAuth(`/shared-quiz/${code}/next?hostId=${hostId}`);
             if (!response) {
                 throw new Error("Failed to move to next question");
@@ -656,9 +663,9 @@ export default function HostManager() {
                                     {currentQuestion.answers.map((option, index) => (
                                         <ListItem
                                             key={`option-${option}`}
-                                            className={`option-item ${validatedAnswers // NOSONAR
+                                            className={`option-item ${showCorrectAnswer && validatedAnswers // NOSONAR
                                                 ? option === validatedAnswers.correctAnswer || // NOSONAR
-                                                  (option === currentQuestion.answers[0] &&
+                                                (option === currentQuestion.answers[0] &&
                                                     validatedAnswers.isCorrect)
                                                     ? "correct"
                                                     : "incorrect"
