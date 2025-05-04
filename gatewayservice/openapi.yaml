@@ -2,7 +2,7 @@ openapi: 3.0.3
 info:
   title: Wichat Gateway Service API
   description: |
-    This API serves as the main entry point for the Wichat application, acting as a gateway to authentication, user, LLM, and game services.
+    This API serves as the main entry point for the Wichat application, acting as a gateway to authentication, user, LLM, game and shared quiz services.
     All requests from the webapp and external clients should be routed through this gateway.
   version: 1.0.0
   contact:
@@ -18,12 +18,16 @@ tags:
     description: Endpoints for user authentication and 2FA
   - name: Users
     description: Endpoints for user management
+  - name: Groups
+    description: Endpoints for group management and interactions
   - name: LLM
     description: Endpoints for Large Language Model interactions
   - name: Game
     description: Endpoints for quiz and game features
   - name: Health
     description: Health check endpoint
+  - name: SharedQuiz
+    description: Endpoints for shared quiz session management
 
 paths:
   /health:
@@ -43,7 +47,7 @@ paths:
                     type: string
                     example: OK
 
-  /auth/login:
+  /login:
     post:
       tags: [Authentication]
       summary: User login
@@ -54,6 +58,7 @@ paths:
           application/json:
             schema:
               type: object
+              required: [username, password]
               properties:
                 username:
                   type: string
@@ -74,11 +79,12 @@ paths:
         '401':
           description: Invalid credentials
 
-  /auth/register:
+  /adduser:
     post:
       tags: [Authentication]
       summary: Register a new user
-      description: Registers a new user and returns a JWT token.
+      description: Registers a new user and returns a JWT token. Used for self-service user signup
+        via the webapp or external clients.
       requestBody:
         required: true
         content:
@@ -88,8 +94,10 @@ paths:
               properties:
                 username:
                   type: string
+                  example: johndoe
                 password:
                   type: string
+                  example: mypassword
                 role:
                   type: string
                   enum: [USER, ADMIN]
@@ -106,23 +114,25 @@ paths:
         '400':
           description: Validation error
 
-  /auth/enable2fa:
+  /setup2fa:
     post:
       tags: [Authentication]
-      summary: Enable 2FA for a user
-      description: Enables two-factor authentication for the user.
+      summary: Set up 2FA for a user
+      description: Initiates two-factor authentication setup for the user.
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
+              required: [username]
               properties:
                 username:
                   type: string
+                  example: johndoe
       responses:
         '200':
-          description: 2FA enabled
+          description: 2FA initialized
         '400':
           description: Bad request
 
@@ -137,9 +147,11 @@ paths:
           application/json:
             schema:
               type: object
+              required: [username, token]
               properties:
                 username:
                   type: string
+                  example: johndoe
                 token:
                   type: string
       responses:
@@ -147,6 +159,46 @@ paths:
           description: 2FA verified
         '401':
           description: Invalid token
+
+  /check2fa:
+    get:
+      tags: [ Authentication ]
+      summary: Check 2FA status
+      description: Checks if 2FA is enabled for a user. Accessible without authentication.
+      responses:
+        '200':
+          description: 2FA status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  enabled:
+                    type: boolean
+                    example: true
+        '400':
+          description: Bad request
+
+  /token/username:
+    get:
+      tags: [ Authentication ]
+      summary: Get username from token
+      description: Retrieves the username associated with a JWT token.
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: Username retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  username:
+                    type: string
+                    example: johndoe
+        '401':
+          description: Unauthorized
 
   /users:
     get:
@@ -160,6 +212,8 @@ paths:
             type: string
           required: false
           description: User ID to filter
+      security:
+        - bearerAuth: [ ]
       responses:
         '200':
           description: List of users
@@ -182,8 +236,62 @@ paths:
       responses:
         '201':
           description: User created
+    patch:
+      tags: [ Users ]
+      summary: Update user
+      description: Updates user details
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: User updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Bad request
+    delete:
+      tags: [ Users ]
+      summary: Delete user
+      description: Deletes a user
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '204':
+          description: User deleted
+        '400':
+          description: Bad request
 
   /users/{username}:
+    get:
+      tags: [ Users ]
+      summary: Get user by username
+      description: Retrieves a user by their username.
+      parameters:
+        - in: path
+          name: username
+          required: true
+          schema:
+            type: string
+          description: Username of the user
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: User details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          description: User not found
     patch:
       tags: [Users]
       summary: Update user password
@@ -211,6 +319,60 @@ paths:
         '400':
           description: Bad request
 
+  /users/id/{id}:
+    get:
+      tags: [ Users ]
+      summary: Get user by ID
+      description: Retrieves a user by their ID
+                     - in: path
+                     name: id
+                     required: true
+                     schema:
+                       type: string
+                     description: User ID
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: User details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          description: User not found
+
+  /users/by-ids:
+    post:
+      tags: [ Users ]
+      summary: Get users by IDs
+      description: Retrieves multiple users by their IDs
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ids:
+                  type: array
+                  items:
+                    type: string
+                  example: [ "user1", "user2" ]
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+        '400':
+          description: Bad request
+
   /user/profile/picture:
     post:
       tags: [Users]
@@ -222,12 +384,16 @@ paths:
           application/json:
             schema:
               type: object
+              required: [username, image]
               properties:
                 username:
                   type: string
+                  example: johndoe
                 image:
                   type: string
                   description: Base64-encoded image
+      security:
+        - bearerAuth: [ ]
       responses:
         '200':
           description: Profile picture uploaded
@@ -239,6 +405,28 @@ paths:
                   profilePicture:
                     type: string
                     description: Path to the uploaded image
+  /user/profile/picture/{id}:
+    get:
+      tags: [ Users ]
+      summary: Get profile picture
+      description: Retrieves a user's profile picture by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: User ID
+      responses:
+        '200':
+          description: Profile picture
+          content:
+            image/*:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Profile picture not found
 
   /askllm:
     post:
@@ -251,10 +439,13 @@ paths:
           application/json:
             schema:
               type: object
+              required: [content]
               properties:
                 content:
                   type: string
                   description: The question or prompt for the LLM
+      security:
+        - bearerAuth: [ ]
       responses:
         '200':
           description: LLM response
@@ -265,6 +456,8 @@ paths:
                 properties:
                   answer:
                     type: string
+        '400':
+          description: Bad request
 
   /quiz:
     get:
@@ -280,6 +473,9 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Quiz'
+        '401':
+          description: Unauthorized
+
     post:
       tags: [Game]
       summary: Submit quiz answers
@@ -290,16 +486,23 @@ paths:
           application/json:
             schema:
               type: object
+              required: [topic, answers]
               properties:
                 topic:
                   type: string
+                  example: History
                 answers:
                   type: array
                   items:
                     type: string
+                  example: [ "Answer1", "Answer2" ]
+      security:
+        - bearerAuth: [ ]
       responses:
         '200':
           description: Quiz results
+        '400':
+          description: Bad request
 
   /quiz/allTopics:
     get:
@@ -315,6 +518,9 @@ paths:
                 type: array
                 items:
                   type: string
+                  example: History
+        '400':
+          description: Bad request
 
   /quiz/{topic}:
     get:
@@ -327,6 +533,9 @@ paths:
           required: true
           schema:
             type: string
+          description: Quiz topic
+      security:
+        - bearerAuth: [ ]
       responses:
         '200':
           description: Quiz questions
@@ -334,7 +543,743 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Quiz'
+        '404':
+          description: Topic not found
 
+  /groups:
+    get:
+      tags: [ Groups ]
+      summary: Get all groups
+      description: Retrieves a list of all groups
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: List of groups
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Group'
+        '401':
+          description: Unauthorized
+    post:
+      tags: [ Groups ]
+      summary: Create a group
+      description: Creates a new group
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [ groupName, owner ]
+              properties:
+                groupName:
+                  type: string
+                  example: MyGroup
+                owner:
+                  type: string
+                  example: user123
+                members:
+                  type: array
+                  items:
+                    type: string
+                  example: [ "user123", "user456" ]
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '201':
+          description: Group created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Group'
+        '400':
+          description: Bad request
+    patch:
+      tags: [ Groups ]
+      summary: Update group
+      description: Updates an existing group
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                groupName:
+                  type: string
+                  example: MyGroup
+                owner:
+                  type: string
+                  example: user123
+                members:
+                  type: array
+                  items:
+                    type: string
+                  example: [ "user123", "user456" ]
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: Group updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Group'
+        '400':
+          description: Bad request
+    delete:
+      tags: [ Groups ]
+      summary: Delete group
+      description: Deletes a group
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '204':
+          description: Group deleted
+        '400':
+          description: Bad request
+  /groups/{groupName}:
+    get:
+      tags: [ Groups ]
+      summary: Get group by name
+      description: Retrieves a group by its name.
+      parameters:
+        - in: path
+          name: groupName
+          required: true
+          schema:
+            type: string
+          description: Group name
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: Group details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Group'
+        '404':
+          description: Group not found
+
+  /groups/joined:
+    get:
+      tags: [ Groups ]
+      summary: Get joined groups
+      description: Retrieves a list of groups the authenticated user has joined. Proxies to the group service.
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: List of joined groups
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Group'
+        '401':
+          description: Unauthorized
+
+  /groups/join:
+    post:
+      tags: [ Groups ]
+      summary: Join a group
+      description: Allows an authenticated user to join a group. Proxies to the group service.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [ groupName ]
+              properties:
+                groupName:
+                  type: string
+                  example: MyGroup
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: Joined group
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Group'
+        '400':
+          description: Bad request
+
+  /groups/leave:
+    post:
+      tags: [ Groups ]
+      summary: Leave a group
+      description: Allows an authenticated user to leave a group. Proxies to the group service.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [ groupName ]
+              properties:
+                groupName:
+                  type: string
+                  example: MyGroup
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: Left group
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Left the group successfully
+        '400':
+          description: Bad request
+  /game:
+    post:
+      tags: [ Game ]
+      summary: Create a game
+      description: Creates a new game session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [ subject, points_gain, number_of_questions, number_correct_answers, total_time ]
+              properties:
+                subject:
+                  type: string
+                  example: History
+                number_of_questions:
+                  type: integer
+                  example: 10
+                number_of_options:
+                  type: integer
+                  example: 4
+                number_of_correct_answers:
+                  type: integer
+                  example: 4
+                total_time:
+                  type: number
+                  example: 55.5
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: Game created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Quiz'
+        '400':
+          description: Bad request
+  /game/{subject}/{totalQuestions}/{numberOptions}:
+    get:
+      tags: [ Game ]
+      summary: Get game questions
+      description: Retrieves questions for a game with specified parameters
+      parameters:
+        - in: path
+          name: subject
+          required: true
+          schema:
+            type: string
+          description: Subject of the game
+        - in: path
+          name: totalQuestions
+          required: true
+          schema:
+            type: integer
+          description: Number of questions
+        - in: path
+          name: numberOptions
+          required: true
+          schema:
+            type: integer
+          description: Number of answer options per question
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: Game questions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Quiz'
+        '404':
+          description: Questions not found
+
+  /question/validate:
+    post:
+      tags: [ Game ]
+      summary: Validate question answer
+      description: Validates a user's answer to a quiz question
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [ question_id, selected_answer ]
+              properties:
+                questionId:
+                  type: string
+                  example: q123...
+                answer:
+                  type: string
+                  example: Answer1
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: Validation result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  correct:
+                    type: boolean
+                    example: true
+        '400':
+          description: Bad request
+
+  /question/amount/{code}:
+    get:
+      tags: [ Game ]
+      summary: Get question amount
+      description: Retrieves the number of questions for a quiz code.
+      parameters:
+        - in: path
+          name: code
+          required: true
+          schema:
+            type: string
+          description: Quiz code
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: Question amount
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  amount:
+                    type: integer
+                    example: 10
+        '404':
+          description: Quiz not found
+  /statistics/recent-quizzes:
+    get:
+      tags: [ Game ]
+      summary: Get recent quizzes
+      description: Retrieves a paginated list of recent quizzes for the authenticated user
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 0
+          description: Page number for pagination
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: List of recent quizzes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Quiz'
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
+
+  /statistics/subject/{subject}:
+    get:
+      tags: [ Game ]
+      summary: Get subject statistics
+      description: Retrieves statistics for a specific subject. Requires authentication. Proxies to the game service.
+      parameters:
+        - in: path
+          name: subject
+          required: true
+          schema:
+            type: string
+          description: Subject name
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: Subject statistics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  subject:
+                    type: string
+                    example: History
+                  averageScore:
+                    type: number
+                    example: 7.5
+                  totalQuizzes:
+                    type: integer
+                    example: 100
+        '500':
+          description: Error retrieving statistics
+
+  /statistics/global:
+    get:
+      tags: [ Game ]
+      summary: Get global statistics
+      description: Retrieves global quiz statistics. Requires authentication. Proxies to the game service.
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: Global statistics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  totalQuizzes:
+                    type: integer
+                    example: 1000
+                  averageScore:
+                    type: number
+                    example: 6.8
+        '500':
+          description: Error retrieving statistics
+
+  /leaderboard:
+    get:
+      tags: [ Game ]
+      summary: Get leaderboard
+      description: Retrieves the global leaderboard. Requires authentication. Proxies to the game service.
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: Leaderboard
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    username:
+                      type: string
+                      example: johndoe
+                    score:
+                      type: integer
+                      example: 95
+        '500':
+          description: Error retrieving leaderboard
+
+  /leaderboard/group:
+    post:
+      tags: [ Game ]
+      summary: Get group leaderboard
+      description: Retrieves the leaderboard for a specific group. Requires authentication. Proxies to the game service.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [ playerIds ]
+              properties:
+                playerIds:
+                  type: array
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: Group leaderboard
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    username:
+                      type: string
+                      example: johndoe
+                    score:
+                      type: integer
+                      example: 95
+        '400':
+          description: Bad request
+
+  /shared-quiz/create:
+    post:
+      tags: [ SharedQuiz ]
+      summary: Create a shared quiz session
+      description: Creates a new shared quiz session.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [ hostId, hostUsername, quizData, quizMetaData ]
+              properties:
+                hostId:
+                  type: string
+                  example: 65fab...
+                hostUsername:
+                  type: string
+                  example: user1
+                quizData:
+                  type: object
+                quizMetaData:
+                  type: object
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: Shared quiz session created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: ABC123
+        '400':
+          description: Bad request
+
+  /shared-quiz/{code}/join:
+    post:
+      tags: [SharedQuiz]
+      summary: Join a shared quiz session
+      description: Allows an authenticated user to join a shared quiz session
+      parameters:
+        - in: path
+          name: code
+          required: true
+          schema:
+            type: string
+          description: Quiz session code
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [userId]
+              properties:
+                userId:
+                  type: string
+                  example: user456
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Joined shared quiz session
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Joined successfully
+        '400':
+          description: Bad request
+
+  /shared-quiz/{code}/start:
+    get:
+      tags: [SharedQuiz]
+      summary: Start a shared quiz session
+      description: Starts a shared quiz session (host only)
+      parameters:
+        - in: path
+          name: code
+          required: true
+          schema:
+            type: string
+          description: Quiz session code
+        - in: query
+          name: hostId
+          required: true
+          schema:
+            type: string
+          description: Host user ID
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Shared quiz started
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Quiz started
+        '400':
+          description: Bad request
+
+  /shared-quiz/{code}/next:
+    get:
+      tags: [SharedQuiz]
+      summary: Move to next question
+      description: Advances to the next question in a shared quiz session (host only)
+      parameters:
+        - in: path
+          name: code
+          required: true
+          schema:
+            type: string
+          description: Quiz session code
+        - in: query
+          name: hostId
+          required: true
+          schema:
+            type: string
+          description: Host user ID
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Moved to next question
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  question:
+                    $ref: '#/components/schemas/Question'
+        '400':
+          description: Bad request
+
+  /shared-quiz/{code}/end:
+    get:
+      tags: [SharedQuiz]
+      summary: End a shared quiz session
+      description: Ends a shared quiz session (host only)
+      parameters:
+        - in: path
+          name: code
+          required: true
+          schema:
+            type: string
+          description: Quiz session code
+        - in: query
+          name: hostId
+          required: true
+          schema:
+            type: string
+          description: Host user ID
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Shared quiz ended
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Quiz ended
+        '400':
+          description: Bad request
+
+  /shared-quiz/{code}/status:
+    get:
+      tags: [SharedQuiz]
+      summary: Get shared quiz session status
+      description: Retrieves the current status of a shared quiz session. Requires authentication. Proxies to the shared quiz service.
+      parameters:
+        - in: path
+          name: code
+          required: true
+          schema:
+            type: string
+          description: Quiz session code
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Session status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [waiting, active, ended]
+                    example: active
+                  currentQuestion:
+                    type: integer
+                    example: 2
+        '404':
+          description: Session not found
+  /shared-quiz/{code}/answer:
+    post:
+      tags: [SharedQuiz]
+      summary: Submit answer for shared quiz
+      description: Submits an answer for a question in a shared quiz session. Requires authentication. Proxies to the shared quiz service.
+      parameters:
+        - in: path
+          name: code
+          required: true
+          schema:
+            type: string
+          description: Quiz session code
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [userId, answer]
+              properties:
+                userId:
+                  type: string
+                  example: user456
+                answer:
+                  type: string
+                  example: Answer1
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Answer submitted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  correct:
+                    type: boolean
+                    example: true
+        '400':
+          description: Bad request
 components:
   schemas:
     User:
@@ -367,3 +1312,25 @@ components:
             type: string
         correctAnswer:
           type: string
+
+    Group:
+      type: object
+      properties:
+        groupName:
+          type: string
+          description: Name of the group
+          example: mygroup
+        owner:
+          type: string
+          description: ID of the user who owns the group
+        members:
+          type: array
+          description: List of user IDs who are members of the group
+          items:
+            type: string
+          example: [ "6807b...", "680d5..." ]
+        createdAt:
+          type: string
+          format: date-time
+          description: Timestamp when the group was created
+          example: 2025-04-24T19:28:37.303Z
