@@ -474,7 +474,7 @@ The **Component Diagram** (C4 Level 3) provides a detailed view of the internal 
   - **Middleware**: Ensures only authenticated users can access to these points.
   - **Game Information Router**: Saves the game information and the game state.
   - **Quiz Router**: Is in charge of fetching questions from WikiData given the type and amount.
-  - **Retriever Router**: Returns questions from our database given the requested parameters.
+  - **Retriever Router**: Returns questions from our database given the requested parameters. It also validates the user's answers and sends the right answer to the LLM.
   - **Statistics Router**: Returns the current user game statistics for a given subject or for 
   the whole application. It also returns the leaderboard of the application, including the current user.
 

@@ -3,7 +3,7 @@ ifndef::imagesdir[:imagesdir: ../images]
 [[section-solution-strategy]]
 == Solution Strategy
 
-In this section of the documentation we are covering the fundamental decisions and solution strategies of our project architecture.  These decisions were made with a strong focus on addressing the constraints defined in xref:02_architecture_constraints.adoc[Section 2: Architecture Constraints].
+In this section of the documentation we are covering the fundamental decisions and solution strategies of our project architecture.  These decisions were made with a strong focus on addressing the constraints defined in xref:#section-architecture-constraints[Section 2: Architecture Constraints].
 
 === Technology decisions
 
@@ -22,7 +22,7 @@ In this section of the documentation we are covering the fundamental decisions a
 | **https://www.oracle.com/cloud/[Oracle Cloud Infrastructure (OCI)]** | Hosts the application in the production stage | Selected due to our ability to obtain a free, sufficiently powerful server instance from Oracle’s infrastructure.
 | **https://gatling.io/[Gatling]** | Load testing tool for performance evaluation | Chosen for its ability to simulate multiple users and analyze application performance under load. It provides detailed reports and metrics, helping identify bottlenecks and optimize the system.
 | **https://pptr.dev/[Puppetter]** | E2E testing library to control high-level operations in browsers | It is designed specifically for Node.js and our application is fully implemented in Node.js ecosystem. Moreover. Puppetter directly within the Node.js runtime, requiring no additional drivers or external processes, which simplifies setup and deployment in our application.
-| **https://socket.io/[Socket.io]** | Library that allows using WebSockets to communicate clients and server bidirectionally and event-based | It's easy syntax and good event handling performance based in polling what was needed for the Wihoot implementation
+| **https://socket.io/[Socket.io]** | Library that allows using WebSockets to communicate clients and server bidirectionally and event-based | Its simple syntax and efficient event handling based on polling made it a suitable choice for the Wihoot implementation
 |===
 
 === Architectural design decisions
@@ -35,25 +35,28 @@ The project architecture is divided in different modules and their functionaliti
 
 . Controller
 
-- **GatewayService** +
+- **Gateway Service** +
   Endpoint of the web application that communicates the frontend with the business logic.
 
 . Service
 
-- **UserGateway** +
-  Endpoint of user information related requests. This endpoint is used to isolate the access control to user's information.
+- **User CRUD Service** +
+  Module that carries the CRUD operations with users with the DB, including deleting, registering and updating user-related data.
 
-- **UserAuthenticationService** +
-  Module that manages the login operation and verifies the client connection.
+- **User Authentication Service** +
+  Module in charge of user details validation and registering. It also manages operations related to two-factor authentication.
 
-- **UserCRUDService** +
-  Module that carries the CRUD operations with users with the DB. Moreover, it also manages groups of users and retrieves all user-related information.
+- **User Group Service** +
+  Module that carries the CRUD operations related to user groups.
 
-- **GameService** +
+- **Game Service** +
   Module that carries the game logic of the application quizzes, interacts with the LLMService and with the WikiData interface.
 
-- **LLMService** +
+- **LLM Service** +
   Module that acts as an interface to communicate with the LLM provider API in a decoupled way. Allowing the application to consider future changes in the API provider with the same functionality.
+
+- **Wihoot Service** +
+  Module in charge of all the functionalities related to the multiplayer functionality of the application. It manages the game sessions and the WebSocket connections between the clients and the server.
 
 . Persistence
 
@@ -186,12 +189,14 @@ WichatEN2B.UserGroupService .[#707070,thickness=2].> WichatEN2B.MongoDBDatabase 
 
 In our solution we are applying some design patterns to be aware of future changes of features in the code. Therefore, we can highlight the following patterns:
 
-* **Facade** (Unifier Interface) +
+* **Façade** (Unifier Interface) +
     As our project will use a gateway arquitecture, we are abstracting some intern endpoints using a forwarding functionality in our gateway service.
 
 * **Observer**
     Wihoot service multiplayer game is based in an event polling of the WebSockets joined to the same game session code. The logic of this is handled by the socket.io module.
 
+* **Strategy**
+    The LLM service implements the strategy pattern to easily change between LLM models and implementations, allowing us to switch between different LLM providers without modifying the core logic of the application. This is particularly useful for future-proofing the application and adapting to changes in the LLM landscape.
 
 === Decisions trade-offs
 
@@ -208,8 +213,8 @@ In our solution we are applying some design patterns to be aware of future chang
 | **Pino** | Winston | By rejecting Winston, we lose its flexibility in supporting multiple log formats and advanced configuration options.
 | **Docker** | Podman and Kubernetes | By using Docker instead of Podman, we reject Podman's decentralized daemon architecture, which enhances deployment security. Additionally, Podman consumes fewer resources by running each container as an independent process. Furthermore, by choosing Docker, we dismiss Kubernetes' superior performance in deploying high-availability and scalable applications.
 | **Oracle Cloud Infrastructure** | Microsoft Azure, Amazon Web Services (AWS) | By choosing Oracle Cloud Infrastructure as our deployment platform, we opt against Azure, which provides student licenses but may have higher costs for long-term use. Additionally, we reject AWS, which offers better scalability and a more flexible pricing.
-| **Gatling** | Apache Jmeter and Locust.io (among others) | By using Gatling, we reject ache Jmeter and Locust.io, which where also presented load testing tools. Gatling is known for its high performance and scalability, making it suitable for simulating large user loads. It provides detailed reports and metrics, helping identify bottlenecks and optimize the system.
-| **Puppetter** | Selenium | By using Gatling, we reject ache Jmeter and Locust.io, which where also presented load testing tools. Gatling is known for its high performance and scalability, making it suitable for simulating large user loads. It provides detailed reports and metrics, helping identify bottlenecks and optimize the system.
+| **Gatling** | Apache Jmeter and Locust.io (among others) | By using Gatling, we reject Apache Jmeter and Locust.io, which where also presented load testing tools. Gatling is known for its high performance and scalability, making it suitable for simulating large user loads. It provides detailed reports and metrics, helping identify bottlenecks and optimize the system.
+| **Puppetter** | Selenium | Selenium is a well-established tool that supports a wide range of browsers and is ideal for cross-browser testing. Its large community and extensive documentation make it a reliable choice for many automation needs. However, Puppeteer was chosen for this project due to its faster performance, easier setup, and seamless integration with modern JavaScript frameworks.
 |===
 
 === Decisions on how to achieve the key quality goals
@@ -219,8 +224,8 @@ In our solution we are applying some design patterns to be aware of future chang
 | Quality Goal | Strategy
 | **Scalability** | Using Gherkin with tools to test the performance and behaviour of the application in users load scenarios. The tool used to test the user load is yet to be confirmed, but we chose Gatling.
 | **Reliability** | The development team will apply a TDD (Test-Driven Development) to ensure that the business model behaves correctly. Besides, with an automatized Continuous Deployment strategy, the development team can deploy the project often and explore the application behaviour, considering that the logger system implemented will catch each bug occurred during the execution.
-| **Usability** | Our development will follow good desing practices such as implementing i18n technology to allow internationalization, respecting the W3C standards in web design where possible and
-| **Performance** | Using different modules specialized in monitoring the application, as Prometheus and Grafana. Besides, to identify possible bottlenecks in our application we are using Node profiling tools as `node --prof`.
+| **Usability** | Our development will follow good desing practices taking into account user experience to make the application easy to use and as inclusive as possible, following web standards.
+| **Performance** | Using different modules specialized in monitoring the application, as Prometheus and Grafana. Besides, to identify possible bottlenecks in our application we are using Node profiling tools such as `node --prof`.
 | **Security** |  Our application is using encrypting modules in the registry of new users and their authentification. Moreover, we have centralized the access to the application backend in a gateway service, hiding the endpoints of the application to the ones we decided.
 |===
 
@@ -279,7 +284,7 @@ Known Limitations:
 1. Assumes valid images paths and sufficient questions/answers to retrieve or fails.
 --
 
-* **How is designed our multiplayer functionality?**
+* **How is our multiplayer functionality designed?**
 
 The multiplayer functionality of the quiz game is designed to enable real-time, shared quiz sessions where multiple players can join, compete, and interact under the coordination of a host. It leverages a combination of Express.js for session management, MongoDB for persistent storage, and Socket.IO for real-time communication, as implemented in the Wihoot microservice.
 
