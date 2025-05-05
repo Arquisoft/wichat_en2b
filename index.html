@@ -557,7 +557,7 @@ See <a href="https://arc42.org" class="bare">https://arc42.org</a>.</p>
 <div class="sect2">
 <h3 id="_requirements_overview">1.1. Requirements Overview</h3>
 <div class="paragraph">
-<p>The goal of this project is to enhance the online "Saber y Ganar" quiz show application, developed last year by HappySw, with new features that incorporate large language models (LLMs) and Wikidata for a more interactive and engaging experience and a multiplayer mode where the host code of the session allows mulitple players to share the same quiz game in real time with session leaderboard.</p>
+<p>The goal of this project is to enhance the online "Saber y Ganar" quiz show application, developed last year by HappySw, with new features that incorporate large language models (LLMs) and Wikidata for a more interactive and engaging experience, as well as a multiplayer mode where the host code of the session allows mulitple players to share the same quiz game in real time with a session leaderboard.</p>
 </div>
 <div class="paragraph">
 <p>The key functional requirements of the system are:</p>
@@ -698,7 +698,7 @@ See <a href="https://arc42.org" class="bare">https://arc42.org</a>.</p>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Backend Framework</strong></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The backend should use a scalable framework such as Node.js, Django, or Spring Boot to support API interactions and user management.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The backend should use a scalable platform such as Node.js, Django, or Spring Boot to support API interactions and user management.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Database</strong></p></td>
@@ -808,7 +808,7 @@ See <a href="https://arc42.org" class="bare">https://arc42.org</a>.</p>
 <p><strong>LLM Service</strong>: external LLM API used for providing hints related to quiz questions.</p>
 </li>
 <li>
-<p><strong>Database</strong>: the system interacts with a database storing user-related data.</p>
+<p><strong>Database</strong>: the system interacts with a database storing data related to users, games and questions.</p>
 </li>
 </ul>
 </div>
@@ -831,7 +831,7 @@ See <a href="https://arc42.org" class="bare">https://arc42.org</a>.</p>
 <tbody>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Player (User)</strong></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Login credentials, answer selection and hint requests</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Login credentials, answer selection, hint requests, general interaction with UI</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Questions, feedback, hints, scores</p></td>
 </tr>
 <tr>
@@ -856,7 +856,7 @@ See <a href="https://arc42.org" class="bare">https://arc42.org</a>.</p>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="./images/diag-plantuml-md5-9ea75ac55f307c962435cf2901f524aa.png" alt="Diagram" width="522" height="191">
+<img src="./images/diag-plantuml-md5-9ea75ac55f307c962435cf2901f524aa.png" alt="Diagram" width="538" height="197">
 </div>
 </div>
 </div>
@@ -880,7 +880,7 @@ See <a href="https://arc42.org" class="bare">https://arc42.org</a>.</p>
 <p><strong>Security Considerations</strong>: User passwords are hashed using Bcrypt, and authentication is managed through a Gateway service and a backend authorization service.</p>
 </li>
 <li>
-<p><strong>Gateway</strong>: Forwards front-end requests to their respective services.</p>
+<p><strong>Gateway</strong>: Forwards requests between different services, mainly connecting the frontend with the backend.</p>
 </li>
 <li>
 <p><strong>Game Service</strong>: Generates questions from WikiData and stores them in a database, ensuring access to questions is fast and reliable when playing. It is also in charge of retrieving batches of questions for the game to the frontend application and storing the game results associated to a logged in user.</p>
@@ -981,7 +981,7 @@ See <a href="https://arc42.org" class="bare">https://arc42.org</a>.</p>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="./images/diag-plantuml-md5-97a8b041afe94a4697a11ed6d4f3a45c.png" alt="Diagram" width="1223" height="511">
+<img src="./images/diag-plantuml-md5-b469b944dfbd987d6950eca58e46487b.png" alt="Diagram" width="1104" height="536">
 </div>
 </div>
 <div style="page-break-after: always;"></div>
@@ -992,7 +992,7 @@ See <a href="https://arc42.org" class="bare">https://arc42.org</a>.</p>
 <h2 id="section-solution-strategy">4. Solution Strategy</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>In this section of the documentation we are covering the fundamental decisions and solution strategies of our project architecture.  These decisions were made with a strong focus on addressing the constraints defined in <a href="02_architecture_constraints.html">Section 2: Architecture Constraints</a>.</p>
+<p>In this section of the documentation we are covering the fundamental decisions and solution strategies of our project architecture.  These decisions were made with a strong focus on addressing the constraints defined in <a href="#section-architecture-constraints">Section 2: Architecture Constraints</a>.</p>
 </div>
 <div class="sect2">
 <h3 id="_technology_decisions">4.1. Technology decisions</h3>
@@ -1073,7 +1073,7 @@ See <a href="https://arc42.org" class="bare">https://arc42.org</a>.</p>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><strong><a href="https://socket.io/">Socket.io</a></strong></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Library that allows using WebSockets to communicate clients and server bidirectionally and event-based</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">It&#8217;s easy syntax and good event handling performance based in polling what was needed for the Wihoot implementation</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Its simple syntax and efficient event handling based on polling made it a suitable choice for the Wihoot implementation</p></td>
 </tr>
 </tbody>
 </table>
@@ -1101,7 +1101,7 @@ Module that manages the pages shown to the client and communicates with the Gate
 <div class="ulist">
 <ul>
 <li>
-<p><strong>GatewayService</strong><br>
+<p><strong>Gateway Service</strong><br>
 Endpoint of the web application that communicates the frontend with the business logic.</p>
 </li>
 </ul>
@@ -1112,24 +1112,28 @@ Endpoint of the web application that communicates the frontend with the business
 <div class="ulist">
 <ul>
 <li>
-<p><strong>UserGateway</strong><br>
-Endpoint of user information related requests. This endpoint is used to isolate the access control to user&#8217;s information.</p>
+<p><strong>User CRUD Service</strong><br>
+Module that carries the CRUD operations with users with the DB, including deleting, registering and updating user-related data.</p>
 </li>
 <li>
-<p><strong>UserAuthenticationService</strong><br>
-Module that manages the login operation and verifies the client connection.</p>
+<p><strong>User Authentication Service</strong><br>
+Module in charge of user details validation and registering. It also manages operations related to two-factor authentication.</p>
 </li>
 <li>
-<p><strong>UserCRUDService</strong><br>
-Module that carries the CRUD operations with users with the DB. Moreover, it also manages groups of users and retrieves all user-related information.</p>
+<p><strong>User Group Service</strong><br>
+Module that carries the CRUD operations related to user groups.</p>
 </li>
 <li>
-<p><strong>GameService</strong><br>
+<p><strong>Game Service</strong><br>
 Module that carries the game logic of the application quizzes, interacts with the LLMService and with the WikiData interface.</p>
 </li>
 <li>
-<p><strong>LLMService</strong><br>
+<p><strong>LLM Service</strong><br>
 Module that acts as an interface to communicate with the LLM provider API in a decoupled way. Allowing the application to consider future changes in the API provider with the same functionality.</p>
+</li>
+<li>
+<p><strong>Wihoot Service</strong><br>
+Module in charge of all the functionalities related to the multiplayer functionality of the application. It manages the game sessions and the WebSocket connections between the clients and the server.</p>
 </li>
 </ul>
 </div>
@@ -1149,7 +1153,7 @@ Module of persistence that stores the user&#8217;s information in JSON format.</
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="./images/diag-plantuml-md5-55faeb6ead024be55138aea526dfd9c7.png" alt="Diagram" width="1120" height="788">
+<img src="./images/diag-plantuml-md5-55faeb6ead024be55138aea526dfd9c7.png" alt="Diagram" width="1149" height="814">
 </div>
 </div>
 </div>
@@ -1161,12 +1165,16 @@ Module of persistence that stores the user&#8217;s information in JSON format.</
 <div class="ulist">
 <ul>
 <li>
-<p><strong>Facade</strong> (Unifier Interface)<br>
+<p><strong>Façade</strong> (Unifier Interface)<br>
 As our project will use a gateway arquitecture, we are abstracting some intern endpoints using a forwarding functionality in our gateway service.</p>
 </li>
 <li>
 <p><strong>Observer</strong>
 Wihoot service multiplayer game is based in an event polling of the WebSockets joined to the same game session code. The logic of this is handled by the socket.io module.</p>
+</li>
+<li>
+<p><strong>Strategy</strong>
+The LLM service implements the strategy pattern to easily change between LLM models and implementations, allowing us to switch between different LLM providers without modifying the core logic of the application. This is particularly useful for future-proofing the application and adapting to changes in the LLM landscape.</p>
 </li>
 </ul>
 </div>
@@ -1240,12 +1248,12 @@ Wihoot service multiplayer game is based in an event polling of the WebSockets j
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Gatling</strong></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Apache Jmeter and Locust.io (among others)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">By using Gatling, we reject ache Jmeter and Locust.io, which where also presented load testing tools. Gatling is known for its high performance and scalability, making it suitable for simulating large user loads. It provides detailed reports and metrics, helping identify bottlenecks and optimize the system.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">By using Gatling, we reject Apache Jmeter and Locust.io, which where also presented load testing tools. Gatling is known for its high performance and scalability, making it suitable for simulating large user loads. It provides detailed reports and metrics, helping identify bottlenecks and optimize the system.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Puppetter</strong></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Selenium</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">By using Gatling, we reject ache Jmeter and Locust.io, which where also presented load testing tools. Gatling is known for its high performance and scalability, making it suitable for simulating large user loads. It provides detailed reports and metrics, helping identify bottlenecks and optimize the system.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Selenium is a well-established tool that supports a wide range of browsers and is ideal for cross-browser testing. Its large community and extensive documentation make it a reliable choice for many automation needs. However, Puppeteer was chosen for this project due to its faster performance, easier setup, and seamless integration with modern JavaScript frameworks.</p></td>
 </tr>
 </tbody>
 </table>
@@ -1274,11 +1282,11 @@ Wihoot service multiplayer game is based in an event polling of the WebSockets j
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Usability</strong></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Our development will follow good desing practices such as implementing i18n technology to allow internationalization, respecting the W3C standards in web design where possible and</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Our development will follow good desing practices taking into account user experience to make the application easy to use and as inclusive as possible, following web standards.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Performance</strong></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Using different modules specialized in monitoring the application, as Prometheus and Grafana. Besides, to identify possible bottlenecks in our application we are using Node profiling tools as <code>node --prof</code>.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Using different modules specialized in monitoring the application, as Prometheus and Grafana. Besides, to identify possible bottlenecks in our application we are using Node profiling tools such as <code>node --prof</code>.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Security</strong></p></td>
@@ -1422,7 +1430,7 @@ Wihoot service multiplayer game is based in an event polling of the WebSockets j
 <div class="ulist">
 <ul>
 <li>
-<p><strong>How is designed our multiplayer functionality?</strong></p>
+<p><strong>How is our multiplayer functionality designed?</strong></p>
 </li>
 </ul>
 </div>
@@ -1448,12 +1456,12 @@ Wihoot service multiplayer game is based in an event polling of the WebSockets j
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="./images/diag-plantuml-md5-d6f67fad0ba1bfc0c5d6384563de7b8a.png" alt="Diagram" width="1550" height="602">
+<img src="./images/diag-plantuml-md5-d6f67fad0ba1bfc0c5d6384563de7b8a.png" alt="Diagram" width="1438" height="632">
 </div>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="./images/diag-plantuml-md5-e17a1d0944fb955f9679a71ecdadb0fa.png" alt="Diagram" width="1520" height="917">
+<img src="./images/diag-plantuml-md5-e17a1d0944fb955f9679a71ecdadb0fa.png" alt="Diagram" width="1415" height="968">
 </div>
 </div>
 <div style="page-break-after: always;"></div>
@@ -1472,7 +1480,7 @@ Wihoot service multiplayer game is based in an event polling of the WebSockets j
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="./images/diag-plantuml-md5-9ea75ac55f307c962435cf2901f524aa.png" alt="Diagram" width="522" height="191">
+<img src="./images/diag-plantuml-md5-9ea75ac55f307c962435cf2901f524aa.png" alt="Diagram" width="538" height="197">
 </div>
 </div>
 </div>
@@ -1537,7 +1545,7 @@ corresponding LLM, and this service is in charge of the propper connection witht
 <h4 id="_container_diagram">5.2.1. Container Diagram</h4>
 <div class="imageblock">
 <div class="content">
-<img src="./images/diag-plantuml-md5-4ab0c5c5c122ec0a504a29105e56df2a.png" alt="Diagram" width="1300" height="795">
+<img src="./images/diag-plantuml-md5-4ab0c5c5c122ec0a504a29105e56df2a.png" alt="Diagram" width="1335" height="822">
 </div>
 </div>
 </div>
@@ -1617,7 +1625,7 @@ responsible for generating and retrieving questions, together with retrieving th
 <h4 id="_component_diagram">5.3.1. Component Diagram</h4>
 <div class="imageblock">
 <div class="content">
-<img src="./images/diag-plantuml-md5-28ea9714b2b1c070b7fa4e3fe5e775fe.png" alt="Diagram" width="1371" height="909">
+<img src="./images/diag-plantuml-md5-28ea9714b2b1c070b7fa4e3fe5e775fe.png" alt="Diagram" width="1424" height="934">
 </div>
 </div>
 </div>
@@ -1661,7 +1669,7 @@ responsible for generating and retrieving questions, together with retrieving th
 <p><strong>Quiz Router</strong>: Is in charge of fetching questions from WikiData given the type and amount.</p>
 </li>
 <li>
-<p><strong>Retriever Router</strong>: Returns questions from our database given the requested parameters.</p>
+<p><strong>Retriever Router</strong>: Returns questions from our database given the requested parameters. It also validates the user&#8217;s answers and sends the right answer to the LLM.</p>
 </li>
 <li>
 <p><strong>Statistics Router</strong>: Returns the current user game statistics for a given subject or for
@@ -1810,7 +1818,7 @@ User CRUD router internally.</p>
 </div>
 <div class="imageblock text-center">
 <div class="content">
-<img src="./images/Register%20diagram.png" alt="Register diagram" width="479" height="496">
+<img src="./images/Register%20diagram.png" alt="Register diagram" width="498" height="505">
 </div>
 </div>
 <div class="paragraph">
@@ -1843,7 +1851,7 @@ User CRUD router internally.</p>
 </div>
 <div class="imageblock text-center">
 <div class="content">
-<img src="./images/Login%20diagram.png" alt="Login diagram" width="489" height="441">
+<img src="./images/Login%20diagram.png" alt="Login diagram" width="508" height="449">
 </div>
 </div>
 <div class="paragraph">
@@ -1876,7 +1884,7 @@ User CRUD router internally.</p>
 </div>
 <div class="imageblock text-center">
 <div class="content">
-<img src="./images/Game%20diagram.png" alt="Game diagram" width="404" height="643">
+<img src="./images/Game%20diagram.png" alt="Game diagram" width="417" height="653">
 </div>
 </div>
 <div class="olist arabic">
@@ -2004,7 +2012,7 @@ User CRUD router internally.</p>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="./images/UML%20diagram%201.png" alt="UML diagram 1" width="398" height="309">
+<img src="./images/UML%20diagram%201.png" alt="UML diagram 1" width="423" height="318">
 </div>
 </div>
 <div class="paragraph">
@@ -2026,7 +2034,7 @@ User CRUD router internally.</p>
 <h4 id="_oracle_serverapplication">7.2.1. Oracle ServerApplication</h4>
 <div class="imageblock">
 <div class="content">
-<img src="./images/UML%20diagram%202.png" alt="UML diagram 2" width="921" height="467">
+<img src="./images/UML%20diagram%202.png" alt="UML diagram 2" width="946" height="479">
 </div>
 </div>
 <div class="paragraph">
@@ -2571,7 +2579,7 @@ in the <a href="https://github.com/Arquisoft/wichat_en2b/discussions/79">discuss
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="./images/diag-plantuml-md5-b3055430474e822ea75e03b26c0fe3a1.png" alt="Diagram" width="753" height="309">
+<img src="./images/diag-plantuml-md5-b3055430474e822ea75e03b26c0fe3a1.png" alt="Diagram" width="788" height="316">
 </div>
 </div>
 </div>
@@ -2875,7 +2883,7 @@ in the <a href="https://github.com/Arquisoft/wichat_en2b/discussions/79">discuss
 <div id="footer">
 <div id="footer-text">
 Version 8.2 EN<br>
-Last updated 2025-04-01 08:02:52 +0200
+Last updated 2025-04-28 21:28:27 +0200
 </div>
 </div>
 </body>
