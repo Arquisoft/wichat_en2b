@@ -1992,51 +1992,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-
-  /shared-quiz/{code}/player/{playerId}:
-    delete:
-      tags: [ SharedQuiz ]
-      summary: Remove player from shared quiz session
-      description: Removes a player from a shared quiz session.
-      parameters:
-        - in: path
-          name: code
-          required: true
-          schema:
-            type: string
-          description: Quiz session code
-        - in: path
-          name: playerId
-          required: true
-          schema:
-            type: string
-          description: Player ID to remove
-      responses:
-        '200':
-          description: Player removed
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                  players:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Player'
-        '404':
-          description: Session not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '500':
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
 components:
   schemas:
     User:
