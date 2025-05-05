@@ -240,6 +240,6 @@ Our system consists of several key containers that work together to ensure a smo
   GET /:code/end - Finishes the session. This is only available for the host
   DELETE /:code/player/:playerId - Removes a user from the session
 
-**#MongoDB Database#**: Stores user data, including authentication and CRUD-related data, and ensures data integrity and persistence.
+**#MongoDB Database#**: Stores user data, including authentication, CRUD and group-related data, as well as game data, and ensures data integrity and persistence.
 
 By organizing the system into these clear, well-defined containers, we ensure that each component can evolve independently, maintain security, and scale as required while providing a robust user experience.

@@ -9,13 +9,13 @@ The system interacts with several external entities:
 * **User**: interacts with the system through a web interface.
 * **Wikidata**: supplies data for dynamically generated quiz questions.
 * **LLM Service**: external LLM API used for providing hints related to quiz questions.
-* **Database**: the system interacts with a database storing user-related data.
+* **Database**: the system interacts with a database storing data related to users, games and questions.
 
 **Quiz Game System - Business Context Table**
 [cols="1,2,3", options="header"]
 |===
 | Communication Partner | Inputs to System | Outputs from System
-| **Player (User)** | Login credentials, answer selection and hint requests |Questions, feedback, hints, scores
+| **Player (User)** | Login credentials, answer selection, hint requests, general interaction with UI |Questions, feedback, hints, scores
 | **WikiData API** | Query for quiz questions | Response with data and images
 | **LLM Service** | User questions | AI-generated hints
 | **Database** | Game data | Persistent data (user info, game states, scores...)
@@ -83,7 +83,7 @@ The system is linked to several technical interfaces:
 * **Backend-Database Communication**: The backend of the system interacts with a database through MongoDB using Mongoose ODM.
 * **External APIs**: Some external APIs are used for taking advantage of services such as data retrieval (WikiData) and hint generation (LLM).
 * **Security Considerations**: User passwords are hashed using Bcrypt, and authentication is managed through a Gateway service and a backend authorization service.
-* **Gateway**: Forwards front-end requests to their respective services.
+* **Gateway**: Forwards requests between different services, mainly connecting the frontend with the backend.
 * **Game Service**: Generates questions from WikiData and stores them in a database, ensuring access to questions is fast and reliable when playing. It is also in charge of retrieving batches of questions for the game to the frontend application and storing the game results associated to a logged in user.
 * **Wihoot Service**: A Node.js-based microservice using Express and Socket.io that manages multiplayer quiz sessions, including session creation, player joining, answer submission, and real-time chat via WebSocket.
 
