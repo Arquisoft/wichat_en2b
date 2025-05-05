@@ -2323,7 +2323,7 @@ DELETE /:code/player/:playerId - Removes a user from the session</pre>
 </ul>
 </div>
 <div class="paragraph">
-<p><strong><mark>MongoDB Database</mark></strong>: Stores user data, including authentication and CRUD-related data, and ensures data integrity and persistence.</p>
+<p><strong><mark>MongoDB Database</mark></strong>: Stores user data, including authentication, CRUD and group-related data, as well as game data, and ensures data integrity and persistence.</p>
 </div>
 <div class="paragraph">
 <p>By organizing the system into these clear, well-defined containers, we ensure that each component can evolve independently, maintain security, and scale as required while providing a robust user experience.</p>
@@ -2836,20 +2836,12 @@ in the <a href="https://github.com/Arquisoft/wichat_en2b/discussions/79">discuss
 <td class="tableblock halign-left valign-top"><p class="tableblock"><em>The protection of user data through encryption, authentication, and compliance with GDPR, a key quality goal.</em></p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>User Gateway</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>A backend service handling user-related API requests, such as authentication and data retrieval, ensuring secure and efficient user management.</em></p></td>
-</tr>
-<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><em>Game Service</em></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><em>A backend service managing game logic, question presentation, and interaction with external APIs (Wikidata and LLM).</em></p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><em>RESTful API</em></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><em>A style of API design using HTTP methods (e.g., GET, POST) for communication between the frontend, backend, and external services.</em></p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Internationalization (i18n)</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>An optional feature allowing the application to support multiple languages, enhancing accessibility for diverse users.</em></p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><em>CRUD Operations</em></p></td>
