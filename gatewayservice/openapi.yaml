@@ -1093,8 +1093,10 @@ paths:
   /game:
     post:
       tags: [ Game ]
-      summary: Create a game
-      description: Creates a new game session
+      summary: Store game information
+      description: Stores game session infromation for the authenticated user.
+      security:
+        - bearerAuth: [ ]
       requestBody:
         required: true
         content:
@@ -1106,34 +1108,49 @@ paths:
                 subject:
                   type: string
                   example: History
+                points_gain:
+                  type: number
+                  example: 100
                 number_of_questions:
                   type: integer
                   example: 10
-                number_of_options:
-                  type: integer
-                  example: 4
-                number_of_correct_answers:
+                number_correct_answers:
                   type: integer
                   example: 4
                 total_time:
                   type: number
                   example: 55.5
-      security:
-        - bearerAuth: [ ]
       responses:
-        '200':
-          description: Game created
+        '201':
+          description: Game session created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Quiz'
+                $ref: '#/components/schemas/GameInfo'
         '400':
-          description: Bad request
+          description: Invalid request (e.g., missing fields)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
   /game/{subject}/{totalQuestions}/{numberOptions}:
     get:
       tags: [ Game ]
       summary: Get game questions
-      description: Retrieves questions for a game with specified parameters
+      description: Retrieves random questions for a game based on subject, number of questions, and answer options.
       parameters:
         - in: path
           name: subject
@@ -1143,27 +1160,53 @@ paths:
           description: Subject of the game
         - in: path
           name: totalQuestions
-          required: true
+          required: false
           schema:
             type: integer
+            default: 3
           description: Number of questions
         - in: path
           name: numberOptions
-          required: true
+          required: false
           schema:
             type: integer
+            default: 3
           description: Number of answer options per question
-      security:
-        - bearerAuth: [ ]
       responses:
         '200':
           description: Game questions
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Quiz'
-        '404':
-          description: Questions not found
+                type: array
+                items:
+                  type: object
+                  properties:
+                    question_id:
+                      type: string
+                      description: Unique question identifier
+                    image_name:
+                      type: string
+                      description: Path to question image
+                      example: /images/65fab123456789abcdef1234.jpg
+                    answers:
+                      type: array
+                      items:
+                        type: string
+                      description: Shuffled answer options including correct answer
+                  required: [ question_id, image_name, answers ]
+        '400':
+          description: Not enough questions available
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /question/validate:
     post:
@@ -1197,41 +1240,51 @@ paths:
                   correct:
                     type: boolean
                     example: true
-        '400':
-          description: Bad request
+        '404':
+          description: Question not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /question/amount/{code}:
     get:
       tags: [ Game ]
       summary: Get question amount
-      description: Retrieves the number of questions for a quiz code.
+      description: Retrieves the number of questions for a quiz subject.
       parameters:
         - in: path
           name: code
           required: true
           schema:
             type: string
-          description: Quiz code
-      security:
-        - bearerAuth: [ ]
+          description: Quiz subject code
       responses:
         '200':
           description: Question amount
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  amount:
-                    type: integer
-                    example: 10
-        '404':
-          description: Quiz not found
+                type: integer
+                example: 10
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
   /statistics/recent-quizzes:
     get:
       tags: [ Game ]
       summary: Get recent quizzes
-      description: Retrieves a paginated list of recent quizzes for the authenticated user
+      description: Retrieves a paginated list of recent quizzes for the authenticated user.
       parameters:
         - in: query
           name: page
@@ -1247,19 +1300,33 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Quiz'
-        '400':
-          description: Bad request
+                type: object
+                properties:
+                  recentQuizzes:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/GameInfo'
+                  hasMoreQuizzes:
+                    type: boolean
+                    description: Indicates if more quizzes are available
         '401':
           description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /statistics/subject/{subject}:
     get:
       tags: [ Game ]
       summary: Get subject statistics
-      description: Retrieves statistics for a specific subject. Requires authentication. Proxies to the game service.
+      description: Retrieves statistics for a specific subject for the authenticated user.
       parameters:
         - in: path
           name: subject
@@ -1280,20 +1347,49 @@ paths:
                   subject:
                     type: string
                     example: History
-                  averageScore:
-                    type: number
-                    example: 7.5
-                  totalQuizzes:
-                    type: integer
-                    example: 100
+                  stats:
+                    type: object
+                    properties:
+                      totalGames:
+                        type: integer
+                        example: 100
+                      avgScore:
+                        type: number
+                        example: 75.5
+                      totalScore:
+                        type: number
+                        example: 7550
+                      totalCorrectAnswers:
+                        type: integer
+                        example: 400
+                      totalQuestions:
+                        type: integer
+                        example: 500
+                      avgTime:
+                        type: number
+                        example: 55.5
+                      successRatio:
+                        type: number
+                        example: 0.8
+                    nullable: true
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '500':
-          description: Error retrieving statistics
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /statistics/global:
     get:
       tags: [ Game ]
       summary: Get global statistics
-      description: Retrieves global quiz statistics. Requires authentication. Proxies to the game service.
+      description: Retrieves global quiz statistics for the authenticated user.
       security:
         - bearerAuth: [ ]
       responses:
@@ -1304,20 +1400,49 @@ paths:
               schema:
                 type: object
                 properties:
-                  totalQuizzes:
-                    type: integer
-                    example: 1000
-                  averageScore:
-                    type: number
-                    example: 6.8
+                  stats:
+                    type: object
+                    properties:
+                      totalGames:
+                        type: integer
+                        example: 1000
+                      avgScore:
+                        type: number
+                        example: 68.5
+                      totalScore:
+                        type: number
+                        example: 6850
+                      totalCorrectAnswers:
+                        type: integer
+                        example: 4000
+                      totalQuestions:
+                        type: integer
+                        example: 5000
+                      avgTime:
+                        type: number
+                        example: 50.5
+                      successRatio:
+                        type: number
+                        example: 0.8
+                    nullable: true
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '500':
-          description: Error retrieving statistics
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /leaderboard:
     get:
       tags: [ Game ]
-      summary: Get leaderboard
-      description: Retrieves the global leaderboard. Requires authentication. Proxies to the game service.
+      summary: Get global leaderboard
+      description: Retrieves the top 10 players and the authenticated user, ranked by total score.
       security:
         - bearerAuth: [ ]
       responses:
@@ -1326,55 +1451,108 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    username:
-                      type: string
-                      example: johndoe
-                    score:
-                      type: integer
-                      example: 95
+                type: object
+                properties:
+                  leaderboard:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        _id:
+                          type: string
+                          description: User ID
+                        totalScore:
+                          type: number
+                          example: 950
+                        totalGames:
+                          type: integer
+                          example: 10
+                        avgScore:
+                          type: number
+                          example: 95
+                        rank:
+                          type: integer
+                          example: 1
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '500':
-          description: Error retrieving leaderboard
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /leaderboard/group:
     post:
       tags: [ Game ]
       summary: Get group leaderboard
-      description: Retrieves the leaderboard for a specific group. Requires authentication. Proxies to the game service.
+      description: Retrieves the leaderboard for a specific group of players.
+      security:
+        - bearerAuth: [ ]
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
-              required: [ playerIds ]
+              required: [ players ]
               properties:
-                playerIds:
+                players:
                   type: array
-      security:
-        - bearerAuth: [ ]
+                  items:
+                    type: string
+                  description: Array of user IDs
+                  example: [ "user123", "user456" ]
       responses:
         '200':
           description: Group leaderboard
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    username:
-                      type: string
-                      example: johndoe
-                    score:
-                      type: integer
-                      example: 95
+                type: object
+                properties:
+                  leaderboard:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        _id:
+                          type: string
+                          description: User ID
+                        totalScore:
+                          type: number
+                          example: 950
+                        totalGames:
+                          type: integer
+                          example: 10
+                        avgScore:
+                          type: number
+                          example: 95
+                        rank:
+                          type: integer
+                          example: 1
         '400':
-          description: Bad request
-
+          description: Invalid request (e.g., missing players array)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
   /shared-quiz/create:
     post:
       tags: [ SharedQuiz ]
@@ -1390,35 +1568,67 @@ paths:
               properties:
                 hostId:
                   type: string
-                  example: 65fab...
+                  example: 65fab123456789abcdef1234
                 hostUsername:
                   type: string
                   example: user1
                 quizData:
-                  type: object
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      question:
+                        type: string
+                      answers:
+                        type: array
+                        items:
+                          type: string
+                      correctAnswer:
+                        type: string
+                  description: Array of quiz questions
                 quizMetaData:
-                  type: object
-      security:
-        - bearerAuth: [ ]
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      timePerQuestion:
+                        type: number
+                        example: 30
+                  description: Quiz metadata (e.g., time per question)
       responses:
-        '200':
+        '201':
           description: Shared quiz session created
           content:
             application/json:
               schema:
                 type: object
                 properties:
+                  success:
+                    type: boolean
                   code:
                     type: string
                     example: ABC123
+                  sessionId:
+                    type: string
+                    example: 65fab123456789abcdef1234
         '400':
-          description: Bad request
+          description: Invalid request (e.g., missing fields)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /shared-quiz/{code}/join:
     post:
-      tags: [SharedQuiz]
+      tags: [ SharedQuiz ]
       summary: Join a shared quiz session
-      description: Allows an authenticated user to join a shared quiz session
+      description: Allows a user to join a shared quiz session.
       parameters:
         - in: path
           name: code
@@ -1432,13 +1642,14 @@ paths:
           application/json:
             schema:
               type: object
-              required: [userId]
+              required: [ playerId, username ]
               properties:
-                userId:
+                playerId:
                   type: string
-                  example: user456
-      security:
-        - bearerAuth: []
+                  example: 65fab123456789abcdef5678
+                username:
+                  type: string
+                  example: user2
       responses:
         '200':
           description: Joined shared quiz session
@@ -1447,17 +1658,39 @@ paths:
               schema:
                 type: object
                 properties:
-                  message:
+                  success:
+                    type: boolean
+                  sessionId:
                     type: string
-                    example: Joined successfully
+                    example: 65fab123456789abcdef1234
+                  players:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Player'
         '400':
-          description: Bad request
+          description: Invalid request (e.g., missing fields, session started)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Session not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /shared-quiz/{code}/start:
     get:
-      tags: [SharedQuiz]
+      tags: [ SharedQuiz ]
       summary: Start a shared quiz session
-      description: Starts a shared quiz session (host only)
+      description: Starts a shared quiz session (host only).
       parameters:
         - in: path
           name: code
@@ -1471,8 +1704,6 @@ paths:
           schema:
             type: string
           description: Host user ID
-      security:
-        - bearerAuth: []
       responses:
         '200':
           description: Shared quiz started
@@ -1481,17 +1712,44 @@ paths:
               schema:
                 type: object
                 properties:
-                  message:
+                  success:
+                    type: boolean
+                  status:
                     type: string
-                    example: Quiz started
+                    example: active
+                  currentQuestionIndex:
+                    type: integer
+                    example: 0
         '400':
-          description: Bad request
+          description: Invalid request (e.g., missing hostId)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden - Not the host
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Session not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /shared-quiz/{code}/next:
     get:
-      tags: [SharedQuiz]
+      tags: [ SharedQuiz ]
       summary: Move to next question
-      description: Advances to the next question in a shared quiz session (host only)
+      description: Advances to the next question in a shared quiz session (host only).
       parameters:
         - in: path
           name: code
@@ -1505,8 +1763,6 @@ paths:
           schema:
             type: string
           description: Host user ID
-      security:
-        - bearerAuth: []
       responses:
         '200':
           description: Moved to next question
@@ -1515,16 +1771,41 @@ paths:
               schema:
                 type: object
                 properties:
-                  question:
-                    $ref: '#/components/schemas/Question'
+                  success:
+                    type: boolean
+                  currentQuestionIndex:
+                    type: integer
+                    example: 1
         '400':
-          description: Bad request
+          description: Invalid request (e.g., missing hostId)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden - Not the host
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Session not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /shared-quiz/{code}/end:
     get:
-      tags: [SharedQuiz]
+      tags: [ SharedQuiz ]
       summary: End a shared quiz session
-      description: Ends a shared quiz session (host only)
+      description: Ends a shared quiz session (host only).
       parameters:
         - in: path
           name: code
@@ -1538,8 +1819,6 @@ paths:
           schema:
             type: string
           description: Host user ID
-      security:
-        - bearerAuth: []
       responses:
         '200':
           description: Shared quiz ended
@@ -1548,17 +1827,45 @@ paths:
               schema:
                 type: object
                 properties:
-                  message:
+                  success:
+                    type: boolean
+                  status:
                     type: string
-                    example: Quiz ended
+                    example: ended
+                  players:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Player'
         '400':
-          description: Bad request
+          description: Invalid request (e.g., missing hostId)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden - Not the host
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Session not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /shared-quiz/{code}/status:
     get:
-      tags: [SharedQuiz]
+      tags: [ SharedQuiz ]
       summary: Get shared quiz session status
-      description: Retrieves the current status of a shared quiz session. Requires authentication. Proxies to the shared quiz service.
+      description: Retrieves the current status of a shared quiz session.
       parameters:
         - in: path
           name: code
@@ -1566,8 +1873,12 @@ paths:
           schema:
             type: string
           description: Quiz session code
-      security:
-        - bearerAuth: []
+        - in: query
+          name: playerId
+          required: false
+          schema:
+            type: string
+          description: Player ID for authorization check
       responses:
         '200':
           description: Session status
@@ -1578,18 +1889,42 @@ paths:
                 properties:
                   status:
                     type: string
-                    enum: [waiting, active, ended]
+                    enum: [ waiting, active, ended ]
                     example: active
-                  currentQuestion:
+                  currentQuestionIndex:
                     type: integer
                     example: 2
+                  waitingForNext:
+                    type: boolean
+                    example: false
+                  players:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Player'
+        '403':
+          description: Forbidden - Player not in session
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '404':
           description: Session not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
   /shared-quiz/{code}/answer:
     post:
-      tags: [SharedQuiz]
+      tags: [ SharedQuiz ]
       summary: Submit answer for shared quiz
-      description: Submits an answer for a question in a shared quiz session. Requires authentication. Proxies to the shared quiz service.
+      description: Submits an answer for a question in a shared quiz session.
       parameters:
         - in: path
           name: code
@@ -1603,16 +1938,29 @@ paths:
           application/json:
             schema:
               type: object
-              required: [userId, answer]
+              required: [ playerId, questionId, answerId, isCorrect, timeToAnswer ]
               properties:
-                userId:
+                playerId:
                   type: string
-                  example: user456
+                  example: 65fab123456789abcdef5678
+                questionId:
+                  type: string
+                  example: 65fab123456789abcdef1234
+                answerId:
+                  type: string
+                  description: Identifier of the selected answer
+                isCorrect:
+                  type: boolean
+                  example: true
+                timeToAnswer:
+                  type: number
+                  example: 10.5
+                rightAnswer:
+                  type: string
+                  description: Correct answer
                 answer:
                   type: string
                   example: Answer1
-      security:
-        - bearerAuth: []
       responses:
         '200':
           description: Answer submitted
@@ -1621,11 +1969,74 @@ paths:
               schema:
                 type: object
                 properties:
-                  correct:
+                  success:
                     type: boolean
-                    example: true
+                  score:
+                    type: number
+                    example: 100
         '400':
-          description: Bad request
+          description: Invalid request (e.g., missing fields, session not active)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Session or player not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /shared-quiz/{code}/player/{playerId}:
+    delete:
+      tags: [ SharedQuiz ]
+      summary: Remove player from shared quiz session
+      description: Removes a player from a shared quiz session.
+      parameters:
+        - in: path
+          name: code
+          required: true
+          schema:
+            type: string
+          description: Quiz session code
+        - in: path
+          name: playerId
+          required: true
+          schema:
+            type: string
+          description: Player ID to remove
+      responses:
+        '200':
+          description: Player removed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  players:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Player'
+        '404':
+          description: Session not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 components:
   schemas:
     User:
@@ -1681,6 +2092,68 @@ components:
           description: Timestamp when the group was created
           example: 2025-04-24T19:28:37.303Z
 
+    GameInfo:
+      type: object
+      properties:
+        _id:
+          type: string
+          description: Unique game session identifier
+        user_id:
+          type: string
+          description: User ID of the player
+        subject:
+          type: string
+          example: History
+        points_gain:
+          type: number
+          example: 100
+        number_of_questions:
+          type: integer
+          example: 10
+        number_correct_answers:
+          type: integer
+          example: 4
+        total_time:
+          type: number
+          example: 55.5
+        createdAt:
+          type: string
+          format: date-time
+          description: Game creation timestamp
+      required: [ user_id, subject, points_gain, number_of_questions, number_correct_answers, total_time ]
+    Player:
+        type: object
+        properties:
+          id:
+            type: string
+            example: 65fab123456789abcdef5678
+          username:
+            type: string
+            example: user2
+          score:
+            type: number
+            example: 100
+          answers:
+            type: array
+            items:
+              type: object
+              properties:
+                questionId:
+                  type: string
+                answerId:
+                  type: string
+                isCorrect:
+                  type: boolean
+                timeToAnswer:
+                  type: number
+                rightAnswer:
+                  type: string
+                answer:
+                  type: string
+          total_time:
+            type: number
+            example: 50.5
+        required: [ id, username, score, answers ]
     Error:
       type: object
       properties:
