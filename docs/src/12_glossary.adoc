@@ -19,10 +19,8 @@ ifndef::imagesdir[:imagesdir: ../images]
 | Usability             | The ease with which users can navigate and interact with the application, ensuring an intuitive and engaging experience, a key quality goal.
 | Performance           | The system’s ability to provide fast responses (e.g., <1s for hints, <3s for question generation), a key quality goal.
 | Security              | The protection of user data through encryption, authentication, and compliance with GDPR, a key quality goal.
-| User Gateway          | A backend service handling user-related API requests, such as authentication and data retrieval, ensuring secure and efficient user management.
 | Game Service          | A backend service managing game logic, question presentation, and interaction with external APIs (Wikidata and LLM).
 | RESTful API           | A style of API design using HTTP methods (e.g., GET, POST) for communication between the frontend, backend, and external services.
-| Internationalization (i18n) | An optional feature allowing the application to support multiple languages, enhancing accessibility for diverse users.
 | CRUD Operations       | Create, Read, Update, Delete operations managed by the system for handling user data in the database.
 | Gateway Service       | The central entry point for routing external and internal API requests, ensuring security and load balancing.
 | Players               | End-users of the application who register, login, and participate in the quiz game, expecting an enjoyable and dynamic experience.
