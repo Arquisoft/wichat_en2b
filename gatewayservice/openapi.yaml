@@ -12,6 +12,8 @@ info:
 servers:
   - url: http://localhost:8000
     description: Local development server
+  - url: http://gatewayservice:8000
+    description: Deployed server
 
 tags:
   - name: Authentication
@@ -24,29 +26,10 @@ tags:
     description: Endpoints for Large Language Model interactions
   - name: Game
     description: Endpoints for quiz and game features
-  - name: Health
-    description: Health check endpoint
   - name: SharedQuiz
     description: Endpoints for shared quiz session management
 
 paths:
-  /health:
-    get:
-      tags: [Health]
-      summary: Health check
-      description: Returns the health status of the gateway service.
-      responses:
-        '200':
-          description: Service is healthy
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    example: OK
-
   /login:
     post:
       tags: [Authentication]
