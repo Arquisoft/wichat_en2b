@@ -118,53 +118,86 @@ paths:
     post:
       tags: [Authentication]
       summary: Set up 2FA for a user
-      description: Initiates two-factor authentication setup for the user.
+      description: Initiates two-factor authentication setup for the user, returning a QR code URL for authenticator app setup..
+      security:
+        - bearerAuth: [ ]
       requestBody:
-        required: true
+        required: false
         content:
           application/json:
             schema:
               type: object
-              required: [username]
-              properties:
-                username:
-                  type: string
-                  example: johndoe
+              properties: {}
       responses:
         '200':
-          description: 2FA initialized
-        '400':
-          description: Bad request
+          description: 2FA initialized successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  imageUrl:
+                    type: string
+                    description: Base64-encoded QR code URL for 2FA setup
+                    example: data:image/png;base64,iVBORw0KGgo...
+        '401':
+          description: Unauthorized - Invalid or missing JWT token
+        '500':
+          description: Internal server error (e.g., QR code generation failed)
 
   /verify2fa:
     post:
       tags: [Authentication]
       summary: Verify 2FA token
-      description: Verifies a 2FA token for a user.
+      description: Verifies a 2FA token for a user, returning a JWT token upon successful verification.
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
-              required: [username, token]
+              required: [token, user]
               properties:
-                username:
-                  type: string
-                  example: johndoe
                 token:
                   type: string
+                  description: The 2FA code from the authenticator app
+                user:
+                  type: object
+                  required: [ username ]
+                  properties:
+                    username:
+                      type: string
+                      description: The username of the user verifying 2FA
+                      example: johndoe
       responses:
         '200':
-          description: 2FA verified
+          description: 2FA verified successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Confirmation message
+                    example: 2FA Verified
+                  token:
+                    type: string
+                    description: JWT token for authenticated session
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        '400':
+          description: Invalid request (e.g., missing token or user)
         '401':
-          description: Invalid token
-
+          description: Invalid 2FA token
+        '500':
+          description: Internal server error (e.g., user service unavailable)
   /check2fa:
     get:
       tags: [ Authentication ]
       summary: Check 2FA status
-      description: Checks if 2FA is enabled for a user. Accessible without authentication.
+      description: Checks if 2FA is enabled for the authenticated user.
+      security:
+        - bearerAuth: [ ]
       responses:
         '200':
           description: 2FA status
@@ -173,11 +206,16 @@ paths:
               schema:
                 type: object
                 properties:
-                  enabled:
+                  twoFactorEnabled:
                     type: boolean
                     example: true
-        '400':
-          description: Bad request
+                  user_id:
+                    type: string
+                    example: 123abc
+        '401':
+          description: Unauthorized - Invalid or missing JWT token
+        '500':
+          description: Internal server error
 
   /token/username:
     get:
@@ -188,32 +226,35 @@ paths:
         - bearerAuth: [ ]
       responses:
         '200':
-          description: Username retrieved
+          description: User details retrieved
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  username:
-                    type: string
-                    example: johndoe
+                $ref: '#/components/schemas/User'
         '401':
-          description: Unauthorized
+          description: Unauthorized - Invalid or missing JWT token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: User not found
+          content:
+             application/json:
+               schema:
+                 $ref: '#/components/schemas/Error'
+        '500':
+           description: Internal server error
+           content:
+             application/json:
+               schema:
+                 $ref: '#/components/schemas/Error'
 
   /users:
     get:
-      tags: [Users]
-      summary: Get users
-      description: Retrieves a list of users or a specific user by query.
-      parameters:
-        - in: query
-          name: id
-          schema:
-            type: string
-          required: false
-          description: User ID to filter
-      security:
-        - bearerAuth: [ ]
+      tags: [ Users ]
+      summary: Get all users
+      description: Retrieves a list of all users.
       responses:
         '200':
           description: List of users
@@ -223,8 +264,14 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/User'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
     post:
-      tags: [Users]
+      tags: [ Users ]
       summary: Create a new user
       description: Creates a new user.
       requestBody:
@@ -232,42 +279,145 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/User'
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+                role:
+                  type: string
+                  enum: [ USER, ADMIN ]
+              required: [ username, password ]
       responses:
         '201':
           description: User created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Invalid request (e.g., username exists)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
     patch:
       tags: [ Users ]
       summary: Update user
-      description: Updates user details
+      description: Updates authenticated user's details (username, password, profile picture, or 2FA secret).
+      security:
+        - bearerAuth: [ ]
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/User'
-      security:
-        - bearerAuth: [ ]
+              type: object
+              properties:
+                newUsername:
+                  type: string
+                  description: New username
+                oldPassword:
+                  type: string
+                  description: Current password for verification
+                newPassword:
+                  type: string
+                  description: New password
+                profilePicture:
+                  type: string
+                  description: Profile picture URL or empty string
+                secret:
+                  type: string
+                  description: 2FA secret or empty string
       responses:
         '200':
           description: User updated
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: User updated successfully
         '400':
-          description: Bad request
+          description: Invalid request (e.g., invalid password, username taken)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized - Invalid or missing JWT token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Username already taken
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Database unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
     delete:
       tags: [ Users ]
       summary: Delete user
-      description: Deletes a user
+      description: Deletes the authenticated user.
       security:
         - bearerAuth: [ ]
       responses:
-        '204':
+        '200':
           description: User deleted
-        '400':
-          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: User deleted successfully
+        '401':
+          description: Unauthorized - Invalid or missing JWT token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /users/{username}:
     get:
@@ -281,8 +431,6 @@ paths:
           schema:
             type: string
           description: Username of the user
-      security:
-        - bearerAuth: [ ]
       responses:
         '200':
           description: User details
@@ -292,46 +440,29 @@ paths:
                 $ref: '#/components/schemas/User'
         '404':
           description: User not found
-    patch:
-      tags: [Users]
-      summary: Update user password
-      description: Updates the password for a user.
-      parameters:
-        - in: path
-          name: username
-          required: true
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                oldPassword:
-                  type: string
-                newPassword:
-                  type: string
-      responses:
-        '200':
-          description: Password updated
-        '400':
-          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /users/id/{id}:
     get:
       tags: [ Users ]
       summary: Get user by ID
-      description: Retrieves a user by their ID
-                     - in: path
-                     name: id
-                     required: true
-                     schema:
-                       type: string
-                     description: User ID
-      security:
-        - bearerAuth: [ ]
+      description: Retrieves a user by their ID.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: MongoDB ObjectId of the user
       responses:
         '200':
           description: User details
@@ -341,12 +472,22 @@ paths:
                 $ref: '#/components/schemas/User'
         '404':
           description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /users/by-ids:
     post:
       tags: [ Users ]
       summary: Get users by IDs
-      description: Retrieves multiple users by their IDs
+      description: Retrieves multiple users by their MongoDB ObjectIds.
       requestBody:
         required: true
         content:
@@ -354,13 +495,12 @@ paths:
             schema:
               type: object
               properties:
-                ids:
+                users:
                   type: array
                   items:
                     type: string
-                  example: [ "user1", "user2" ]
-      security:
-        - bearerAuth: [ ]
+                  example: [ "65fab123456789abcdef1234", "65fab123456789abcdef5678" ]
+              required: [ users ]
       responses:
         '200':
           description: List of users
@@ -371,29 +511,36 @@ paths:
                 items:
                   $ref: '#/components/schemas/User'
         '400':
-          description: Bad request
+          description: Invalid request (e.g., missing or invalid users array)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /user/profile/picture:
     post:
-      tags: [Users]
+      tags: [ Users ]
       summary: Upload profile picture
-      description: Uploads a profile picture for a user.
+      description: Uploads a profile picture for the authenticated user.
+      security:
+        - bearerAuth: [ ]
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
-              required: [username, image]
+              required: [ image ]
               properties:
-                username:
-                  type: string
-                  example: johndoe
                 image:
                   type: string
-                  description: Base64-encoded image
-      security:
-        - bearerAuth: [ ]
+                  description: Base64-encoded image (JPEG, PNG, or WebP)
       responses:
         '200':
           description: Profile picture uploaded
@@ -405,32 +552,71 @@ paths:
                   profilePicture:
                     type: string
                     description: Path to the uploaded image
+                    example: images/65fab123456789abcdef1234_profile_picture.webp
+        '400':
+          description: Invalid request (e.g., no image, invalid file type)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized - Invalid or missing JWT token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
   /user/profile/picture/{id}:
     get:
       tags: [ Users ]
-      summary: Get profile picture
-      description: Retrieves a user's profile picture by ID
+      summary: Get profile picture URL
+      description: Retrieves the profile picture URL for a user by their ID.
       parameters:
         - in: path
           name: id
           required: true
           schema:
             type: string
-          description: User ID
+          description: MongoDB ObjectId of the user
       responses:
         '200':
-          description: Profile picture
+          description: Profile picture URL
           content:
-            image/*:
+            application/json:
               schema:
-                type: string
-                format: binary
+                type: object
+                properties:
+                  profilePicture:
+                    type: string
+                    description: Path to the profile picture or empty string
+                    example: images/65fab123456789abcdef1234_profile_picture.webp
         '404':
-          description: Profile picture not found
-
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
   /askllm:
     post:
-      tags: [LLM]
+      tags: [ LLM ]
       summary: Ask a question to the LLM
       description: Sends a question to the LLM service and returns the answer.
       requestBody:
@@ -439,13 +625,28 @@ paths:
           application/json:
             schema:
               type: object
-              required: [content]
+              required: [ conversation, model, possibleAnswers ]
               properties:
-                content:
+                conversation:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      role:
+                        type: string
+                        example: user
+                      content:
+                        type: string
+                        description: The question or prompt for the LLM
+                    required: [ role, content ]
+                  description: Array of conversation messages
+                model:
                   type: string
-                  description: The question or prompt for the LLM
-      security:
-        - bearerAuth: [ ]
+                  description: The LLM model to use
+                  example: empathy
+                possibleAnswers:
+                  type: string
+                  description: Possible answers or context for the LLM
       responses:
         '200':
           description: LLM response
@@ -454,14 +655,29 @@ paths:
               schema:
                 type: object
                 properties:
-                  answer:
+                  role:
                     type: string
+                    example: assistant
+                  content:
+                    type: string
+                    description: The LLM's response
+                required: [ role, content ]
         '400':
-          description: Bad request
+          description: Invalid request (e.g., missing required fields)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error (e.g., LLM failure)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /quiz:
     get:
-      tags: [Game]
+      tags: [ Game ]
       summary: Get all quizzes
       description: Retrieves all available quizzes.
       responses:
@@ -473,42 +689,51 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Quiz'
-        '401':
-          description: Unauthorized
-
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
     post:
-      tags: [Game]
-      summary: Submit quiz answers
-      description: Submits answers for a quiz.
+      tags: [ Game ]
+      summary: Create a quiz
+      description: Creates a new quiz with Wikidata query and saves it to the database.
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              required: [topic, answers]
-              properties:
-                topic:
-                  type: string
-                  example: History
-                answers:
-                  type: array
-                  items:
-                    type: string
-                  example: [ "Answer1", "Answer2" ]
-      security:
-        - bearerAuth: [ ]
+              $ref: '#/components/schemas/Quiz'
       responses:
-        '200':
-          description: Quiz results
-        '400':
-          description: Bad request
+        '201':
+          description: Quiz created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Quiz'
+        '204':
+          description: No items found for the Wikidata query
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: No items where found with that query, not saving the category.
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /quiz/allTopics:
     get:
-      tags: [Game]
+      tags: [ Game ]
       summary: Get all quiz topics
-      description: Retrieves all quiz topics.
+      description: Retrieves all unique quiz topics.
       responses:
         '200':
           description: List of topics
@@ -519,40 +744,46 @@ paths:
                 items:
                   type: string
                   example: History
-        '400':
-          description: Bad request
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /quiz/{topic}:
     get:
-      tags: [Game]
-      summary: Get quiz by topic
-      description: Retrieves quiz questions for a specific topic.
+      tags: [ Game ]
+      summary: Get quizzes by topic
+      description: Retrieves all quizzes for a specific topic.
       parameters:
         - in: path
           name: topic
           required: true
           schema:
             type: string
-          description: Quiz topic
-      security:
-        - bearerAuth: [ ]
+          description: Quiz topic (category)
       responses:
         '200':
-          description: Quiz questions
+          description: List of quizzes for the topic
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Quiz'
-        '404':
-          description: Topic not found
+                type: array
+                items:
+                  $ref: '#/components/schemas/Quiz'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /groups:
     get:
       tags: [ Groups ]
       summary: Get all groups
-      description: Retrieves a list of all groups
-      security:
-        - bearerAuth: [ ]
+      description: Retrieves a list of all groups.
       responses:
         '200':
           description: List of groups
@@ -562,66 +793,71 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Group'
-        '401':
-          description: Unauthorized
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
     post:
       tags: [ Groups ]
       summary: Create a group
-      description: Creates a new group
+      description: Creates a new group with the authenticated user as owner and member.
+      security:
+        - bearerAuth: [ ]
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
-              required: [ groupName, owner ]
+              required: [ name ]
               properties:
-                groupName:
+                name:
                   type: string
                   example: MyGroup
-                owner:
-                  type: string
-                  example: user123
-                members:
-                  type: array
-                  items:
-                    type: string
-                  example: [ "user123", "user456" ]
-      security:
-        - bearerAuth: [ ]
       responses:
-        '201':
+        '200':
           description: Group created
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Group'
         '400':
-          description: Bad request
+          description: Invalid request (e.g., missing name, group exists)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
     patch:
       tags: [ Groups ]
-      summary: Update group
-      description: Updates an existing group
+      summary: Update group name
+      description: Updates the name of the group if the authenticated user is the owner.
+      security:
+        - bearerAuth: [ ]
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
+              required: [ name ]
               properties:
-                groupName:
+                name:
                   type: string
                   example: MyGroup
-                owner:
-                  type: string
-                  example: user123
-                members:
-                  type: array
-                  items:
-                    type: string
-                  example: [ "user123", "user456" ]
-      security:
-        - bearerAuth: [ ]
       responses:
         '200':
           description: Group updated
@@ -630,18 +866,79 @@ paths:
               schema:
                 $ref: '#/components/schemas/Group'
         '400':
-          description: Bad request
+          description: Invalid request (e.g., missing name, name exists)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden - User is not the owner
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Group not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
     delete:
       tags: [ Groups ]
       summary: Delete group
-      description: Deletes a group
+      description: Deletes the group if the authenticated user is the owner.
       security:
         - bearerAuth: [ ]
       responses:
-        '204':
+        '200':
           description: Group deleted
-        '400':
-          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Group deleted successfully
+                  group:
+                    $ref: '#/components/schemas/Group'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden - User is not the owner
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Group not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
   /groups/{groupName}:
     get:
       tags: [ Groups ]
@@ -654,8 +951,6 @@ paths:
           schema:
             type: string
           description: Group name
-      security:
-        - bearerAuth: [ ]
       responses:
         '200':
           description: Group details
@@ -663,44 +958,20 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Group'
-        '404':
+        '204':
           description: Group not found
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /groups/joined:
     get:
       tags: [ Groups ]
-      summary: Get joined groups
-      description: Retrieves a list of groups the authenticated user has joined. Proxies to the group service.
-      security:
-        - bearerAuth: [ ]
-      responses:
-        '200':
-          description: List of joined groups
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Group'
-        '401':
-          description: Unauthorized
-
-  /groups/join:
-    post:
-      tags: [ Groups ]
-      summary: Join a group
-      description: Allows an authenticated user to join a group. Proxies to the group service.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required: [ groupName ]
-              properties:
-                groupName:
-                  type: string
-                  example: MyGroup
+      summary: Get joined group
+      description: Retrieves the group the authenticated user has joined.
       security:
         - bearerAuth: [ ]
       responses:
@@ -710,25 +981,82 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Group'
-        '400':
-          description: Bad request
+        '204':
+          description: No group joined
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
-  /groups/leave:
+  /groups/join:
     post:
       tags: [ Groups ]
-      summary: Leave a group
-      description: Allows an authenticated user to leave a group. Proxies to the group service.
+      summary: Join a group
+      description: Allows an authenticated user to join a group.
+      security:
+        - bearerAuth: [ ]
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
-              required: [ groupName ]
+              required: [ name ]
               properties:
-                groupName:
+                name:
                   type: string
                   example: MyGroup
+      responses:
+        '200':
+          description: Joined group
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Joined group successfully
+                  group:
+                    $ref: '#/components/schemas/Group'
+        '400':
+          description: Invalid request (e.g., missing name, already in group)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Group not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /groups/leave:
+    post:
+      tags: [ Groups ]
+      summary: Leave a group
+      description: Allows an authenticated user to leave their current group.
       security:
         - bearerAuth: [ ]
       responses:
@@ -742,8 +1070,26 @@ paths:
                   message:
                     type: string
                     example: Left the group successfully
+                  group:
+                    $ref: '#/components/schemas/Group'
         '400':
-          description: Bad request
+          description: Invalid request (e.g., not in a group)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
   /game:
     post:
       tags: [ Game ]
@@ -1334,3 +1680,12 @@ components:
           format: date-time
           description: Timestamp when the group was created
           example: 2025-04-24T19:28:37.303Z
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Human-readable error message
+      example:
+        error: Unauthorized
