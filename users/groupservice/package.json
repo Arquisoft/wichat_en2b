@@ -18,7 +18,7 @@
   },
   "homepage": "https://github.com/arquisoft/wichat_en2b#readme",
   "dependencies": {
-    "express": "^4.21.2",
+    "express": "^4.22.1",
     "helmet": "^8.0.0",
     "mongoose": "^8.9.3",
     "jsonwebtoken": "^9.0.2",
